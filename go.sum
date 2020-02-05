@@ -168,7 +168,8 @@ github.com/ulikunitz/xz v0.5.5/go.mod h1:2bypXElzHzzJZwzH67Y6wb67pO62Rzfn7BSiF4A
 github.com/vmihailenco/msgpack v3.3.3+incompatible/go.mod h1:fy3FlTQTDXWkZ7Bh6AcGMlsjHatGryHQYUTf1ShIgkk=
 github.com/vmihailenco/msgpack v4.0.1+incompatible h1:RMF1enSPeKTlXrXdOcqjFUElywVZjjC6pqse21bKbEU=
 github.com/vmihailenco/msgpack v4.0.1+incompatible/go.mod h1:fy3FlTQTDXWkZ7Bh6AcGMlsjHatGryHQYUTf1ShIgkk=
-github.com/william20111/terraform-provider-thousandeyes v0.0.0-20200129190023-4011e79e5762 h1:DyIbKO1+55Pzp92QWese9qYOe58OfGloq1aaum38BFI=
+github.com/william20111/go-thousandeyes v0.0.0-20200205111119-802b216d6db7 h1:+h4lythjGzrEFDpMqh4NLAioRXqs8rIuw2ZsktVWPFs=
+github.com/william20111/go-thousandeyes v0.0.0-20200205111119-802b216d6db7/go.mod h1:9nbkoFZh6vDEZmF4NrEoGLt4aLjQs0kS+bcIZ4rQ/vk=
 github.com/zclconf/go-cty v1.0.0/go.mod h1:xnAOWiHeOqg2nWS62VtQ7pbOu17FtxJNW8RLEih+O3s=
 github.com/zclconf/go-cty v1.1.0 h1:uJwc9HiBOCpoKIObTQaLR+tsEXx1HBHnOsOOpcdhZgw=
 github.com/zclconf/go-cty v1.1.0/go.mod h1:xnAOWiHeOqg2nWS62VtQ7pbOu17FtxJNW8RLEih+O3s=
