@@ -41,7 +41,7 @@ If you're building the provider, follow the instructions to [install it as a plu
 Supported tests right now:
 
 - [x] http-server
-- [ ] page-load
+- [x] page-load
 - [ ] agent-to-server
 - [ ] agent-to-agent
 - [ ] bgp
