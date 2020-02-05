@@ -17,6 +17,7 @@ func Provider() *schema.Provider {
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"thousandeyes_http_server": resourceHttpServer(),
+			"thousandeyes_page_load":   resourcePageLoad(),
 		},
 		ConfigureFunc: providerConfigure,
 	}

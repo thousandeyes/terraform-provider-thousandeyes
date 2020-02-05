@@ -8,7 +8,7 @@ import (
 	"strconv"
 )
 
-func resourceHttpServer() *schema.Resource {
+func resourcePageLoad() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -17,6 +17,11 @@ func resourceHttpServer() *schema.Resource {
 				Description: "name of the test",
 			},
 			"interval": {
+				Type:        schema.TypeInt,
+				Required:    true,
+				Description: "interval to run page load test on",
+			},
+			"http_interval": {
 				Type:        schema.TypeInt,
 				Required:    true,
 				Description: "interval to run http server test on",
@@ -55,22 +60,22 @@ func resourceHttpServer() *schema.Resource {
 				},
 			},
 		},
-		Create: resourceHttpServerCreate,
-		Read:   resourceHttpServerRead,
-		Update: resourceHttpServerUpdate,
-		Delete: resourceHttpServerDelete,
+		Create: resourcePageLoadCreate,
+		Read:   resourcePageLoadRead,
+		Update: resourcePageLoadUpdate,
+		Delete: resourcePageLoadDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
 	}
 }
 
-func resourceHttpServerRead(d *schema.ResourceData, m interface{}) error {
+func resourcePageLoadRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*thousandeyes.Client)
 
 	log.Printf("[INFO] Reading Thousandeyes Test %s", d.Id())
 	id, _ := strconv.Atoi(d.Id())
-	test, err := client.GetHttpServer(id)
+	test, err := client.GetPageLoad(id)
 	if err != nil {
 		return err
 	}
@@ -81,16 +86,17 @@ func resourceHttpServerRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("http_version", test.HttpVersion)
 	d.Set("url", test.Url)
 	d.Set("agents", test.Agents)
+	d.Set("http_interval", test.HttpInterval)
 	return nil
 }
 
-func resourceHttpServerUpdate(d *schema.ResourceData, m interface{}) error {
+func resourcePageLoadUpdate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*thousandeyes.Client)
 
 	log.Printf("[INFO] Updating ThousandEyes Test %s", d.Id())
 	d.Partial(true)
 	id, _ := strconv.Atoi(d.Id())
-	var update thousandeyes.HttpServer
+	var update thousandeyes.PageLoad
 	if d.HasChange("agents") {
 		update.Agents = expandAgents(d.Get("agents").([]interface{}))
 	}
@@ -109,47 +115,50 @@ func resourceHttpServerUpdate(d *schema.ResourceData, m interface{}) error {
 	if d.HasChange("url") {
 		update.Url = d.Get("url").(string)
 	}
-	_, err := client.UpdateHttpServer(id, update)
+	if d.HasChange("http_interval") {
+		update.HttpInterval = d.Get("http_interval").(int)
+	}
+	_, err := client.UpdatePageLoad(id, update)
 	if err != nil {
 		return err
 	}
 	d.Partial(false)
-	return resourceHttpServerRead(d, m)
+	return resourcePageLoadRead(d, m)
 }
 
-func resourceHttpServerDelete(d *schema.ResourceData, m interface{}) error {
+func resourcePageLoadDelete(d *schema.ResourceData, m interface{}) error {
 	client := m.(*thousandeyes.Client)
 
 	log.Printf("[INFO] Deleting ThousandEyes Test %s", d.Id())
 	id, _ := strconv.Atoi(d.Id())
-	if err := client.DeleteHttpServer(id); err != nil {
+	if err := client.DeletePageLoad(id); err != nil {
 		return err
 	}
 	d.SetId("")
 	return nil
 }
 
-func resourceHttpServerCreate(d *schema.ResourceData, m interface{}) error {
+func resourcePageLoadCreate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*thousandeyes.Client)
 	log.Printf("[INFO] Creating ThousandEyes Test %s", d.Id())
-	httpServer := buildHttpServerStruct(d)
-	httpTest, err := client.CreateHttpServer(*httpServer)
+	pageLoad := buildPageLoadStruct(d)
+	test, err := client.CreatePageLoad(*pageLoad)
 	if err != nil {
 		return err
 	}
-	testId := httpTest.TestId
+	testId := test.TestId
 	d.SetId(strconv.Itoa(testId))
-	return resourceHttpServerRead(d, m)
+	return resourcePageLoadRead(d, m)
 }
 
-func buildHttpServerStruct(d *schema.ResourceData) *thousandeyes.HttpServer {
-	httpServer := thousandeyes.HttpServer{
-		TestName:    d.Get("name").(string),
-		AuthType:    d.Get("auth_type").(string),
-		HttpVersion: d.Get("http_version").(int),
-		Url:         d.Get("url").(string),
-		Interval:    d.Get("interval").(int),
-		Agents:      expandAgents(d.Get("agents").([]interface{})),
+func buildPageLoadStruct(d *schema.ResourceData) *thousandeyes.PageLoad {
+	httpServer := thousandeyes.PageLoad{
+		TestName:     d.Get("name").(string),
+		AuthType:     d.Get("auth_type").(string),
+		Url:          d.Get("url").(string),
+		Interval:     d.Get("interval").(int),
+		HttpInterval: d.Get("http_interval").(int),
+		Agents:       expandAgents(d.Get("agents").([]interface{})),
 	}
 	if attr, ok := d.GetOk("http_version"); ok {
 		httpServer.HttpVersion = attr.(int)
