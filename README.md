@@ -42,13 +42,11 @@ Supported tests right now:
 
 - [x] http-server
 - [x] page-load
+- [x] web-transactions
 - [ ] agent-to-server
 - [ ] agent-to-agent
 - [ ] bgp
-- [ ] http-server
-- [ ] page-load
 - [ ] transactions
-- [ ] web-transactions
 - [ ] ftp-server
 - [ ] dns-trace
 - [ ] dns-server
