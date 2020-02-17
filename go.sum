@@ -246,12 +246,8 @@ github.com/vmihailenco/msgpack v4.0.1+incompatible h1:RMF1enSPeKTlXrXdOcqjFUElyw
 github.com/vmihailenco/msgpack v4.0.1+incompatible/go.mod h1:fy3FlTQTDXWkZ7Bh6AcGMlsjHatGryHQYUTf1ShIgkk=
 github.com/vmihailenco/msgpack v4.0.4+incompatible h1:dSLoQfGFAo3F6OoNhwUmLwVgaUXK79GlxNBwueZn0xI=
 github.com/vmihailenco/msgpack v4.0.4+incompatible/go.mod h1:fy3FlTQTDXWkZ7Bh6AcGMlsjHatGryHQYUTf1ShIgkk=
-github.com/william20111/go-thousandeyes v0.2.1 h1:XZHsPwOjJO0nl58M11vWS8uBxZPtkjsZ1nWIyuWK1gg=
-github.com/william20111/go-thousandeyes v0.2.1/go.mod h1:6cpGzW7UzMrdIIK5TJN1L6FLcdkVDstVN+0lGf/YcH4=
-github.com/william20111/go-thousandeyes v0.2.2-0.20200215160757-c6eca404c671 h1:GkePDJ9ZhTw9YhwYOcPWXHvOeh9GnpHmg3w1cYjlfhU=
-github.com/william20111/go-thousandeyes v0.2.2-0.20200215160757-c6eca404c671/go.mod h1:6cpGzW7UzMrdIIK5TJN1L6FLcdkVDstVN+0lGf/YcH4=
-github.com/william20111/go-thousandeyes v0.2.2 h1:+0NxHMd5jclqua6ICAfd6guyGS/XzQWfFt89u4uG7r4=
-github.com/william20111/go-thousandeyes v0.2.2/go.mod h1:6cpGzW7UzMrdIIK5TJN1L6FLcdkVDstVN+0lGf/YcH4=
+github.com/william20111/go-thousandeyes v0.3.0 h1:zJWwvn2dX1LnX5oEwYvnanRZC+PawUyTPpZ32lw1zzE=
+github.com/william20111/go-thousandeyes v0.3.0/go.mod h1:6cpGzW7UzMrdIIK5TJN1L6FLcdkVDstVN+0lGf/YcH4=
 github.com/zclconf/go-cty v1.0.0/go.mod h1:xnAOWiHeOqg2nWS62VtQ7pbOu17FtxJNW8RLEih+O3s=
 github.com/zclconf/go-cty v1.1.0 h1:uJwc9HiBOCpoKIObTQaLR+tsEXx1HBHnOsOOpcdhZgw=
 github.com/zclconf/go-cty v1.1.0/go.mod h1:xnAOWiHeOqg2nWS62VtQ7pbOu17FtxJNW8RLEih+O3s=
@@ -392,8 +388,8 @@ golang.org/x/tools v0.0.0-20200130002326-2f3ba24bd6e7/go.mod h1:TB2adYChydJhpapK
 golang.org/x/tools v0.0.0-20200207183749-b753a1ba74fa/go.mod h1:TB2adYChydJhpapKDTa4BR/hXlZSLoq2Wpct/0txZ28=
 golang.org/x/tools v0.0.0-20200212150539-ea181f53ac56 h1:DFtSed2q3HtNuVazwVDZ4nSRS/JrZEig0gz2BY4VNrg=
 golang.org/x/tools v0.0.0-20200212150539-ea181f53ac56/go.mod h1:TB2adYChydJhpapKDTa4BR/hXlZSLoq2Wpct/0txZ28=
-golang.org/x/tools v0.0.0-20200214225126-5916a50871fb h1:v/vJOBYLZ/j1iLRnB+xIrKSrcDL2mEvX8M8yx6cvs7M=
-golang.org/x/tools v0.0.0-20200214225126-5916a50871fb/go.mod h1:TB2adYChydJhpapKDTa4BR/hXlZSLoq2Wpct/0txZ28=
+golang.org/x/tools v0.0.0-20200216192241-b320d3a0f5a2 h1:0sfSpGSa544Fwnbot3Oxq/U6SXqjty6Jy/3wRhVS7ig=
+golang.org/x/tools v0.0.0-20200216192241-b320d3a0f5a2/go.mod h1:TB2adYChydJhpapKDTa4BR/hXlZSLoq2Wpct/0txZ28=
 golang.org/x/xerrors v0.0.0-20190717185122-a985d3407aa7/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
 golang.org/x/xerrors v0.0.0-20191011141410-1b5146add898/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
 golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543 h1:E7g+9GITq07hpfrRu66IVDexMakfv52eLZ2CXBWiKr4=

@@ -20,6 +20,9 @@ func Provider() *schema.Provider {
 			"thousandeyes_page_load":       resourcePageLoad(),
 			"thousandeyes_web_transaction": resourceWebTransaction(),
 		},
+		DataSourcesMap: map[string]*schema.Resource{
+			"thousandeyes_agent": dataSourceThousandeyesAgent(),
+		},
 		ConfigureFunc: providerConfigure,
 	}
 }
