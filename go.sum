@@ -250,6 +250,8 @@ github.com/vmihailenco/msgpack v4.0.4+incompatible h1:dSLoQfGFAo3F6OoNhwUmLwVgaU
 github.com/vmihailenco/msgpack v4.0.4+incompatible/go.mod h1:fy3FlTQTDXWkZ7Bh6AcGMlsjHatGryHQYUTf1ShIgkk=
 github.com/william20111/go-thousandeyes v0.3.1 h1:67qAu+FFkuKeysiYVmwnb9wvba2mf3GYcIIY1/5+ADs=
 github.com/william20111/go-thousandeyes v0.3.1/go.mod h1:6cpGzW7UzMrdIIK5TJN1L6FLcdkVDstVN+0lGf/YcH4=
+github.com/william20111/go-thousandeyes v0.3.2 h1:/J+luc2GYt6n0zlZq8KfqMi89soL47/LUqqAR9O3JXs=
+github.com/william20111/go-thousandeyes v0.3.2/go.mod h1:6cpGzW7UzMrdIIK5TJN1L6FLcdkVDstVN+0lGf/YcH4=
 github.com/zclconf/go-cty v1.0.0/go.mod h1:xnAOWiHeOqg2nWS62VtQ7pbOu17FtxJNW8RLEih+O3s=
 github.com/zclconf/go-cty v1.1.0 h1:uJwc9HiBOCpoKIObTQaLR+tsEXx1HBHnOsOOpcdhZgw=
 github.com/zclconf/go-cty v1.1.0/go.mod h1:xnAOWiHeOqg2nWS62VtQ7pbOu17FtxJNW8RLEih+O3s=

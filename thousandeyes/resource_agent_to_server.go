@@ -235,8 +235,8 @@ func resourceAgentServerDelete(d *schema.ResourceData, m interface{}) error {
 func resourceAgentServerCreate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*thousandeyes.Client)
 	log.Printf("[INFO] Creating ThousandEyes Test %s", d.Id())
-	webTrans := buildAgentServerStruct(d)
-	httpTest, err := client.CreateAgentServer(*webTrans)
+	agentServer := buildAgentServerStruct(d)
+	httpTest, err := client.CreateAgentServer(*agentServer)
 	if err != nil {
 		return err
 	}
