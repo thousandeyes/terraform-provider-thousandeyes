@@ -38,12 +38,63 @@ Using the provider
 ----------------------
 If you're building the provider, follow the instructions to [install it as a plugin.](https://www.terraform.io/docs/plugins/basics.html#installing-a-plugin) After placing it into your plugins directory,  run `terraform init` to initialize it.
 
+### Setting up provider
+
+```hcl
+
+provider "thousandeyes" {
+  token = "xxxxxx-xxxx-xxxx-xxxx-xxxxxxxxx"
+}
+
+```
+
+
+### HTTP Test
+
+```hcl
+
+data "thousandeyes_agent" "test_agent" {
+  name  = "na-sjc-2-te [VS01]"
+}
+
+resource "thousandeyes_http_server" "google_http_test" {
+  name = "google test"
+  interval = 120
+  url = "https://google.com"
+  agents {
+      agent_id = data.thousandeyes_agent.test_agent.agent_id
+  }
+  agents {
+
+      agent_id = 12345
+  }
+}
+```
+
+### Agent to Server
+
+```hcl
+data "thousandeyes_agent" "test_agent_example" {
+  name  = "na-sjc-2-te [VS01]"
+}
+
+resource "thousandeyes_agent_to_server" "agent_test_example" {
+  name = "my agent test"
+  interval = 120
+  server = "8.8.8.8"
+  agents {
+      agent_id = data.thousandeyes_agent.test_agent_example.agent_id
+  }
+
+}
+```
+
 Supported tests right now:
 
 - [x] http-server
 - [x] page-load
 - [x] web-transactions
-- [ ] agent-to-server
+- [x] agent-to-server
 - [ ] agent-to-agent
 - [ ] bgp
 - [ ] transactions
