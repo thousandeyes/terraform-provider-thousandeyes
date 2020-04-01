@@ -2,9 +2,10 @@ package thousandeyes
 
 import (
 	"fmt"
+	"log"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/william20111/go-thousandeyes"
-	"log"
 )
 
 func dataSourceThousandeyesAgent() *schema.Resource {
