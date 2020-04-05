@@ -16,4 +16,9 @@
 *.out
 
 # Dependency directories (remove the comment below to include it)
-# vendor/
+vendor/
+
+# terraform-provider-thousandeyes
+terraform-provider-thousandeyes
+
+testing.txt
