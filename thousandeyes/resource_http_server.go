@@ -1,14 +1,15 @@
 package thousandeyes
 
 import (
+	"log"
+	"strconv"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/william20111/go-thousandeyes"
-	"log"
-	"strconv"
 )
 
-func resourceHttpServer() *schema.Resource {
+func resourceHTTPServer() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -55,22 +56,22 @@ func resourceHttpServer() *schema.Resource {
 				},
 			},
 		},
-		Create: resourceHttpServerCreate,
-		Read:   resourceHttpServerRead,
-		Update: resourceHttpServerUpdate,
-		Delete: resourceHttpServerDelete,
+		Create: resourceHTTPServerCreate,
+		Read:   resourceHTTPServerRead,
+		Update: resourceHTTPServerUpdate,
+		Delete: resourceHTTPServerDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
 	}
 }
 
-func resourceHttpServerRead(d *schema.ResourceData, m interface{}) error {
+func resourceHTTPServerRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*thousandeyes.Client)
 
 	log.Printf("[INFO] Reading Thousandeyes Test %s", d.Id())
 	id, _ := strconv.Atoi(d.Id())
-	test, err := client.GetHttpServer(id)
+	test, err := client.GetHTTPServer(id)
 	if err != nil {
 		return err
 	}
@@ -78,19 +79,19 @@ func resourceHttpServerRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("name", test.TestName)
 	d.Set("auth_type", test.AuthType)
 	d.Set("interval", test.Interval)
-	d.Set("http_version", test.HttpVersion)
-	d.Set("url", test.Url)
+	d.Set("http_version", test.HTTPVersion)
+	d.Set("url", test.URL)
 	d.Set("agents", test.Agents)
 	return nil
 }
 
-func resourceHttpServerUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceHTTPServerUpdate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*thousandeyes.Client)
 
 	log.Printf("[INFO] Updating ThousandEyes Test %s", d.Id())
 	d.Partial(true)
 	id, _ := strconv.Atoi(d.Id())
-	var update thousandeyes.HttpServer
+	var update thousandeyes.HTTPServer
 	if d.HasChange("agents") {
 		update.Agents = expandAgents(d.Get("agents").([]interface{}))
 	}
@@ -104,55 +105,55 @@ func resourceHttpServerUpdate(d *schema.ResourceData, m interface{}) error {
 		update.Interval = d.Get("interval").(int)
 	}
 	if d.HasChange("http_version") {
-		update.HttpVersion = d.Get("http_version").(int)
+		update.HTTPVersion = d.Get("http_version").(int)
 	}
 	if d.HasChange("url") {
-		update.Url = d.Get("url").(string)
+		update.URL = d.Get("url").(string)
 	}
-	_, err := client.UpdateHttpServer(id, update)
+	_, err := client.UpdateHTTPServer(id, update)
 	if err != nil {
 		return err
 	}
 	d.Partial(false)
-	return resourceHttpServerRead(d, m)
+	return resourceHTTPServerRead(d, m)
 }
 
-func resourceHttpServerDelete(d *schema.ResourceData, m interface{}) error {
+func resourceHTTPServerDelete(d *schema.ResourceData, m interface{}) error {
 	client := m.(*thousandeyes.Client)
 
 	log.Printf("[INFO] Deleting ThousandEyes Test %s", d.Id())
 	id, _ := strconv.Atoi(d.Id())
-	if err := client.DeleteHttpServer(id); err != nil {
+	if err := client.DeleteHTTPServer(id); err != nil {
 		return err
 	}
 	d.SetId("")
 	return nil
 }
 
-func resourceHttpServerCreate(d *schema.ResourceData, m interface{}) error {
+func resourceHTTPServerCreate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*thousandeyes.Client)
 	log.Printf("[INFO] Creating ThousandEyes Test %s", d.Id())
-	httpServer := buildHttpServerStruct(d)
-	httpTest, err := client.CreateHttpServer(*httpServer)
+	httpServer := buildHTTPServerStruct(d)
+	httpTest, err := client.CreateHTTPServer(*httpServer)
 	if err != nil {
 		return err
 	}
-	testId := httpTest.TestId
-	d.SetId(strconv.Itoa(testId))
-	return resourceHttpServerRead(d, m)
+	testID := httpTest.TestID
+	d.SetId(strconv.Itoa(testID))
+	return resourceHTTPServerRead(d, m)
 }
 
-func buildHttpServerStruct(d *schema.ResourceData) *thousandeyes.HttpServer {
-	httpServer := thousandeyes.HttpServer{
+func buildHTTPServerStruct(d *schema.ResourceData) *thousandeyes.HTTPServer {
+	httpServer := thousandeyes.HTTPServer{
 		TestName:    d.Get("name").(string),
 		AuthType:    d.Get("auth_type").(string),
-		HttpVersion: d.Get("http_version").(int),
-		Url:         d.Get("url").(string),
+		HTTPVersion: d.Get("http_version").(int),
+		URL:         d.Get("url").(string),
 		Interval:    d.Get("interval").(int),
 		Agents:      expandAgents(d.Get("agents").([]interface{})),
 	}
 	if attr, ok := d.GetOk("http_version"); ok {
-		httpServer.HttpVersion = attr.(int)
+		httpServer.HTTPVersion = attr.(int)
 	}
 
 	return &httpServer
