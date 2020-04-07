@@ -49,10 +49,11 @@ func dataSourceThousandeyesAgentRead(d *schema.ResourceData, meta interface{}) e
 	if found == nil {
 		return fmt.Errorf("unable to locate any agent with the name: %s", searchName)
 	}
+	log.Printf("[INFO] ## Found Agent agent_id: %d - name: %s", found.AgentID, found.AgentName)
 
-	d.SetId(string(found.AgentId))
+	d.SetId(string(found.AgentID))
 	d.Set("name", found.AgentName)
-	d.Set("agent_id", found.AgentId)
+	d.Set("agent_id", found.AgentID)
 
 	return nil
 }
