@@ -1,11 +1,12 @@
 package thousandeyes
 
 import (
+	"log"
+	"strconv"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/william20111/go-thousandeyes"
-	"log"
-	"strconv"
 )
 
 func resourceWebTransaction() *schema.Resource {
@@ -206,14 +207,14 @@ func resourceWebTransactionRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("auth_type", test.AuthType)
 	d.Set("transaction_script", test.TransactionScript)
 	d.Set("interval", test.Interval)
-	d.Set("http_version", test.HttpVersion)
-	d.Set("url", test.Url)
+	d.Set("http_version", test.HTTPVersion)
+	d.Set("url", test.URL)
 	d.Set("agents", test.Agents)
 	d.Set("bandwidth_measurements", test.BandwidthMeasurements)
 	d.Set("content_regex", test.ContentRegex)
 	d.Set("desired_status_code", test.DesiredStatusCode)
-	d.Set("http_target_time", test.HttpTargetTime)
-	d.Set("http_time_limit", test.HttpTimeLimit)
+	d.Set("http_target_time", test.HTTPTargetTime)
+	d.Set("http_time_limit", test.HTTPTimeLimit)
 	d.Set("include_headers", test.IncludeHeaders)
 	d.Set("mtu_measurements", test.MtuMeasurements)
 	d.Set("network_measurements", test.NetworkMeasurements)
@@ -221,7 +222,7 @@ func resourceWebTransactionRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("password", test.Password)
 	d.Set("probe_mode", test.ProbeMode)
 	d.Set("protocol", test.Protocol)
-	d.Set("ssl_version_id", test.SslVersionId)
+	d.Set("ssl_version_id", test.SslVersionID)
 	d.Set("sub_interval", test.Subinterval)
 	d.Set("target_time", test.TargetTime)
 	d.Set("time_limit", test.TimeLimit)
@@ -255,10 +256,10 @@ func resourceWebTransactionUpdate(d *schema.ResourceData, m interface{}) error {
 		update.Interval = d.Get("interval").(int)
 	}
 	if d.HasChange("http_version") {
-		update.HttpVersion = d.Get("http_version").(int)
+		update.HTTPVersion = d.Get("http_version").(int)
 	}
 	if d.HasChange("url") {
-		update.Url = d.Get("url").(string)
+		update.URL = d.Get("url").(string)
 	}
 	if d.HasChange("bandwidth_measurements") {
 		update.BandwidthMeasurements = d.Get("bandwidth_measurements").(int)
@@ -270,10 +271,10 @@ func resourceWebTransactionUpdate(d *schema.ResourceData, m interface{}) error {
 		update.DesiredStatusCode = d.Get("desired_status_code").(string)
 	}
 	if d.HasChange("http_target_time") {
-		update.HttpTargetTime = d.Get("http_target_time").(int)
+		update.HTTPTargetTime = d.Get("http_target_time").(int)
 	}
 	if d.HasChange("http_time_limit") {
-		update.HttpTimeLimit = d.Get("http_time_limit").(int)
+		update.HTTPTimeLimit = d.Get("http_time_limit").(int)
 	}
 	if d.HasChange("include_headers") {
 		update.IncludeHeaders = d.Get("include_headers").(int)
@@ -297,7 +298,7 @@ func resourceWebTransactionUpdate(d *schema.ResourceData, m interface{}) error {
 		update.Protocol = d.Get("protocol").(string)
 	}
 	if d.HasChange("ssl_version_id") {
-		update.SslVersionId = d.Get("ssl_version_id").(int)
+		update.SslVersionID = d.Get("ssl_version_id").(int)
 	}
 	if d.HasChange("sub_interval") {
 		update.Subinterval = d.Get("sub_interval").(int)
@@ -348,8 +349,8 @@ func resourceWebTransactionCreate(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return err
 	}
-	testId := httpTest.TestId
-	d.SetId(strconv.Itoa(testId))
+	testID := httpTest.TestID
+	d.SetId(strconv.Itoa(testID))
 	return resourceWebTransactionRead(d, m)
 }
 
@@ -357,16 +358,16 @@ func buildWebTransactionStruct(d *schema.ResourceData) *thousandeyes.WebTransact
 	transaction := thousandeyes.WebTransaction{
 		TestName:            d.Get("name").(string),
 		TransactionScript:   d.Get("transaction_script").(string),
-		HttpVersion:         d.Get("http_version").(int),
-		Url:                 d.Get("url").(string),
+		HTTPVersion:         d.Get("http_version").(int),
+		URL:                 d.Get("url").(string),
 		Interval:            d.Get("interval").(int),
-		HttpTargetTime:      d.Get("http_target_time").(int),
+		HTTPTargetTime:      d.Get("http_target_time").(int),
 		MtuMeasurements:     d.Get("mtu_measurements").(int),
 		NetworkMeasurements: d.Get("network_measurements").(int),
 		Agents:              expandAgents(d.Get("agents").([]interface{})),
 	}
 	if attr, ok := d.GetOk("http_version"); ok {
-		transaction.HttpVersion = attr.(int)
+		transaction.HTTPVersion = attr.(int)
 	}
 	if attr, ok := d.GetOk("bandwidth_measurements"); ok {
 		transaction.BandwidthMeasurements = attr.(int)
@@ -378,10 +379,10 @@ func buildWebTransactionStruct(d *schema.ResourceData) *thousandeyes.WebTransact
 		transaction.DesiredStatusCode = attr.(string)
 	}
 	if attr, ok := d.GetOk("http_target_time"); ok {
-		transaction.HttpTargetTime = attr.(int)
+		transaction.HTTPTargetTime = attr.(int)
 	}
 	if attr, ok := d.GetOk("http_time_limit"); ok {
-		transaction.HttpTimeLimit = attr.(int)
+		transaction.HTTPTimeLimit = attr.(int)
 	}
 	if attr, ok := d.GetOk("include_headers"); ok {
 		transaction.IncludeHeaders = attr.(int)
@@ -405,7 +406,7 @@ func buildWebTransactionStruct(d *schema.ResourceData) *thousandeyes.WebTransact
 		transaction.Protocol = attr.(string)
 	}
 	if attr, ok := d.GetOk("ssl_version_id"); ok {
-		transaction.SslVersionId = attr.(int)
+		transaction.SslVersionID = attr.(int)
 	}
 	if attr, ok := d.GetOk("sub_interval"); ok {
 		transaction.Subinterval = attr.(int)

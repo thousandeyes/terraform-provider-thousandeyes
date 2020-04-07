@@ -18,10 +18,11 @@ func Provider() *schema.Provider {
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
-			"thousandeyes_http_server":     resourceHttpServer(),
+			"thousandeyes_http_server":     resourceHTTPServer(),
 			"thousandeyes_page_load":       resourcePageLoad(),
-			"thousandeyes_agent_to_server": resourceAgentServer(),
+			"thousandeyes_agent_to_server": resourceAgentToServer(),
 			"thousandeyes_web_transaction": resourceWebTransaction(),
+			"thousandeyes_agent_to_agent":  resourceAgentToAgent(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"thousandeyes_agent": dataSourceThousandeyesAgent(),
@@ -31,6 +32,6 @@ func Provider() *schema.Provider {
 }
 
 func providerConfigure(d *schema.ResourceData) (interface{}, error) {
-	log.Println("[INFO] Initializing PagerDuty client")
+	log.Println("[INFO] Initializing Thousand Eyes client")
 	return thousandeyes.NewClient(d.Get("token").(string)), nil
 }

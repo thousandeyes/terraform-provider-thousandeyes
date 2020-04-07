@@ -1,11 +1,12 @@
 package thousandeyes
 
 import (
+	"log"
+	"strconv"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/william20111/go-thousandeyes"
-	"log"
-	"strconv"
 )
 
 func resourcePageLoad() *schema.Resource {
@@ -83,10 +84,10 @@ func resourcePageLoadRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("name", test.TestName)
 	d.Set("auth_type", test.AuthType)
 	d.Set("interval", test.Interval)
-	d.Set("http_version", test.HttpVersion)
-	d.Set("url", test.Url)
+	d.Set("http_version", test.HTTPVersion)
+	d.Set("url", test.URL)
 	d.Set("agents", test.Agents)
-	d.Set("http_interval", test.HttpInterval)
+	d.Set("http_interval", test.HTTPInterval)
 	return nil
 }
 
@@ -110,13 +111,13 @@ func resourcePageLoadUpdate(d *schema.ResourceData, m interface{}) error {
 		update.Interval = d.Get("interval").(int)
 	}
 	if d.HasChange("http_version") {
-		update.HttpVersion = d.Get("http_version").(int)
+		update.HTTPVersion = d.Get("http_version").(int)
 	}
 	if d.HasChange("url") {
-		update.Url = d.Get("url").(string)
+		update.URL = d.Get("url").(string)
 	}
 	if d.HasChange("http_interval") {
-		update.HttpInterval = d.Get("http_interval").(int)
+		update.HTTPInterval = d.Get("http_interval").(int)
 	}
 	_, err := client.UpdatePageLoad(id, update)
 	if err != nil {
@@ -146,8 +147,8 @@ func resourcePageLoadCreate(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return err
 	}
-	testId := test.TestId
-	d.SetId(strconv.Itoa(testId))
+	testID := test.TestID
+	d.SetId(strconv.Itoa(testID))
 	return resourcePageLoadRead(d, m)
 }
 
@@ -155,13 +156,13 @@ func buildPageLoadStruct(d *schema.ResourceData) *thousandeyes.PageLoad {
 	httpServer := thousandeyes.PageLoad{
 		TestName:     d.Get("name").(string),
 		AuthType:     d.Get("auth_type").(string),
-		Url:          d.Get("url").(string),
+		URL:          d.Get("url").(string),
 		Interval:     d.Get("interval").(int),
-		HttpInterval: d.Get("http_interval").(int),
+		HTTPInterval: d.Get("http_interval").(int),
 		Agents:       expandAgents(d.Get("agents").([]interface{})),
 	}
 	if attr, ok := d.GetOk("http_version"); ok {
-		httpServer.HttpVersion = attr.(int)
+		httpServer.HTTPVersion = attr.(int)
 	}
 
 	return &httpServer
