@@ -1,7 +1,6 @@
 package thousandeyes
 
 import (
-	"fmt"
 	"log"
 	"strconv"
 
@@ -198,8 +197,6 @@ func resourceAgentToAgentRead(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return err
 	}
-	log.Printf("[INFO] ## Reading ThousandEyes Agent to Agent Test testID: [%s] - d.Get('dscp_id'): %s", d.Id(), d.Get("dscp_id"))
-	log.Printf("[INFO] ## Reading ThousandEyes Agent to Agent Test testID: [%s] - agent.DscpID: %d", d.Id(), agent.DscpID)
 
 	d.Set("agents", agent.Agents)
 	// d.Set("alert_rules", agent.AlertRules)
@@ -233,9 +230,6 @@ func resourceAgentToAgentUpdate(d *schema.ResourceData, m interface{}) error {
 	d.Partial(true)
 	id, _ := strconv.Atoi(d.Id())
 	var update thousandeyes.AgentAgent
-
-	log.Printf("[INFO] ## Updating ThousandEyes Agent to Agent Test [%s] - d.Get('dscp_id'): %s", d.Id(), d.Get("dscp_id"))
-	log.Printf("[INFO] ## Updating ThousandEyes Agent to Agent Test [%s] - update.DscpID: %d", d.Id(), update.DscpID)
 
 	if d.HasChange("agents") {
 		update.Agents = expandAgents(d.Get("agents").([]interface{}))
@@ -325,7 +319,6 @@ func resourceAgentToAgentCreate(d *schema.ResourceData, m interface{}) error {
 }
 
 func buildAgentToAgentStruct(d *schema.ResourceData) *thousandeyes.AgentAgent {
-	fmt.Printf("[DEBUG] ---- %+v\n", d.Get("agents"))
 	transaction := thousandeyes.AgentAgent{
 		Agents: expandAgents(d.Get("agents").([]interface{})),
 		// AlertRules:      expandAlertRules(d.Get("alertRules").([]interface{})),
