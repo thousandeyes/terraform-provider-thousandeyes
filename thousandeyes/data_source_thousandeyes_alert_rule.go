@@ -88,8 +88,6 @@ func dataSourceThousandeyesAlertRuleRead(d *schema.ResourceData, meta interface{
 	searchName := d.Get("rule_name").(string)
 	searchRuleID := d.Get("rule_id").(int)
 
-	log.Printf("[INFO] ###### Name: %s | ID: %d", searchName, searchRuleID)
-
 	alertRules, err := client.GetAlertRules()
 	if err != nil {
 		return err
