@@ -1,6 +1,8 @@
 package thousandeyes
 
-import "github.com/william20111/go-thousandeyes"
+import (
+	"github.com/william20111/go-thousandeyes"
+)
 
 func expandAgents(v interface{}) thousandeyes.Agents {
 	var agents thousandeyes.Agents
