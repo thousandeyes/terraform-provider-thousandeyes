@@ -341,9 +341,6 @@ func buildAgentToAgentStruct(d *schema.ResourceData) *thousandeyes.AgentAgent {
 		ThroughputRate:         d.Get("throughput_rate").(int),
 	}
 
-	// BgpMonitors:            d.Get("bgp_monitors").("Monitor"),
-	// AlertRules:      d.Get("alertRules").("AlertRule"),
-
 	if attr, ok := d.GetOk("alerts_enabled"); ok {
 		transaction.AlertsEnabled = attr.(int)
 	}

@@ -200,7 +200,6 @@ func resourceAgentToServerUpdate(d *schema.ResourceData, m interface{}) error {
 	if d.HasChange("agents") {
 		update.Agents = expandAgents(d.Get("agents").([]interface{}))
 	}
-
 	if d.HasChange("alerts_enabled") {
 		update.AlertsEnabled = d.Get("alerts_enabled").(int)
 	}
@@ -236,11 +235,9 @@ func resourceAgentToServerUpdate(d *schema.ResourceData, m interface{}) error {
 	if d.HasChange("num_path_traces") {
 		update.NumPathTraces = d.Get("num_path_traces").(int)
 	}
-
 	if d.HasChange("port") {
 		update.Port = d.Get("port").(int)
 	}
-
 	if d.HasChange("probe_mode") {
 		update.ProbeMode = d.Get("probe_mode").(string)
 	}
@@ -284,22 +281,6 @@ func resourceAgentToServerCreate(d *schema.ResourceData, m interface{}) error {
 	return resourceAgentToServerRead(d, m)
 }
 
-// func combinePortAndServer(d *schema.ResourceData) string {
-
-// 	if attr, ok := d.GetOk("server"); ok {
-// 		log.Printf("[DEBUG] ## - combinePortAndServer.Server: %s\n", attr)
-// 		if attrP, ok := d.GetOk("port"); ok {
-// 			port := attrP.(int)
-// 			log.Printf("[DEBUG] ## - combinePortAndServer.Port: %s\n", attrP)
-// 			str := fmt.Sprintf(attr.(string) + ":" + strconv.Itoa(port))
-// 			log.Printf("[DEBUG] ## - combinePortAndServer.Combined: %s\n", str)
-// 			return str
-
-// 		}
-// 	}
-// 	return ""
-// }
-
 func buildAgentToServerStruct(d *schema.ResourceData) *thousandeyes.AgentServer {
 	transaction := thousandeyes.AgentServer{
 		Agents: expandAgents(d.Get("agents").([]interface{})),
@@ -314,10 +295,10 @@ func buildAgentToServerStruct(d *schema.ResourceData) *thousandeyes.AgentServer 
 		Interval:        d.Get("interval").(int),
 		MtuMeasurements: d.Get("mtu_measurements").(int),
 		NumPathTraces:   d.Get("num_path_traces").(int),
-		// Port:            d.Get("port").(int),
-		ProbeMode: d.Get("probe_mode").(string),
-		Protocol:  d.Get("protocol").(string),
-		Server:    d.Get("server").(string),
+		Port:            d.Get("port").(int),
+		ProbeMode:       d.Get("probe_mode").(string),
+		Protocol:        d.Get("protocol").(string),
+		Server:          d.Get("server").(string),
 	}
 	if attr, ok := d.GetOk("alerts_enabled"); ok {
 		transaction.AlertsEnabled = attr.(int)
@@ -347,14 +328,12 @@ func buildAgentToServerStruct(d *schema.ResourceData) *thousandeyes.AgentServer 
 	if attr, ok := d.GetOk("interval"); ok {
 		transaction.Interval = attr.(int)
 	}
-
 	if attr, ok := d.GetOk("mtu_measurements"); ok {
 		transaction.MtuMeasurements = attr.(int)
 	}
 	if attr, ok := d.GetOk("num_path_traces"); ok {
 		transaction.NumPathTraces = attr.(int)
 	}
-
 	if attr, ok := d.GetOk("probe_mode"); ok {
 		transaction.ProbeMode = attr.(string)
 	}
