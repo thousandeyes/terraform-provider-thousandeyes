@@ -3,7 +3,7 @@ package thousandeyes
 import (
 	"fmt"
 	"log"
-	"reflect"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/william20111/go-thousandeyes"
@@ -72,9 +72,8 @@ func dataSourceThousandeyesAlertRule() *schema.Resource {
 				Description: "applies to only v6 and higher, specifies the numerator (x value) for the X of Y times” condition",
 			},
 			"rounds_violating_mode": {
-				Type:     schema.TypeString,
-				Computed: true,
-				// `ANY` or `EXACT` / ANY
+				Type:        schema.TypeString,
+				Computed:    true,
 				Description: "allows user to enforce a condition on alerts that will required the same agent to meet the condition(s) multiple rounds in a row, rather than any agents meeting the condition(s) ",
 			},
 		},
@@ -102,31 +101,14 @@ func dataSourceThousandeyesAlertRuleRead(d *schema.ResourceData, meta interface{
 		for _, ar := range *alertRules {
 			if ar.RuleName == searchName {
 				found = &ar
-				y := reflect.ValueOf(found).String()
-				log.Printf("##### found-searchName type:%T value:%v\n", y, y)
-				y2 := reflect.ValueOf(found.RuleID).String()
-				log.Printf("##### found.RuleID-searchName type:%T value:%v\n", y2, y2)
-
-				log.Printf("[INFO] ###### searchName in loop %+v", found)
-
 				break
 			}
 
 		}
 	} else if searchRuleID != 0 {
-		y := reflect.ValueOf(searchRuleID).String()
-		log.Printf("##### searchRuleID type:%T value:%v\n", y, y)
-		log.Printf("[INFO] ###### Reading Thousandeyes alert rules by rule_id [%d]", searchRuleID)
 		for _, ar := range *alertRules {
 			if ar.RuleID == searchRuleID {
 				found = &ar
-				y := reflect.ValueOf(found).String()
-				log.Printf("##### found type:%T value:%v\n", y, y)
-				y2 := reflect.ValueOf(found.RuleID).String()
-				log.Printf("##### found.RuleID type:%T value:%v\n", y2, y2)
-
-				log.Printf("[INFO] ###### searchRuleID in loop %+v", found)
-
 				break
 			}
 
@@ -134,11 +116,8 @@ func dataSourceThousandeyesAlertRuleRead(d *schema.ResourceData, meta interface{
 	} else {
 		return fmt.Errorf("must define name or rule id")
 	}
-	log.Printf("[INFO] ###### Found Thousandeyes alert rules found.RuleID [%d]", found.RuleID)
-	log.Printf("[INFO] ###### Found Thousandeyes alert rules string(found.RuleID) [%s]", string(found.RuleID))
-	log.Printf("[INFO] ###### Found Thousandeyes alert rules found.RuleID [%s]", found.RuleName)
 
-	d.SetId(string(found.RuleID))
+	d.SetId(strconv.Itoa(found.RuleID))
 	d.Set("rule_name", found.RuleName)
 	d.Set("rule_id", found.RuleID)
 
