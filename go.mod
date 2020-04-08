@@ -7,7 +7,7 @@ require (
 	github.com/aws/aws-sdk-go v1.30.5 // indirect
 	github.com/fatih/color v1.9.0 // indirect
 	github.com/hashicorp/go-getter v1.4.1 // indirect
-	github.com/hashicorp/go-hclog v0.12.0 // indirect
+	github.com/hashicorp/go-hclog v0.12.2 // indirect
 	github.com/hashicorp/go-uuid v1.0.2 // indirect
 	github.com/hashicorp/hcl/v2 v2.3.0 // indirect
 	github.com/hashicorp/terraform-plugin-sdk v1.9.0
@@ -16,9 +16,8 @@ require (
 	github.com/mattn/go-isatty v0.0.12 // indirect
 	github.com/oklog/run v1.1.0 // indirect
 	github.com/posener/complete v1.2.3 // indirect
-	github.com/ulikunitz/xz v0.5.6 // indirect
+	github.com/ulikunitz/xz v0.5.7 // indirect
 	github.com/vmihailenco/msgpack v4.0.4+incompatible // indirect
-	github.com/william20111/go-thousandeyes v0.5.2
+	github.com/william20111/go-thousandeyes v0.5.3
 	golang.org/x/crypto v0.0.0-20200214034016-1d94cc7ab1c6 // indirect
-	golang.org/x/tools v0.0.0-20200406213809-066fd1390ee0 // indirect
 )
