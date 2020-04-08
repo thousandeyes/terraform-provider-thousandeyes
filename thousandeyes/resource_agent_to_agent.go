@@ -57,21 +57,21 @@ func resourceAgentToAgent() *schema.Resource {
 				Default:      1,
 				ValidateFunc: validation.IntBetween(0, 1),
 			},
-			// "bgp_monitors": {
-			// 	Type:        schema.TypeList,
-			// 	Description: "bgp monitors to use ",
-			// 	Optional:    true,
-			// 	Required:    false,
-			// 	Elem: &schema.Resource{
-			// 		Schema: map[string]*schema.Schema{
-			// 			"monitor_id": {
-			// 				Type:        schema.TypeInt,
-			// 				Description: "monitor id",
-			// 				Optional:    true,
-			// 			},
-			// 		},
-			// 	},
-			// },
+			"bgp_monitors": {
+				Type:        schema.TypeList,
+				Description: "bgp monitors to use ",
+				Optional:    true,
+				Required:    false,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"monitor_id": {
+							Type:        schema.TypeInt,
+							Description: "monitor id",
+							Optional:    true,
+						},
+					},
+				},
+			},
 
 			"description": {
 				Type:        schema.TypeString,
@@ -199,10 +199,10 @@ func resourceAgentToAgentRead(d *schema.ResourceData, m interface{}) error {
 	}
 
 	d.Set("agents", agent.Agents)
-	// d.Set("alert_rules", agent.AlertRules)
+	d.Set("alert_rules", agent.AlertRules)
 	d.Set("alertsEnabled", agent.AlertsEnabled)
 	d.Set("bgp_measurements", agent.BgpMeasurements)
-	// d.Set("bgp_monitors", agent.BgpMonitors)
+	d.Set("bgp_monitors", agent.BgpMonitors)
 	d.Set("description", agent.Description)
 	d.Set("direction", agent.Direction)
 	d.Set("dscp", agent.Dscp)
@@ -234,23 +234,21 @@ func resourceAgentToAgentUpdate(d *schema.ResourceData, m interface{}) error {
 	if d.HasChange("agents") {
 		update.Agents = expandAgents(d.Get("agents").([]interface{}))
 	}
-	// if d.HasChange("alert_rules") {
-	// 	update.AlertRules = expandAlertRules(d.Get("alert_rules").([]interface{}))
-	// }
-
+	if d.HasChange("alert_rules") {
+		update.AlertRules = expandAlertRules(d.Get("alert_rules").([]interface{}))
+	}
 	if d.HasChange("alertsEnabled") {
 		update.AlertsEnabled = d.Get("alerts_enabled").(int)
 	}
 	if d.HasChange("bgp_measurements") {
 		update.BgpMeasurements = d.Get("bgp_measurements").(int)
 	}
-	// if d.HasChange("bgp_monitors") {
-	// 	update.BgpMonitors = expandAgents(d.Get("bgp_monitors").([]interface{}))
-	// }
+	if d.HasChange("bgp_monitors") {
+		update.BgpMonitors = expandBGPMonitors(d.Get("bgp_monitors").([]interface{}))
+	}
 	if d.HasChange("description") {
 		update.Description = d.Get("description").(string)
 	}
-
 	if d.HasChange("dscp_id") {
 		update.DscpID = d.Get("dscp_id").(int)
 	}
@@ -320,11 +318,9 @@ func resourceAgentToAgentCreate(d *schema.ResourceData, m interface{}) error {
 
 func buildAgentToAgentStruct(d *schema.ResourceData) *thousandeyes.AgentAgent {
 	transaction := thousandeyes.AgentAgent{
-		Agents: expandAgents(d.Get("agents").([]interface{})),
-		// AlertRules:      expandAlertRules(d.Get("alertRules").([]interface{})),
-		AlertsEnabled:   d.Get("alerts_enabled").(int),
-		BgpMeasurements: d.Get("bgp_measurements").(int),
-		// BgpMonitors:            d.Get("bgpMonitors").("Monitor"),
+		Agents:                 expandAgents(d.Get("agents").([]interface{})),
+		AlertsEnabled:          d.Get("alerts_enabled").(int),
+		BgpMeasurements:        d.Get("bgp_measurements").(int),
 		Description:            d.Get("description").(string),
 		Direction:              d.Get("direction").(string),
 		DscpID:                 d.Get("dscp_id").(int),
@@ -344,21 +340,29 @@ func buildAgentToAgentStruct(d *schema.ResourceData) *thousandeyes.AgentAgent {
 	if attr, ok := d.GetOk("alerts_enabled"); ok {
 		transaction.AlertsEnabled = attr.(int)
 	}
-	if attr, ok := d.GetOk("bgp_measurements"); ok {
-		transaction.BgpMeasurements = attr.(int)
+	if attr, ok := d.GetOk("alert_rules"); ok {
+		transaction.AlertRules = expandAlertRules(attr.([]interface{}))
 	}
 	if attr, ok := d.GetOk("description"); ok {
 		transaction.Description = attr.(string)
 	}
+	if attr, ok := d.GetOk("enabled"); ok {
+		transaction.Enabled = attr.(int)
+	}
+	if attr, ok := d.GetOk("name"); ok {
+		transaction.TestName = attr.(string)
+	}
+	if attr, ok := d.GetOk("bgp_measurements"); ok {
+		transaction.BgpMeasurements = attr.(int)
+	}
+	if attr, ok := d.GetOk("bgp_monitors"); ok {
+		transaction.BgpMonitors = expandBGPMonitors(attr.([]interface{}))
+	}
 	if attr, ok := d.GetOk("direction"); ok {
 		transaction.Direction = attr.(string)
 	}
-
 	if attr, ok := d.GetOk("dscp_id"); ok {
 		transaction.DscpID = attr.(int)
-	}
-	if attr, ok := d.GetOk("enabled"); ok {
-		transaction.Enabled = attr.(int)
 	}
 	if attr, ok := d.GetOk("interval"); ok {
 		transaction.Interval = attr.(int)
@@ -374,9 +378,6 @@ func buildAgentToAgentStruct(d *schema.ResourceData) *thousandeyes.AgentAgent {
 	}
 	if attr, ok := d.GetOk("protocol"); ok {
 		transaction.Protocol = attr.(string)
-	}
-	if attr, ok := d.GetOk("name"); ok {
-		transaction.TestName = attr.(string)
 	}
 	if attr, ok := d.GetOk("target_agent_id"); ok {
 		transaction.TargetAgentID = attr.(int)
