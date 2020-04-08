@@ -72,7 +72,6 @@ func resourceAgentToAgent() *schema.Resource {
 					},
 				},
 			},
-
 			"description": {
 				Type:        schema.TypeString,
 				Required:    false,
