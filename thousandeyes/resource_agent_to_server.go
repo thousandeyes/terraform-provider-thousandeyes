@@ -40,6 +40,21 @@ func resourceAgentToServer() *schema.Resource {
 					},
 				},
 			},
+			"alert_rules": {
+				Description: "get ruleId from /alert-rules endpoint. If alertsEnabled is set to 1 and alertRules is not included in a creation/update query, applicable defaults will be used.",
+				Optional:    true,
+				Required:    false,
+				Type:        schema.TypeList,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"rule_id": {
+							Type:        schema.TypeInt,
+							Description: "If alertsEnabled is set to 1 and alertRules is not included in a creation/update query, applicable defaults will be used.",
+							Optional:    true,
+						},
+					},
+				},
+			},
 			"alerts_enabled": {
 				Type:         schema.TypeInt,
 				Description:  "choose 1 to enable alerts, or 0 to disable alerts. Defaults to 1",
@@ -64,21 +79,21 @@ func resourceAgentToServer() *schema.Resource {
 				Default:      1,
 				ValidateFunc: validation.IntBetween(0, 1),
 			},
-			// "bgp_monitors": {
-			// 	Type:        schema.TypeList,
-			// 	Description: "bgp monitors to use ",
-			// 	Optional:    true,
-			// 	Required:    false,
-			// 	Elem: &schema.Resource{
-			// 		Schema: map[string]*schema.Schema{
-			// 			"monitor_id": {
-			// 				Type:        schema.TypeInt,
-			// 				Description: "monitor id",
-			// 				Optional:    true,
-			// 			},
-			// 		},
-			// 	},
-			// },
+			"bgp_monitors": {
+				Type:        schema.TypeList,
+				Description: "bgp monitors to use ",
+				Optional:    true,
+				Required:    false,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"monitor_id": {
+							Type:        schema.TypeInt,
+							Description: "monitor id",
+							Optional:    true,
+						},
+					},
+				},
+			},
 			"enabled": {
 				Type:         schema.TypeInt,
 				Description:  "choose 1 to enable the test, 0 to disable the test",
@@ -192,7 +207,8 @@ func resourceAgentToServerRead(d *schema.ResourceData, m interface{}) error {
 func resourceAgentToServerUpdate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*thousandeyes.Client)
 
-	log.Printf("[INFO] ## Updating ThousandEyes Agent to Server Test %s", d.Id())
+	log.Printf("[INFO] ###### Updating ThousandEyes Agent to Server Test %s", d.Id())
+
 	d.Partial(true)
 	id, _ := strconv.Atoi(d.Id())
 	var update thousandeyes.AgentServer
@@ -203,11 +219,9 @@ func resourceAgentToServerUpdate(d *schema.ResourceData, m interface{}) error {
 	if d.HasChange("alerts_enabled") {
 		update.AlertsEnabled = d.Get("alerts_enabled").(int)
 	}
-
-	// if d.HasChange("alert_rules") {
-	// 	update.Description = expandAlertsRules(d.Get("alert_rules").([]interface{}))
-	// }
-
+	if d.HasChange("alert_rules") {
+		update.AlertRules = expandAlertRules(d.Get("alert_rules").([]interface{}))
+	}
 	if d.HasChange("description") {
 		update.Description = d.Get("description").(string)
 	}
@@ -223,9 +237,9 @@ func resourceAgentToServerUpdate(d *schema.ResourceData, m interface{}) error {
 	if d.HasChange("bgp_measurements") {
 		update.BgpMeasurements = d.Get("bgp_measurements").(int)
 	}
-	// if d.HasChange("bgp_monitors") {
-	// 	update.BgpMonitors = d.Get("bgp_monitors")..([]interface{}))
-	// }
+	if d.HasChange("bgp_monitors") {
+		update.BgpMonitors = expandBGPMonitors(d.Get("bgp_monitors").([]interface{}))
+	}
 	if d.HasChange("interval") {
 		update.Interval = d.Get("interval").(int)
 	}
@@ -259,7 +273,7 @@ func resourceAgentToServerUpdate(d *schema.ResourceData, m interface{}) error {
 func resourceAgentToServerDelete(d *schema.ResourceData, m interface{}) error {
 	client := m.(*thousandeyes.Client)
 
-	log.Printf("[INFO] ## Deleting ThousandEyes Agent to Server Test %s", d.Id())
+	log.Printf("[INFO] ###### Deleting ThousandEyes Agent to Server Test %s", d.Id())
 	id, _ := strconv.Atoi(d.Id())
 	if err := client.DeleteAgentServer(id); err != nil {
 		return err
@@ -270,7 +284,7 @@ func resourceAgentToServerDelete(d *schema.ResourceData, m interface{}) error {
 
 func resourceAgentToServerCreate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*thousandeyes.Client)
-	log.Printf("[INFO] ## Creating ThousandEyes Agent to Server Test %s", d.Id())
+	log.Printf("[INFO] ###### Creating ThousandEyes Agent to Server Test %s", d.Id())
 	agentServer := buildAgentToServerStruct(d)
 	agentToServer, err := client.CreateAgentServer(*agentServer)
 	if err != nil {
@@ -283,29 +297,28 @@ func resourceAgentToServerCreate(d *schema.ResourceData, m interface{}) error {
 
 func buildAgentToServerStruct(d *schema.ResourceData) *thousandeyes.AgentServer {
 	transaction := thousandeyes.AgentServer{
-		Agents: expandAgents(d.Get("agents").([]interface{})),
-		//AlertRules:            expandAlertRules(d.Get("alert_rules").([]interface{})),
+		Agents:                expandAgents(d.Get("agents").([]interface{})),
 		AlertsEnabled:         d.Get("alerts_enabled").(int),
 		Description:           d.Get("description").(string),
 		Enabled:               d.Get("enabled").(int),
 		TestName:              d.Get("name").(string),
 		BandwidthMeasurements: d.Get("bandwidth_measurements").(int),
 		BgpMeasurements:       d.Get("bgp_measurements").(int),
-		// BgpMonitors:       d.Get("bgp_monitors").(int),
-		Interval:        d.Get("interval").(int),
-		MtuMeasurements: d.Get("mtu_measurements").(int),
-		NumPathTraces:   d.Get("num_path_traces").(int),
-		Port:            d.Get("port").(int),
-		ProbeMode:       d.Get("probe_mode").(string),
-		Protocol:        d.Get("protocol").(string),
-		Server:          d.Get("server").(string),
+		BgpMonitors:           expandBGPMonitors(d.Get("bgp_monitors").([]interface{})),
+		Interval:              d.Get("interval").(int),
+		MtuMeasurements:       d.Get("mtu_measurements").(int),
+		NumPathTraces:         d.Get("num_path_traces").(int),
+		Port:                  d.Get("port").(int),
+		ProbeMode:             d.Get("probe_mode").(string),
+		Protocol:              d.Get("protocol").(string),
+		Server:                d.Get("server").(string),
 	}
 	if attr, ok := d.GetOk("alerts_enabled"); ok {
 		transaction.AlertsEnabled = attr.(int)
 	}
-	// if attr, ok := d.GetOk("alert_rules"); ok {
-	// 	transaction.AlertRules = attr.(int)
-	// }
+	if attr, ok := d.GetOk("alert_rules"); ok {
+		transaction.AlertRules = expandAlertRules(attr.([]interface{}))
+	}
 	if attr, ok := d.GetOk("description"); ok {
 		transaction.Description = attr.(string)
 	}
@@ -321,10 +334,9 @@ func buildAgentToServerStruct(d *schema.ResourceData) *thousandeyes.AgentServer 
 	if attr, ok := d.GetOk("bgp_measurements"); ok {
 		transaction.BgpMeasurements = attr.(int)
 	}
-	// if attr, ok := d.GetOk("bgp_monitors"); ok {
-	// 	transaction.BgpMonitors = attr.(int)
-	// }
-
+	if attr, ok := d.GetOk("bgp_monitors"); ok {
+		transaction.BgpMonitors = expandBGPMonitors(attr.([]interface{}))
+	}
 	if attr, ok := d.GetOk("interval"); ok {
 		transaction.Interval = attr.(int)
 	}
