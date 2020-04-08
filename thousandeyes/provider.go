@@ -25,7 +25,9 @@ func Provider() *schema.Provider {
 			"thousandeyes_agent_to_agent":  resourceAgentToAgent(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
-			"thousandeyes_agent": dataSourceThousandeyesAgent(),
+			"thousandeyes_agent":       dataSourceThousandeyesAgent(),
+			"thousandeyes_alert_rule":  dataSourceThousandeyesAlertRule(),
+			"thousandeyes_bgp_monitor": dataSourceThousandeyesBGPMonitor(),
 		},
 		ConfigureFunc: providerConfigure,
 	}
