@@ -3,6 +3,7 @@ module terraform-provider-thousandeyes
 go 1.13
 
 require (
+	cloud.google.com/go v0.56.0 // indirect
 	github.com/aws/aws-sdk-go v1.30.5 // indirect
 	github.com/fatih/color v1.9.0 // indirect
 	github.com/hashicorp/go-getter v1.4.1 // indirect

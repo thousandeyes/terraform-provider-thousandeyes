@@ -216,12 +216,14 @@ func resourceAgentToServerUpdate(d *schema.ResourceData, m interface{}) error {
 	if d.HasChange("agents") {
 		update.Agents = expandAgents(d.Get("agents").([]interface{}))
 	}
+
 	if d.HasChange("alerts_enabled") {
 		update.AlertsEnabled = d.Get("alerts_enabled").(int)
 	}
 	if d.HasChange("alert_rules") {
 		update.AlertRules = expandAlertRules(d.Get("alert_rules").([]interface{}))
 	}
+
 	if d.HasChange("description") {
 		update.Description = d.Get("description").(string)
 	}
@@ -285,6 +287,7 @@ func resourceAgentToServerDelete(d *schema.ResourceData, m interface{}) error {
 func resourceAgentToServerCreate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*thousandeyes.Client)
 	log.Printf("[INFO] ###### Creating ThousandEyes Agent to Server Test %s", d.Id())
+
 	agentServer := buildAgentToServerStruct(d)
 	agentToServer, err := client.CreateAgentServer(*agentServer)
 	if err != nil {
@@ -318,6 +321,9 @@ func buildAgentToServerStruct(d *schema.ResourceData) *thousandeyes.AgentServer 
 	if attr, ok := d.GetOk("alert_rules"); ok {
 		transaction.AlertRules = expandAlertRules(attr.([]interface{}))
 	}
+	// if attr, ok := d.GetOk("alert_rules"); ok {
+	// 	transaction.AlertRules = attr.(int)
+	// }
 	if attr, ok := d.GetOk("description"); ok {
 		transaction.Description = attr.(string)
 	}
@@ -345,6 +351,7 @@ func buildAgentToServerStruct(d *schema.ResourceData) *thousandeyes.AgentServer 
 	if attr, ok := d.GetOk("num_path_traces"); ok {
 		transaction.NumPathTraces = attr.(int)
 	}
+
 	if attr, ok := d.GetOk("probe_mode"); ok {
 		transaction.ProbeMode = attr.(string)
 	}
