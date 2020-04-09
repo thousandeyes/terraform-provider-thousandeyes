@@ -1,7 +1,6 @@
 package thousandeyes
 
 import (
-	"fmt"
 	"log"
 	"strconv"
 
