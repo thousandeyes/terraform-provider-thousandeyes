@@ -93,28 +93,21 @@ func dataSourceThousandeyesAlertRuleRead(d *schema.ResourceData, meta interface{
 		return err
 	}
 
-	if searchName != "" {
-		log.Printf("[INFO] ###### Reading Thousandeyes alert rules by name [%s]", searchName)
-
-		for _, ar := range *alertRules {
-			if ar.RuleName == searchName {
-				found = &ar
-				break
-			}
-
+	for _, ar := range *alertRules {
+		if ar.RuleName == searchName {
+			found = &ar
+			break
 		}
-	} else if searchRuleID != 0 {
-		for _, ar := range *alertRules {
-			if ar.RuleID == searchRuleID {
-				found = &ar
-				break
-			}
-
+		if ar.RuleID == searchRuleID {
+			found = &ar
+			break
 		}
-	} else {
-		return fmt.Errorf("must define name or rule id")
+
 	}
-
+	if found == nil {
+		return fmt.Errorf("unable to locate any bgp by name: [%s] or ID: [%d]", searchName, searchRuleID)
+	}
+	log.Printf("[DEBUG] ###### Found Alert Rule Name: [%s] - ID: [%d]", found.RuleName, found.RuleID)
 	d.SetId(strconv.Itoa(found.RuleID))
 	d.Set("rule_name", found.RuleName)
 	d.Set("rule_id", found.RuleID)
