@@ -307,7 +307,6 @@ func buildAgentToServerStruct(d *schema.ResourceData) *thousandeyes.AgentServer 
 		TestName:              d.Get("name").(string),
 		BandwidthMeasurements: d.Get("bandwidth_measurements").(int),
 		BgpMeasurements:       d.Get("bgp_measurements").(int),
-		BgpMonitors:           expandBGPMonitors(d.Get("bgp_monitors").([]interface{})),
 		Interval:              d.Get("interval").(int),
 		MtuMeasurements:       d.Get("mtu_measurements").(int),
 		NumPathTraces:         d.Get("num_path_traces").(int),
