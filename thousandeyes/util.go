@@ -45,3 +45,17 @@ func expandBGPMonitors(v interface{}) thousandeyes.BGPMonitors {
 
 	return bgpMonitors
 }
+
+func expandDNSServers(v interface{}) []thousandeyes.Server {
+	var dnsServers []thousandeyes.Server
+
+	for _, er := range v.([]interface{}) {
+		rer := er.(map[string]interface{})
+		targetDNSServer := &thousandeyes.Server{
+			ServerName: rer["server_name"].(string),
+		}
+		dnsServers = append(dnsServers, *targetDNSServer)
+	}
+
+	return dnsServers
+}

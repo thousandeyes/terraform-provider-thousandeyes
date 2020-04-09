@@ -23,6 +23,7 @@ func Provider() *schema.Provider {
 			"thousandeyes_agent_to_server": resourceAgentToServer(),
 			"thousandeyes_web_transaction": resourceWebTransaction(),
 			"thousandeyes_agent_to_agent":  resourceAgentToAgent(),
+			"thousandeyes_dns_server":      resourceDNSServer(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"thousandeyes_agent":       dataSourceThousandeyesAgent(),
