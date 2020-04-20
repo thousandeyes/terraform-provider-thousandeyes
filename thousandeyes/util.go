@@ -1,6 +1,8 @@
 package thousandeyes
 
 import (
+	"strconv"
+
 	"github.com/william20111/go-thousandeyes"
 )
 
@@ -58,4 +60,38 @@ func expandDNSServers(v interface{}) []thousandeyes.Server {
 	}
 
 	return dnsServers
+}
+
+func unpackSIPAuthData(i interface{}) thousandeyes.SIPAuthData {
+	var m = i.(map[string]interface{})
+	var sipAuthData = thousandeyes.SIPAuthData{}
+
+	for k, v := range m {
+		if k == "auth_user" {
+			sipAuthData.AuthUser = v.(string)
+		}
+		if k == "password" {
+			sipAuthData.Password = v.(string)
+		}
+		if k == "port" {
+			port, err := strconv.Atoi(v.(string))
+			if err == nil {
+				sipAuthData.Port = port
+			}
+		}
+		if k == "protocol" {
+			sipAuthData.Protocol = v.(string)
+		}
+		if k == "sip_proxy" {
+			sipAuthData.SipProxy = v.(string)
+		}
+		if k == "sip_registrar" {
+			sipAuthData.SipRegistrar = v.(string)
+		}
+		if k == "user" {
+			sipAuthData.User = v.(string)
+		}
+	}
+
+	return sipAuthData
 }
