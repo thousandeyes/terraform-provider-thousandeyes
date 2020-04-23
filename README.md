@@ -96,15 +96,15 @@ Supported tests right now:
 - [x] web-transactions
 - [x] agent-to-server
 - [ ] agent-to-agent
-- [ ] bgp
+- [x] bgp
 - [ ] transactions
-- [ ] ftp-server
-- [ ] dns-trace
+- [x] ftp-server
+- [x] dns-trace
 - [ ] dns-server
-- [ ] dns-dnssec
+- [x] dns-dnssec
 - [ ] dnsp-domain
 - [ ] dnsp-server
-- [ ] sip-server
-- [ ] voice (RTP Stream)
-- [ ] voice-call
+- [x] sip-server
+- [x] voice (RTP Stream)
+- [x] voice-call
 
