@@ -22,4 +22,3 @@ require (
 	golang.org/x/crypto v0.0.0-20200214034016-1d94cc7ab1c6 // indirect
 )
 
-replace github.com/william20111/go-thousandeyes => /Users/joshblan/code/go-thousandeyes
