@@ -27,6 +27,7 @@ func Provider() *schema.Provider {
 			"thousandeyes_bgp":             resourceBGP(),
 			"thousandeyes_dnssec":          resourceDNSSec(),
 			"thousandeyes_dns_trace":       resourceDNSTrace(),
+			"thousandeyes_ftp_server":      resourceFTPServer(),
 			"thousandeyes_sip_server":      resourceSIPServer(),
 			"thousandeyes_voice":           resourceRTPStream(),
 			"thousandeyes_voice_call":      resourceVoiceCall(),
