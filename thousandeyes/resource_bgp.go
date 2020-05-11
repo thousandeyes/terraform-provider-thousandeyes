@@ -5,7 +5,6 @@ import (
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	//	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"github.com/william20111/go-thousandeyes"
 )
 
@@ -75,7 +74,5 @@ func resourceBGPCreate(d *schema.ResourceData, m interface{}) error {
 }
 
 func buildBGPStruct(d *schema.ResourceData) *thousandeyes.BGP {
-	bgpServer := ResourceBuildStruct(d, &thousandeyes.BGP{}).(thousandeyes.BGP)
-
-	return &bgpServer
+	return ResourceBuildStruct(d, &thousandeyes.BGP{}).(*thousandeyes.BGP)
 }
