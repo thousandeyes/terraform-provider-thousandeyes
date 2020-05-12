@@ -1,6 +1,7 @@
 package thousandeyes
 
 import (
+	"log"
 	"reflect"
 	"strconv"
 	"strings"
@@ -104,8 +105,7 @@ func unpackSIPAuthData(i interface{}) thousandeyes.SIPAuthData {
 // by filling in fields according to their JSON tag.
 func ResourceBuildStruct(d *schema.ResourceData, structPtr interface{}) interface{} {
 	v := reflect.ValueOf(structPtr).Elem()
-	vi := v.Interface()
-	t := reflect.TypeOf(vi)
+	t := reflect.TypeOf(v.Interface())
 	for i := 0; i < v.NumField(); i++ {
 		tag := GetJSONKey(t.Field(i))
 		tfName := CamelCaseToUnderscore(tag)
@@ -115,39 +115,43 @@ func ResourceBuildStruct(d *schema.ResourceData, structPtr interface{}) interfac
 			v.Field(i).Set(newVal)
 		}
 	}
-
+	log.Printf("[INFO] ResourceBuildStruct: %+v", d)
+	log.Printf("[INFO] ResourceBuildStruct: %+v", structPtr)
 	return structPtr
 }
 
 // ResourceRead sets values for a schema.ResourceData object from a struct
-func ResourceRead(d *schema.ResourceData, referenceStruct interface{}) interface{} {
-	v := reflect.ValueOf(referenceStruct)
-	t := reflect.TypeOf(referenceStruct)
+// referenced by the provided pointer.
+func ResourceRead(d *schema.ResourceData, structPtr interface{}) interface{} {
+	v := reflect.ValueOf(structPtr).Elem()
+	t := reflect.TypeOf(v.Interface())
+	log.Printf("[INFO] ResourceRead: %+v", v)
 	for i := 0; i < v.NumField(); i++ {
 		tag := GetJSONKey(t.Field(i))
 		tfName := CamelCaseToUnderscore(tag)
+		log.Printf("[INFO] ResourceRead: %+v %+v", tag, tfName)
 		d.Set(tfName, v.Field(i))
 	}
 
 	return nil
 }
 
-// ResourceUpdate updates a struct's values if changes for those values are
-// found in a provided schema.ResourceData object.
-func ResourceUpdate(d *schema.ResourceData, referenceStruct interface{}) interface{} {
+// ResourceUpdate updates values of a struct for the provided pointer if
+// changes for those values are found in a provided schema.ResourceData object.
+func ResourceUpdate(d *schema.ResourceData, structPtr interface{}) interface{} {
 	d.Partial(true)
-	v := reflect.ValueOf(referenceStruct)
-	t := reflect.TypeOf(referenceStruct)
+	v := reflect.ValueOf(structPtr).Elem()
+	t := reflect.TypeOf(v.Interface())
 	for i := 0; i < v.NumField(); i++ {
 		tag := GetJSONKey(t.Field(i))
 		tfName := CamelCaseToUnderscore(tag)
 		if d.HasChange(tfName) {
-			newVal := reflect.ValueOf(FillValue(d.Get(tfName), v.Field(i))).Elem()
-			v.Field(i).Elem().Set(reflect.ValueOf(newVal).Elem())
+			newVal := reflect.ValueOf(FillValue(d.Get(tfName), v.Field(i).Interface()))
+			v.Field(i).Set(newVal)
 		}
 	}
 	d.Partial(false)
-	return referenceStruct
+	return structPtr
 }
 
 // ResourceSchemaBuild creates a map of schemas based on the fields
@@ -195,6 +199,10 @@ func FillValue(source interface{}, target interface{}) interface{} {
 		t := reflect.TypeOf(vt.Interface())
 		newStruct := reflect.New(t).Interface()
 		setStruct := reflect.ValueOf(newStruct).Elem()
+		log.Printf("[INFO] FillValue target type: %+v", t)
+		log.Printf("[INFO] FillValue target: %+v", vt)
+		log.Printf("[INFO] FillValue source type: %+v", reflect.TypeOf(source))
+		log.Printf("[INFO] FillValue source: %+v", source)
 		m := source.(map[string]interface{})
 		for i := 0; i < vt.NumField(); i++ {
 			tag := GetJSONKey(t.Field(i))

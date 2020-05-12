@@ -40,8 +40,8 @@ func resourceBGPUpdate(d *schema.ResourceData, m interface{}) error {
 
 	log.Printf("[INFO] Updating ThousandEyes Test %s", d.Id())
 	id, _ := strconv.Atoi(d.Id())
-	update := ResourceUpdate(d, thousandeyes.BGP{}).(thousandeyes.BGP)
-	_, err := client.UpdateBGP(id, update)
+	update := ResourceUpdate(d, &thousandeyes.BGP{}).(*thousandeyes.BGP)
+	_, err := client.UpdateBGP(id, *update)
 	if err != nil {
 		return err
 	}
