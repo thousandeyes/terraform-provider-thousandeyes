@@ -27,11 +27,11 @@ func resourceBGPRead(d *schema.ResourceData, m interface{}) error {
 
 	log.Printf("[INFO] Reading Thousandeyes Test %s", d.Id())
 	id, _ := strconv.Atoi(d.Id())
-	test, err := client.GetBGP(id)
+	remote, err := client.GetBGP(id)
 	if err != nil {
 		return err
 	}
-	ResourceRead(d, test)
+	ResourceRead(d, remote)
 	return nil
 }
 
@@ -63,13 +63,13 @@ func resourceBGPDelete(d *schema.ResourceData, m interface{}) error {
 func resourceBGPCreate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*thousandeyes.Client)
 	log.Printf("[INFO] Creating ThousandEyes Test %s", d.Id())
-	bgpServer := buildBGPStruct(d)
-	bgpTest, err := client.CreateBGP(*bgpServer)
+	local := buildBGPStruct(d)
+	remote, err := client.CreateBGP(*local)
 	if err != nil {
 		return err
 	}
-	testID := bgpTest.TestID
-	d.SetId(strconv.Itoa(testID))
+	id := remote.TestID
+	d.SetId(strconv.Itoa(id))
 	return resourceBGPRead(d, m)
 }
 
