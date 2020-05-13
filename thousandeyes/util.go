@@ -1,7 +1,6 @@
 package thousandeyes
 
 import (
-	"log"
 	"reflect"
 	"strconv"
 	"strings"
@@ -115,8 +114,6 @@ func ResourceBuildStruct(d *schema.ResourceData, structPtr interface{}) interfac
 			v.Field(i).Set(newVal)
 		}
 	}
-	log.Printf("[INFO] ResourceBuildStruct: %+v", d)
-	log.Printf("[INFO] ResourceBuildStruct: %+v", structPtr)
 	return structPtr
 }
 
@@ -125,11 +122,9 @@ func ResourceBuildStruct(d *schema.ResourceData, structPtr interface{}) interfac
 func ResourceRead(d *schema.ResourceData, structPtr interface{}) interface{} {
 	v := reflect.ValueOf(structPtr).Elem()
 	t := reflect.TypeOf(v.Interface())
-	log.Printf("[INFO] ResourceRead: %+v", v)
 	for i := 0; i < v.NumField(); i++ {
 		tag := GetJSONKey(t.Field(i))
 		tfName := CamelCaseToUnderscore(tag)
-		log.Printf("[INFO] ResourceRead: %+v %+v", tag, tfName)
 		d.Set(tfName, v.Field(i))
 	}
 
@@ -199,10 +194,6 @@ func FillValue(source interface{}, target interface{}) interface{} {
 		t := reflect.TypeOf(vt.Interface())
 		newStruct := reflect.New(t).Interface()
 		setStruct := reflect.ValueOf(newStruct).Elem()
-		log.Printf("[INFO] FillValue target type: %+v", t)
-		log.Printf("[INFO] FillValue target: %+v", vt)
-		log.Printf("[INFO] FillValue source type: %+v", reflect.TypeOf(source))
-		log.Printf("[INFO] FillValue source: %+v", source)
 		m := source.(map[string]interface{})
 		for i := 0; i < vt.NumField(); i++ {
 			tag := GetJSONKey(t.Field(i))
