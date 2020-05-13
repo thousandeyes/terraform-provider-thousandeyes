@@ -6,10 +6,19 @@ import (
 )
 
 var schemas = map[string]*schema.Schema{
-	"name": {
-		Type:        schema.TypeString,
+	"agents": {
+		Type:        schema.TypeList,
+		Description: "agents to use ",
 		Required:    true,
-		Description: "name of the test",
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"agent_id": {
+					Type:        schema.TypeInt,
+					Description: "agent id",
+					Optional:    true,
+				},
+			},
+		},
 	},
 	"bgp_monitors": {
 		Type:        schema.TypeList,
@@ -25,11 +34,28 @@ var schemas = map[string]*schema.Schema{
 			},
 		},
 	},
+	"domain": {
+		Type:        schema.TypeString,
+		Description: "target record for test, followed by record type (ie, www.thousandeyes.com A)",
+		Required:    true,
+	},
+	"name": {
+		Type:        schema.TypeString,
+		Required:    true,
+		Description: "name of the test",
+	},
+
 	"include_covered_prefixes": {
 		Type:         schema.TypeInt,
 		Description:  "set to 1 to include queries for subprefixes detected under this prefix",
 		Optional:     true,
 		ValidateFunc: validation.IntBetween(0, 1),
+	},
+	"interval": {
+		Type:         schema.TypeInt,
+		Required:     true,
+		Description:  "interval to run test on, in seconds",
+		ValidateFunc: validation.IntInSlice([]int{60, 120, 300, 600, 900, 1800, 3600}),
 	},
 	"prefix": {
 		Type:        schema.TypeString,
