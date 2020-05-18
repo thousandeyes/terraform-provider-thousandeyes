@@ -9,7 +9,7 @@ import (
 )
 
 func resourceBGP() *schema.Resource {
-	schema := schema.Resource{
+	resource := schema.Resource{
 		Schema: ResourceSchemaBuild(thousandeyes.BGP{}),
 		Create: resourceBGPCreate,
 		Read:   resourceBGPRead,
@@ -19,7 +19,7 @@ func resourceBGP() *schema.Resource {
 			State: schema.ImportStatePassthrough,
 		},
 	}
-	return &schema
+	return &resource
 }
 
 func resourceBGPRead(d *schema.ResourceData, m interface{}) error {

@@ -9,7 +9,7 @@ import (
 )
 
 func resourceDNSSec() *schema.Resource {
-	schema := schema.Resource{
+	resource := schema.Resource{
 		Schema: ResourceSchemaBuild(thousandeyes.DNSSec{}),
 		Create: resourceDNSSecCreate,
 		Read:   resourceDNSSecRead,
@@ -19,7 +19,7 @@ func resourceDNSSec() *schema.Resource {
 			State: schema.ImportStatePassthrough,
 		},
 	}
-	return &schema
+	return &resource
 }
 
 func resourceDNSSecRead(d *schema.ResourceData, m interface{}) error {
