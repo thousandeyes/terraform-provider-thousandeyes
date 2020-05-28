@@ -1,8 +1,10 @@
 package thousandeyes
 
 import (
+	"fmt"
 	"log"
 	"strconv"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/william20111/go-thousandeyes"
@@ -10,7 +12,7 @@ import (
 
 func resourceDNSSec() *schema.Resource {
 	resource := schema.Resource{
-		Schema: ResourceSchemaBuild(thousandeyes.DNSSec{}),
+		Schema: ResourceSchemaBuild(thousandeyes.DNSSec{}, schemas),
 		Create: resourceDNSSecCreate,
 		Read:   resourceDNSSecRead,
 		Update: resourceDNSSecUpdate,
@@ -23,6 +25,8 @@ func resourceDNSSec() *schema.Resource {
 }
 
 func resourceDNSSecRead(d *schema.ResourceData, m interface{}) error {
+	log.Printf("[INFO] d object: \n\n%s", strings.Replace(
+		fmt.Sprintf("%#v", d), ", ", "\n", -1))
 	client := m.(*thousandeyes.Client)
 
 	log.Printf("[INFO] Reading Thousandeyes Test %s", d.Id())
