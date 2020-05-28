@@ -10,7 +10,7 @@ import (
 
 func resourceAgentToServer() *schema.Resource {
 	resource := schema.Resource{
-		Schema: ResourceSchemaBuild(thousandeyes.AgentServer{}),
+		Schema: ResourceSchemaBuild(thousandeyes.AgentServer{}, schemas),
 		Create: resourceAgentServerCreate,
 		Read:   resourceAgentServerRead,
 		Update: resourceAgentServerUpdate,

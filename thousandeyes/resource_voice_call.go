@@ -10,7 +10,7 @@ import (
 
 func resourceVoiceCall() *schema.Resource {
 	resource := schema.Resource{
-		Schema: ResourceSchemaBuild(thousandeyes.VoiceCall{}),
+		Schema: ResourceSchemaBuild(thousandeyes.VoiceCall{}, schemas),
 		Create: resourceVoiceCallCreate,
 		Read:   resourceVoiceCallRead,
 		Update: resourceVoiceCallUpdate,

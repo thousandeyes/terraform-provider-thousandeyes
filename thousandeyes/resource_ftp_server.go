@@ -10,7 +10,7 @@ import (
 
 func resourceFTPServer() *schema.Resource {
 	resource := schema.Resource{
-		Schema: ResourceSchemaBuild(thousandeyes.FTPServer{}),
+		Schema: ResourceSchemaBuild(thousandeyes.FTPServer{}, schemas),
 		Create: resourceFTPServerCreate,
 		Read:   resourceFTPServerRead,
 		Update: resourceFTPServerUpdate,

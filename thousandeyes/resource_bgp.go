@@ -10,7 +10,7 @@ import (
 
 func resourceBGP() *schema.Resource {
 	resource := schema.Resource{
-		Schema: ResourceSchemaBuild(thousandeyes.BGP{}),
+		Schema: ResourceSchemaBuild(thousandeyes.BGP{}, schemas),
 		Create: resourceBGPCreate,
 		Read:   resourceBGPRead,
 		Update: resourceBGPUpdate,

@@ -10,7 +10,7 @@ import (
 
 func resourcePageLoad() *schema.Resource {
 	resource := schema.Resource{
-		Schema: ResourceSchemaBuild(thousandeyes.PageLoad{}),
+		Schema: ResourceSchemaBuild(thousandeyes.PageLoad{}, schemas),
 		Create: resourcePageLoadCreate,
 		Read:   resourcePageLoadRead,
 		Update: resourcePageLoadUpdate,

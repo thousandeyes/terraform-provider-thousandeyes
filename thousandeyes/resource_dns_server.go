@@ -10,7 +10,7 @@ import (
 
 func resourceDNSServer() *schema.Resource {
 	resource := schema.Resource{
-		Schema: ResourceSchemaBuild(thousandeyes.DNSServer{}),
+		Schema: ResourceSchemaBuild(thousandeyes.DNSServer{}, schemas),
 		Create: resourceDNSServerCreate,
 		Read:   resourceDNSServerRead,
 		Update: resourceDNSServerUpdate,

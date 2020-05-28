@@ -100,8 +100,10 @@ func unpackSIPAuthData(i interface{}) thousandeyes.SIPAuthData {
 	return sipAuthData
 }
 
-// ResourceBuildStruct places data into a given struct at a given address
-// by filling in fields according to their JSON tag.
+// ResourceBuildStruct fills the struct at a given address by querying a
+// schema.ResourceData object for the matching field.  It discovers the
+// matching value name by getting the JSON key from the struct field,
+// and then fills in the value according to the struct field's type.
 func ResourceBuildStruct(d *schema.ResourceData, structPtr interface{}) interface{} {
 	v := reflect.ValueOf(structPtr).Elem()
 	t := reflect.TypeOf(v.Interface())
@@ -117,9 +119,9 @@ func ResourceBuildStruct(d *schema.ResourceData, structPtr interface{}) interfac
 	return structPtr
 }
 
-// ResourceRead sets values for a schema.ResourceData object from a struct
-// referenced by the provided pointer.
-func ResourceRead(d *schema.ResourceData, structPtr interface{}) interface{} {
+// ResourceRead sets values for a schema.ResourceData object by names derived
+// from the fields of the struct at the provided pointer.
+func ResourceRead(d *schema.ResourceData, structPtr interface{}) error {
 	v := reflect.ValueOf(structPtr).Elem()
 	t := reflect.TypeOf(v.Interface())
 	for i := 0; i < v.NumField(); i++ {
@@ -132,7 +134,8 @@ func ResourceRead(d *schema.ResourceData, structPtr interface{}) interface{} {
 }
 
 // ResourceUpdate updates values of a struct for the provided pointer if
-// changes for those values are found in a provided schema.ResourceData object.
+// matching changes for those values are found in a provided
+// schema.ResourceData object.
 func ResourceUpdate(d *schema.ResourceData, structPtr interface{}) interface{} {
 	d.Partial(true)
 	v := reflect.ValueOf(structPtr).Elem()
@@ -150,8 +153,8 @@ func ResourceUpdate(d *schema.ResourceData, structPtr interface{}) interface{} {
 }
 
 // ResourceSchemaBuild creates a map of schemas based on the fields
-// of the provided type.
-func ResourceSchemaBuild(referenceStruct interface{}) map[string]*schema.Schema {
+// of the provided struct.
+func ResourceSchemaBuild(referenceStruct interface{}, schemas map[string]*schema.Schema) map[string]*schema.Schema {
 	newSchema := map[string]*schema.Schema{}
 	v := reflect.ValueOf(referenceStruct)
 	t := reflect.TypeOf(referenceStruct)
@@ -166,8 +169,8 @@ func ResourceSchemaBuild(referenceStruct interface{}) map[string]*schema.Schema 
 	return newSchema
 }
 
-// FillValue translats a value from the Terraform provider framework and
-// translates it to the correct type, based on the type of the target parameter.
+// FillValue takes a value from the Terraform resource data and translates it
+// to the correct type, based on the type of the target parameter.
 func FillValue(source interface{}, target interface{}) interface{} {
 	// We determine how to interpret the supplied value based on
 	// the type of the target argument.
@@ -189,7 +192,7 @@ func FillValue(source interface{}, target interface{}) interface{} {
 		return newSlice.Interface()
 	case reflect.Struct:
 		// When the target is a struct, we assume that the source is a map
-		// containing corresponding values for the struct's fields, then
+		// containing values corresponding to the struct's fields, then
 		// recurse on each value looked up to get the value to be set.
 		t := reflect.TypeOf(vt.Interface())
 		newStruct := reflect.New(t).Interface()
@@ -218,22 +221,6 @@ func FillValue(source interface{}, target interface{}) interface{} {
 		// is likely no reason to translate.
 		return source
 	}
-
-	// Or if the above is too tricky...
-	//switch t := target.(type) {
-	//case []thousandeyes.Agents:
-	//return expandAgents(value)
-	//case []thousandeyes.AlertRules:
-	//return expandAlertRules(value)
-	//case []thousandeyes.BGPMonitor:
-	//return expandBGPMonitors(value)
-	//case []thousandeyes.DNSServer:
-	//return expandDNSServers(value)
-	//case thousandeyes.SIPAuthData:
-	//return unpackSIPAuthData(value)
-	//default:
-	//return v
-	//}
 }
 
 // UnderscoreToLowerCamelCase translates from words separated by

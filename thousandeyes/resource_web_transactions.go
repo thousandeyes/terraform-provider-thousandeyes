@@ -10,7 +10,7 @@ import (
 
 func resourceWebTransaction() *schema.Resource {
 	resource := schema.Resource{
-		Schema: ResourceSchemaBuild(thousandeyes.WebTransaction{}),
+		Schema: ResourceSchemaBuild(thousandeyes.WebTransaction{}, schemas),
 		Create: resourceWebTransactionCreate,
 		Read:   resourceWebTransactionRead,
 		Update: resourceWebTransactionUpdate,
