@@ -40,28 +40,22 @@ func TestResourceBuildStruct(t *testing.T) {
 }
 
 func TestResourceRead(t *testing.T) {
-	//prefix := "8.19.2.2/19"
-	//attrs := map[string]string{}
-	//d := getReferenceData(schemas, attrs)
-	//remoteResource := thousandeyes.BGP{
-	//Prefix: prefix,
-	//}
-	//err := ResourceRead(d, &remoteResource)
-	//if err != nil {
-	//t.Errorf("Setting resource data returned error: %+v", err.Error())
-	//}
-	//if d.Get("prefix") != remoteResource.Prefix {
-	//t.Errorf("Reading resource did not assign resource data correctly.\nStruct is %+v\nResource is %+v", remoteResource, d.State().Attributes)
-	//}
+	prefix := "8.19.2.2/19"
+	attrs := map[string]string{}
+	d := getReferenceData(schemas, attrs)
+	remoteResource := thousandeyes.BGP{
+		Prefix: prefix,
+	}
+	err := ResourceRead(d, &remoteResource)
+	if err != nil {
+		t.Errorf("Setting resource data returned error: %+v", err.Error())
+	}
+	if d.Get("prefix") != remoteResource.Prefix {
+		t.Errorf("Reading resource did not assign resource data correctly.\nStruct is %+v\nResource is %+v", remoteResource, d.State().Attributes)
+	}
 }
 
 func TestResourceUpdate(t *testing.T) {
-	//prefix := "8.19.2.2/19"
-	//attrs := map[string]string{}
-	//d := getReferenceData(schemas, attrs)
-	//remoteResource := thousandeyes.BGP{
-	//Prefix: prefix,
-	//}
 
 }
 
