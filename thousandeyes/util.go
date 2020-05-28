@@ -127,7 +127,7 @@ func ResourceRead(d *schema.ResourceData, structPtr interface{}) error {
 	for i := 0; i < v.NumField(); i++ {
 		tag := GetJSONKey(t.Field(i))
 		tfName := CamelCaseToUnderscore(tag)
-		d.Set(tfName, v.Field(i))
+		d.Set(tfName, v.Field(i).Interface())
 	}
 
 	return nil
