@@ -204,7 +204,6 @@ func FillValue(source interface{}, target interface{}) interface{} {
 			if mv, ok := m[tfName]; ok {
 				newVal := FillValue(mv, vt.Field(i).Interface())
 				setStruct.Field(i).Set(reflect.ValueOf(newVal))
-			} else {
 			}
 		}
 		return setStruct.Interface()
