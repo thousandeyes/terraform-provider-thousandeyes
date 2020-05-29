@@ -112,8 +112,9 @@ func ResourceBuildStruct(d *schema.ResourceData, structPtr interface{}) interfac
 		tfName := CamelCaseToUnderscore(tag)
 		val, ok := d.GetOk(tfName)
 		if ok {
-			newVal := reflect.ValueOf(FillValue(val, v.Field(i).Interface()))
-			v.Field(i).Set(newVal)
+			newVal := FillValue(val, v.Field(i).Interface())
+			setVal := reflect.ValueOf(newVal)
+			v.Field(i).Set(setVal)
 		}
 	}
 	return structPtr
@@ -144,8 +145,9 @@ func ResourceUpdate(d *schema.ResourceData, structPtr interface{}) interface{} {
 		tag := GetJSONKey(t.Field(i))
 		tfName := CamelCaseToUnderscore(tag)
 		if d.HasChange(tfName) {
-			newVal := reflect.ValueOf(FillValue(d.Get(tfName), v.Field(i).Interface()))
-			v.Field(i).Set(newVal)
+			newVal := FillValue(d.Get(tfName), v.Field(i).Interface())
+			setVal := reflect.ValueOf(newVal)
+			v.Field(i).Set(setVal)
 		}
 	}
 	d.Partial(false)
