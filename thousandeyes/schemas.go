@@ -346,6 +346,11 @@ var schemas = map[string]*schema.Schema{
 		Optional:     true,
 		ValidateFunc: validation.IntBetween(1, 60),
 	},
+	"test_id": {
+		Type: schema.TypeInt,
+		Description: "Unique ID of test",
+		Required: true,
+	}
 	"test_name": {
 		Type:        schema.TypeString,
 		Description: "Name of Test",
