@@ -238,8 +238,6 @@ func UnderscoreToLowerCamelCase(s string) string {
 // CamelCaseToUnderscore translates from camel case (with any leading case)
 // to underscore separated words.
 // ie, either aString and AString would become a_string
-// Special exception for testName, which becomes "name" to preserve
-// pre-existing functionality.
 func CamelCaseToUnderscore(s string) string {
 	var out []rune
 	for i, r := range []rune(s) {
@@ -252,12 +250,7 @@ func CamelCaseToUnderscore(s string) string {
 			out = append(out, r)
 		}
 	}
-
-	outString := string(out)
-	if outString == "test_name" {
-		outString = "name"
-	}
-	return outString
+	return string(out)
 }
 
 // GetJSONKey returns the JSON object key for the struct which is represented

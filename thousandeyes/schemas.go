@@ -346,6 +346,11 @@ var schemas = map[string]*schema.Schema{
 		Optional:     true,
 		ValidateFunc: validation.IntBetween(1, 60),
 	},
+	"test_name": {
+		Type:        schema.TypeString,
+		Description: "Name of Test",
+		Required:    true,
+	},
 	"time_limit": {
 		Type:         schema.TypeInt,
 		Description:  "time limit for transaction; defaults to 30s",
