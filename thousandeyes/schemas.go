@@ -392,6 +392,11 @@ var schemas = map[string]*schema.Schema{
 		Description: "selenium transaction script",
 		Required:    true,
 	},
+	"type": {
+		Type: schema.TypeString,
+		Description: "Type of test",
+		Computed:  true,
+	},
 	"url": {
 		Type:        schema.TypeString,
 		Description: "target for the test",
