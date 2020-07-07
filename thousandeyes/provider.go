@@ -16,6 +16,11 @@ func Provider() *schema.Provider {
 				Required:    true,
 				DefaultFunc: schema.EnvDefaultFunc("TE_TOKEN", nil),
 			},
+			"account_group_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("TE_AID", nil),
+			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"thousandeyes_http_server":     resourceHTTPServer(),
@@ -43,5 +48,5 @@ func Provider() *schema.Provider {
 
 func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	log.Println("[INFO] Initializing Thousand Eyes client")
-	return thousandeyes.NewClient(d.Get("token").(string)), nil
+	return thousandeyes.NewClient(d.Get("token").(string), d.Get("account_group_id").(string)), nil
 }
