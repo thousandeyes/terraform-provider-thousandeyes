@@ -1,7 +1,7 @@
 Terraform `thousandeyes` Provider
 =========================
 
-- Website: https://www.terraform.io
+- Website: [https://registry.terraform.io/providers/william20111/thousandeyes/latest](https://registry.terraform.io/providers/william20111/thousandeyes/latest)
 - [![Gitter chat](https://badges.gitter.im/hashicorp-terraform/Lobby.png)](https://gitter.im/hashicorp-terraform/Lobby)
 - Mailing list: [Google Groups](http://groups.google.com/group/terraform-tool)
 
@@ -36,6 +36,19 @@ $ make build
 
 Using the provider
 ----------------------
+The provider is now on the terraform registry to pull it as a dependency do the following and run `terraform init`
+
+```hcl
+terraform {
+  required_providers {
+    thousandeyes = {
+      source = "william20111/thousandeyes"
+      version = "0.3.3"
+    }
+  }
+}
+```
+
 If you're building the provider, follow the instructions to [install it as a plugin.](https://www.terraform.io/docs/plugins/basics.html#installing-a-plugin) After placing it into your plugins directory,  run `terraform init` to initialize it.
 
 ### Setting up provider
@@ -95,12 +108,12 @@ Supported tests right now:
 - [x] page-load
 - [x] web-transactions
 - [x] agent-to-server
-- [ ] agent-to-agent
+- [x] agent-to-agent
 - [x] bgp
 - [ ] transactions
 - [x] ftp-server
 - [x] dns-trace
-- [ ] dns-server
+- [x] dns-server
 - [x] dns-dnssec
 - [ ] dnsp-domain
 - [ ] dnsp-server
