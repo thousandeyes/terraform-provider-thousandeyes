@@ -87,10 +87,10 @@ func unpackSIPAuthData(i interface{}) thousandeyes.SIPAuthData {
 			sipAuthData.Protocol = v.(string)
 		}
 		if k == "sip_proxy" {
-			sipAuthData.SipProxy = v.(string)
+			sipAuthData.SIPProxy = v.(string)
 		}
 		if k == "sip_registrar" {
-			sipAuthData.SipRegistrar = v.(string)
+			sipAuthData.SIPRegistrar = v.(string)
 		}
 		if k == "user" {
 			sipAuthData.User = v.(string)

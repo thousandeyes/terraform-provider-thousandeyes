@@ -48,5 +48,5 @@ func Provider() *schema.Provider {
 
 func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	log.Println("[INFO] Initializing Thousand Eyes client")
-	return thousandeyes.NewClient(d.Get("token").(string), d.Get("account_group_id").(string)), nil
+	return thousandeyes.NewClient(&thousandeyes.ClientOptions{AuthToken: d.Get("token").(string), AccountID: d.Get("account_group_id").(string)}), nil
 }
