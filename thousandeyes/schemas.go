@@ -226,6 +226,7 @@ var schemas = map[string]*schema.Schema{
 		Description: "(30..1400)	Maximum Segment Size, in bytes.",
 		ValidateFunc: validation.IntBetween(30, 1400),
 		Optional:     true,
+		Default:      200,
 		Required:     false,
 	},
 	"mtu_measurements": {
@@ -268,7 +269,7 @@ var schemas = map[string]*schema.Schema{
 	"port": {
 		Type:         schema.TypeInt,
 		Description:  "target port for agent",
-		Default:      80,
+		Default:      49153,
 		ValidateFunc: validation.IntBetween(1, 65535),
 		Optional:     true,
 		Required:     false,
@@ -393,9 +394,9 @@ var schemas = map[string]*schema.Schema{
 		Required:    true,
 	},
 	"type": {
-		Type: schema.TypeString,
+		Type:        schema.TypeString,
 		Description: "Type of test",
-		Computed:  true,
+		Computed:    true,
 	},
 	"url": {
 		Type:        schema.TypeString,
