@@ -807,7 +807,7 @@ var schemas = map[string]*schema.Schema{
 		Required:     true,
 		ValidateFunc: validation.StringInSlice([]string{"tests", "agents", "endpoint_tests", "endpoint_agents"}, false),
 	},
-	"type--label": {
+	"type-label": {
 		Type:         schema.TypeString,
 		Description:  "Type of label (tests, agents, or endpoint_agents",
 		Required:     true,
