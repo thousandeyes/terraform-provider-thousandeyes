@@ -199,13 +199,15 @@ func FillValue(source interface{}, target interface{}) interface{} {
 		t := reflect.TypeOf(vt.Interface())
 		newStruct := reflect.New(t).Interface()
 		setStruct := reflect.ValueOf(newStruct).Elem()
-		m := source.(map[string]interface{})
-		for i := 0; i < vt.NumField(); i++ {
-			tag := GetJSONKey(t.Field(i))
-			tfName := CamelCaseToUnderscore(tag)
-			if mv, ok := m[tfName]; ok {
-				newVal := FillValue(mv, vt.Field(i).Interface())
-				setStruct.Field(i).Set(reflect.ValueOf(newVal))
+		if source != nil {
+			m := source.(map[string]interface{})
+			for i := 0; i < vt.NumField(); i++ {
+				tag := GetJSONKey(t.Field(i))
+				tfName := CamelCaseToUnderscore(tag)
+				if mv, ok := m[tfName]; ok {
+					newVal := FillValue(mv, vt.Field(i).Interface())
+					setStruct.Field(i).Set(reflect.ValueOf(newVal))
+				}
 			}
 		}
 		return setStruct.Interface()
