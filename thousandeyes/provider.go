@@ -23,6 +23,7 @@ func Provider() *schema.Provider {
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
+			"thousandeyes_alert_rule":      resourceAlertRule(),
 			"thousandeyes_http_server":     resourceHTTPServer(),
 			"thousandeyes_page_load":       resourcePageLoad(),
 			"thousandeyes_agent_to_server": resourceAgentToServer(),
@@ -39,8 +40,8 @@ func Provider() *schema.Provider {
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"thousandeyes_agent":       dataSourceThousandeyesAgent(),
-			"thousandeyes_alert_rule":  dataSourceThousandeyesAlertRule(),
 			"thousandeyes_bgp_monitor": dataSourceThousandeyesBGPMonitor(),
+			"thousandeyes_integration": dataSourceThousandeyesIntegration(),
 		},
 		ConfigureFunc: providerConfigure,
 	}

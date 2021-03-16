@@ -116,6 +116,12 @@ var schemas = map[string]*schema.Schema{
 		Required:     true,
 		ValidateFunc: validation.StringInSlice([]string{"TO_TARGET", "FROM_TARGET", "BIDIRECTIONAL"}, false),
 	},
+	"direction-alert_rule": {
+		Type: schema.TypeString,
+		Description: "[TO_TARGET, FROM_TARGET, BIDIRECTIONAL]	Direction of the test (affects how results are shown)",
+		Optional:     true,
+		ValidateFunc: validation.StringInSlice([]string{"TO_TARGET", "FROM_TARGET", "BIDIRECTIONAL"}, false),
+	},
 	"dns_servers": {
 		Description: "array of DNS Server objects {“serverName”: “fqdn of server”}",
 		Optional:    false,
