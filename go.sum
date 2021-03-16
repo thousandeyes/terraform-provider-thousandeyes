@@ -462,6 +462,8 @@ github.com/william20111/go-thousandeyes v0.8.1 h1:+4iUWYhZ7NmgyJuxn+TVQjPWEVsKfD
 github.com/william20111/go-thousandeyes v0.8.1/go.mod h1:i6ZWztwGxz+Kcv/cI1fvyfA5YmsCU09RqAagMUEi8RA=
 github.com/william20111/go-thousandeyes v1.0.1 h1:da+F44oGWXOtXYRX97uekZxZuD2Nk8pvKMJX1DmCoJw=
 github.com/william20111/go-thousandeyes v1.0.1/go.mod h1:i6ZWztwGxz+Kcv/cI1fvyfA5YmsCU09RqAagMUEi8RA=
+github.com/william20111/go-thousandeyes v1.1.1 h1:YzAmpQcCgnyurY9tz1zdkFNnXDDmt4XX9dF2JUNb1OE=
+github.com/william20111/go-thousandeyes v1.1.1/go.mod h1:i6ZWztwGxz+Kcv/cI1fvyfA5YmsCU09RqAagMUEi8RA=
 github.com/xanzy/ssh-agent v0.2.1/go.mod h1:mLlQY/MoOhWBj+gOGMQkOeiEvkx+8pJSI+0Bx9h2kr4=
 github.com/xiang90/probing v0.0.0-20190116061207-43a291ad63a2/go.mod h1:UETIi67q53MR2AWcXfiuqkDkRtnGDLqkBTpCHuJHxtU=
 github.com/xordataexchange/crypt v0.0.3-0.20170626215501-b2862e3d0a77/go.mod h1:aYKd//L2LvnjZzWKhF00oedf4jCCReLcmhLdhm1A27Q=
