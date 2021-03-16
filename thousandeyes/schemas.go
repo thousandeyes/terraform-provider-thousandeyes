@@ -296,7 +296,7 @@ var schemas = map[string]*schema.Schema{
 		Optional:     true,
 		Required:     false,
 		Default:      "TCP",
-		ValidateFunc: validation.StringInSlice([]string{"TCP", "ICMP"}, false),
+		ValidateFunc: validation.StringInSlice([]string{"TCP", "UDP", "ICMP"}, false),
 	},
 	"protocol--sip": {
 		Type:         schema.TypeString,
