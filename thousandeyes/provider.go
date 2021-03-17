@@ -38,9 +38,10 @@ func Provider() *schema.Provider {
 			"thousandeyes_voice_call":      resourceVoiceCall(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
-			"thousandeyes_agent":       dataSourceThousandeyesAgent(),
-			"thousandeyes_alert_rule":  dataSourceThousandeyesAlertRule(),
-			"thousandeyes_bgp_monitor": dataSourceThousandeyesBGPMonitor(),
+			"thousandeyes_account_group": dataSourceThousandeyesAccountGroup(),
+			"thousandeyes_agent":         dataSourceThousandeyesAgent(),
+			"thousandeyes_alert_rule":    dataSourceThousandeyesAlertRule(),
+			"thousandeyes_bgp_monitor":   dataSourceThousandeyesBGPMonitor(),
 		},
 		ConfigureFunc: providerConfigure,
 	}

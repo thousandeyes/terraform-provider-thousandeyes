@@ -20,6 +20,6 @@ require (
 	github.com/posener/complete v1.2.3 // indirect
 	github.com/ulikunitz/xz v0.5.10 // indirect
 	github.com/vmihailenco/msgpack v4.0.4+incompatible // indirect
-	github.com/william20111/go-thousandeyes v1.1.1
+	github.com/william20111/go-thousandeyes v1.2.0
 	golang.org/x/crypto v0.0.0-20210220033148-5ea612d1eb83 // indirect
 )
