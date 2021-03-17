@@ -19,6 +19,7 @@ func resourceAgentToAgent() *schema.Resource {
 			State: schema.ImportStatePassthrough,
 		},
 	}
+	resource.Schema["protocol"] = schemas["protocol-agent_to_agent"]
 	return &resource
 }
 
