@@ -1,0 +1,93 @@
+package thousandeyes
+
+import (
+	"fmt"
+	"log"
+
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/william20111/go-thousandeyes"
+)
+
+func dataSourceThousandeyesIntegration() *schema.Resource {
+	return &schema.Resource{
+		Read: dataSourceThousandeyesIntegrationRead,
+
+		Schema: map[string]*schema.Schema{
+			"auth_method": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "(PagerDuty only) always set to `Auth Token`",
+			},
+			"auth_user": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "(PagerDuty only) PagerDuty user`",
+			},
+			"auth_token": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "(PagerDuty only) authentication token",
+			},
+			"channel": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "(Slack only) Slack #channel or @user",
+			},
+			"integration_id": {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "unique ID of the integration",
+			},
+			"integration_name": {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "name of the integration",
+			},
+			"integration_type": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Type of integration",
+			},
+			"target": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "target URL of the integration",
+			},
+		},
+	}
+}
+
+func dataSourceThousandeyesIntegrationRead(d *schema.ResourceData, meta interface{}) error {
+	client := meta.(*thousandeyes.Client)
+
+	var found thousandeyes.Integration
+
+	searchName := d.Get("integration_name").(string)
+
+	integrations, err := client.GetIntegrations()
+	if err != nil {
+		return err
+	}
+
+	if searchName != "" {
+		log.Printf("[INFO] ###### Reading Thousandeyes integration by name [%s]", searchName)
+
+		for _, ar := range *integrations {
+			if ar.IntegrationName == searchName {
+				found = ar
+				break
+			}
+		}
+	} else {
+		return fmt.Errorf("must define integration name")
+	}
+
+	if found == (thousandeyes.Integration{}) {
+		return fmt.Errorf("unable to locate any integration by name: %s", searchName)
+	}
+	d.SetId(found.IntegrationID)
+	d.Set("integration_name", found.IntegrationName)
+	d.Set("integration_id", found.IntegrationID)
+
+	return nil
+}
