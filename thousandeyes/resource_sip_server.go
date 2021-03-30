@@ -19,7 +19,6 @@ func resourceSIPServer() *schema.Resource {
 			State: schema.ImportStatePassthrough,
 		},
 	}
-	resource.Schema["protocol"] = schemas["protocol--sip"]
 	return &resource
 }
 
