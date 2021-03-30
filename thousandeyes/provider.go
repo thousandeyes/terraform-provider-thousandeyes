@@ -41,7 +41,6 @@ func Provider() *schema.Provider {
 		DataSourcesMap: map[string]*schema.Resource{
 			"thousandeyes_account_group": dataSourceThousandeyesAccountGroup(),
 			"thousandeyes_agent":         dataSourceThousandeyesAgent(),
-			"thousandeyes_alert_rule":    dataSourceThousandeyesAlertRule(),
 			"thousandeyes_bgp_monitor":   dataSourceThousandeyesBGPMonitor(),
 			"thousandeyes_integration":   dataSourceThousandeyesIntegration(),
 		},
