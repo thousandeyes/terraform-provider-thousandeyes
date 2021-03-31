@@ -370,6 +370,11 @@ var schemas = map[string]*schema.Schema{
 			},
 		},
 	},
+	"group_id": {
+		Type:        schema.TypeInt,
+		Description: "Unique ID of the label; this number is negative for built-in labels.",
+		Computed:    true,
+	},
 	"headers": {
 		Type:        schema.TypeList,
 		Description: "array of header strings [\"header: value\", \"header2: value\"]",
