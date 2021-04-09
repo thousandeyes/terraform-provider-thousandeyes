@@ -170,7 +170,7 @@ var schemas = map[string]*schema.Schema{
 				"monitor_id": {
 					Type:        schema.TypeInt,
 					Description: "monitor id",
-					Optional:    true,
+					Required:    true,
 				},
 			},
 		},
