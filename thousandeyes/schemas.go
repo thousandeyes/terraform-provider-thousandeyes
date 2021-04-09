@@ -670,11 +670,6 @@ var schemas = map[string]*schema.Schema{
 					Description: "Account group ID",
 					Required:    true,
 				},
-				"name": {
-					Type:        schema.TypeString,
-					Description: "Account group name",
-					Optional:    true,
-				},
 			},
 		},
 	},
