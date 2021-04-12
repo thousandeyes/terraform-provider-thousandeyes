@@ -74,8 +74,8 @@ func dataSourceThousandeyesBGPMonitorsRead(d *schema.ResourceData, meta interfac
 	}
 
 	d.SetId(strconv.Itoa(found.MonitorID))
-	d.Set("rule_name", found.MonitorName)
-	d.Set("rule_id", found.MonitorID)
+	d.Set("monitor_name", found.MonitorName)
+	d.Set("monitor_id", found.MonitorID)
 
 	return nil
 }
