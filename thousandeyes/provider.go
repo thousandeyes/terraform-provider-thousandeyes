@@ -23,9 +23,9 @@ func Provider() *schema.Provider {
 				DefaultFunc: schema.EnvDefaultFunc("TE_AID", nil),
 			},
 			"timeout": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				Default:  schema.EnvDefaultFunc("TE_TIMEOUT", 0),
+				Type:        schema.TypeInt,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("TE_TIMEOUT", 0),
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
