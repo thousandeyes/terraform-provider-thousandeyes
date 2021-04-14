@@ -53,6 +53,7 @@ func resourceAlertRuleUpdate(d *schema.ResourceData, m interface{}) error {
 	update.MinimumSourcesPct = d.Get("minimum_sources_pct").(int)
 	update.RoundsViolatingRequired = d.Get("rounds_violating_required").(int)
 	update.RoundsViolatingOutOf = d.Get("rounds_violating_out_of").(int)
+	update.RuleName = d.Get("rule_name").(string)
 
 	_, err := client.UpdateAlertRule(id, *update)
 	if err != nil {
