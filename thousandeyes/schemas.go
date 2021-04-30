@@ -208,20 +208,15 @@ var schemas = map[string]*schema.Schema{
 		Computed:    true,
 	},
 	"credentials": {
-		Type:        schema.TypeMap,
+		Type:        schema.TypeList,
 		Description: "Array of credentialID integers.  Get credentialId from /credentials endpoint.",
 		Optional:    true,
 		Elem: &schema.Schema{
-			Type: schema.TypeList,
-			Elem: schema.TypeInt,
+			Type: schema.TypeInt,
 		},
 	},
 	"custom_headers": {
-		Type: schema.TypeMap,
-		Elem: &schema.Schema{
-			Type: schema.TypeMap,
-			Elem: schema.TypeString,
-		},
+		Type:     schema.TypeMap,
 		Optional: true,
 	},
 	"default": {
@@ -569,6 +564,7 @@ var schemas = map[string]*schema.Schema{
 		Type:        schema.TypeString,
 		Description: "BGP network address prefix",
 		Required:    true,
+		ForceNew:    true,
 		// a.b.c.d is a network address, with the prefix length defined as e.
 		// Prefixes can be any length from 8 to 24
 		// Can only use private BGP monitors for a local prefix.
