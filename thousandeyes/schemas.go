@@ -324,9 +324,10 @@ var schemas = map[string]*schema.Schema{
 		ValidateFunc: validation.IntBetween(0, 1),
 	},
 	"expression": {
-		Type:        schema.TypeString,
-		Description: "Alert rule evaluation expression",
-		Optional:    true,
+		Type:         schema.TypeString,
+		Description:  "Alert rule evaluation expression",
+		Required:     true,
+		ValidateFunc: validation.StringIsNotEmpty,
 	},
 	"follow_redirects": {
 		Type:        schema.TypeInt,
