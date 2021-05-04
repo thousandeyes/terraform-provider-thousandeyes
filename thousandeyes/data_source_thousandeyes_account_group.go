@@ -53,7 +53,7 @@ func dataSourceThousandeyesAccountGroupRead(d *schema.ResourceData, meta interfa
 
 	d.SetId(fmt.Sprint(found.AID))
 	d.Set("name", found.AccountGroupName)
-	d.Set("agent_id", found.AID)
+	d.Set("aid", found.AID)
 
 	return nil
 }
