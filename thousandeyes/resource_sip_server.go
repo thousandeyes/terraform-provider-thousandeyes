@@ -41,6 +41,15 @@ func resourceSIPServerUpdate(d *schema.ResourceData, m interface{}) error {
 	log.Printf("[INFO] Updating ThousandEyes Test %s", d.Id())
 	id, _ := strconv.Atoi(d.Id())
 	update := ResourceUpdate(d, &thousandeyes.SIPServer{}).(*thousandeyes.SIPServer)
+	// While most ThousandEyes updates only require updated fields and specifically
+	// disallow some fields on update, SIP Server tests actually require a few fields
+	// within the targetSipCredentials object to be retained on update.
+	// Calls without port, protocol, or sipRegistrar will fail, whereas sipProxy
+	// being absent will cause the update to remove the  value.
+	// Unlike other cases, we can send all non-updated values within targetSipCredentials
+	// without being rejected.
+	fullUpdate := buildSIPServerStruct(d)
+	update.TargetSIPCredentials = fullUpdate.TargetSIPCredentials
 	_, err := client.UpdateSIPServer(id, *update)
 	if err != nil {
 		return err
