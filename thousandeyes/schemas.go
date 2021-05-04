@@ -208,20 +208,15 @@ var schemas = map[string]*schema.Schema{
 		Computed:    true,
 	},
 	"credentials": {
-		Type:        schema.TypeMap,
+		Type:        schema.TypeList,
 		Description: "Array of credentialID integers.  Get credentialId from /credentials endpoint.",
 		Optional:    true,
 		Elem: &schema.Schema{
-			Type: schema.TypeList,
-			Elem: schema.TypeInt,
+			Type: schema.TypeInt,
 		},
 	},
 	"custom_headers": {
-		Type: schema.TypeMap,
-		Elem: &schema.Schema{
-			Type: schema.TypeMap,
-			Elem: schema.TypeString,
-		},
+		Type:     schema.TypeMap,
 		Optional: true,
 	},
 	"default": {
@@ -569,6 +564,7 @@ var schemas = map[string]*schema.Schema{
 		Type:        schema.TypeString,
 		Description: "BGP network address prefix",
 		Required:    true,
+		ForceNew:    true,
 		// a.b.c.d is a network address, with the prefix length defined as e.
 		// Prefixes can be any length from 8 to 24
 		// Can only use private BGP monitors for a local prefix.
@@ -594,12 +590,6 @@ var schemas = map[string]*schema.Schema{
 		Description:  "Protocol for agent to agent tests, TCP or UDP.  Defaults to TCP",
 		Required:     true,
 		ValidateFunc: validation.StringInSlice([]string{"TCP", "UDP"}, false),
-	},
-	"protocol-sip": {
-		Type:         schema.TypeString,
-		Description:  "transport layer for SIP communication: TCP, TLS (TLS over TCP), or UDP. Defaults to TCP",
-		Required:     true,
-		ValidateFunc: validation.StringInSlice([]string{"TCP", "TLS", "UDP"}, false),
 	},
 	"recursive_queries": {
 		Type:         schema.TypeInt,
@@ -721,6 +711,48 @@ var schemas = map[string]*schema.Schema{
 	"target_sip_credentials": {
 		Type:     schema.TypeMap,
 		Required: true,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"auth_user": {
+					Type:        schema.TypeString,
+					Description: "username for authentication with SIP server",
+					Required:    true,
+				},
+				"password": {
+					Type:        schema.TypeString,
+					Optional:    true,
+					Description: "password to be used to authenticate with the destination server",
+				},
+				"port": {
+					Type:         schema.TypeInt,
+					Description:  "target port",
+					ValidateFunc: validation.IntBetween(1, 65535),
+					Optional:     true,
+					Required:     false,
+				},
+				"protocol": {
+					Type:         schema.TypeString,
+					Description:  "transport layer for SIP communication: TCP, TLS (TLS over TCP), or UDP. Defaults to TCP",
+					Required:     true,
+					ValidateFunc: validation.StringInSlice([]string{"TCP", "TLS", "UDP"}, false),
+				},
+				"sip_proxy": {
+					Type:        schema.TypeString,
+					Description: "SIP proxy that is distinct from the SIP server, specified as a domain name or IP address",
+					Optional:    true,
+				},
+				"sip_registrar": {
+					Type:        schema.TypeString,
+					Description: "SIP server to be tested, specified by domain name or IP address",
+					Required:    true,
+				},
+				"user": {
+					Type:        schema.TypeString,
+					Description: "username for SIP registration; should be unique within a ThousandEyes Account Group",
+					Optional:    true,
+				},
+			},
+		},
 	},
 	"target_time": {
 		Type:         schema.TypeInt,
