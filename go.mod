@@ -11,7 +11,7 @@ require (
 	github.com/hashicorp/go-hclog v0.15.0 // indirect
 	github.com/hashicorp/go-uuid v1.0.2 // indirect
 	github.com/hashicorp/hcl/v2 v2.9.0 // indirect
-	github.com/hashicorp/terraform-plugin-sdk v1.16.0
+	github.com/hashicorp/terraform-plugin-sdk/v2 v2.5.0
 	github.com/hashicorp/terraform-plugin-test v1.2.0 // indirect
 	github.com/hashicorp/terraform-svchost v0.0.0-20200729002733-f050f53b9734 // indirect
 	github.com/hashicorp/yamux v0.0.0-20200609203250-aecfd211c9ce // indirect
