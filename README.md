@@ -15,8 +15,8 @@ This provider plugin is community maintained
 Requirements
 ------------
 
--	[Terraform](https://www.terraform.io/downloads.html) 0.10.x
--	[Go](https://golang.org/doc/install) 1.13 (to build the provider plugin)
+- [Terraform](https://www.terraform.io/downloads.html) 0.12.x
+- [Go](https://golang.org/doc/install) 1.13 (to build the provider plugin)
 
 Building The Provider
 ---------------------
@@ -61,6 +61,12 @@ provider "thousandeyes" {
 
 ```
 
+The provider requires that the token be set, the token may instead be passed via the environment variable `TE_TOKEN`.
+
+The provider also supports the following optional settings:
+
+- `account_group_id` may be set to distinguish between affected account groups, if your ThousandEyes account supports more than one.  This may instead be set by the environment variable `TE_AID`.
+- `timeout` may be set to specify the number of seconds to wait for responses from the ThousandEyes endpoints.  This may instead be set by the environment variable `TE_TIMEOUT`.  If this is unset or set to `0`, then the go-thousandeyes library will use its default settings.
 
 ### HTTP Test
 
