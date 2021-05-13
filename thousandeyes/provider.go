@@ -2,6 +2,7 @@ package thousandeyes
 
 import (
 	"log"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/william20111/go-thousandeyes"
@@ -20,6 +21,11 @@ func Provider() *schema.Provider {
 				Type:        schema.TypeString,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("TE_AID", nil),
+			},
+			"timeout": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("TE_TIMEOUT", 0),
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
@@ -51,5 +57,10 @@ func Provider() *schema.Provider {
 
 func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	log.Println("[INFO] Initializing Thousand Eyes client")
-	return thousandeyes.NewClient(&thousandeyes.ClientOptions{AuthToken: d.Get("token").(string), AccountID: d.Get("account_group_id").(string)}), nil
+	opts := thousandeyes.ClientOptions{
+		AuthToken: d.Get("token").(string),
+		AccountID: d.Get("account_group_id").(string),
+		Timeout:   time.Second * time.Duration(d.Get("timeout").(int)),
+	}
+	return thousandeyes.NewClient(&opts), nil
 }
