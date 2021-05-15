@@ -7,7 +7,6 @@ require (
 	github.com/aws/aws-sdk-go v1.37.26 // indirect
 	github.com/fatih/color v1.10.0 // indirect
 	github.com/go-sql-driver/mysql v1.5.0 // indirect
-	github.com/hashicorp/go-getter v1.5.2 // indirect
 	github.com/hashicorp/go-hclog v0.15.0 // indirect
 	github.com/hashicorp/go-uuid v1.0.2 // indirect
 	github.com/hashicorp/hcl/v2 v2.9.0 // indirect
@@ -20,6 +19,5 @@ require (
 	github.com/posener/complete v1.2.3 // indirect
 	github.com/ulikunitz/xz v0.5.10 // indirect
 	github.com/vmihailenco/msgpack v4.0.4+incompatible // indirect
-	github.com/william20111/go-thousandeyes v1.2.0
-	golang.org/x/crypto v0.0.0-20210220033148-5ea612d1eb83 // indirect
+	github.com/william20111/go-thousandeyes v1.2.1
 )
