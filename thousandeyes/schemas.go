@@ -705,7 +705,8 @@ var schemas = map[string]*schema.Schema{
 		Description: "pull from /agents endpoint	Both the 'agents': [] and the targetAgentID cannot be cloud agents. Can be Enterprise Agent -> Cloud, Cloud -> Enterprise Agent, or Enterprise Agent -> Enterprise Agent",
 	},
 	"target_sip_credentials": {
-		Type:     schema.TypeMap,
+		Type:     schema.TypeList,
+		MaxItems: 1,
 		Required: true,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{

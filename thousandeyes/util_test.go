@@ -105,6 +105,10 @@ func TestFillValue(t *testing.T) {
 		"testStruct": {
 			Type: schema.TypeMap,
 		},
+		"testStructSlice": {
+			Type: schema.TypeList,
+			Elem: schema.TypeMap,
+		},
 	}
 	d := getReferenceData(testSchemas, attrs)
 
@@ -163,6 +167,20 @@ func TestFillValue(t *testing.T) {
 	if reflect.DeepEqual(testStruct, cmpStruct) != true {
 		t.Errorf("testStruct doesn't match cmpStruct\ntestStruct: %+v\ncmpStruct: %+v", testStruct, cmpStruct)
 	}
+
+	// Struct from slice test
+	refSlice := []map[string]string{
+		refMap,
+	}
+	err = d.Set("testStructSlice", refSlice)
+	if err != nil {
+		t.Errorf("Error setting resourceData for 'testStruct': %+v", err.Error())
+	}
+	testStruct = FillValue(d.Get("testStruct"), refStruct{}).(refStruct)
+	if reflect.DeepEqual(testStruct, cmpStruct) != true {
+		t.Errorf("testStruct doesn't match cmpStruct\ntestStruct: %+v\ncmpStruct: %+v", testStruct, cmpStruct)
+	}
+
 }
 
 func TestUnderscoreToLowerCamelCase(t *testing.T) {
