@@ -196,11 +196,23 @@ func FillValue(source interface{}, target interface{}) interface{} {
 		// When the target is a struct, we assume that the source is a map
 		// containing values corresponding to the struct's fields, then
 		// recurse on each value looked up to get the value to be set.
+
+		// Due to limitations of Terraform's schema handling, some maps may
+		// be delivered inside single-item slices.  This occurs when maps
+		// must be declared as lists of terraform resources, whether to
+		// define specific key names or to have values of mixed types,
+		// neither of which is supported by Terraform's implementation of
+		// maps.
+		vs := reflect.ValueOf(source)
+		structSource := source
+		if vs.Kind() == reflect.Slice {
+			structSource = source.([]interface{})[0]
+		}
 		t := reflect.TypeOf(vt.Interface())
 		newStruct := reflect.New(t).Interface()
 		setStruct := reflect.ValueOf(newStruct).Elem()
 		if source != nil {
-			m := source.(map[string]interface{})
+			m := structSource.(map[string]interface{})
 			for i := 0; i < vt.NumField(); i++ {
 				tag := GetJSONKey(t.Field(i))
 				tfName := CamelCaseToUnderscore(tag)
