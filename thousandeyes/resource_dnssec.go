@@ -35,7 +35,10 @@ func resourceDNSSecRead(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return err
 	}
-	ResourceRead(d, remote)
+	err = ResourceRead(d, remote)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 

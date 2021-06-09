@@ -52,8 +52,14 @@ func dataSourceThousandeyesAccountGroupRead(d *schema.ResourceData, meta interfa
 	log.Printf("[INFO] ## Found AccountGroup ID: %d - name: %s", found.AID, found.AccountGroupName)
 
 	d.SetId(fmt.Sprint(found.AID))
-	d.Set("name", found.AccountGroupName)
-	d.Set("aid", found.AID)
+	err = d.Set("name", found.AccountGroupName)
+	if err != nil {
+		return err
+	}
+	err = d.Set("aid", found.AID)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

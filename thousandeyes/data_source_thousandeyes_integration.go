@@ -34,7 +34,7 @@ func dataSourceThousandeyesIntegration() *schema.Resource {
 				Description: "(Slack only) Slack #channel or @user",
 			},
 			"integration_id": {
-				Type:        schema.TypeInt,
+				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "unique ID of the integration",
 			},
@@ -86,8 +86,14 @@ func dataSourceThousandeyesIntegrationRead(d *schema.ResourceData, meta interfac
 		return fmt.Errorf("unable to locate any integration by name: %s", searchName)
 	}
 	d.SetId(found.IntegrationID)
-	d.Set("integration_name", found.IntegrationName)
-	d.Set("integration_id", found.IntegrationID)
+	err = d.Set("integration_name", found.IntegrationName)
+	if err != nil {
+		return err
+	}
+	err = d.Set("integration_id", found.IntegrationID)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

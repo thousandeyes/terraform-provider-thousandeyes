@@ -21,6 +21,9 @@ func resourceGroupLabel() *schema.Resource {
 	}
 	resource.Schema["type"] = schemas["type-label"]
 	resource.Schema["agents"] = schemas["agents-label"]
+	resource.Schema["tests"].Elem = &schema.Resource{
+		Schema: ResourceSchemaBuild(thousandeyes.GenericTest{}, schemas),
+	}
 	return &resource
 }
 
@@ -33,7 +36,18 @@ func resourceGroupLabelRead(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return err
 	}
-	ResourceRead(d, remote)
+	// In order to prevent schema conficts for test responses,  we retain
+	// the stored state for tests attached to a group to just a test ID.
+	testIDs := []thousandeyes.GenericTest{}
+	for _, v := range remote.Tests {
+		test := thousandeyes.GenericTest{TestID: v.TestID}
+		testIDs = append(testIDs, test)
+	}
+	remote.Tests = testIDs
+	err = ResourceRead(d, remote)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 

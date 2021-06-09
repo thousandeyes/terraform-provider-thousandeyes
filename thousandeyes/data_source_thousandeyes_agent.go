@@ -56,8 +56,14 @@ func dataSourceThousandeyesAgentRead(d *schema.ResourceData, meta interface{}) e
 	log.Printf("[INFO] ## Found Agent agent_id: %d - name: %s", found.AgentID, found.AgentName)
 
 	d.SetId(fmt.Sprint(found.AgentID))
-	d.Set("agent_name", found.AgentName)
-	d.Set("agent_id", found.AgentID)
+	err = d.Set("agent_name", found.AgentName)
+	if err != nil {
+		return err
+	}
+	err = d.Set("agent_id", found.AgentID)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
