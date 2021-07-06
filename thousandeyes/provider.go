@@ -2,11 +2,16 @@ package thousandeyes
 
 import (
 	"log"
+	"strconv"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/william20111/go-thousandeyes"
 )
+
+// Global variable for account group ID, as we must be aware of it in
+// functions that will not have access to it otherwise.
+var account_group_id int
 
 // Provider for module
 func Provider() *schema.Provider {
@@ -61,6 +66,14 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		AuthToken: d.Get("token").(string),
 		AccountID: d.Get("account_group_id").(string),
 		Timeout:   time.Second * time.Duration(d.Get("timeout").(int)),
+	}
+	var err error
+	if opts.AccountID != "" {
+		account_group_id, err = strconv.Atoi(opts.AccountID)
+		if err != nil {
+			return nil, err
+		}
+
 	}
 	return thousandeyes.NewClient(&opts), nil
 }

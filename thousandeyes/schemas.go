@@ -50,9 +50,173 @@ var schemas = map[string]*schema.Schema{
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"agent_id": {
-					Type:        schema.TypeInt,
-					Description: "agent id",
-					Optional:    true,
+					Type:     schema.TypeInt,
+					Optional: true,
+				},
+				"agent_name": {
+					Type:     schema.TypeString,
+					Optional: true,
+				},
+				"agent_state": {
+					Type:     schema.TypeString,
+					Optional: true,
+				},
+				"agent_type": {
+					Type:     schema.TypeString,
+					Computed: true,
+				},
+				"country_id": {
+					Type:     schema.TypeString,
+					Optional: true,
+				},
+				"cluster_members": {
+					Type:     schema.TypeList,
+					Optional: true,
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"agent_state": {
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"ip_addresses": {
+								Type:     schema.TypeList,
+								Optional: true,
+								Elem: &schema.Schema{
+									Type: schema.TypeString,
+								},
+							},
+							"last_seen": {
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"member_id": {
+								Type:     schema.TypeInt,
+								Optional: true,
+							},
+							"name": {
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"network": {
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"prefix": {
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"public_ip_addresses": {
+								Type:     schema.TypeList,
+								Optional: true,
+								Elem: &schema.Schema{
+									Type: schema.TypeString,
+								},
+							},
+							"target_for_tests": {
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"utilization": {
+								Type:     schema.TypeInt,
+								Optional: true,
+							},
+						},
+					},
+				},
+				"created_date": {
+					Type:     schema.TypeString,
+					Optional: true,
+				},
+				"enabled": {
+					Type:     schema.TypeInt,
+					Optional: true,
+				},
+				"error_details": {
+					Type:     schema.TypeList,
+					Optional: true,
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"code": {
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"description": {
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+						},
+					},
+				},
+				"groups": {
+					Type:     schema.TypeList,
+					Optional: true,
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"builtin": {
+								Type:     schema.TypeInt,
+								Optional: true,
+							},
+							"group_id": {
+								Type:     schema.TypeInt,
+								Optional: true,
+							},
+							"name": {
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+							"type": {
+								Type:     schema.TypeString,
+								Optional: true,
+							},
+						},
+					},
+				},
+				"hostname": {
+					Type:     schema.TypeString,
+					Optional: true,
+				},
+				"ip_addresses": {
+					Type:     schema.TypeList,
+					Optional: true,
+					Elem: &schema.Schema{
+						Type: schema.TypeString,
+					},
+				},
+				"ipv6_policy": {
+					Type:     schema.TypeString,
+					Optional: true,
+				},
+				"keep_browser_cache": {
+					Type:     schema.TypeInt,
+					Optional: true,
+				},
+				"last_seen": {
+					Type:     schema.TypeString,
+					Optional: true,
+				},
+				"location": {
+					Type:     schema.TypeString,
+					Optional: true,
+				},
+				"network": {
+					Type:     schema.TypeString,
+					Optional: true,
+				},
+				"prefix": {
+					Type:     schema.TypeString,
+					Optional: true,
+				},
+				"target_for_tests": {
+					Type:     schema.TypeString,
+					Optional: true,
+				},
+				"utilization": {
+					Type:     schema.TypeInt,
+					Optional: true,
+				},
+				"verify_ssl_certificate": {
+					Type:     schema.TypeInt,
+					Optional: true,
 				},
 			},
 		},
@@ -71,17 +235,101 @@ var schemas = map[string]*schema.Schema{
 			},
 		},
 	},
+	"alert_rule_id": {
+		Type:        schema.TypeInt,
+		Description: "ID of  alert rule",
+		Computed:    true,
+	},
 	"alert_rules": {
 		Description: "get ruleId from /alert-rules endpoint. If alertsEnabled is set to 1 and alertRules is not included in a creation/update query, applicable defaults will be used.",
 		Optional:    true,
 		Required:    false,
 		Type:        schema.TypeList,
 		Elem: &schema.Resource{
+			// We need to declare all the fields of AlertRule again here,
+			// to accommodate reads of alert rules declarations returned on test reads.
+			// Pulling them from the regular AlertRule schema declaration
+			// would cause conflict due to them being declared with  `Required: true`
+			// elsewhere.
 			Schema: map[string]*schema.Schema{
+				"alert_rule_id": {
+					Type:        schema.TypeInt,
+					Description: "ID of  alert rule",
+					Computed:    true,
+				},
+				"alert_type": {
+					Description: "Acceptable test types, verbose names",
+					Type:        schema.TypeString,
+					Optional:    true,
+				},
+				"default": {
+					Type:        schema.TypeInt,
+					Description: "to set the rule as a default, set this value to 1.",
+					Optional:    true,
+				},
+				"direction": {
+					// See `direction-alert_rule` below rather than `direction`
+					Type: schema.TypeString,
+					Description: "[TO_TARGET, FROM_TARGET, BIDIRECTIONAL]	Direction of the test (affects how results are shown)",
+					Optional: true,
+				},
+				"expression": {
+					Type:        schema.TypeString,
+					Description: "Alert rule evaluation expression",
+					Optional:    true,
+				},
+				"include_covered_prefixes": {
+					Type:        schema.TypeInt,
+					Description: "set to 1 to include queries for subprefixes detected under this prefix",
+					Optional:    true,
+				},
+				"minimum_sources": {
+					Type:        schema.TypeInt,
+					Description: "The minimum number of agents or monitors that must meet the specified criteria in order to trigger an alert",
+					Optional:    true,
+				},
+				"minimum_sources_pct": {
+					Type:        schema.TypeInt,
+					Description: "The minimum percentage of agents or monitors that must meet the specified criteria in order to trigger an alert",
+					Optional:    true,
+				},
+				"notify_on_clear": {
+					Type:        schema.TypeInt,
+					Description: "set to 1 to trigger the notification when the alert clears.",
+					Optional:    true,
+				},
+				"rounds_violating_mode": {
+					Type:        schema.TypeString,
+					Description: "ANY or EXACT.  EXACT requires that the same agent(s) meet the threshold in consecutive rounds; default is ANY",
+					Optional:    true,
+				},
+				"rounds_violating_out_of": {
+					Type:        schema.TypeInt,
+					Description: "specifies the divisor (Y value) of the “X of Y times” condition in an alert rule.  Minimum value is 1, maximum value is 10.",
+					Optional:    true,
+				},
+				"rounds_violating_required": {
+					Type:        schema.TypeInt,
+					Description: "specifies the numerator (X value) of the “X of Y times” condition in an alert rule.  Minimum value is 1, maximum value is 10. Must be less than or equal to roundsViolatingOutOf",
+					Optional:    true,
+				},
 				"rule_id": {
 					Type:        schema.TypeInt,
 					Description: "If alertsEnabled is set to 1 and alertRules is not included in a creation/update query, applicable defaults will be used.",
 					Optional:    true,
+				},
+				"rule_name": {
+					Type:        schema.TypeString,
+					Description: "name of the alert rule",
+					Optional:    true,
+				},
+				"test_ids": {
+					Type:        schema.TypeList,
+					Description: "Valid test IDs",
+					Optional:    true,
+					Elem: &schema.Schema{
+						Type: schema.TypeInt,
+					},
 				},
 			},
 		},
@@ -167,13 +415,34 @@ var schemas = map[string]*schema.Schema{
 		Description: "array of BGP Monitor objects",
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
+				"ip_address": {
+					Type:     schema.TypeString,
+					Optional: true,
+				},
 				"monitor_id": {
 					Type:        schema.TypeInt,
 					Description: "monitor id",
 					Required:    true,
 				},
+				"monitor_name": {
+					Type:     schema.TypeString,
+					Optional: true,
+				},
+				"monitor_type": {
+					Type:     schema.TypeString,
+					Optional: true,
+				},
+				"network": {
+					Type:     schema.TypeString,
+					Optional: true,
+				},
 			},
 		},
+	},
+	"builtin": {
+		Type:        schema.TypeInt,
+		Description: "1 for built-in labels, and 0 for user-created labels. Note that built-in labels are read-only",
+		Computed:    true,
 	},
 	"client_certificate": {
 		Type:        schema.TypeString,
@@ -269,6 +538,10 @@ var schemas = map[string]*schema.Schema{
 					Description: "DNS Server name",
 					Optional:    true,
 				},
+				"server_id": {
+					Type:     schema.TypeInt,
+					Optional: true,
+				},
 			},
 		},
 	},
@@ -352,7 +625,29 @@ var schemas = map[string]*schema.Schema{
 		Description: "array of label objects",
 		Optional:    true,
 		Elem: &schema.Resource{
+			// Schema definition here is to support group objects returned from
+			// reads of test resources.
 			Schema: map[string]*schema.Schema{
+				"agents": {
+					// See `agents-label` rather than `agents`
+					Type:        schema.TypeList,
+					Description: "agents to use ",
+					Optional:    true,
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"agent_id": {
+								Type:        schema.TypeInt,
+								Description: "agent id",
+								Optional:    true,
+							},
+						},
+					},
+				},
+				"builtin": {
+					Type:        schema.TypeInt,
+					Description: "1 for built-in labels, and 0 for user-created labels. Note that built-in labels are read-only",
+					Computed:    true,
+				},
 				"group_id": {
 					Type:        schema.TypeInt,
 					Description: "Unique ID of the label",
@@ -361,6 +656,26 @@ var schemas = map[string]*schema.Schema{
 				"name": {
 					Type:        schema.TypeString,
 					Description: "Name of the label",
+					Optional:    true,
+				},
+				"tests": {
+					Type:        schema.TypeList,
+					Description: "list of tests",
+					Optional:    true,
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"test_id": {
+								Type:        schema.TypeInt,
+								Description: "test id",
+								Optional:    true,
+							},
+						},
+					},
+				},
+				"type": {
+					// See `type-label` rather than `type`
+					Type:        schema.TypeString,
+					Description: "Type of label (tests, agents, endpoint_tests, or endpoint_agents",
 					Optional:    true,
 				},
 			},
@@ -660,6 +975,11 @@ var schemas = map[string]*schema.Schema{
 					Type:        schema.TypeInt,
 					Description: "Account group ID",
 					Required:    true,
+				},
+				"name": {
+					Type:        schema.TypeString,
+					Description: "Name of account",
+					Optional:    true,
 				},
 			},
 		},

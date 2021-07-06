@@ -55,6 +55,271 @@ func TestResourceRead(t *testing.T) {
 	}
 }
 
+func TestResourceReadValue(t *testing.T) {
+	testStruct := thousandeyes.AccountGroupRole{
+		RoleName:                 "TestRole",
+		RoleID:                   1,
+		HasManagementPermissions: 1,
+		Builtin:                  0,
+		Permissions: []thousandeyes.Permission{
+			{
+				IsManagementPermission: 0,
+				Label:                  "foo",
+				PermissionID:           27,
+			},
+			{
+				IsManagementPermission: 1,
+				Label:                  "bar",
+				PermissionID:           28,
+			},
+		},
+	}
+	resultMap := map[string]interface{}{
+		"role_name":                  "TestRole",
+		"role_id":                    1,
+		"has_management_permissions": 1,
+		"builtin":                    0,
+		"permissions": []map[string]interface{}{
+			{
+				"is_management_permission": 0,
+				"label":                    "foo",
+				"permission_id":            27,
+			},
+			{
+				"is_management_permission": 1,
+				"label":                    "bar",
+				"permission_id":            28,
+			},
+		},
+	}
+
+	result, err := ReadValue(&testStruct)
+	if err != nil {
+		t.Errorf("Error running ReadValue: %+v", err)
+	}
+
+	// We need to inform Go of the type of the "permissions" field in the result,
+	// in order for reflect.DeepEqual to identify them as equivalent.
+	// Since it's a list of maps we can't do that in one step.
+	typedResult := result.(map[string]interface{})
+	permissions := typedResult["permissions"].([]interface{})
+	var typedPermissions []map[string]interface{}
+	for _, v := range permissions {
+		typedPermissions = append(typedPermissions, v.(map[string]interface{}))
+	}
+	typedResult["permissions"] = typedPermissions
+
+	if reflect.DeepEqual(typedResult, resultMap) != true {
+		t.Errorf("Struct processing and test map do not match: \n\n%+v\n\n%+v\n", result, resultMap)
+	}
+
+}
+
+func TestFixReadValues(t *testing.T) {
+	var output interface{}
+	var err error
+
+	// non-map, non-list
+	normalInput := 4
+	normalTarget := 4
+	output, err = FixReadValues(normalInput, "normal")
+	if err != nil {
+		t.Errorf("normal input returned error: %s", err.Error())
+	}
+	if output.(int) != 4 {
+		t.Errorf("Returned wrong value for int input. Received  %#v, expected %#v", output, normalTarget)
+	}
+
+	// agents
+	agentsInput := []interface{}{
+		map[string]interface{}{
+			"agent_name": "foo",
+			"agent_id":   1,
+		},
+		map[string]interface{}{
+			"agent_name": "bar",
+			"agent_id":   2,
+		},
+	}
+	agentsTarget := []interface{}{
+		map[string]interface{}{
+			"agent_id": 1,
+		},
+		map[string]interface{}{
+			"agent_id": 2,
+		},
+	}
+	output, err = FixReadValues(agentsInput, "agents")
+	if err != nil {
+		t.Errorf("agents input returned error: %s", err.Error())
+	}
+	if reflect.DeepEqual(output, agentsTarget) != true {
+		t.Errorf("Values not stripped correctly from agents input: Received %#v Expected %#v", output, agentsTarget)
+	}
+
+	// alert_rules
+	alertRulesInput := []interface{}{
+		map[string]interface{}{
+			"rule_name": "foo",
+			"rule_id":   1,
+		},
+		map[string]interface{}{
+			"rule_name": "bar",
+			"rule_id":   2,
+		},
+	}
+	alertRulesTarget := []interface{}{
+		map[string]interface{}{
+			"rule_id": 1,
+		},
+		map[string]interface{}{
+			"rule_id": 2,
+		},
+	}
+	output, err = FixReadValues(alertRulesInput, "alert_rules")
+	if err != nil {
+		t.Errorf("alert_rules input returned error: %s", err.Error())
+	}
+	if reflect.DeepEqual(output, alertRulesTarget) != true {
+		t.Errorf("Values not stripped correctly from alert_rules input: Received %#v Expected %#v", output, alertRulesTarget)
+	}
+
+	// bgp_monitors
+	monitorsInput := []interface{}{
+		map[string]interface{}{
+			"monitor_name": "foo",
+			"monitor_id":   1,
+			"monitor_type": "Public",
+		},
+		map[string]interface{}{
+			"monitor_name": "bar",
+			"monitor_id":   2,
+			"monitor_type": "Private",
+		},
+	}
+	monitorsTarget := []interface{}{
+		map[string]interface{}{
+			"monitor_id": 2,
+		},
+	}
+	output, err = FixReadValues(monitorsInput, "bgp_monitors")
+	if err != nil {
+		t.Errorf("bgp_monitors input returned error: %s", err.Error())
+	}
+	if reflect.DeepEqual(output, monitorsTarget) != true {
+		t.Errorf("Values not stripped correctly from bgp_monitors input: Received %#v Expected %#v", output, monitorsTarget)
+	}
+
+	// groups
+	groupsInput := []interface{}{
+		map[string]interface{}{
+			"group_name": "foo",
+			"group_id":   1,
+		},
+		map[string]interface{}{
+			"group_name": "bar",
+			"group_id":   2,
+		},
+	}
+	groupsTarget := []interface{}{
+		map[string]interface{}{
+			"group_id": 1,
+		},
+		map[string]interface{}{
+			"group_id": 2,
+		},
+	}
+	output, err = FixReadValues(groupsInput, "groups")
+	if err != nil {
+		t.Errorf("bgp_monitors input returned error: %s", err.Error())
+	}
+	if reflect.DeepEqual(output, groupsTarget) != true {
+		t.Errorf("Values not stripped correctly from groups input: Received %#v Expected %#v", output, groupsTarget)
+	}
+
+	//	shared_with_accounts
+	account_group_id = 2
+	accountsInput := []interface{}{
+		map[string]interface{}{
+			"name": "foo",
+			"aid":  1,
+		},
+		map[string]interface{}{
+			"name": "bar",
+			"aid":  2,
+		},
+	}
+	accountsTarget := []interface{}{
+		map[string]interface{}{
+			"aid": 1,
+		},
+	}
+	output, err = FixReadValues(accountsInput, "shared_with_accounts")
+	if err != nil {
+		t.Errorf("shared_with_accounts input returned error: %s", err.Error())
+	}
+	if reflect.DeepEqual(output, accountsTarget) != true {
+		t.Errorf("Values not stripped correctly from shared_with_accounts input: Received %#v Expected %#v", output, accountsTarget)
+	}
+	//  We should fail if account_group_id isn't set and the list of account groups is > 1
+	account_group_id = 0
+	output, err = FixReadValues(accountsInput, "shared_with_accounts")
+	if err == nil {
+		t.Errorf("Error was not returned when shared_with_accounts length was > 1 and account_group_id  was not set")
+	}
+	// We should not fail if account_group_id isn't set and the list of account groups is < 2
+	accountsInput = []interface{}{
+		map[string]interface{}{
+			"name": "bar",
+			"aid":  2,
+		},
+	}
+	output, err = FixReadValues(accountsInput, "shared_with_accounts")
+	if err != nil {
+		t.Errorf("shared_with_accounts input returned error when shared_with_accounts wasn't set despite list of account groups being < 2: %s", err.Error())
+	}
+	if output != nil {
+		t.Errorf("Values not stripped correctly from shared_with_accounts input: Received %#v Expected %#v", output, accountsTarget)
+	}
+
+	// target_sip_credentials
+	sipCredsInput := map[string]interface{}{
+		"sip_proxy": "foo.com",
+	}
+	sipCredsTarget := []interface{}{
+		map[string]interface{}{
+			"sip_proxy": "foo.com",
+		},
+	}
+	output, err = FixReadValues(sipCredsInput, "target_sip_credentials")
+	if err != nil {
+		t.Errorf("target_sip_credentials input returned error: %s", err.Error())
+	}
+	if reflect.DeepEqual(output, sipCredsTarget) != true {
+		t.Errorf("Values not stripped correctly from target_sip_credentials input: Received %#v Expected %#v", output, accountsTarget)
+	}
+
+	//	tests
+	testsInput := []interface{}{
+		map[string]interface{}{
+			"test_name": "foo",
+			"test_id":   "1",
+		},
+		map[string]interface{}{
+			"test_name": "bar",
+			"test_id":   "2",
+		},
+	}
+	output, err = FixReadValues(testsInput, "tests")
+	if err != nil {
+		t.Errorf("tests input returned error: %s", err.Error())
+	}
+	if output != nil {
+		t.Errorf("Values not stripped correctly from tests input: Received %#v Expected %#v", output, nil)
+	}
+
+}
+
 func TestResourceUpdate(t *testing.T) {
 
 }

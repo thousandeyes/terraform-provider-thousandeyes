@@ -74,8 +74,14 @@ func dataSourceThousandeyesBGPMonitorsRead(d *schema.ResourceData, meta interfac
 	}
 
 	d.SetId(strconv.Itoa(found.MonitorID))
-	d.Set("monitor_name", found.MonitorName)
-	d.Set("monitor_id", found.MonitorID)
+	err = d.Set("monitor_name", found.MonitorName)
+	if err != nil {
+		return err
+	}
+	err = d.Set("monitor_id", found.MonitorID)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
