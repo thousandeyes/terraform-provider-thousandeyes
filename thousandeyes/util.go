@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
-	"unicode"
+ 	"unicode"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/william20111/go-thousandeyes"
@@ -270,6 +270,25 @@ func FixReadValues(m interface{}, name string) (interface{}, error) {
 			m.(map[string]interface{}),
 		}
 
+  case "notifications":
+    var e interface{}
+    var err error
+    // this is a special case to handle internal email structure inside the notifications block
+    e, err = FixReadValues(m.(map[string]interface{})["email"].(map[string]interface{}), "email")
+    if err != nil {
+      return nil, err
+    }
+    m.(map[string]interface{})["email"] = e
+
+    m = []interface{}{
+      m.(map[string]interface{}),
+    }
+
+  case "email":
+    m = []interface{}{
+      m.(map[string]interface{}),
+    }
+
 	// Remove tests.
 	case "tests":
 		m = nil
@@ -392,7 +411,14 @@ func FillValue(source interface{}, target interface{}) interface{} {
 		structSource := source
 		if vs.Kind() == reflect.Slice {
 			structSource = source.([]interface{})[0]
-		}
+    } else if vs.Kind() == reflect.Ptr {
+      structSource = source.(*schema.Set).List()
+      if len(structSource.([]interface{})) != 0 {
+        structSource = structSource.([]interface{})[0]
+      } else {
+        source = nil
+      }
+    }
 		t := reflect.TypeOf(vt.Interface())
 		newStruct := reflect.New(t).Interface()
 		setStruct := reflect.ValueOf(newStruct).Elem()
