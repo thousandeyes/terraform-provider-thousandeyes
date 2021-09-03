@@ -293,6 +293,37 @@ var schemas = map[string]*schema.Schema{
 					Description: "The minimum percentage of agents or monitors that must meet the specified criteria in order to trigger an alert",
 					Optional:    true,
 				},
+        "notifications": {
+          Type:        schema.TypeSet,
+          Description: "List of notifications for the Alert Rule",
+          Optional:    true,
+          Elem: &schema.Resource{
+            Schema: map[string]*schema.Schema{
+              "email": {
+                Type:        schema.TypeSet,
+                Description: "Email notification",
+                Optional:    true,
+                Elem: &schema.Resource{
+                  Schema: map[string]*schema.Schema{
+                    "message": {
+                      Type:        schema.TypeString,
+                      Description: "Email message",
+                      Optional:    true,
+                    },
+                    "recipient": {
+                      Type:        schema.TypeList,
+                      Description: "Email address",
+                      Optional:    true,
+                      Elem: &schema.Schema{
+                        Type: schema.TypeString,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
 				"notify_on_clear": {
 					Type:        schema.TypeInt,
 					Description: "set to 1 to trigger the notification when the alert clears.",
@@ -810,10 +841,37 @@ var schemas = map[string]*schema.Schema{
 		Required:     false,
 		ValidateFunc: validation.IntBetween(0, 1),
 	},
-	"notifications": {
-		Description: "Map of webhook and third party integrations",
-		Optional:    true,
-	},
+  "notifications": {
+    Type:        schema.TypeSet,
+    Description: "List of notifications for the Alert Rule",
+    Optional:    true,
+    Elem: &schema.Resource{
+      Schema: map[string]*schema.Schema{
+        "email": {
+          Type:        schema.TypeSet,
+          Description: "Email notification",
+          Optional:    true,
+          Elem: &schema.Resource{
+            Schema: map[string]*schema.Schema{
+              "message": {
+                Type:        schema.TypeString,
+                Description: "Email message",
+                Optional:    true,
+              },
+              "recipient": {
+                Type:        schema.TypeList,
+                Description: "Email address",
+                Optional:    true,
+                Elem: &schema.Schema{
+                  Type: schema.TypeString,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
 	"notify_on_clear": {
 		Type:         schema.TypeInt,
 		Description:  "set to 1 to trigger the notification when the alert clears.",
