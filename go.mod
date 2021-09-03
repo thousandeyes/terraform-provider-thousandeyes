@@ -19,5 +19,5 @@ require (
 	github.com/posener/complete v1.2.3 // indirect
 	github.com/ulikunitz/xz v0.5.10 // indirect
 	github.com/vmihailenco/msgpack v4.0.4+incompatible // indirect
-	github.com/william20111/go-thousandeyes v1.2.1 // Will require the new version, I guess 1.2.2, PR is already created
+	github.com/william20111/go-thousandeyes v1.2.2
 )
