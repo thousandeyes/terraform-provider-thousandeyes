@@ -57,6 +57,10 @@ func resourceGroupLabelUpdate(d *schema.ResourceData, m interface{}) error {
 	log.Printf("[INFO] Updating ThousandEyes Label %s", d.Id())
 	id, _ := strconv.Atoi(d.Id())
 	update := ResourceUpdate(d, &thousandeyes.GroupLabel{}).(*thousandeyes.GroupLabel)
+	// While most ThousandEyes updates only require updated fields and specifically
+	// disallow some fields on update, Labels require the label name field to be
+	// retained on update otherwise the call fails.
+	update.Name = d.Get("name").(string)
 	_, err := client.UpdateGroupLabel(id, *update)
 	if err != nil {
 		return err
