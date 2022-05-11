@@ -10,7 +10,12 @@ Terraform `thousandeyes` Provider
 Maintainers
 -----------
 
-This provider plugin is community maintained
+This provider plugin is maintained by the ThousandEyes engineering team and accepts community contributions.
+
+Acknowledgements
+----------------
+
+ThousandEyes would like to thank William Fleming, John Dyer, and Joshua Blanchard for their contribution and community maintenance of this project.
 
 Requirements
 ------------
