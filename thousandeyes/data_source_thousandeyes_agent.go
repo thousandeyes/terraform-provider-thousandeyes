@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/william20111/go-thousandeyes"
+	"github.com/thousandeyes/go-thousandeyes/v2"
 )
 
 func dataSourceThousandeyesAgent() *schema.Resource {
@@ -44,7 +44,7 @@ func dataSourceThousandeyesAgentRead(d *schema.ResourceData, meta interface{}) e
 	var found *thousandeyes.Agent
 
 	for _, agent := range *agents {
-		if agent.AgentName == searchName {
+		if *agent.AgentName == searchName {
 			found = &agent
 			break
 		}
@@ -53,7 +53,7 @@ func dataSourceThousandeyesAgentRead(d *schema.ResourceData, meta interface{}) e
 	if found == nil {
 		return fmt.Errorf("unable to locate any agent with the name: %s", searchName)
 	}
-	log.Printf("[INFO] ## Found Agent agent_id: %d - name: %s", found.AgentID, found.AgentName)
+	log.Printf("[INFO] ## Found Agent agent_id: %d - name: %s", found.AgentID, *found.AgentName)
 
 	d.SetId(fmt.Sprint(found.AgentID))
 	err = d.Set("agent_name", found.AgentName)

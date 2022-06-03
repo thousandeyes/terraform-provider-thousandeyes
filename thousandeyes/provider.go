@@ -6,12 +6,18 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/william20111/go-thousandeyes"
+	"github.com/thousandeyes/go-thousandeyes/v2"
 )
 
 // Global variable for account group ID, as we must be aware of it in
 // functions that will not have access to it otherwise.
 var account_group_id int
+
+func New(version string) func() *schema.Provider {
+	return func() *schema.Provider {
+		return Provider()
+	}
+}
 
 // Provider for module
 func Provider() *schema.Provider {
@@ -61,7 +67,7 @@ func Provider() *schema.Provider {
 }
 
 func providerConfigure(d *schema.ResourceData) (interface{}, error) {
-	log.Println("[INFO] Initializing Thousand Eyes client")
+	log.Println("[INFO] Initializing ThousandEyes client")
 	opts := thousandeyes.ClientOptions{
 		AuthToken: d.Get("token").(string),
 		AccountID: d.Get("account_group_id").(string),

@@ -5,7 +5,7 @@ import (
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/william20111/go-thousandeyes"
+	"github.com/thousandeyes/go-thousandeyes/v2"
 )
 
 func resourceVoiceCall() *schema.Resource {
@@ -71,8 +71,9 @@ func resourceVoiceCallCreate(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return err
 	}
-	id := remote.TestID
-	d.SetId(strconv.Itoa(id))
+
+	id := *remote.TestID
+	d.SetId(strconv.FormatInt(id, 10))
 	return resourceVoiceCallRead(d, m)
 }
 

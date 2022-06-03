@@ -5,7 +5,7 @@ import (
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/william20111/go-thousandeyes"
+	"github.com/thousandeyes/go-thousandeyes/v2"
 )
 
 func resourceGroupLabel() *schema.Resource {
@@ -39,11 +39,11 @@ func resourceGroupLabelRead(d *schema.ResourceData, m interface{}) error {
 	// In order to prevent schema conficts for test responses,  we retain
 	// the stored state for tests attached to a group to just a test ID.
 	testIDs := []thousandeyes.GenericTest{}
-	for _, v := range remote.Tests {
+	for _, v := range *remote.Tests {
 		test := thousandeyes.GenericTest{TestID: v.TestID}
 		testIDs = append(testIDs, test)
 	}
-	remote.Tests = testIDs
+	*remote.Tests = testIDs
 	err = ResourceRead(d, remote)
 	if err != nil {
 		return err
@@ -60,7 +60,7 @@ func resourceGroupLabelUpdate(d *schema.ResourceData, m interface{}) error {
 	// While most ThousandEyes updates only require updated fields and specifically
 	// disallow some fields on update, Labels require the label name field to be
 	// retained on update otherwise the call fails.
-	update.Name = d.Get("name").(string)
+	update.Name = thousandeyes.String(d.Get("name").(string))
 	_, err := client.UpdateGroupLabel(id, *update)
 	if err != nil {
 		return err
@@ -88,8 +88,8 @@ func resourceGroupLabelCreate(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return err
 	}
-	id := remote.GroupID
-	d.SetId(strconv.Itoa(id))
+	id := *remote.GroupID
+	d.SetId(strconv.FormatInt(id, 10))
 	return resourceGroupLabelRead(d, m)
 }
 

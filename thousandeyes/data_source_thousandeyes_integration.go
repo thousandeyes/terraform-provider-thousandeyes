@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/william20111/go-thousandeyes"
+	"github.com/thousandeyes/go-thousandeyes/v2"
 )
 
 func dataSourceThousandeyesIntegration() *schema.Resource {
@@ -73,7 +73,7 @@ func dataSourceThousandeyesIntegrationRead(d *schema.ResourceData, meta interfac
 		log.Printf("[INFO] ###### Reading Thousandeyes integration by name [%s]", searchName)
 
 		for _, ar := range *integrations {
-			if ar.IntegrationName == searchName {
+			if *ar.IntegrationName == searchName {
 				found = ar
 				break
 			}
@@ -85,7 +85,7 @@ func dataSourceThousandeyesIntegrationRead(d *schema.ResourceData, meta interfac
 	if found == (thousandeyes.Integration{}) {
 		return fmt.Errorf("unable to locate any integration by name: %s", searchName)
 	}
-	d.SetId(found.IntegrationID)
+	d.SetId(*found.IntegrationID)
 	err = d.Set("integration_name", found.IntegrationName)
 	if err != nil {
 		return err

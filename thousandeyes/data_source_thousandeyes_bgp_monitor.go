@@ -5,7 +5,7 @@ import (
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/william20111/go-thousandeyes"
+	"github.com/thousandeyes/go-thousandeyes/v2"
 )
 
 func dataSourceThousandeyesBGPMonitor() *schema.Resource {
@@ -59,11 +59,11 @@ func dataSourceThousandeyesBGPMonitorsRead(d *schema.ResourceData, meta interfac
 	}
 
 	for _, ar := range *BGPMonitors {
-		if ar.MonitorName == searchName {
+		if *ar.MonitorName == searchName {
 			found = &ar
 			break
 		}
-		if ar.MonitorID == searchMonitorID {
+		if *ar.MonitorID == searchMonitorID {
 			found = &ar
 			break
 		}
@@ -73,12 +73,12 @@ func dataSourceThousandeyesBGPMonitorsRead(d *schema.ResourceData, meta interfac
 		return fmt.Errorf("unable to locate any bgp by name: [%s] or ID: [%d]", searchName, searchMonitorID)
 	}
 
-	d.SetId(strconv.Itoa(found.MonitorID))
-	err = d.Set("monitor_name", found.MonitorName)
+	d.SetId(strconv.Itoa(*found.MonitorID))
+	err = d.Set("monitor_name", *found.MonitorName)
 	if err != nil {
 		return err
 	}
-	err = d.Set("monitor_id", found.MonitorID)
+	err = d.Set("monitor_id", *found.MonitorID)
 	if err != nil {
 		return err
 	}
