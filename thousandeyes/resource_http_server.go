@@ -5,7 +5,7 @@ import (
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/william20111/go-thousandeyes"
+	"github.com/thousandeyes/go-thousandeyes/v2"
 )
 
 func resourceHTTPServer() *schema.Resource {
@@ -67,12 +67,13 @@ func resourceHTTPServerCreate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*thousandeyes.Client)
 	log.Printf("[INFO] Creating ThousandEyes Test %s", d.Id())
 	local := buildHTTPServerStruct(d)
+
 	remote, err := client.CreateHTTPServer(*local)
 	if err != nil {
 		return err
 	}
-	id := remote.TestID
-	d.SetId(strconv.Itoa(id))
+	id := *remote.TestID
+	d.SetId(strconv.FormatInt(id, 10))
 	return resourceHTTPServerRead(d, m)
 }
 

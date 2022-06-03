@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/william20111/go-thousandeyes"
+	"github.com/thousandeyes/go-thousandeyes/v2"
 )
 
 func dataSourceThousandeyesAccountGroup() *schema.Resource {
@@ -40,7 +40,7 @@ func dataSourceThousandeyesAccountGroupRead(d *schema.ResourceData, meta interfa
 	var found *thousandeyes.SharedWithAccount
 
 	for _, account := range *accounts {
-		if account.AccountGroupName == searchName {
+		if *account.AccountGroupName == searchName {
 			found = &account
 			break
 		}
@@ -49,7 +49,7 @@ func dataSourceThousandeyesAccountGroupRead(d *schema.ResourceData, meta interfa
 	if found == nil {
 		return fmt.Errorf("unable to locate any account group with the name: %s", searchName)
 	}
-	log.Printf("[INFO] ## Found AccountGroup ID: %d - name: %s", found.AID, found.AccountGroupName)
+	log.Printf("[INFO] ## Found AccountGroup ID: %d - name: %s", found.AID, *found.AccountGroupName)
 
 	d.SetId(fmt.Sprint(found.AID))
 	err = d.Set("name", found.AccountGroupName)
