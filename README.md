@@ -1,7 +1,7 @@
 Terraform `thousandeyes` Provider
 =========================
 
-- Website: [https://registry.terraform.io/providers/william20111/thousandeyes/latest](https://registry.terraform.io/providers/william20111/thousandeyes/latest)
+- Website: [https://registry.terraform.io/providers/thousandeyes/thousandeyes/latest](https://registry.terraform.io/providers/thousandeyes/thousandeyes/latest)
 - [![Gitter chat](https://badges.gitter.im/hashicorp-terraform/Lobby.png)](https://gitter.im/hashicorp-terraform/Lobby)
 - Mailing list: [Google Groups](http://groups.google.com/group/terraform-tool)
 
@@ -21,21 +21,21 @@ Requirements
 ------------
 
 - [Terraform](https://www.terraform.io/downloads.html) 0.12.x
-- [Go](https://golang.org/doc/install) 1.13 (to build the provider plugin)
+- [Go](https://golang.org/doc/install) 1.16 (to build the provider plugin)
 
 Building The Provider
 ---------------------
 
-Clone repository to: `$GOPATH/src/github.com/william20111/terraform-provider-thousandeyes`
+Clone repository to: `$GOPATH/src/github.com/thousandeyes/terraform-provider-thousandeyes`
 
 ```sh
-$ git clone git@github.com:william20111/terraform-provider-thousandeyes $GOPATH/src/github.com/william20111/terraform-provider-thousandeyes
+$ git clone git@github.com:thousandeyes/terraform-provider-thousandeyes $GOPATH/src/github.com/thousandeyes/terraform-provider-thousandeyes
 ```
 
 Enter the provider directory and build the provider
 
 ```sh
-$ cd $GOPATH/src/github.com/william20111/terraform-provider-thousandeyes
+$ cd $GOPATH/src/github.com/thousandeyes/terraform-provider-thousandeyes
 $ make build
 ```
 
@@ -47,8 +47,7 @@ The provider is now on the terraform registry to pull it as a dependency do the 
 terraform {
   required_providers {
     thousandeyes = {
-      source = "william20111/thousandeyes"
-      version = "0.3.3"
+      source = "thousandeyes/thousandeyes"
     }
   }
 }
