@@ -327,7 +327,7 @@ var schemas = map[string]*schema.Schema{
 				},
 				"notify_on_clear": {
 					Type:        schema.TypeInt,
-					Description: "set to 1 to trigger the notification when the alert clears.",
+					Description: "Set to 1 to trigger the notification when the alert clears.",
 					Optional:    true,
 				},
 				"rounds_violating_mode": {
