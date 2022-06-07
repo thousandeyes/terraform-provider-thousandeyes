@@ -70,7 +70,7 @@ The provider requires that the token be set, the token may instead be passed via
 The provider also supports the following optional settings:
 
 - `account_group_id` may be set to distinguish between affected account groups, if your ThousandEyes account supports more than one.  This may instead be set by the environment variable `TE_AID`.
-- `timeout` may be set to specify the number of seconds to wait for responses from the ThousandEyes endpoints.  This may instead be set by the environment variable `TE_TIMEOUT`.  If this is unset or set to `0`, then the go-thousandeyes library will use its default settings.
+- `timeout` may be set to specify the number of seconds to wait for responses from the ThousandEyes endpoints.  This may instead be set by the environment variable `TE_TIMEOUT`.  If this is unset or set to `0`, then the thousandeyes-sdk-go library will use its default settings.
 
 ### HTTP Test
 

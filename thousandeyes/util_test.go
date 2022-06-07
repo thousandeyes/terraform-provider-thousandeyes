@@ -6,7 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/thousandeyes/go-thousandeyes/v2"
+	"github.com/thousandeyes/thousandeyes-sdk-go/v2"
 )
 
 func getReferenceData(schemaData map[string]*schema.Schema, attrs map[string]string) *schema.ResourceData {
