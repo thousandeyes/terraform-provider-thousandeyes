@@ -7,6 +7,9 @@ import (
 	"github.com/thousandeyes/terraform-provider-thousandeyes/thousandeyes"
 )
 
+// Generate the Terraform provider documentation using `tfplugindocs`:
+//go:generate go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs
+
 var (
 	// these will be set by the goreleaser configuration
 	// to appropriate values for the compiled binary
