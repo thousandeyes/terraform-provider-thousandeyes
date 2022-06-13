@@ -445,11 +445,18 @@ func FillValue(source interface{}, target interface{}) interface{} {
 	case reflect.Slice:
 		// When the target is a slice, we create a new slice of the same type,
 		// then recurse with the value of each element.
-		vs := reflect.ValueOf(source)
 		tt := reflect.TypeOf(target)
 		tte := reflect.TypeOf(target).Elem() // The type of items in the slice
 		ntte := reflect.New(tte).Elem()
 		newSlice := reflect.New(tt).Elem()
+
+		vs := reflect.ValueOf(source)
+		// If source is a *Set, we dereference it and convert it to a
+		// List so we can iterate over its elements.
+		if vs.Type() == reflect.TypeOf(&schema.Set{}) {
+			vs = reflect.ValueOf(source.(*schema.Set).List())
+		}
+
 		for i := 0; i < vs.Len(); i++ {
 			toAppend := FillValue(vs.Index(i).Interface(), ntte.Interface())
 			appendVal := reflect.ValueOf(toAppend)

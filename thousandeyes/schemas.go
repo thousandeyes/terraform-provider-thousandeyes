@@ -44,7 +44,7 @@ var schemas = map[string]*schema.Schema{
 		},
 	},
 	"agents": {
-		Type:        schema.TypeList,
+		Type:        schema.TypeSet,
 		Description: "Agents to use",
 		Required:    true,
 		Elem: &schema.Resource{
