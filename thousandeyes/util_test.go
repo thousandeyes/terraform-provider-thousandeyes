@@ -187,19 +187,19 @@ func TestFixReadValues(t *testing.T) {
 	// bgp_monitors
 	monitorsInput := []interface{}{
 		map[string]interface{}{
-			"monitor_name": "foo",
-			"monitor_id":   1,
-			"monitor_type": "Public",
+			"monitor_name": thousandeyes.String("foo"),
+			"monitor_id":   thousandeyes.Int(1),
+			"monitor_type": thousandeyes.String("Public"),
 		},
 		map[string]interface{}{
-			"monitor_name": "bar",
-			"monitor_id":   2,
-			"monitor_type": "Private",
+			"monitor_name": thousandeyes.String("bar"),
+			"monitor_id":   thousandeyes.Int(2),
+			"monitor_type": thousandeyes.String("Private"),
 		},
 	}
 	monitorsTarget := []interface{}{
 		map[string]interface{}{
-			"monitor_id": 2,
+			"monitor_id": thousandeyes.Int(2),
 		},
 	}
 	output, err = FixReadValues(monitorsInput, "bgp_monitors")
