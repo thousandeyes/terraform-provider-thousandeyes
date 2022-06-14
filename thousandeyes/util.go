@@ -186,7 +186,7 @@ func FixReadValues(m interface{}, name string) (interface{}, error) {
 		i := 0
 		for i < len(monitors) {
 			monitor := monitors[i].(map[string]interface{})
-			if monitor["monitor_type"] == "Public" {
+			if *monitor["monitor_type"].(*string) == "Public" {
 				// Remove this item from the slice
 				monitors = append(monitors[:i], monitors[i+1:]...)
 			} else {
