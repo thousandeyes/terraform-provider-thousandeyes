@@ -160,20 +160,27 @@ func TestFixReadValues(t *testing.T) {
 	// alert_rules
 	alertRulesInput := []interface{}{
 		map[string]interface{}{
-			"rule_name": "foo",
-			"rule_id":   1,
+			"rule_name": thousandeyes.String("foo"),
+			"rule_id":   thousandeyes.Int(1),
+			"default":   thousandeyes.Bool(false),
 		},
 		map[string]interface{}{
-			"rule_name": "bar",
-			"rule_id":   2,
+			"rule_name": thousandeyes.String("bar"),
+			"rule_id":   thousandeyes.Int(2),
+			"default":   thousandeyes.Bool(false),
+		},
+		map[string]interface{}{
+			"rule_name": thousandeyes.String("bar"),
+			"rule_id":   thousandeyes.Int(3),
+			"default":   thousandeyes.Bool(true),
 		},
 	}
 	alertRulesTarget := []interface{}{
 		map[string]interface{}{
-			"rule_id": 1,
+			"rule_id": thousandeyes.Int(1),
 		},
 		map[string]interface{}{
-			"rule_id": 2,
+			"rule_id": thousandeyes.Int(2),
 		},
 	}
 	output, err = FixReadValues(alertRulesInput, "alert_rules")

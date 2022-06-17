@@ -245,123 +245,13 @@ var schemas = map[string]*schema.Schema{
 		Description: "Get ruleId from /alert-rules endpoint. If alertsEnabled is set to 'true' and alertRules is not included in a creation/update query, applicable defaults will be used",
 		Optional:    true,
 		Required:    false,
-		Type:        schema.TypeList,
+		Type:        schema.TypeSet,
 		Elem: &schema.Resource{
-			// We need to declare all the fields of AlertRule again here,
-			// to accommodate reads of alert rules declarations returned on test reads.
-			// Pulling them from the regular AlertRule schema declaration
-			// would cause conflict due to them being declared with  `Required: true`
-			// elsewhere.
 			Schema: map[string]*schema.Schema{
-				"alert_rule_id": {
-					Type:        schema.TypeInt,
-					Description: "ID of  alert rule",
-					Computed:    true,
-				},
-				"alert_type": {
-					Description: "Acceptable test types, verbose names",
-					Type:        schema.TypeString,
-					Optional:    true,
-				},
-				"default": {
-					Type:        schema.TypeInt,
-					Description: "to set the rule as a default, set this value to 1.",
-					Optional:    true,
-				},
-				"direction": {
-					// See `direction-alert_rule` below rather than `direction`
-					Type: schema.TypeString,
-					Description: "[TO_TARGET, FROM_TARGET, BIDIRECTIONAL]	Direction of the test (affects how results are shown)",
-					Optional: true,
-				},
-				"expression": {
-					Type:        schema.TypeString,
-					Description: "Alert rule evaluation expression",
-					Optional:    true,
-				},
-				"include_covered_prefixes": {
-					Type:        schema.TypeInt,
-					Description: "set to 1 to include queries for subprefixes detected under this prefix",
-					Optional:    true,
-				},
-				"minimum_sources": {
-					Type:        schema.TypeInt,
-					Description: "The minimum number of agents or monitors that must meet the specified criteria in order to trigger an alert",
-					Optional:    true,
-				},
-				"minimum_sources_pct": {
-					Type:        schema.TypeInt,
-					Description: "The minimum percentage of agents or monitors that must meet the specified criteria in order to trigger an alert",
-					Optional:    true,
-				},
-				"notifications": {
-					Type:        schema.TypeSet,
-					Description: "List of notifications for the Alert Rule",
-					Optional:    true,
-					Elem: &schema.Resource{
-						Schema: map[string]*schema.Schema{
-							"email": {
-								Type:        schema.TypeSet,
-								Description: "Email notification",
-								Optional:    true,
-								Elem: &schema.Resource{
-									Schema: map[string]*schema.Schema{
-										"message": {
-											Type:        schema.TypeString,
-											Description: "Email message",
-											Optional:    true,
-										},
-										"recipient": {
-											Type:        schema.TypeList,
-											Description: "Email address",
-											Optional:    true,
-											Elem: &schema.Schema{
-												Type: schema.TypeString,
-											},
-										},
-									},
-								},
-							},
-						},
-					},
-				},
-				"notify_on_clear": {
-					Type:        schema.TypeInt,
-					Description: "Set to 1 to trigger the notification when the alert clears.",
-					Optional:    true,
-				},
-				"rounds_violating_mode": {
-					Type:        schema.TypeString,
-					Description: "ANY or EXACT.  EXACT requires that the same agent(s) meet the threshold in consecutive rounds; default is ANY",
-					Optional:    true,
-				},
-				"rounds_violating_out_of": {
-					Type:        schema.TypeInt,
-					Description: "Specifies the divisor (Y value) of the “X of Y times” condition in an alert rule.  Minimum value is 1, maximum value is 10.",
-					Optional:    true,
-				},
-				"rounds_violating_required": {
-					Type:        schema.TypeInt,
-					Description: "Specifies the numerator (X value) of the “X of Y times” condition in an alert rule.  Minimum value is 1, maximum value is 10. Must be less than or equal to roundsViolatingOutOf",
-					Optional:    true,
-				},
 				"rule_id": {
 					Type:        schema.TypeInt,
 					Description: "Rule ID",
 					Optional:    true,
-				},
-				"rule_name": {
-					Type:        schema.TypeString,
-					Description: "name of the alert rule",
-					Optional:    true,
-				},
-				"test_ids": {
-					Type:        schema.TypeList,
-					Description: "Valid test IDs",
-					Optional:    true,
-					Elem: &schema.Schema{
-						Type: schema.TypeInt,
-					},
 				},
 			},
 		},
@@ -519,11 +409,10 @@ var schemas = map[string]*schema.Schema{
 		Optional: true,
 	},
 	"default": {
-		Type:         schema.TypeInt,
-		Description:  "to set the rule as a default, set this value to 1.",
-		Optional:     true,
-		Default:      0,
-		ValidateFunc: validation.IntBetween(0, 1),
+		Type:        schema.TypeBool,
+		Description: "set the rule as a default",
+		Optional:    true,
+		Default:     false,
 	},
 	"description": {
 		Type:        schema.TypeString,
@@ -790,14 +679,16 @@ var schemas = map[string]*schema.Schema{
 		},
 	},
 	"minimum_sources": {
-		Type:        schema.TypeInt,
-		Description: "The minimum number of agents or monitors that must meet the specified criteria in order to trigger an alert",
-		Optional:    true,
+		Type:         schema.TypeInt,
+		Description:  "The minimum number of agents or monitors that must meet the specified criteria in order to trigger an alert; mutually exclusive with 'minimum_sources_pct'",
+		Optional:     true,
+		ValidateFunc: validation.IntAtLeast(1),
 	},
 	"minimum_sources_pct": {
-		Type:        schema.TypeInt,
-		Description: "The minimum percentage of agents or monitors that must meet the specified criteria in order to trigger an alert",
-		Optional:    true,
+		Type:         schema.TypeInt,
+		Description:  "The minimum percentage of agents or monitors that must meet the specified criteria in order to trigger an alert; mutually exclusive with 'minimum_sources'",
+		Optional:     true,
+		ValidateFunc: validation.IntBetween(0, 100),
 	},
 	"modified_by": {
 		Type:        schema.TypeString,
@@ -872,10 +763,10 @@ var schemas = map[string]*schema.Schema{
 		},
 	},
 	"notify_on_clear": {
-		Type:         schema.TypeInt,
-		Description:  "set to 1 to trigger the notification when the alert clears.",
-		Optional:     true,
-		ValidateFunc: validation.IntBetween(0, 1),
+		Type:        schema.TypeBool,
+		Description: "set to 'true' to trigger the notification when the alert clears.",
+		Optional:    true,
+		Default:     true,
 	},
 	"num_path_traces": {
 		Type:         schema.TypeInt,
@@ -991,6 +882,7 @@ var schemas = map[string]*schema.Schema{
 	"rounds_violating_mode": {
 		Type:         schema.TypeString,
 		Description:  "ANY or EXACT.  EXACT requires that the same agent(s) meet the threshold in consecutive rounds; default is ANY",
+		Default:      "ANY",
 		Optional:     true,
 		ValidateFunc: validation.StringInSlice([]string{"ANY", "EXACT"}, false),
 	},

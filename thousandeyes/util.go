@@ -25,18 +25,19 @@ func expandAgents(v interface{}) thousandeyes.Agents {
 	return agents
 }
 
-func expandAlertRules(v interface{}) thousandeyes.AlertRules {
-	var alertRules thousandeyes.AlertRules
-
-	for _, er := range v.([]interface{}) {
-		rer := er.(map[string]interface{})
-		alertRule := &thousandeyes.AlertRule{
-			RuleID: thousandeyes.Int(rer["rule_id"].(int)),
-		}
-		alertRules = append(alertRules, *alertRule)
+func expandAlertRules(alertRules *[]thousandeyes.AlertRule) *[]thousandeyes.AlertRule {
+	if alertRules == nil {
+		return nil
 	}
 
-	return alertRules
+	ret := &[]thousandeyes.AlertRule{}
+	for _, ar := range *alertRules {
+		*ret = append(*ret, thousandeyes.AlertRule{
+			RuleID: ar.RuleID,
+		})
+	}
+
+	return ret
 }
 
 func expandBGPMonitors(v interface{}) thousandeyes.BGPMonitors {
@@ -111,7 +112,7 @@ func ResourceBuildStruct(d *schema.ResourceData, structPtr interface{}) interfac
 	for i := 0; i < v.NumField(); i++ {
 		tag := GetJSONKey(t.Field(i))
 		tfName := CamelCaseToUnderscore(tag)
-		val, ok := d.GetOk(tfName)
+		val, ok := d.GetOkExists(tfName)
 		if ok {
 			newVal := FillValue(val, v.Field(i).Interface())
 			setVal := reflect.ValueOf(newVal)
@@ -168,14 +169,24 @@ func FixReadValues(m interface{}, name string) (interface{}, error) {
 			}
 		}
 
-	// Remove all alert rule fields except for rule ID.
+	// Remove all alert rule fields except for rule ID. Ignore default rules.
 	case "alert_rules":
-		for i, v := range m.([]interface{}) {
-			rule := v.(map[string]interface{})
-			m.([]interface{})[i] = map[string]interface{}{
-				"rule_id": rule["rule_id"],
+		alert_rules := m.([]interface{})
+		// Edit the alert_rules slice in place, to return the same type.
+		i := 0
+		for i < len(alert_rules) {
+			rule := alert_rules[i].(map[string]interface{})
+			if is_default, ok := rule["default"]; ok && is_default != nil && *is_default.(*bool) {
+				// Remove this item from the slice
+				alert_rules = append(alert_rules[:i], alert_rules[i+1:]...)
+			} else {
+				alert_rules[i] = map[string]interface{}{
+					"rule_id": rule["rule_id"],
+				}
+				i = i + 1
 			}
 		}
+		m = alert_rules
 
 	// Remove all public BGP monitors. (ThousandEyes does not allow
 	// specifying individual public BGP monitors, and all available
@@ -283,15 +294,24 @@ func FixReadValues(m interface{}, name string) (interface{}, error) {
 		if err != nil {
 			return nil, err
 		}
-		m.(map[string]interface{})["email"] = e
 
-		m = []interface{}{
-			m.(map[string]interface{}),
+		if e != nil {
+			m.(map[string]interface{})["email"] = e
+
+			m = []interface{}{
+				m.(map[string]interface{}),
+			}
+		} else {
+			m = nil
 		}
 
 	case "email":
-		m = []interface{}{
-			m.(map[string]interface{}),
+		if len(m.(map[string]interface{})["recipient"].([]interface{})) == 0 {
+			m = nil
+		} else {
+			m = []interface{}{
+				m.(map[string]interface{}),
+			}
 		}
 
 	// Remove tests.
@@ -380,14 +400,10 @@ func resourceFixups(d *schema.ResourceData, structPtr interface{}) interface{} {
 		}
 	}
 
-	// If alert_rules is not set, set it explicitly to an empty
-	// slice. We do this to avoid ThousandEyes API setting default
-	// alert rules to Terraform-created tests, as that messes up the
-	// Terraform state.
-	if _, isSet := d.GetOk("alert_rules"); !isSet {
-		if _, hasField := t.FieldByName("AlertRules"); hasField {
-			v.FieldByName("AlertRules").Set(reflect.ValueOf(&[]thousandeyes.AlertRule{}))
-		}
+	_, hasAlertRules := t.FieldByName("AlertRules")
+	if hasAlertRules {
+		scrappedAlertRules := expandAlertRules(v.FieldByName("AlertRules").Interface().(*[]thousandeyes.AlertRule))
+		v.FieldByName("AlertRules").Set(reflect.ValueOf(scrappedAlertRules))
 	}
 
 	return structPtr
