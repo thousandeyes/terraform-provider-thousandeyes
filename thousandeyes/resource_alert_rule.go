@@ -50,10 +50,16 @@ func resourceAlertRuleUpdate(d *schema.ResourceData, m interface{}) error {
 	// to be retained on update.
 	// Terraform schema validation should guarantee their existence.
 	update.AlertType = thousandeyes.String(d.Get("alert_type").(string))
-	update.Direction = thousandeyes.String(d.Get("direction").(string))
 	update.Expression = thousandeyes.String(d.Get("expression").(string))
-	update.MinimumSources = thousandeyes.Int(d.Get("minimum_sources").(int))
-	update.MinimumSourcesPct = thousandeyes.Int(d.Get("minimum_sources_pct").(int))
+
+	// MinimumSources and MinimumSourcesPct are mutually exclusive
+	minimumSources := d.Get("minimum_sources").(int)
+	if minimumSources > 0 {
+		update.MinimumSources = thousandeyes.Int(minimumSources)
+	} else {
+		update.MinimumSourcesPct = thousandeyes.Int(d.Get("minimum_sources_pct").(int))
+	}
+
 	update.RoundsViolatingRequired = thousandeyes.Int(d.Get("rounds_violating_required").(int))
 	update.RoundsViolatingOutOf = thousandeyes.Int(d.Get("rounds_violating_out_of").(int))
 	update.RuleName = thousandeyes.String(d.Get("rule_name").(string))
