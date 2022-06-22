@@ -25,13 +25,13 @@ description: |-
 
 ### Optional
 
-- `default` (Number) to set the rule as a default, set this value to 1.
+- `default` (Boolean) set the rule as a default
 - `direction` (String) [TO_TARGET, FROM_TARGET, BIDIRECTIONAL]	Direction of the test (affects how results are shown)
 - `include_covered_prefixes` (Boolean) Include queries for subprefixes detected under this prefix.
-- `minimum_sources` (Number) The minimum number of agents or monitors that must meet the specified criteria in order to trigger an alert
-- `minimum_sources_pct` (Number) The minimum percentage of agents or monitors that must meet the specified criteria in order to trigger an alert
+- `minimum_sources` (Number) The minimum number of agents or monitors that must meet the specified criteria in order to trigger an alert; mutually exclusive with 'minimum_sources_pct'
+- `minimum_sources_pct` (Number) The minimum percentage of agents or monitors that must meet the specified criteria in order to trigger an alert; mutually exclusive with 'minimum_sources'
 - `notifications` (Block Set) List of notifications for the Alert Rule (see [below for nested schema](#nestedblock--notifications))
-- `notify_on_clear` (Number) set to 1 to trigger the notification when the alert clears.
+- `notify_on_clear` (Boolean) set to 'true' to trigger the notification when the alert clears.
 - `rounds_violating_mode` (String) ANY or EXACT.  EXACT requires that the same agent(s) meet the threshold in consecutive rounds; default is ANY
 - `test_ids` (List of Number) Valid test IDs
 

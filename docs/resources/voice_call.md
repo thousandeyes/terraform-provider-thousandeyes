@@ -17,7 +17,7 @@ description: |-
 
 ### Required
 
-- `agents` (Block List, Min: 1) Agents to use (see [below for nested schema](#nestedblock--agents))
+- `agents` (Block Set, Min: 1) Agents to use (see [below for nested schema](#nestedblock--agents))
 - `interval` (Number) interval to run test on, in seconds
 - `source_sip_credentials` (Map of String)
 - `target_agent_id` (Number) pull from /agents endpoint	Both the 'agents': [] and the targetAgentID cannot be cloud agents. Can be Enterprise Agent -> Cloud, Cloud -> Enterprise Agent, or Enterprise Agent -> Enterprise Agent
@@ -26,7 +26,7 @@ description: |-
 
 ### Optional
 
-- `alert_rules` (Block List) Get ruleId from /alert-rules endpoint. If alertsEnabled is set to 'true' and alertRules is not included in a creation/update query, applicable defaults will be used (see [below for nested schema](#nestedblock--alert_rules))
+- `alert_rules` (Block Set) Get ruleId from /alert-rules endpoint. If alertsEnabled is set to 'true' and alertRules is not included in a creation/update query, applicable defaults will be used (see [below for nested schema](#nestedblock--alert_rules))
 - `alerts_enabled` (Boolean) Set to 'true' to enable alerts, or 'false' to disable alerts. Defaults to 'true'
 - `bgp_measurements` (Boolean) Enable BGP measurements
 - `codec_id` (Number) Codec to use
@@ -147,42 +147,7 @@ Optional:
 
 Optional:
 
-- `alert_type` (String) Acceptable test types, verbose names
-- `default` (Number) to set the rule as a default, set this value to 1.
-- `direction` (String) [TO_TARGET, FROM_TARGET, BIDIRECTIONAL]	Direction of the test (affects how results are shown)
-- `expression` (String) Alert rule evaluation expression
-- `include_covered_prefixes` (Number) set to 1 to include queries for subprefixes detected under this prefix
-- `minimum_sources` (Number) The minimum number of agents or monitors that must meet the specified criteria in order to trigger an alert
-- `minimum_sources_pct` (Number) The minimum percentage of agents or monitors that must meet the specified criteria in order to trigger an alert
-- `notifications` (Block Set) List of notifications for the Alert Rule (see [below for nested schema](#nestedblock--alert_rules--notifications))
-- `notify_on_clear` (Number) Set to 1 to trigger the notification when the alert clears.
-- `rounds_violating_mode` (String) ANY or EXACT.  EXACT requires that the same agent(s) meet the threshold in consecutive rounds; default is ANY
-- `rounds_violating_out_of` (Number) Specifies the divisor (Y value) of the “X of Y times” condition in an alert rule.  Minimum value is 1, maximum value is 10.
-- `rounds_violating_required` (Number) Specifies the numerator (X value) of the “X of Y times” condition in an alert rule.  Minimum value is 1, maximum value is 10. Must be less than or equal to roundsViolatingOutOf
 - `rule_id` (Number) Rule ID
-- `rule_name` (String) name of the alert rule
-- `test_ids` (List of Number) Valid test IDs
-
-Read-Only:
-
-- `alert_rule_id` (Number) ID of  alert rule
-
-<a id="nestedblock--alert_rules--notifications"></a>
-### Nested Schema for `alert_rules.notifications`
-
-Optional:
-
-- `email` (Block Set) Email notification (see [below for nested schema](#nestedblock--alert_rules--notifications--email))
-
-<a id="nestedblock--alert_rules--notifications--email"></a>
-### Nested Schema for `alert_rules.notifications.email`
-
-Optional:
-
-- `message` (String) Email message
-- `recipient` (List of String) Email address
-
-
 
 
 <a id="nestedblock--groups"></a>
