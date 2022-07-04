@@ -47,16 +47,16 @@ This resource allows you to create and configure an agent-to-agent test. For mor
 ### Read-Only
 
 - `api_links` (List of Object) Self links to endpoint to pull test metadata, and data links to endpoint for test data (see [below for nested schema](#nestedatt--api_links))
-- `created_by` (String) created by user
-- `created_date` (String) date of creation
-- `dscp` (String) dscp  label
+- `created_by` (String) Username of test creator.
+- `created_date` (String) Date of test creation.
+- `dscp` (String) DSCP label.
 - `id` (String) The ID of this resource.
-- `live_share` (Boolean) Set to 'true' for a test shared with your account group, or to 'false' for a normal test
-- `modified_by` (String) Last modified by user
-- `modified_date` (String) Last modified by date; shown in UTC
-- `saved_event` (Boolean) Set to 'true' for a saved event, or to 'false' for a normal test.
-- `test_id` (Number) Unique ID of test
-- `type` (String) Type of test
+- `live_share` (Boolean) Defines whether a test is shared with your account group or not. Set to `true` to share, or to `false` for a normal test.
+- `modified_by` (String) Last modified by user.
+- `modified_date` (String) Last modified by date, shown in UTC.
+- `saved_event` (Boolean) Defines whether the test is a saved event or not. Set to 'true' for a saved event, or to 'false' for a normal test.
+- `test_id` (Number) Unique ID of the test.
+- `type` (String) The type of test.
 
 <a id="nestedblock--agents"></a>
 ### Nested Schema for `agents`
