@@ -5,7 +5,7 @@ import (
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/william20111/go-thousandeyes"
+	"github.com/thousandeyes/thousandeyes-sdk-go/v2"
 )
 
 func resourceAlertRule() *schema.Resource {
@@ -49,14 +49,20 @@ func resourceAlertRuleUpdate(d *schema.ResourceData, m interface{}) error {
 	// disallow some fields on update, Alert Rules actually require a few fields
 	// to be retained on update.
 	// Terraform schema validation should guarantee their existence.
-	update.AlertType = d.Get("alert_type").(string)
-	update.Direction = d.Get("direction").(string)
-	update.Expression = d.Get("expression").(string)
-	update.MinimumSources = d.Get("minimum_sources").(int)
-	update.MinimumSourcesPct = d.Get("minimum_sources_pct").(int)
-	update.RoundsViolatingRequired = d.Get("rounds_violating_required").(int)
-	update.RoundsViolatingOutOf = d.Get("rounds_violating_out_of").(int)
-	update.RuleName = d.Get("rule_name").(string)
+	update.AlertType = thousandeyes.String(d.Get("alert_type").(string))
+	update.Expression = thousandeyes.String(d.Get("expression").(string))
+
+	// MinimumSources and MinimumSourcesPct are mutually exclusive
+	minimumSources := d.Get("minimum_sources").(int)
+	if minimumSources > 0 {
+		update.MinimumSources = thousandeyes.Int(minimumSources)
+	} else {
+		update.MinimumSourcesPct = thousandeyes.Int(d.Get("minimum_sources_pct").(int))
+	}
+
+	update.RoundsViolatingRequired = thousandeyes.Int(d.Get("rounds_violating_required").(int))
+	update.RoundsViolatingOutOf = thousandeyes.Int(d.Get("rounds_violating_out_of").(int))
+	update.RuleName = thousandeyes.String(d.Get("rule_name").(string))
 
 	_, err := client.UpdateAlertRule(id, *update)
 	if err != nil {
@@ -86,7 +92,7 @@ func resourceAlertRuleCreate(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 	id := remote.RuleID
-	d.SetId(strconv.Itoa(id))
+	d.SetId(strconv.Itoa(*id))
 	return resourceAlertRuleRead(d, m)
 }
 

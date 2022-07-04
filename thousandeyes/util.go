@@ -5,10 +5,10 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
- 	"unicode"
+	"unicode"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/william20111/go-thousandeyes"
+	"github.com/thousandeyes/thousandeyes-sdk-go/v2"
 )
 
 func expandAgents(v interface{}) thousandeyes.Agents {
@@ -17,7 +17,7 @@ func expandAgents(v interface{}) thousandeyes.Agents {
 	for _, er := range v.([]interface{}) {
 		rer := er.(map[string]interface{})
 		agent := &thousandeyes.Agent{
-			AgentID: rer["agent_id"].(int),
+			AgentID: thousandeyes.Int(rer["agent_id"].(int)),
 		}
 		agents = append(agents, *agent)
 	}
@@ -25,18 +25,19 @@ func expandAgents(v interface{}) thousandeyes.Agents {
 	return agents
 }
 
-func expandAlertRules(v interface{}) thousandeyes.AlertRules {
-	var alertRules thousandeyes.AlertRules
-
-	for _, er := range v.([]interface{}) {
-		rer := er.(map[string]interface{})
-		alertRule := &thousandeyes.AlertRule{
-			RuleID: rer["rule_id"].(int),
-		}
-		alertRules = append(alertRules, *alertRule)
+func expandAlertRules(alertRules *[]thousandeyes.AlertRule) *[]thousandeyes.AlertRule {
+	if alertRules == nil {
+		return nil
 	}
 
-	return alertRules
+	ret := &[]thousandeyes.AlertRule{}
+	for _, ar := range *alertRules {
+		*ret = append(*ret, thousandeyes.AlertRule{
+			RuleID: ar.RuleID,
+		})
+	}
+
+	return ret
 }
 
 func expandBGPMonitors(v interface{}) thousandeyes.BGPMonitors {
@@ -45,7 +46,7 @@ func expandBGPMonitors(v interface{}) thousandeyes.BGPMonitors {
 	for _, er := range v.([]interface{}) {
 		rer := er.(map[string]interface{})
 		bgpMonitor := &thousandeyes.BGPMonitor{
-			MonitorID: rer["monitor_id"].(int),
+			MonitorID: thousandeyes.Int(rer["monitor_id"].(int)),
 		}
 		bgpMonitors = append(bgpMonitors, *bgpMonitor)
 	}
@@ -59,7 +60,7 @@ func expandDNSServers(v interface{}) []thousandeyes.Server {
 	for _, er := range v.([]interface{}) {
 		rer := er.(map[string]interface{})
 		targetDNSServer := &thousandeyes.Server{
-			ServerName: rer["server_name"].(string),
+			ServerName: thousandeyes.String(rer["server_name"].(string)),
 		}
 		dnsServers = append(dnsServers, *targetDNSServer)
 	}
@@ -73,28 +74,28 @@ func unpackSIPAuthData(i interface{}) thousandeyes.SIPAuthData {
 
 	for k, v := range m {
 		if k == "auth_user" {
-			sipAuthData.AuthUser = v.(string)
+			sipAuthData.AuthUser = thousandeyes.String(v.(string))
 		}
 		if k == "password" {
-			sipAuthData.Password = v.(string)
+			sipAuthData.Password = thousandeyes.String(v.(string))
 		}
 		if k == "port" {
 			port, err := strconv.Atoi(v.(string))
 			if err == nil {
-				sipAuthData.Port = port
+				sipAuthData.Port = thousandeyes.Int(port)
 			}
 		}
 		if k == "protocol" {
-			sipAuthData.Protocol = v.(string)
+			sipAuthData.Protocol = thousandeyes.String(v.(string))
 		}
 		if k == "sip_proxy" {
-			sipAuthData.SIPProxy = v.(string)
+			sipAuthData.SIPProxy = thousandeyes.String(v.(string))
 		}
 		if k == "sip_registrar" {
-			sipAuthData.SIPRegistrar = v.(string)
+			sipAuthData.SIPRegistrar = thousandeyes.String(v.(string))
 		}
 		if k == "user" {
-			sipAuthData.User = v.(string)
+			sipAuthData.User = thousandeyes.String(v.(string))
 		}
 	}
 
@@ -111,14 +112,14 @@ func ResourceBuildStruct(d *schema.ResourceData, structPtr interface{}) interfac
 	for i := 0; i < v.NumField(); i++ {
 		tag := GetJSONKey(t.Field(i))
 		tfName := CamelCaseToUnderscore(tag)
-		val, ok := d.GetOk(tfName)
+		val, ok := d.GetOkExists(tfName)
 		if ok {
 			newVal := FillValue(val, v.Field(i).Interface())
 			setVal := reflect.ValueOf(newVal)
 			v.Field(i).Set(setVal)
 		}
 	}
-	return structPtr
+	return resourceFixups(d, structPtr)
 }
 
 // ResourceRead sets values for a schema.ResourceData object by names derived
@@ -126,7 +127,12 @@ func ResourceBuildStruct(d *schema.ResourceData, structPtr interface{}) interfac
 func ResourceRead(d *schema.ResourceData, structPtr interface{}) error {
 	v := reflect.ValueOf(structPtr).Elem()
 	t := reflect.TypeOf(v.Interface())
+
 	for i := 0; i < v.NumField(); i++ {
+		if v.Field(i).Kind() == reflect.Ptr && v.Field(i).IsNil() {
+			continue
+		}
+
 		tag := GetJSONKey(t.Field(i))
 		tfName := CamelCaseToUnderscore(tag)
 		val, err := ReadValue(v.Field(i).Interface())
@@ -163,14 +169,24 @@ func FixReadValues(m interface{}, name string) (interface{}, error) {
 			}
 		}
 
-	// Remove all alert rule fields except for rule ID.
+	// Remove all alert rule fields except for rule ID. Ignore default rules.
 	case "alert_rules":
-		for i, v := range m.([]interface{}) {
-			rule := v.(map[string]interface{})
-			m.([]interface{})[i] = map[string]interface{}{
-				"rule_id": rule["rule_id"],
+		alert_rules := m.([]interface{})
+		// Edit the alert_rules slice in place, to return the same type.
+		i := 0
+		for i < len(alert_rules) {
+			rule := alert_rules[i].(map[string]interface{})
+			if is_default, ok := rule["default"]; ok && is_default != nil && *is_default.(*bool) {
+				// Remove this item from the slice
+				alert_rules = append(alert_rules[:i], alert_rules[i+1:]...)
+			} else {
+				alert_rules[i] = map[string]interface{}{
+					"rule_id": rule["rule_id"],
+				}
+				i = i + 1
 			}
 		}
+		m = alert_rules
 
 	// Remove all public BGP monitors. (ThousandEyes does not allow
 	// specifying individual public BGP monitors, and all available
@@ -181,7 +197,7 @@ func FixReadValues(m interface{}, name string) (interface{}, error) {
 		i := 0
 		for i < len(monitors) {
 			monitor := monitors[i].(map[string]interface{})
-			if monitor["monitor_type"] == "Public" {
+			if *monitor["monitor_type"].(*string) == "Public" {
 				// Remove this item from the slice
 				monitors = append(monitors[:i], monitors[i+1:]...)
 			} else {
@@ -248,8 +264,8 @@ func FixReadValues(m interface{}, name string) (interface{}, error) {
 		for i < len(accounts) {
 			account := accounts[i].(map[string]interface{})
 			//  Compare to account group ID stored in global variable.
-			shared_aid := account["aid"].(int)
-			if shared_aid == account_group_id {
+			shared_aid := account["aid"].(*int)
+			if *shared_aid == account_group_id {
 				// Remove this item from the slice
 				accounts = append(accounts[:i], accounts[i+1:]...)
 			} else {
@@ -270,24 +286,33 @@ func FixReadValues(m interface{}, name string) (interface{}, error) {
 			m.(map[string]interface{}),
 		}
 
-  case "notifications":
-    var e interface{}
-    var err error
-    // this is a special case to handle internal email structure inside the notifications block
-    e, err = FixReadValues(m.(map[string]interface{})["email"].(map[string]interface{}), "email")
-    if err != nil {
-      return nil, err
-    }
-    m.(map[string]interface{})["email"] = e
+	case "notifications":
+		var e interface{}
+		var err error
+		// this is a special case to handle internal email structure inside the notifications block
+		e, err = FixReadValues(m.(map[string]interface{})["email"].(map[string]interface{}), "email")
+		if err != nil {
+			return nil, err
+		}
 
-    m = []interface{}{
-      m.(map[string]interface{}),
-    }
+		if e != nil {
+			m.(map[string]interface{})["email"] = e
 
-  case "email":
-    m = []interface{}{
-      m.(map[string]interface{}),
-    }
+			m = []interface{}{
+				m.(map[string]interface{}),
+			}
+		} else {
+			m = nil
+		}
+
+	case "email":
+		if len(m.(map[string]interface{})["recipient"].([]interface{})) == 0 {
+			m = nil
+		} else {
+			m = []interface{}{
+				m.(map[string]interface{}),
+			}
+		}
 
 	// Remove tests.
 	case "tests":
@@ -311,6 +336,9 @@ func ReadValue(structPtr interface{}) (interface{}, error) {
 		// the JSON key names.
 		newMap := make(map[string]interface{})
 		for i := 0; i < v.NumField(); i++ {
+			if v.Field(i).Kind() == reflect.Ptr && v.Field(i).IsNil() {
+				continue
+			}
 			tag := GetJSONKey(t.Field(i))
 			tfName := CamelCaseToUnderscore(tag)
 			newMap[tfName], err = ReadValue(v.Field(i).Interface())
@@ -338,6 +366,49 @@ func ReadValue(structPtr interface{}) (interface{}, error) {
 	}
 }
 
+// resourceFixups sanitizes values to ensure that the ThousandEyes API
+// behavior does not surprise Terraform's state.
+func resourceFixups(d *schema.ResourceData, structPtr interface{}) interface{} {
+	v := reflect.ValueOf(structPtr).Elem()
+	t := reflect.TypeOf(v.Interface())
+
+	// When changing networkMeasurements, the ThousandEyes API
+	// modifies other flags as well.
+	if d.HasChange("network_measurements") {
+		// TE API automatically sets bandwidthMeasurements to
+		// true. This is not ideal when using cloud agents, as it's
+		// not supported. Better to let users explicitly set it to
+		// true.
+		_, bandwidthMeasurementsSet := d.GetOk("bandwidth_measurements")
+		_, hasBandwidthMeasurementsField := t.FieldByName("BandwidthMeasurements")
+		if hasBandwidthMeasurementsField && !bandwidthMeasurementsSet {
+			setVal := reflect.ValueOf(thousandeyes.Bool(false))
+			v.FieldByName("BandwidthMeasurements").Set(setVal)
+			d.Set("bandwidth_measurements", false)
+		}
+
+		// TE API automatically sets bgpMeasurements to
+		// true. This is not ideal when using cloud agents, as it's
+		// not supported. Better to let users explicitly set it to
+		// true.
+		_, bgpMeasurementsSet := d.GetOk("bgp_measurements")
+		_, hasBgpMeasurements := t.FieldByName("BGPMeasurements")
+		if hasBgpMeasurements && !bgpMeasurementsSet {
+			setVal := reflect.ValueOf(thousandeyes.Bool(false))
+			v.FieldByName("BGPMeasurements").Set(setVal)
+			d.Set("bgp_measurements", false)
+		}
+	}
+
+	_, hasAlertRules := t.FieldByName("AlertRules")
+	if hasAlertRules {
+		scrappedAlertRules := expandAlertRules(v.FieldByName("AlertRules").Interface().(*[]thousandeyes.AlertRule))
+		v.FieldByName("AlertRules").Set(reflect.ValueOf(scrappedAlertRules))
+	}
+
+	return structPtr
+}
+
 // ResourceUpdate updates values of a struct for the provided pointer if
 // matching changes for those values are found in a provided
 // schema.ResourceData object.
@@ -355,7 +426,7 @@ func ResourceUpdate(d *schema.ResourceData, structPtr interface{}) interface{} {
 		}
 	}
 	d.Partial(false)
-	return structPtr
+	return resourceFixups(d, structPtr)
 }
 
 // ResourceSchemaBuild creates a map of schemas based on the fields
@@ -382,14 +453,26 @@ func FillValue(source interface{}, target interface{}) interface{} {
 	// the type of the target argument.
 	vt := reflect.ValueOf(target)
 	switch vt.Kind() {
+	case reflect.Ptr:
+		p := reflect.New(reflect.TypeOf(target).Elem())
+		newVal := FillValue(source, p.Elem().Interface())
+		p.Elem().Set(reflect.ValueOf(newVal))
+		return p.Interface()
 	case reflect.Slice:
 		// When the target is a slice, we create a new slice of the same type,
 		// then recurse with the value of each element.
-		vs := reflect.ValueOf(source)
 		tt := reflect.TypeOf(target)
 		tte := reflect.TypeOf(target).Elem() // The type of items in the slice
 		ntte := reflect.New(tte).Elem()
 		newSlice := reflect.New(tt).Elem()
+
+		vs := reflect.ValueOf(source)
+		// If source is a *Set, we dereference it and convert it to a
+		// List so we can iterate over its elements.
+		if vs.Type() == reflect.TypeOf(&schema.Set{}) {
+			vs = reflect.ValueOf(source.(*schema.Set).List())
+		}
+
 		for i := 0; i < vs.Len(); i++ {
 			toAppend := FillValue(vs.Index(i).Interface(), ntte.Interface())
 			appendVal := reflect.ValueOf(toAppend)
@@ -411,14 +494,14 @@ func FillValue(source interface{}, target interface{}) interface{} {
 		structSource := source
 		if vs.Kind() == reflect.Slice {
 			structSource = source.([]interface{})[0]
-    } else if vs.Kind() == reflect.Ptr {
-      structSource = source.(*schema.Set).List()
-      if len(structSource.([]interface{})) != 0 {
-        structSource = structSource.([]interface{})[0]
-      } else {
-        source = nil
-      }
-    }
+		} else if vs.Kind() == reflect.Ptr {
+			structSource = source.(*schema.Set).List()
+			if len(structSource.([]interface{})) != 0 {
+				structSource = structSource.([]interface{})[0]
+			} else {
+				source = nil
+			}
+		}
 		t := reflect.TypeOf(vt.Interface())
 		newStruct := reflect.New(t).Interface()
 		setStruct := reflect.ValueOf(newStruct).Elem()

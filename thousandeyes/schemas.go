@@ -14,13 +14,13 @@ var schemas = map[string]*schema.Schema{
 			Schema: map[string]*schema.Schema{
 				"account_group": {
 					Type:        schema.TypeMap,
-					Description: "account group for roles",
+					Description: "Account group for roles",
 					Optional:    true,
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"aid": {
 								Type:        schema.TypeInt,
-								Description: "account group id",
+								Description: "Account group ID",
 								Optional:    true,
 							},
 						},
@@ -34,7 +34,7 @@ var schemas = map[string]*schema.Schema{
 						Schema: map[string]*schema.Schema{
 							"role_id": {
 								Type:        schema.TypeInt,
-								Description: "role id",
+								Description: "Role ID",
 								Optional:    true,
 							},
 						},
@@ -44,8 +44,8 @@ var schemas = map[string]*schema.Schema{
 		},
 	},
 	"agents": {
-		Type:        schema.TypeList,
-		Description: "agents to use ",
+		Type:        schema.TypeSet,
+		Description: "Agents to use",
 		Required:    true,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
@@ -128,7 +128,7 @@ var schemas = map[string]*schema.Schema{
 					Optional: true,
 				},
 				"enabled": {
-					Type:     schema.TypeInt,
+					Type:     schema.TypeBool,
 					Optional: true,
 				},
 				"error_details": {
@@ -178,6 +178,7 @@ var schemas = map[string]*schema.Schema{
 				"ip_addresses": {
 					Type:     schema.TypeList,
 					Optional: true,
+					Computed: true,
 					Elem: &schema.Schema{
 						Type: schema.TypeString,
 					},
@@ -187,7 +188,7 @@ var schemas = map[string]*schema.Schema{
 					Optional: true,
 				},
 				"keep_browser_cache": {
-					Type:     schema.TypeInt,
+					Type:     schema.TypeBool,
 					Optional: true,
 				},
 				"last_seen": {
@@ -215,7 +216,7 @@ var schemas = map[string]*schema.Schema{
 					Optional: true,
 				},
 				"verify_ssl_certificate": {
-					Type:     schema.TypeInt,
+					Type:     schema.TypeBool,
 					Optional: true,
 				},
 			},
@@ -223,13 +224,13 @@ var schemas = map[string]*schema.Schema{
 	},
 	"agents-label": {
 		Type:        schema.TypeList,
-		Description: "agents to use ",
+		Description: "Agents to use",
 		Optional:    true,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"agent_id": {
 					Type:        schema.TypeInt,
-					Description: "agent id",
+					Description: "Agent ID",
 					Optional:    true,
 				},
 			},
@@ -237,130 +238,20 @@ var schemas = map[string]*schema.Schema{
 	},
 	"alert_rule_id": {
 		Type:        schema.TypeInt,
-		Description: "ID of  alert rule",
+		Description: "ID of alert rule",
 		Computed:    true,
 	},
 	"alert_rules": {
-		Description: "get ruleId from /alert-rules endpoint. If alertsEnabled is set to 1 and alertRules is not included in a creation/update query, applicable defaults will be used.",
+		Description: "Get ruleId from /alert-rules endpoint. If alertsEnabled is set to 'true' and alertRules is not included in a creation/update query, applicable defaults will be used",
 		Optional:    true,
 		Required:    false,
-		Type:        schema.TypeList,
+		Type:        schema.TypeSet,
 		Elem: &schema.Resource{
-			// We need to declare all the fields of AlertRule again here,
-			// to accommodate reads of alert rules declarations returned on test reads.
-			// Pulling them from the regular AlertRule schema declaration
-			// would cause conflict due to them being declared with  `Required: true`
-			// elsewhere.
 			Schema: map[string]*schema.Schema{
-				"alert_rule_id": {
-					Type:        schema.TypeInt,
-					Description: "ID of  alert rule",
-					Computed:    true,
-				},
-				"alert_type": {
-					Description: "Acceptable test types, verbose names",
-					Type:        schema.TypeString,
-					Optional:    true,
-				},
-				"default": {
-					Type:        schema.TypeInt,
-					Description: "to set the rule as a default, set this value to 1.",
-					Optional:    true,
-				},
-				"direction": {
-					// See `direction-alert_rule` below rather than `direction`
-					Type: schema.TypeString,
-					Description: "[TO_TARGET, FROM_TARGET, BIDIRECTIONAL]	Direction of the test (affects how results are shown)",
-					Optional: true,
-				},
-				"expression": {
-					Type:        schema.TypeString,
-					Description: "Alert rule evaluation expression",
-					Optional:    true,
-				},
-				"include_covered_prefixes": {
-					Type:        schema.TypeInt,
-					Description: "set to 1 to include queries for subprefixes detected under this prefix",
-					Optional:    true,
-				},
-				"minimum_sources": {
-					Type:        schema.TypeInt,
-					Description: "The minimum number of agents or monitors that must meet the specified criteria in order to trigger an alert",
-					Optional:    true,
-				},
-				"minimum_sources_pct": {
-					Type:        schema.TypeInt,
-					Description: "The minimum percentage of agents or monitors that must meet the specified criteria in order to trigger an alert",
-					Optional:    true,
-				},
-        "notifications": {
-          Type:        schema.TypeSet,
-          Description: "List of notifications for the Alert Rule",
-          Optional:    true,
-          Elem: &schema.Resource{
-            Schema: map[string]*schema.Schema{
-              "email": {
-                Type:        schema.TypeSet,
-                Description: "Email notification",
-                Optional:    true,
-                Elem: &schema.Resource{
-                  Schema: map[string]*schema.Schema{
-                    "message": {
-                      Type:        schema.TypeString,
-                      Description: "Email message",
-                      Optional:    true,
-                    },
-                    "recipient": {
-                      Type:        schema.TypeList,
-                      Description: "Email address",
-                      Optional:    true,
-                      Elem: &schema.Schema{
-                        Type: schema.TypeString,
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-				"notify_on_clear": {
-					Type:        schema.TypeInt,
-					Description: "set to 1 to trigger the notification when the alert clears.",
-					Optional:    true,
-				},
-				"rounds_violating_mode": {
-					Type:        schema.TypeString,
-					Description: "ANY or EXACT.  EXACT requires that the same agent(s) meet the threshold in consecutive rounds; default is ANY",
-					Optional:    true,
-				},
-				"rounds_violating_out_of": {
-					Type:        schema.TypeInt,
-					Description: "specifies the divisor (Y value) of the “X of Y times” condition in an alert rule.  Minimum value is 1, maximum value is 10.",
-					Optional:    true,
-				},
-				"rounds_violating_required": {
-					Type:        schema.TypeInt,
-					Description: "specifies the numerator (X value) of the “X of Y times” condition in an alert rule.  Minimum value is 1, maximum value is 10. Must be less than or equal to roundsViolatingOutOf",
-					Optional:    true,
-				},
 				"rule_id": {
 					Type:        schema.TypeInt,
-					Description: "If alertsEnabled is set to 1 and alertRules is not included in a creation/update query, applicable defaults will be used.",
+					Description: "Rule ID",
 					Optional:    true,
-				},
-				"rule_name": {
-					Type:        schema.TypeString,
-					Description: "name of the alert rule",
-					Optional:    true,
-				},
-				"test_ids": {
-					Type:        schema.TypeList,
-					Description: "Valid test IDs",
-					Optional:    true,
-					Elem: &schema.Schema{
-						Type: schema.TypeInt,
-					},
 				},
 			},
 		},
@@ -372,12 +263,11 @@ var schemas = map[string]*schema.Schema{
 		ValidateFunc: validation.StringInSlice([]string{"Page Load", "HTTP Server", "End-to-End (Server)", "End-to-End (Agent)", "Voice", "DNS+ Domain", "DNS+ Server", "DNS Server", "DNS Trace", "DNSSEC", "Transactions", "Web Transactions", "BGP", "Path Trace", "FTP", "SIP Server"}, false),
 	},
 	"alerts_enabled": {
-		Type:         schema.TypeInt,
-		Description:  "choose 1 to enable alerts, or 0 to disable alerts. Defaults to 1",
-		Optional:     true,
-		Required:     false,
-		Default:      1,
-		ValidateFunc: validation.IntBetween(0, 1),
+		Type:        schema.TypeBool,
+		Description: "Set to 'true' to enable alerts, or 'false' to disable alerts. Defaults to 'true'",
+		Optional:    true,
+		Required:    false,
+		Default:     true,
 	},
 	"all_account_group_roles": {
 		Type:        schema.TypeList,
@@ -395,7 +285,7 @@ var schemas = map[string]*schema.Schema{
 	},
 	"api_links": {
 		Type:        schema.TypeList,
-		Description: "self links to endpoint to pull test metadata, and data links to endpoint for test data",
+		Description: "Self links to endpoint to pull test metadata, and data links to endpoint for test data",
 		Computed:    true,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
@@ -414,36 +304,34 @@ var schemas = map[string]*schema.Schema{
 	},
 	"auth_type": {
 		Type:         schema.TypeString,
-		Description:  "auth type",
+		Description:  "Auth type",
 		Optional:     true,
 		Default:      "NONE",
 		ValidateFunc: validation.StringInSlice([]string{"NONE", "BASIC", "NTLM", "KERBEROS"}, false),
 	},
 	"auth_user": {
 		Type:        schema.TypeString,
-		Description: "username for authentication with SIP server",
+		Description: "Username for authentication with SIP server",
 		Required:    true,
 	},
 	"bandwidth_measurements": {
-		Type:        schema.TypeInt,
-		Description: "set to 1 to measure bandwidth; defaults to 0. Only applies to Enterprise Agents assigned to the test, and requires that networkMeasurements is set.",
+		Type:        schema.TypeBool,
+		Description: "Measure bandwidth. Only applies to Enterprise Agents assigned to the test, and requires that networkMeasurements is set. Defaults to 'false'",
 		Optional:    true,
 		Required:    false,
-		Default:     1,
+		Default:     false,
 	},
 	"bgp_measurements": {
-		Type:         schema.TypeInt,
-		Description:  "choose 1 to enable bgp measurements, 0 to disable; defaults to 1",
-		Optional:     true,
-		Required:     false,
-		Default:      1,
-		ValidateFunc: validation.IntBetween(0, 1),
+		Type:        schema.TypeBool,
+		Description: "Enable BGP measurements",
+		Optional:    true,
+		Required:    false,
 	},
 	"bgp_monitors": {
 		Type:        schema.TypeList,
 		Optional:    true,
 		Required:    false,
-		Description: "array of BGP Monitor objects",
+		Description: "Array of BGP Monitor objects",
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"ip_address": {
@@ -452,7 +340,7 @@ var schemas = map[string]*schema.Schema{
 				},
 				"monitor_id": {
 					Type:        schema.TypeInt,
-					Description: "monitor id",
+					Description: "Monitor ID",
 					Required:    true,
 				},
 				"monitor_name": {
@@ -471,8 +359,8 @@ var schemas = map[string]*schema.Schema{
 		},
 	},
 	"builtin": {
-		Type:        schema.TypeInt,
-		Description: "1 for built-in labels, and 0 for user-created labels. Note that built-in labels are read-only",
+		Type:        schema.TypeBool,
+		Description: "Set to 'true' for built-in labels, or to 'false' for user-created labels. Note that built-in labels are read-only",
 		Computed:    true,
 	},
 	"client_certificate": {
@@ -482,20 +370,21 @@ var schemas = map[string]*schema.Schema{
 	},
 	"codec": {
 		Type:        schema.TypeString,
-		Description: "codec label",
+		Description: "Codec label",
 		Computed:    true,
 	},
 	"codec_id": {
 		Type:         schema.TypeInt,
-		Description:  "codec to use",
+		Description:  "Codec to use",
 		Optional:     true,
 		ValidateFunc: validation.IntBetween(0, 8),
 	},
 	"content_regex": {
-		Type: schema.TypeString,
-		Description: "regular Expressions	Verify content using a regular expression. This field does not require escaping",
-		Optional: true,
-		Default:  "NONE",
+		Type:        schema.TypeString,
+		Description: "Verify content using a regular expression. This field does not require escaping",
+		Optional:    true,
+		Required:    false,
+		Default:     ".*",
 	},
 	"created_by": {
 		Type:        schema.TypeString,
@@ -520,11 +409,10 @@ var schemas = map[string]*schema.Schema{
 		Optional: true,
 	},
 	"default": {
-		Type:         schema.TypeInt,
-		Description:  "to set the rule as a default, set this value to 1.",
-		Optional:     true,
-		Default:      0,
-		ValidateFunc: validation.IntBetween(0, 1),
+		Type:        schema.TypeBool,
+		Description: "set the rule as a default",
+		Optional:    true,
+		Default:     false,
 	},
 	"description": {
 		Type:        schema.TypeString,
@@ -620,12 +508,11 @@ var schemas = map[string]*schema.Schema{
 		Required:    true,
 	},
 	"enabled": {
-		Type: schema.TypeInt,
-		Description: "0 or 1	choose 1 to enable the test, 0 to disable the test",
-		Optional:     true,
-		Required:     false,
-		Default:      1,
-		ValidateFunc: validation.IntBetween(0, 1),
+		Type:        schema.TypeBool,
+		Description: "Enable the test.",
+		Optional:    true,
+		Required:    false,
+		Default:     true,
 	},
 	"expression": {
 		Type:         schema.TypeString,
@@ -634,10 +521,10 @@ var schemas = map[string]*schema.Schema{
 		ValidateFunc: validation.StringIsNotEmpty,
 	},
 	"follow_redirects": {
-		Type:        schema.TypeInt,
-		Description: "set to 0 to not follow HTTP/301 or HTTP/302 redirect directives. Default is 1",
+		Type:        schema.TypeBool,
+		Description: "Follow HTTP/301 or HTTP/302 redirect directives. Defaults to 'true'",
 		Optional:    true,
-		Default:     1,
+		Default:     true,
 	},
 	"ftp_target_time": {
 		Type:         schema.TypeInt,
@@ -675,8 +562,8 @@ var schemas = map[string]*schema.Schema{
 					},
 				},
 				"builtin": {
-					Type:        schema.TypeInt,
-					Description: "1 for built-in labels, and 0 for user-created labels. Note that built-in labels are read-only",
+					Type:        schema.TypeBool,
+					Description: "Set to 'true' to use built-in labels, or to 'false' to use user-created labels. Note that built-in labels are read-only",
 					Computed:    true,
 				},
 				"group_id": {
@@ -691,7 +578,7 @@ var schemas = map[string]*schema.Schema{
 				},
 				"tests": {
 					Type:        schema.TypeList,
-					Description: "list of tests",
+					Description: "List of tests",
 					Optional:    true,
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
@@ -751,16 +638,14 @@ var schemas = map[string]*schema.Schema{
 		ValidateFunc: validation.IntBetween(1, 2),
 	},
 	"include_covered_prefixes": {
-		Type:         schema.TypeInt,
-		Description:  "set to 1 to include queries for subprefixes detected under this prefix",
-		Optional:     true,
-		ValidateFunc: validation.IntBetween(0, 1),
+		Type:        schema.TypeBool,
+		Description: "Include queries for subprefixes detected under this prefix.",
+		Optional:    true,
 	},
 	"include_headers": {
-		Type:         schema.TypeInt,
-		Description:  "set to 1 to capture response headers for objects loaded by the test.Default is 1.",
-		Optional:     true,
-		ValidateFunc: validation.IntBetween(0, 1),
+		Type:        schema.TypeBool,
+		Description: "Set to 'true' to capture response headers for objects loaded by the test",
+		Optional:    true,
 	},
 	"interval": {
 		Type:         schema.TypeInt,
@@ -775,8 +660,8 @@ var schemas = map[string]*schema.Schema{
 		ValidateFunc: validation.IntBetween(0, 150),
 	},
 	"live_share": {
-		Type:        schema.TypeInt,
-		Description: "indicates 1 for a test shared with your account group, 0 for a normal test (does not apply to DNS+ tests)",
+		Type:        schema.TypeBool,
+		Description: "Set to 'true' for a test shared with your account group, or to 'false' for a normal test",
 		Computed:    true,
 	},
 	"login_account_group": {
@@ -794,14 +679,16 @@ var schemas = map[string]*schema.Schema{
 		},
 	},
 	"minimum_sources": {
-		Type:        schema.TypeInt,
-		Description: "The minimum number of agents or monitors that must meet the specified criteria in order to trigger an alert",
-		Optional:    true,
+		Type:         schema.TypeInt,
+		Description:  "The minimum number of agents or monitors that must meet the specified criteria in order to trigger an alert; mutually exclusive with 'minimum_sources_pct'",
+		Optional:     true,
+		ValidateFunc: validation.IntAtLeast(1),
 	},
 	"minimum_sources_pct": {
-		Type:        schema.TypeInt,
-		Description: "The minimum percentage of agents or monitors that must meet the specified criteria in order to trigger an alert",
-		Optional:    true,
+		Type:         schema.TypeInt,
+		Description:  "The minimum percentage of agents or monitors that must meet the specified criteria in order to trigger an alert; mutually exclusive with 'minimum_sources'",
+		Optional:     true,
+		ValidateFunc: validation.IntBetween(0, 100),
 	},
 	"modified_by": {
 		Type:        schema.TypeString,
@@ -821,70 +708,78 @@ var schemas = map[string]*schema.Schema{
 		Required:     false,
 	},
 	"mtu_measurements": {
-		Type:         schema.TypeInt,
-		Description:  "set to 1 to measure MTU sizes on network from agents to the target.",
-		Optional:     true,
-		Required:     false,
-		Default:      1,
-		ValidateFunc: validation.IntBetween(0, 1),
+		Type:        schema.TypeBool,
+		Description: "Measure MTU sizes on network from agents to the target",
+		Optional:    true,
+		Required:    false,
+		DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+			// If this field isn't set, it will change when
+			// network_measurements change. If we're not explicitly
+			// setting this field, then ignore the diff.
+			return !d.HasChange(k)
+		},
 	},
 	"name": {
 		Type:        schema.TypeString,
 		Required:    true,
-		Description: "name of the test",
+		Description: "Name of the test",
 	},
 	"network_measurements": {
-		Type: schema.TypeInt,
-		Description: "integer	0 or 1	choose 1 to enable network measurements, 0 to disable; defaults to 1",
-		Default:      1,
-		Optional:     true,
-		Required:     false,
-		ValidateFunc: validation.IntBetween(0, 1),
+		Type:        schema.TypeBool,
+		Description: "Enable network measurements.",
+		Default:     true,
+		Optional:    true,
+		Required:    false,
 	},
-  "notifications": {
-    Type:        schema.TypeSet,
-    Description: "List of notifications for the Alert Rule",
-    Optional:    true,
-    Elem: &schema.Resource{
-      Schema: map[string]*schema.Schema{
-        "email": {
-          Type:        schema.TypeSet,
-          Description: "Email notification",
-          Optional:    true,
-          Elem: &schema.Resource{
-            Schema: map[string]*schema.Schema{
-              "message": {
-                Type:        schema.TypeString,
-                Description: "Email message",
-                Optional:    true,
-              },
-              "recipient": {
-                Type:        schema.TypeList,
-                Description: "Email address",
-                Optional:    true,
-                Elem: &schema.Schema{
-                  Type: schema.TypeString,
-                },
-              },
-            },
-          },
-        },
-      },
-    },
-  },
+	"notifications": {
+		Type:        schema.TypeSet,
+		Description: "List of notifications for the Alert Rule",
+		Optional:    true,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"email": {
+					Type:        schema.TypeSet,
+					Description: "Email notification",
+					Optional:    true,
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"message": {
+								Type:        schema.TypeString,
+								Description: "Email message",
+								Optional:    true,
+							},
+							"recipient": {
+								Type:        schema.TypeList,
+								Description: "Email address",
+								Optional:    true,
+								Elem: &schema.Schema{
+									Type: schema.TypeString,
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	},
 	"notify_on_clear": {
-		Type:         schema.TypeInt,
-		Description:  "set to 1 to trigger the notification when the alert clears.",
-		Optional:     true,
-		ValidateFunc: validation.IntBetween(0, 1),
+		Type:        schema.TypeBool,
+		Description: "set to 'true' to trigger the notification when the alert clears.",
+		Optional:    true,
+		Default:     true,
 	},
 	"num_path_traces": {
 		Type:         schema.TypeInt,
-		Description:  "number of path traces. default 3.",
-		Default:      3,
+		Description:  "number of path traces.",
 		Optional:     true,
 		Required:     false,
 		ValidateFunc: validation.IntBetween(1, 10),
+		DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+			// If this field isn't set, it will change when
+			// network_measurements change. If we're not explicitly
+			// setting this field, then ignore the diff.
+			return !d.HasChange(k)
+		},
 	},
 	"options_regex": {
 		Type:         schema.TypeString,
@@ -966,17 +861,16 @@ var schemas = map[string]*schema.Schema{
 		ValidateFunc: validation.StringInSlice([]string{"TCP", "UDP"}, false),
 	},
 	"recursive_queries": {
-		Type:         schema.TypeInt,
-		Default:      1,
-		ValidateFunc: validation.IntBetween(0, 1),
-		Description: "0 or 1	set to 1 to run query with RD (recursion desired) flag enabled",
-		Optional: true,
-		Required: false,
+		Type:        schema.TypeBool,
+		Default:     true,
+		Description: "Whether to to run the query with RD (Recursion Desired) flag enabled",
+		Optional:    true,
+		Required:    false,
 	},
 	"register_enabled": {
-		Type:         schema.TypeInt,
+		Type:         schema.TypeBool,
 		Default:      0,
-		Description:  "1 to perform SIP registration on the test target with the SIP REGISTER command, defaults to 0",
+		Description:  "Perform SIP registration on the test target with the SIP REGISTER command; defaults to 'false'",
 		Optional:     true,
 		ValidateFunc: validation.IntBetween(0, 1),
 	},
@@ -988,6 +882,7 @@ var schemas = map[string]*schema.Schema{
 	"rounds_violating_mode": {
 		Type:         schema.TypeString,
 		Description:  "ANY or EXACT.  EXACT requires that the same agent(s) meet the threshold in consecutive rounds; default is ANY",
+		Default:      "ANY",
 		Optional:     true,
 		ValidateFunc: validation.StringInSlice([]string{"ANY", "EXACT"}, false),
 	},
@@ -1014,18 +909,18 @@ var schemas = map[string]*schema.Schema{
 		Required:    true,
 	},
 	"saved_event": {
-		Type:        schema.TypeInt,
-		Description: "indicates 1 for a saved event, 0 for a normal test",
+		Type:        schema.TypeBool,
+		Description: "Set to 'true' for a saved event, or to 'false' for a normal test.",
 		Computed:    true,
 	},
 	"server": {
 		Type:        schema.TypeString,
-		Description: "target host",
+		Description: "Target host",
 		Required:    true,
 	},
 	"shared_with_accounts": {
 		Type:        schema.TypeList,
-		Description: "array of DNS Server objects {“serverName”: “fqdn of server”}",
+		Description: "Array of DNS Server objects {“serverName”: “fqdn of server”}",
 		Optional:    true,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
@@ -1183,12 +1078,11 @@ var schemas = map[string]*schema.Schema{
 		ValidateFunc: validation.IntBetween(5000, 30000),
 	},
 	"throughput_measurements": {
-		Type:         schema.TypeInt,
-		ValidateFunc: validation.IntBetween(0, 1),
-		Optional:     true,
-		Required:     false,
-		Default:      0,
-		Description: "0 or 1	defaults to 0 (disabled), not allowed when source (or target) of the test is a cloud agent",
+		Type:        schema.TypeBool,
+		Optional:    true,
+		Required:    false,
+		Default:     false,
+		Description: "Defaults to 'false' (disabled), not allowed when source (or target) of the test is a cloud agent",
 	},
 	"throughput_rate": {
 		Type:         schema.TypeInt,
@@ -1232,14 +1126,14 @@ var schemas = map[string]*schema.Schema{
 		ValidateFunc: validation.IntBetween(0, 1),
 	},
 	"use_public_bgp": {
-		Type:         schema.TypeInt,
-		Description:  "set to 1 to automatically add all available Public BGP Monitors",
-		Optional:     true,
-		ValidateFunc: validation.IntBetween(0, 1),
+		Type:        schema.TypeBool,
+		Description: "Automatically add all available Public BGP Monitors.",
+		Optional:    true,
+		Default:     true,
 	},
 	"use_ntlm": {
-		Type:        schema.TypeInt,
-		Description: "choose 0 to use Basic Authentication, or omit field.Requires username/password to be set",
+		Type:        schema.TypeBool,
+		Description: "Use Basic Authentication, or omit field. Requires username/password to be set.",
 		Optional:    true,
 	},
 	"user": {
@@ -1263,9 +1157,9 @@ var schemas = map[string]*schema.Schema{
 		Description: "username to be used to authenticate with the destination server",
 	},
 	"verify_certificate": {
-		Type:        schema.TypeInt,
-		Description: "set to 0 to ignore certificate errors (defaults to 1)",
+		Type:        schema.TypeBool,
+		Description: "Set to 'false' to ignore certificate errors. Defaults to 'true'",
 		Optional:    true,
-		Default:     1,
+		Default:     true,
 	},
 }

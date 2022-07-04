@@ -5,7 +5,7 @@ import (
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/william20111/go-thousandeyes"
+	"github.com/thousandeyes/thousandeyes-sdk-go/v2"
 )
 
 func resourceSIPServer() *schema.Resource {
@@ -80,8 +80,8 @@ func resourceSIPServerCreate(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return err
 	}
-	id := remote.TestID
-	d.SetId(strconv.Itoa(id))
+	id := *remote.TestID
+	d.SetId(strconv.FormatInt(id, 10))
 	return resourceSIPServerRead(d, m)
 }
 

@@ -6,7 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/william20111/go-thousandeyes"
+	"github.com/thousandeyes/thousandeyes-sdk-go/v2"
 )
 
 func getReferenceData(schemaData map[string]*schema.Schema, attrs map[string]string) *schema.ResourceData {
@@ -24,7 +24,7 @@ func getReferenceData(schemaData map[string]*schema.Schema, attrs map[string]str
 func TestResourceBuildStruct(t *testing.T) {
 	prefix := "8.19.2.2/19"
 	cmpStruct := thousandeyes.BGP{
-		Prefix: prefix,
+		Prefix: thousandeyes.String(prefix),
 	}
 	newStruct := thousandeyes.BGP{}
 	attrs := map[string]string{
@@ -33,7 +33,7 @@ func TestResourceBuildStruct(t *testing.T) {
 	d := getReferenceData(schemas, attrs)
 	ResourceBuildStruct(d, &newStruct)
 
-	if newStruct.Prefix != cmpStruct.Prefix {
+	if *newStruct.Prefix != *cmpStruct.Prefix {
 		t.Error("Building resource did not assign struct field correctly.")
 	}
 
@@ -44,51 +44,51 @@ func TestResourceRead(t *testing.T) {
 	attrs := map[string]string{}
 	d := getReferenceData(schemas, attrs)
 	remoteResource := thousandeyes.BGP{
-		Prefix: prefix,
+		Prefix: thousandeyes.String(prefix),
 	}
 	err := ResourceRead(d, &remoteResource)
 	if err != nil {
 		t.Errorf("Setting resource data returned error: %+v", err.Error())
 	}
-	if d.Get("prefix") != remoteResource.Prefix {
+	if d.Get("prefix") != *remoteResource.Prefix {
 		t.Errorf("Reading resource did not assign resource data correctly.\nStruct is %+v\nResource is %+v", remoteResource, d.State().Attributes)
 	}
 }
 
 func TestResourceReadValue(t *testing.T) {
 	testStruct := thousandeyes.AccountGroupRole{
-		RoleName:                 "TestRole",
-		RoleID:                   1,
-		HasManagementPermissions: 1,
-		Builtin:                  0,
-		Permissions: []thousandeyes.Permission{
+		RoleName:                 thousandeyes.String("TestRole"),
+		RoleID:                   thousandeyes.Int(1),
+		HasManagementPermissions: thousandeyes.Bool(true),
+		Builtin:                  thousandeyes.Bool(false),
+		Permissions: &[]thousandeyes.Permission{
 			{
-				IsManagementPermission: 0,
-				Label:                  "foo",
-				PermissionID:           27,
+				IsManagementPermission: thousandeyes.Bool(false),
+				Label:                  thousandeyes.String("foo"),
+				PermissionID:           thousandeyes.Int(27),
 			},
 			{
-				IsManagementPermission: 1,
-				Label:                  "bar",
-				PermissionID:           28,
+				IsManagementPermission: thousandeyes.Bool(true),
+				Label:                  thousandeyes.String("bar"),
+				PermissionID:           thousandeyes.Int(28),
 			},
 		},
 	}
 	resultMap := map[string]interface{}{
-		"role_name":                  "TestRole",
-		"role_id":                    1,
-		"has_management_permissions": 1,
-		"builtin":                    0,
+		"role_name":                  thousandeyes.String("TestRole"),
+		"role_id":                    thousandeyes.Int(1),
+		"has_management_permissions": thousandeyes.Bool(true),
+		"builtin":                    thousandeyes.Bool(false),
 		"permissions": []map[string]interface{}{
 			{
-				"is_management_permission": 0,
-				"label":                    "foo",
-				"permission_id":            27,
+				"is_management_permission": thousandeyes.Bool(false),
+				"label":                    thousandeyes.String("foo"),
+				"permission_id":            thousandeyes.Int(27),
 			},
 			{
-				"is_management_permission": 1,
-				"label":                    "bar",
-				"permission_id":            28,
+				"is_management_permission": thousandeyes.Bool(true),
+				"label":                    thousandeyes.String("bar"),
+				"permission_id":            thousandeyes.Int(28),
 			},
 		},
 	}
@@ -160,20 +160,27 @@ func TestFixReadValues(t *testing.T) {
 	// alert_rules
 	alertRulesInput := []interface{}{
 		map[string]interface{}{
-			"rule_name": "foo",
-			"rule_id":   1,
+			"rule_name": thousandeyes.String("foo"),
+			"rule_id":   thousandeyes.Int(1),
+			"default":   thousandeyes.Bool(false),
 		},
 		map[string]interface{}{
-			"rule_name": "bar",
-			"rule_id":   2,
+			"rule_name": thousandeyes.String("bar"),
+			"rule_id":   thousandeyes.Int(2),
+			"default":   thousandeyes.Bool(false),
+		},
+		map[string]interface{}{
+			"rule_name": thousandeyes.String("bar"),
+			"rule_id":   thousandeyes.Int(3),
+			"default":   thousandeyes.Bool(true),
 		},
 	}
 	alertRulesTarget := []interface{}{
 		map[string]interface{}{
-			"rule_id": 1,
+			"rule_id": thousandeyes.Int(1),
 		},
 		map[string]interface{}{
-			"rule_id": 2,
+			"rule_id": thousandeyes.Int(2),
 		},
 	}
 	output, err = FixReadValues(alertRulesInput, "alert_rules")
@@ -187,19 +194,19 @@ func TestFixReadValues(t *testing.T) {
 	// bgp_monitors
 	monitorsInput := []interface{}{
 		map[string]interface{}{
-			"monitor_name": "foo",
-			"monitor_id":   1,
-			"monitor_type": "Public",
+			"monitor_name": thousandeyes.String("foo"),
+			"monitor_id":   thousandeyes.Int(1),
+			"monitor_type": thousandeyes.String("Public"),
 		},
 		map[string]interface{}{
-			"monitor_name": "bar",
-			"monitor_id":   2,
-			"monitor_type": "Private",
+			"monitor_name": thousandeyes.String("bar"),
+			"monitor_id":   thousandeyes.Int(2),
+			"monitor_type": thousandeyes.String("Private"),
 		},
 	}
 	monitorsTarget := []interface{}{
 		map[string]interface{}{
-			"monitor_id": 2,
+			"monitor_id": thousandeyes.Int(2),
 		},
 	}
 	output, err = FixReadValues(monitorsInput, "bgp_monitors")
@@ -241,17 +248,17 @@ func TestFixReadValues(t *testing.T) {
 	account_group_id = 2
 	accountsInput := []interface{}{
 		map[string]interface{}{
-			"name": "foo",
-			"aid":  1,
+			"name": thousandeyes.String("foo"),
+			"aid":  thousandeyes.Int(1),
 		},
 		map[string]interface{}{
-			"name": "bar",
-			"aid":  2,
+			"name": thousandeyes.String("bar"),
+			"aid":  thousandeyes.Int(2),
 		},
 	}
 	accountsTarget := []interface{}{
 		map[string]interface{}{
-			"aid": 1,
+			"aid": thousandeyes.Int(1),
 		},
 	}
 	output, err = FixReadValues(accountsInput, "shared_with_accounts")

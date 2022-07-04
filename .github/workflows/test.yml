@@ -6,16 +6,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Set up Go
-        uses: actions/setup-go@v1
+        uses: actions/setup-go@v3
         with:
-          go-version: 1.14
+          go-version-file: 'go.mod'
+          cache: true
       - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v1
+        uses: goreleaser/goreleaser-action@v3
         with:
           version: latest
           args: build --snapshot
-          key: ${{ secrets.YOUR_PRIVATE_KEY }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Run go generate
+        run: go generate
+      - name: Check differences after go generate
+        run: |
+          git diff --compact-summary --exit-code || \
+          (echo; echo "Unexpected difference in directories after code generation. Run 'go generate' command and commit."; exit 1)
