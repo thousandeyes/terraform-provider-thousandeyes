@@ -18,31 +18,31 @@ This resource allows you to create and configure an agent-to-agent test. For mor
 - `agents` (Block Set, Min: 1) The list of ThousandEyes Agents to use. See [Nested Schema](#nestedblock--agents).
 - `direction` (String) [TO_TARGET, FROM_TARGET, BIDIRECTIONAL] Determines the direction of the test.
 - `interval` (Number) The interval to run the test on, in seconds.
-- `protocol` (String) [TCP or UDP] Defines the protocol for agent-to-agent tests. Default value is TCP.
+- `protocol` (String) [TCP or UDP] Defines the protocol for agent-to-agent tests. Default value is `TCP`.
 - `target_agent_id` (Number) pull from /agents endpoint	Both the 'agents': [] and the targetAgentID cannot be cloud agents. Can be Enterprise Agent -> Cloud, Cloud -> Enterprise Agent, or Enterprise Agent -> Enterprise Agent
 - `test_name` (String) The name of the agent-to-agent test.
 
 ### Optional
 
-- `alert_rules` (Block Set) Defines the alert rules used by pulling the **ruleId** from the **/alert-rules** endpoint. If **alertsEnabled** is set to 'true' and **alertRules** is not included in a creation/update query, the applicable defaults will be used. See [Nested Schema](#nestedblock--alert_rules).
-- `alerts_enabled` (Boolean) Enables/disables alerts for the test. Default value is `true`.
-- `bgp_measurements` (Boolean) Enable BGP measurements
-- `bgp_monitors` (Block List) Array of BGP Monitor objects (see [below for nested schema](#nestedblock--bgp_monitors))
-- `description` (String) defaults to empty string
+- `alert_rules` (Block Set) Defines the alert rules used by pulling the **ruleId** from the **/alert-rules** endpoint. If **alertsEnabled** is set to `true` and **alertRules** is not included in a creation/update query, the applicable defaults will be used. See [Nested Schema](#nestedblock--alert_rules).
+- `alerts_enabled` (Boolean) Enable/disable alerts for the test. Default value is `true`.
+- `bgp_measurements` (Boolean) Enable/disable BGP measurements.
+- `bgp_monitors` (Block List) Defines the array of BGP monitor objects. See [Nested Schema](#nestedblock--bgp_monitors).
+- `description` (String) Description of the agent-to-agent test. Default value is an empty string.
 - `dscp_id` (Number) A Differentiated Services Code Point (DSCP) is a value found in an IP packet header which is used to request a level of priority for delivery (Defined in RFC 2474 https://www.ietf.org/rfc/rfc2474.txt). It is one of the Quality of Service management tools used in router configuration to protect real-time and high priority data applications.
-- `enabled` (Boolean) Enable the test.
-- `groups` (Block List) array of label objects (see [below for nested schema](#nestedblock--groups))
-- `mss` (Number) (30..1400)	Maximum Segment Size, in bytes.
-- `mtu_measurements` (Boolean) Measure MTU sizes on network from agents to the target
-- `network_measurements` (Boolean) Enable network measurements.
-- `num_path_traces` (Number) number of path traces.
-- `path_trace_mode` (String) choose inSession to perform the path trace within a TCP session; defaults to classic
-- `port` (Number) target port
+- `enabled` (Boolean) Enable/disable the test. Default value is `true`.
+- `groups` (Block List) Defines the array of label objects. See [Nested Schema](#nestedblock--groups).
+- `mss` (Number) (30..1400)	Defines the maximum segment size, in bytes.
+- `mtu_measurements` (Boolean) Measure MTU sizes on the network from agents to the target.
+- `network_measurements` (Boolean) Enable/disable network measurements.
+- `num_path_traces` (Number) Defines the number of path traces.
+- `path_trace_mode` (String) [inSession or classic] Defines whether a path trace is run in a TCP session or not. Default value is `classic`. For more information, see [In Session Path Trace](https://docs.thousandeyes.com/archived-release-notes/2020/2020-07-release-notes#in-session-path-trace-mode-for-network-agent-to-agent-tests).
+- `port` (Number) The target port.
 - `shared_with_accounts` (Block List) Array of DNS Server objects {“serverName”: “fqdn of server”} (see [below for nested schema](#nestedblock--shared_with_accounts))
 - `throughput_duration` (Number) Defaults to 10000
-- `throughput_measurements` (Boolean) Defaults to 'false' (disabled), not allowed when source (or target) of the test is a cloud agent
-- `throughput_rate` (Number) for UDP only
-- `use_public_bgp` (Boolean) Automatically add all available Public BGP Monitors.
+- `throughput_measurements` (Boolean) Enable/disable throughput measurements. This setting is not allowed when the source or target of the test is a Cloud Agent. Default value is `false`.
+- `throughput_rate` (Number) Defines the throughput rate. Available for UDP tests only.
+- `use_public_bgp` (Boolean) Automatically add all available public BGP monitors.
 
 ### Read-Only
 
