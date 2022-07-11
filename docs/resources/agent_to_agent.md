@@ -16,16 +16,16 @@ This resource allows you to create and configure an agent-to-agent test. For mor
 ### Required
 
 - `agents` (Block Set, Min: 1) The list of ThousandEyes Agents to use. See [Nested Schema](#nestedblock--agents).
-- `direction` (String) [TO_TARGET, FROM_TARGET, BIDIRECTIONAL] Determines the direction of the test.
-- `interval` (Number) The interval to run the test on, in seconds.
-- `protocol` (String) [TCP or UDP] Defines the protocol for agent-to-agent tests. Default value is TCP.
+- `direction` (String) [TO_TARGET, FROM_TARGET, BIDIRECTIONAL] Direction of the test (affects how results are shown)
+- `interval` (Number) interval to run test on, in seconds
+- `protocol` (String) Protocol for agent to agent tests, TCP or UDP.  Defaults to TCP
 - `target_agent_id` (Number) pull from /agents endpoint	Both the 'agents': [] and the targetAgentID cannot be cloud agents. Can be Enterprise Agent -> Cloud, Cloud -> Enterprise Agent, or Enterprise Agent -> Enterprise Agent
-- `test_name` (String) The name of the agent-to-agent test.
+- `test_name` (String) Name of Test
 
 ### Optional
 
-- `alert_rules` (Block Set) Defines the alert rules used by pulling the **ruleId** from the **/alert-rules** endpoint. If **alertsEnabled** is set to 'true' and **alertRules** is not included in a creation/update query, the applicable defaults will be used. See [Nested Schema](#nestedblock--alert_rules).
-- `alerts_enabled` (Boolean) Enables/disables alerts for the test. Default value is `true`.
+- `alert_rules` (Block Set) Get ruleId from /alert-rules endpoint. If alertsEnabled is set to 'true' and alertRules is not included in a creation/update query, applicable defaults will be used (see [below for nested schema](#nestedblock--alert_rules))
+- `alerts_enabled` (Boolean) Set to 'true' to enable alerts, or 'false' to disable alerts. Defaults to 'true'
 - `bgp_measurements` (Boolean) Enable BGP measurements
 - `bgp_monitors` (Block List) Array of BGP Monitor objects (see [below for nested schema](#nestedblock--bgp_monitors))
 - `description` (String) defaults to empty string
