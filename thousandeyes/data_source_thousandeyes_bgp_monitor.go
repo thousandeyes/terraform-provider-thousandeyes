@@ -51,7 +51,7 @@ func dataSourceThousandeyesBGPMonitorsRead(d *schema.ResourceData, meta interfac
 	var found *thousandeyes.BGPMonitor
 
 	searchName := d.Get("monitor_name").(string)
-	searchMonitorID := d.Get("monitor_id").(int)
+	searchMonitorID := d.Get("monitor_id").(int64)
 
 	BGPMonitors, err := client.GetBPGMonitors()
 	if err != nil {
@@ -73,7 +73,7 @@ func dataSourceThousandeyesBGPMonitorsRead(d *schema.ResourceData, meta interfac
 		return fmt.Errorf("unable to locate any bgp by name: [%s] or ID: [%d]", searchName, searchMonitorID)
 	}
 
-	d.SetId(strconv.Itoa(*found.MonitorID))
+	d.SetId(strconv.FormatInt(*found.MonitorID, 10))
 	err = d.Set("monitor_name", *found.MonitorName)
 	if err != nil {
 		return err

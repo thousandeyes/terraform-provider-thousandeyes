@@ -17,7 +17,7 @@ func expandAgents(v interface{}) thousandeyes.Agents {
 	for _, er := range v.([]interface{}) {
 		rer := er.(map[string]interface{})
 		agent := &thousandeyes.Agent{
-			AgentID: thousandeyes.Int(rer["agent_id"].(int)),
+			AgentID: thousandeyes.Int64(rer["agent_id"].(int64)),
 		}
 		agents = append(agents, *agent)
 	}
@@ -46,7 +46,7 @@ func expandBGPMonitors(v interface{}) thousandeyes.BGPMonitors {
 	for _, er := range v.([]interface{}) {
 		rer := er.(map[string]interface{})
 		bgpMonitor := &thousandeyes.BGPMonitor{
-			MonitorID: thousandeyes.Int(rer["monitor_id"].(int)),
+			MonitorID: thousandeyes.Int64(rer["monitor_id"].(int64)),
 		}
 		bgpMonitors = append(bgpMonitors, *bgpMonitor)
 	}
@@ -264,7 +264,7 @@ func FixReadValues(m interface{}, name string) (interface{}, error) {
 		for i < len(accounts) {
 			account := accounts[i].(map[string]interface{})
 			//  Compare to account group ID stored in global variable.
-			shared_aid := account["aid"].(*int)
+			shared_aid := account["aid"].(*int64)
 			if *shared_aid == account_group_id {
 				// Remove this item from the slice
 				accounts = append(accounts[:i], accounts[i+1:]...)
