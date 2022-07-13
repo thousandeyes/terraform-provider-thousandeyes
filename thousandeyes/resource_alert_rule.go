@@ -92,7 +92,7 @@ func resourceAlertRuleCreate(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 	id := remote.RuleID
-	d.SetId(strconv.Itoa(*id))
+	d.SetId(strconv.FormatInt(*id, 10))
 	return resourceAlertRuleRead(d, m)
 }
 
