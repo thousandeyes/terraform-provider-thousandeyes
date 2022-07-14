@@ -30,7 +30,7 @@ func resourceDNSSecRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*thousandeyes.Client)
 
 	log.Printf("[INFO] Reading Thousandeyes Test %s", d.Id())
-	id, _ := strconv.Atoi(d.Id())
+	id, _ := strconv.ParseInt(d.Id(), 10, 64)
 	remote, err := client.GetDNSSec(id)
 	if err != nil {
 		return err
@@ -46,7 +46,7 @@ func resourceDNSSecUpdate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*thousandeyes.Client)
 
 	log.Printf("[INFO] Updating ThousandEyes Test %s", d.Id())
-	id, _ := strconv.Atoi(d.Id())
+	id, _ := strconv.ParseInt(d.Id(), 10, 64)
 	update := ResourceUpdate(d, &thousandeyes.DNSSec{}).(*thousandeyes.DNSSec)
 	_, err := client.UpdateDNSSec(id, *update)
 	if err != nil {
@@ -59,7 +59,7 @@ func resourceDNSSecDelete(d *schema.ResourceData, m interface{}) error {
 	client := m.(*thousandeyes.Client)
 
 	log.Printf("[INFO] Deleting ThousandEyes Test %s", d.Id())
-	id, _ := strconv.Atoi(d.Id())
+	id, _ := strconv.ParseInt(d.Id(), 10, 64)
 	if err := client.DeleteDNSSec(id); err != nil {
 		return err
 	}

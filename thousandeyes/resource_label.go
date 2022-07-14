@@ -31,7 +31,7 @@ func resourceGroupLabelRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*thousandeyes.Client)
 
 	log.Printf("[INFO] Reading Thousandeyes Label %s", d.Id())
-	id, _ := strconv.Atoi(d.Id())
+	id, _ := strconv.ParseInt(d.Id(), 10, 64)
 	remote, err := client.GetGroupLabel(id)
 	if err != nil {
 		return err
@@ -55,7 +55,7 @@ func resourceGroupLabelUpdate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*thousandeyes.Client)
 
 	log.Printf("[INFO] Updating ThousandEyes Label %s", d.Id())
-	id, _ := strconv.Atoi(d.Id())
+	id, _ := strconv.ParseInt(d.Id(), 10, 64)
 	update := ResourceUpdate(d, &thousandeyes.GroupLabel{}).(*thousandeyes.GroupLabel)
 	// While most ThousandEyes updates only require updated fields and specifically
 	// disallow some fields on update, Labels require the label name field to be
@@ -72,7 +72,7 @@ func resourceGroupLabelDelete(d *schema.ResourceData, m interface{}) error {
 	client := m.(*thousandeyes.Client)
 
 	log.Printf("[INFO] Deleting ThousandEyes Label %s", d.Id())
-	id, _ := strconv.Atoi(d.Id())
+	id, _ := strconv.ParseInt(d.Id(), 10, 64)
 	if err := client.DeleteGroupLabel(id); err != nil {
 		return err
 	}
