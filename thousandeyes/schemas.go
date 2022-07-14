@@ -373,7 +373,7 @@ var schemas = map[string]*schema.Schema{
 			Schema: map[string]*schema.Schema{
 				"ip_address": {
 					Type:     schema.TypeString,
-					Description: "The IP address of the BGP monitor."
+					Description: "The IP address of the BGP monitor.",
 					Optional: true,
 				},
 				"monitor_id": {
@@ -383,17 +383,17 @@ var schemas = map[string]*schema.Schema{
 				},
 				"monitor_name": {
 					Type:     schema.TypeString,
-					Description: "The name of the BGP monitor."
+					Description: "The name of the BGP monitor.",
 					Optional: true,
 				},
 				"monitor_type": {
 					Type:     schema.TypeString,
-					Description: "[Public or Private] Shows the type of BGP monitor."
+					Description: "[Public or Private] Shows the type of BGP monitor.",
 					Optional: true,
 				},
 				"network": {
 					Type:     schema.TypeString,
-					Description: "The name of the autonomous system in which the BGP monitor is found."
+					Description: "The name of the autonomous system in which the BGP monitor is found.",
 					Optional: true,
 				},
 			},
@@ -447,7 +447,7 @@ var schemas = map[string]*schema.Schema{
 	},
 	"custom_headers": {
 		Type:     schema.TypeMap,
-		Description: "The custom header/s."
+		Description: "The custom headers.",
 		Optional: true,
 	},
 	"default": {
@@ -501,7 +501,7 @@ var schemas = map[string]*schema.Schema{
 				},
 				"server_id": {
 					Type:     schema.TypeInt,
-					Description: "The unique ID of the DNS server."
+					Description: "The unique ID of the DNS server.",
 					Optional: true,
 				},
 			},
@@ -994,7 +994,7 @@ var schemas = map[string]*schema.Schema{
 	},
 	"source_sip_credentials": {
 		Type:     schema.TypeMap,
-		Description: "The SIP credentials."
+		Description: "The SIP credentials.",
 		Required: true,
 	},
 	"ssl_version": {
@@ -1023,7 +1023,7 @@ var schemas = map[string]*schema.Schema{
 	},
 	"target_sip_credentials": {
 		Type:     schema.TypeList,
-		Description: "The Target SIP server credentials."
+		Description: "The Target SIP server credentials.",
 		MaxItems: 1,
 		Required: true,
 		Elem: &schema.Resource{
