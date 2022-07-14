@@ -58,37 +58,37 @@ func TestResourceRead(t *testing.T) {
 func TestResourceReadValue(t *testing.T) {
 	testStruct := thousandeyes.AccountGroupRole{
 		RoleName:                 thousandeyes.String("TestRole"),
-		RoleID:                   thousandeyes.Int(1),
+		RoleID:                   thousandeyes.Int64(1),
 		HasManagementPermissions: thousandeyes.Bool(true),
 		Builtin:                  thousandeyes.Bool(false),
 		Permissions: &[]thousandeyes.Permission{
 			{
 				IsManagementPermission: thousandeyes.Bool(false),
 				Label:                  thousandeyes.String("foo"),
-				PermissionID:           thousandeyes.Int(27),
+				PermissionID:           thousandeyes.Int64(27),
 			},
 			{
 				IsManagementPermission: thousandeyes.Bool(true),
 				Label:                  thousandeyes.String("bar"),
-				PermissionID:           thousandeyes.Int(28),
+				PermissionID:           thousandeyes.Int64(28),
 			},
 		},
 	}
 	resultMap := map[string]interface{}{
 		"role_name":                  thousandeyes.String("TestRole"),
-		"role_id":                    thousandeyes.Int(1),
+		"role_id":                    thousandeyes.Int64(1),
 		"has_management_permissions": thousandeyes.Bool(true),
 		"builtin":                    thousandeyes.Bool(false),
 		"permissions": []map[string]interface{}{
 			{
 				"is_management_permission": thousandeyes.Bool(false),
 				"label":                    thousandeyes.String("foo"),
-				"permission_id":            thousandeyes.Int(27),
+				"permission_id":            thousandeyes.Int64(27),
 			},
 			{
 				"is_management_permission": thousandeyes.Bool(true),
 				"label":                    thousandeyes.String("bar"),
-				"permission_id":            thousandeyes.Int(28),
+				"permission_id":            thousandeyes.Int64(28),
 			},
 		},
 	}
@@ -249,16 +249,16 @@ func TestFixReadValues(t *testing.T) {
 	accountsInput := []interface{}{
 		map[string]interface{}{
 			"name": thousandeyes.String("foo"),
-			"aid":  thousandeyes.Int(1),
+			"aid":  thousandeyes.Int64(1),
 		},
 		map[string]interface{}{
 			"name": thousandeyes.String("bar"),
-			"aid":  thousandeyes.Int(2),
+			"aid":  thousandeyes.Int64(2),
 		},
 	}
 	accountsTarget := []interface{}{
 		map[string]interface{}{
-			"aid": thousandeyes.Int(1),
+			"aid": thousandeyes.Int64(1),
 		},
 	}
 	output, err = FixReadValues(accountsInput, "shared_with_accounts")

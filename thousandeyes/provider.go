@@ -11,7 +11,7 @@ import (
 
 // Global variable for account group ID, as we must be aware of it in
 // functions that will not have access to it otherwise.
-var account_group_id int
+var account_group_id int64
 
 func New(version string) func() *schema.Provider {
 	return func() *schema.Provider {
@@ -53,7 +53,6 @@ func Provider() *schema.Provider {
 			"thousandeyes_ftp_server":      resourceFTPServer(),
 			"thousandeyes_sip_server":      resourceSIPServer(),
 			"thousandeyes_voice":           resourceRTPStream(),
-			"thousandeyes_voice_call":      resourceVoiceCall(),
 			"thousandeyes_label":           resourceGroupLabel(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
@@ -75,7 +74,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	}
 	var err error
 	if opts.AccountID != "" {
-		account_group_id, err = strconv.Atoi(opts.AccountID)
+		account_group_id, err = strconv.ParseInt(opts.AccountID, 10, 64)
 		if err != nil {
 			return nil, err
 		}

@@ -297,7 +297,7 @@ var schemas = map[string]*schema.Schema{
 		Description:  "[Page Load, HTTP Server, End-to-End (Server), End-to-End (Agent), DNS+ Domain, DNS+ Server, DNS Server, DNS Trace, DNSSEC, Transactions, Web Transactions, BGP, Path Trace, FTP, SIP Server] The type of alert rule. Acceptable values include the verbose names of supported tests.",
 		Type:         schema.TypeString,
 		Required:     true,
-		ValidateFunc: validation.StringInSlice([]string{"Page Load", "HTTP Server", "End-to-End (Server)", "End-to-End (Agent)", "Voice", "DNS+ Domain", "DNS+ Server", "DNS Server", "DNS Trace", "DNSSEC", "Transactions", "Web Transactions", "BGP", "Path Trace", "FTP", "SIP Server"}, false),
+		ValidateFunc: validation.StringInSlice([]string{"Page Load", "HTTP Server", "End-to-End (Server)", "End-to-End (Agent)", "Voice", "DNS Server", "DNS Trace", "DNSSEC", "Transactions", "Web Transactions", "BGP", "Path Trace", "FTP", "SIP Server"}, false),
 	},
 	"alerts_enabled": {
 		Type:        schema.TypeBool,
