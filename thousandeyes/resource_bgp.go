@@ -26,7 +26,7 @@ func resourceBGPRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*thousandeyes.Client)
 
 	log.Printf("[INFO] Reading Thousandeyes Test %s", d.Id())
-	id, _ := strconv.Atoi(d.Id())
+	id, _ := strconv.ParseInt(d.Id(), 10, 64)
 	remote, err := client.GetBGP(id)
 	if err != nil {
 		return err
@@ -42,7 +42,7 @@ func resourceBGPUpdate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*thousandeyes.Client)
 
 	log.Printf("[INFO] Updating ThousandEyes Test %s", d.Id())
-	id, _ := strconv.Atoi(d.Id())
+	id, _ := strconv.ParseInt(d.Id(), 10, 64)
 	update := ResourceUpdate(d, &thousandeyes.BGP{}).(*thousandeyes.BGP)
 	_, err := client.UpdateBGP(id, *update)
 	if err != nil {
@@ -55,7 +55,7 @@ func resourceBGPDelete(d *schema.ResourceData, m interface{}) error {
 	client := m.(*thousandeyes.Client)
 
 	log.Printf("[INFO] Deleting ThousandEyes Test %s", d.Id())
-	id, _ := strconv.Atoi(d.Id())
+	id, _ := strconv.ParseInt(d.Id(), 10, 64)
 	if err := client.DeleteBGP(id); err != nil {
 		return err
 	}

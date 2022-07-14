@@ -27,7 +27,7 @@ func resourceAlertRuleRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*thousandeyes.Client)
 
 	log.Printf("[INFO] Reading Thousandeyes Test %s", d.Id())
-	id, _ := strconv.Atoi(d.Id())
+	id, _ := strconv.ParseInt(d.Id(), 10, 64)
 	remote, err := client.GetAlertRule(id)
 	if err != nil {
 		return err
@@ -43,7 +43,7 @@ func resourceAlertRuleUpdate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*thousandeyes.Client)
 
 	log.Printf("[INFO] Updating ThousandEyes Test %s", d.Id())
-	id, _ := strconv.Atoi(d.Id())
+	id, _ := strconv.ParseInt(d.Id(), 10, 64)
 	update := ResourceUpdate(d, &thousandeyes.AlertRule{}).(*thousandeyes.AlertRule)
 	// While most ThousandEyes updates only require updated fields and specifically
 	// disallow some fields on update, Alert Rules actually require a few fields
@@ -75,7 +75,7 @@ func resourceAlertRuleDelete(d *schema.ResourceData, m interface{}) error {
 	client := m.(*thousandeyes.Client)
 
 	log.Printf("[INFO] Deleting ThousandEyes Test %s", d.Id())
-	id, _ := strconv.Atoi(d.Id())
+	id, _ := strconv.ParseInt(d.Id(), 10, 64)
 	if err := client.DeleteAlertRule(id); err != nil {
 		return err
 	}

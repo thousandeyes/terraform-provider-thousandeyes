@@ -26,7 +26,7 @@ func resourceSIPServerRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*thousandeyes.Client)
 
 	log.Printf("[INFO] Reading Thousandeyes Test %s", d.Id())
-	id, _ := strconv.Atoi(d.Id())
+	id, _ := strconv.ParseInt(d.Id(), 10, 64)
 	remote, err := client.GetSIPServer(id)
 	if err != nil {
 		return err
@@ -42,7 +42,7 @@ func resourceSIPServerUpdate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*thousandeyes.Client)
 
 	log.Printf("[INFO] Updating ThousandEyes Test %s", d.Id())
-	id, _ := strconv.Atoi(d.Id())
+	id, _ := strconv.ParseInt(d.Id(), 10, 64)
 	update := ResourceUpdate(d, &thousandeyes.SIPServer{}).(*thousandeyes.SIPServer)
 	// While most ThousandEyes updates only require updated fields and specifically
 	// disallow some fields on update, SIP Server tests actually require a few fields
@@ -64,7 +64,7 @@ func resourceSIPServerDelete(d *schema.ResourceData, m interface{}) error {
 	client := m.(*thousandeyes.Client)
 
 	log.Printf("[INFO] Deleting ThousandEyes Test %s", d.Id())
-	id, _ := strconv.Atoi(d.Id())
+	id, _ := strconv.ParseInt(d.Id(), 10, 64)
 	if err := client.DeleteSIPServer(id); err != nil {
 		return err
 	}

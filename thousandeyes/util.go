@@ -525,6 +525,16 @@ func FillValue(source interface{}, target interface{}) interface{} {
 		}
 
 		return source
+
+	case reflect.Int64:
+		// Values destined to be int64 may come to us as strings.
+		if reflect.TypeOf(source).Kind() == reflect.String {
+			i, _ := strconv.ParseInt(source.(string), 10, 64)
+			return i
+		}
+
+		return int64(source.(int))
+
 	default:
 		// If we haven't matched one of the above cases, then there
 		// is likely no reason to translate.
