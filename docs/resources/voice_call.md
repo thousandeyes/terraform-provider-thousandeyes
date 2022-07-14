@@ -17,91 +17,91 @@ description: |-
 
 ### Required
 
-- `agents` (Block Set, Min: 1) Agents to use (see [below for nested schema](#nestedblock--agents))
-- `interval` (Number) interval to run test on, in seconds
-- `source_sip_credentials` (Map of String)
-- `target_agent_id` (Number) pull from /agents endpoint	Both the 'agents': [] and the targetAgentID cannot be cloud agents. Can be Enterprise Agent -> Cloud, Cloud -> Enterprise Agent, or Enterprise Agent -> Enterprise Agent
-- `target_sip_credentials` (Block List, Min: 1, Max: 1) (see [below for nested schema](#nestedblock--target_sip_credentials))
-- `test_name` (String) Name of Test
+- `agents` (Block Set, Min: 1) The list of ThousandEyes agents to use. (see [below for nested schema](#nestedblock--agents))
+- `interval` (Number) The interval to run the test on, in seconds.
+- `source_sip_credentials` (Map of String) The SIP credentials.
+- `target_agent_id` (Number) The target agent's unique ID. Pulled from the /agents endpoint. Both the 'agents': [] and the targetAgentID cannot be Cloud Agents. Can be Enterprise Agent -> Cloud, Cloud -> Enterprise Agent, or Enterprise Agent -> Enterprise Agent.
+- `target_sip_credentials` (Block List, Min: 1, Max: 1) The Target SIP server credentials. (see [below for nested schema](#nestedblock--target_sip_credentials))
+- `test_name` (String) The name of the test.
 
 ### Optional
 
-- `alert_rules` (Block Set) Get ruleId from /alert-rules endpoint. If alertsEnabled is set to 'true' and alertRules is not included in a creation/update query, applicable defaults will be used (see [below for nested schema](#nestedblock--alert_rules))
-- `alerts_enabled` (Boolean) Set to 'true' to enable alerts, or 'false' to disable alerts. Defaults to 'true'
-- `bgp_measurements` (Boolean) Enable BGP measurements
-- `codec_id` (Number) Codec to use
-- `description` (String) defaults to empty string
-- `dscp_id` (Number) A Differentiated Services Code Point (DSCP) is a value found in an IP packet header which is used to request a level of priority for delivery (Defined in RFC 2474 https://www.ietf.org/rfc/rfc2474.txt). It is one of the Quality of Service management tools used in router configuration to protect real-time and high priority data applications.
-- `duration` (Number) duration of test, in seconds (5 to 30)
-- `enabled` (Boolean) Enable the test.
-- `groups` (Block List) array of label objects (see [below for nested schema](#nestedblock--groups))
-- `jitter_buffer` (Number) de-jitter buffer size, in seconds (0 to 150)
-- `num_path_traces` (Number) number of path traces.
-- `shared_with_accounts` (Block List) Array of DNS Server objects {“serverName”: “fqdn of server”} (see [below for nested schema](#nestedblock--shared_with_accounts))
-- `sip_target_time` (Number) target time for test completion; specified in milliseconds
-- `sip_time_limit` (Number) defaults to 5 seconds
-- `use_public_bgp` (Boolean) Automatically add all available Public BGP Monitors.
+- `alert_rules` (Block Set) Gets the ruleId from the /alert-rules endpoint. If alertsEnabled is set to 'true' and alertRules is not included in a creation/update query, the applicable defaults will be used. (see [below for nested schema](#nestedblock--alert_rules))
+- `alerts_enabled` (Boolean) Set to 'true' to enable alerts, or 'false' to disable alerts. The default value is 'true'.
+- `bgp_measurements` (Boolean) Enable BGP measurements. Set to true for enabled, false for disabled.
+- `codec_id` (Number) The unique ID of the codec to use.
+- `description` (String) A description of the alert rule. Defaults to an empty string.
+- `dscp_id` (Number) The DSCP ID.
+- `duration` (Number) The duration of the test, in seconds (5 to 30).
+- `enabled` (Boolean) Enables or disables the test.
+- `groups` (Block List) The array of label objects. (see [below for nested schema](#nestedblock--groups))
+- `jitter_buffer` (Number) The de-jitter buffer size, in seconds (0 to 150).
+- `num_path_traces` (Number) The number of path traces.
+- `shared_with_accounts` (Block List) [“serverName”: “fqdn of server”] The array of DNS Server objects. (see [below for nested schema](#nestedblock--shared_with_accounts))
+- `sip_target_time` (Number) The target time for test completion, specified in milliseconds.
+- `sip_time_limit` (Number) The test time limit. Can be between 5 and 10 seconds, and defaults to 5 seconds.
+- `use_public_bgp` (Boolean) Enable to automatically add all available Public BGP Monitors to the test.
 
 ### Read-Only
 
-- `api_links` (List of Object) Self links to endpoint to pull test metadata, and data links to endpoint for test data (see [below for nested schema](#nestedatt--api_links))
-- `codec` (String) Codec label
-- `created_by` (String) created by user
-- `created_date` (String) date of creation
-- `dscp` (String) dscp  label
+- `api_links` (List of Object) Self links to the endpoint to pull test metadata, and data links to the endpoint for test data. Read-only, and shows rel and href elements. (see [below for nested schema](#nestedatt--api_links))
+- `codec` (String) The label of the codec.
+- `created_by` (String) Created by user.
+- `created_date` (String) The date of creation.
+- `dscp` (String) The Differentiated Services Code Point (DSCP) label.
 - `id` (String) The ID of this resource.
-- `live_share` (Boolean) Set to 'true' for a test shared with your account group, or to 'false' for a normal test
-- `modified_by` (String) Last modified by user
-- `modified_date` (String) Last modified by date; shown in UTC
+- `live_share` (Boolean) Set to 'true' for a test shared with your account group, or to 'false' for a normal test.
+- `modified_by` (String) Last modified by this user.
+- `modified_date` (String) The date the test was last modified. Shown in UTC.
 - `saved_event` (Boolean) Set to 'true' for a saved event, or to 'false' for a normal test.
-- `test_id` (Number) Unique ID of test
-- `type` (String) Type of test
+- `test_id` (Number) The unique ID of the test.
+- `type` (String) The type of test.
 
 <a id="nestedblock--agents"></a>
 ### Nested Schema for `agents`
 
 Optional:
 
-- `agent_id` (Number)
-- `agent_name` (String)
-- `agent_state` (String)
-- `cluster_members` (Block List) (see [below for nested schema](#nestedblock--agents--cluster_members))
-- `country_id` (String)
-- `created_date` (String)
-- `enabled` (Boolean)
-- `error_details` (Block List) (see [below for nested schema](#nestedblock--agents--error_details))
-- `groups` (Block List) (see [below for nested schema](#nestedblock--agents--groups))
-- `hostname` (String)
-- `ip_addresses` (List of String)
-- `ipv6_policy` (String)
-- `keep_browser_cache` (Boolean)
-- `last_seen` (String)
-- `location` (String)
-- `network` (String)
-- `prefix` (String)
-- `target_for_tests` (String)
-- `utilization` (Number)
-- `verify_ssl_certificate` (Boolean)
+- `agent_id` (Number) The unique ID for the ThousandEyes agent.
+- `agent_name` (String) The name of the agent.
+- `agent_state` (String) Defines whether the agent's status is online, offline, or disabled.
+- `cluster_members` (Block List) Detailed information about each cluster member, shown as an array. This field is not shown for Enterprise Agents in standalone mode, or for Cloud Agents. (see [below for nested schema](#nestedblock--agents--cluster_members))
+- `country_id` (String) The two-digit ISO country code of the agent.
+- `created_date` (String) The date the agent was created. Expressed in UTC (yyyy-MM-dd hh:mm:ss).
+- `enabled` (Boolean) Shows whether the agent is enabled or disabled.
+- `error_details` (Block List) If one or more errors present in the agent, the error details are shown for each as an array. (see [below for nested schema](#nestedblock--agents--error_details))
+- `groups` (Block List) An array of label objects. (see [below for nested schema](#nestedblock--agents--groups))
+- `hostname` (String) Fully qualified domain name of the agent.
+- `ip_addresses` (List of String) An array of the ipAddress entries.
+- `ipv6_policy` (String) [FORCE_IPV4, PREFER_IPV6 or FORCE_IPV6] The IP version policy.
+- `keep_browser_cache` (Boolean) Defines whether the browser cache should be kept. Either 1 for enabled or 0 for disabled.
+- `last_seen` (String) The last time the agent connected with ThousandEyes. Shown in UTC (yyyy-MM-dd hh:mm:ss).
+- `location` (String) The location of the agent.
+- `network` (String) The name of the autonomous system in which the agent is found.
+- `prefix` (String) The network prefix, expressed in CIDR format.
+- `target_for_tests` (String) The target IP address or domain name representing the test destination when the agent is acting as a test target in an agent-to-agent test.
+- `utilization` (Number) Shows the overall utilization percentage.
+- `verify_ssl_certificate` (Boolean) Shows whether the SSL certificate needs to be verified. 1 for enabled and 0 for disabled.
 
 Read-Only:
 
-- `agent_type` (String)
+- `agent_type` (String) The type of ThousandEyes agent. Default value is enterprise.
 
 <a id="nestedblock--agents--cluster_members"></a>
 ### Nested Schema for `agents.cluster_members`
 
 Optional:
 
-- `agent_state` (String)
-- `ip_addresses` (List of String)
-- `last_seen` (String)
-- `member_id` (Number)
-- `name` (String)
-- `network` (String)
-- `prefix` (String)
-- `public_ip_addresses` (List of String)
-- `target_for_tests` (String)
-- `utilization` (Number)
+- `agent_state` (String) Defines whether the agent's status is online, offline, or disabled.
+- `ip_addresses` (List of String) The array of ipAddress entries.
+- `last_seen` (String) The last time the agent connected with ThousandEyes. Uses UTC (yyyy-MM-dd hh:mm:ss).
+- `member_id` (Number) The unique ID of the cluster member.
+- `name` (String) The name of the cluster member.
+- `network` (String) The name of the autonomous system in which the Enterprise Agent is found (Enterprise Agents only).
+- `prefix` (String) The network prefix, in CIDR format (Enterprise Agents only).
+- `public_ip_addresses` (List of String) The array of public ipAddress entries.
+- `target_for_tests` (String) The target IP address or domain name. Represents the test's destination when the agent is acting as a test target in an agent-to-agent test.
+- `utilization` (Number) Shows the overall utilization percentage of a cluster member.
 
 
 <a id="nestedblock--agents--error_details"></a>
@@ -109,8 +109,8 @@ Optional:
 
 Optional:
 
-- `code` (String)
-- `description` (String)
+- `code` (String) [AGENT_VERSION_OUTDATED, APPLIANCE_VERSION_OUTDATED, BROWSERBOT_VERSION_OUTDATED, CLOCK_OFFSET, NAT_TRAVERSAL_ERROR, OS_END_OF_INSTALLATION_SUPPORT, OS_END_OF_SUPPORT, or OS_END_OF_LIFE] The error code.
+- `description` (String) A detailed explanation of the error code.
 
 
 <a id="nestedblock--agents--groups"></a>
@@ -118,10 +118,10 @@ Optional:
 
 Optional:
 
-- `builtin` (Number)
-- `group_id` (Number)
-- `name` (String)
-- `type` (String)
+- `builtin` (Number) Shows whether you are using built-in (1) labels or user-created (2) labels. Built-in labels are read-only.
+- `group_id` (Number) The unique ID of the label. This number is negative for built-in labels. Query the /groups/{id} endpoint to see a list of agents/tests with this label.
+- `name` (String) The name of the label.
+- `type` (String) [tests, agents, endpoint_tests or endpoint_agents] The type of label.
 
 
 
@@ -130,16 +130,16 @@ Optional:
 
 Required:
 
-- `auth_user` (String) username for authentication with SIP server
-- `protocol` (String) transport layer for SIP communication: TCP, TLS (TLS over TCP), or UDP. Defaults to TCP
-- `sip_registrar` (String) SIP server to be tested, specified by domain name or IP address
+- `auth_user` (String) The username for authentication with the SIP server.
+- `protocol` (String) [TCP, TLS, or UDP] The transport layer for SIP communication. Can be either TCP, TLS (TLS over TCP), or UDP, and defaults to TCP.
+- `sip_registrar` (String) The SIP server to be tested, specified by domain name or IP address.
 
 Optional:
 
-- `password` (String) password to be used to authenticate with the destination server
-- `port` (Number) target port
-- `sip_proxy` (String) SIP proxy that is distinct from the SIP server, specified as a domain name or IP address
-- `user` (String) username for SIP registration; should be unique within a ThousandEyes Account Group
+- `password` (String) The password to be used to authenticate with the destination server.
+- `port` (Number) The target port.
+- `sip_proxy` (String) The SIP proxy. This is distinct from the SIP server, and is specified as a domain name or IP address.
+- `user` (String) The username for SIP registration. This should be unique within a ThousandEyes account group.
 
 
 <a id="nestedblock--alert_rules"></a>
@@ -147,7 +147,7 @@ Optional:
 
 Optional:
 
-- `rule_id` (Number) Rule ID
+- `rule_id` (Number) The unique ID of the alert rule.
 
 
 <a id="nestedblock--groups"></a>
@@ -155,25 +155,25 @@ Optional:
 
 Required:
 
-- `group_id` (Number) Unique ID of the label
+- `group_id` (Number) The unique ID of the label
 
 Optional:
 
-- `agents` (Block List) agents to use (see [below for nested schema](#nestedblock--groups--agents))
-- `name` (String) Name of the label
-- `tests` (Block List) List of tests (see [below for nested schema](#nestedblock--groups--tests))
-- `type` (String) Type of label (tests, agents, endpoint_tests, or endpoint_agents
+- `agents` (Block List) Define the ThousandEyes agents to use. (see [below for nested schema](#nestedblock--groups--agents))
+- `name` (String) The name of the label.
+- `tests` (Block List) The list of tests. (see [below for nested schema](#nestedblock--groups--tests))
+- `type` (String) [tests, agents, endpoint_tests, or endpoint_agents] The type of label.
 
 Read-Only:
 
-- `builtin` (Boolean) Set to 'true' to use built-in labels, or to 'false' to use user-created labels. Note that built-in labels are read-only
+- `builtin` (Boolean) Shows whether you are using built-in (true) labels or user-created (false) labels. Built-in labels are read-only.
 
 <a id="nestedblock--groups--agents"></a>
 ### Nested Schema for `groups.agents`
 
 Optional:
 
-- `agent_id` (Number) agent id
+- `agent_id` (Number) The unique ThousandEyes agent ID.
 
 
 <a id="nestedblock--groups--tests"></a>
@@ -181,7 +181,7 @@ Optional:
 
 Optional:
 
-- `test_id` (Number) test id
+- `test_id` (Number) The unique ID of the test.
 
 
 
@@ -190,11 +190,11 @@ Optional:
 
 Required:
 
-- `aid` (Number) Account group ID
+- `aid` (Number) The account group ID.
 
 Optional:
 
-- `name` (String) Name of account
+- `name` (String) The name of account.
 
 
 <a id="nestedatt--api_links"></a>
