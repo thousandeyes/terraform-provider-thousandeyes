@@ -22,23 +22,13 @@ jobs:
       -
         name: Import GPG key
         id: import_gpg
-        uses: crazy-max/ghaction-import-gpg@v5
+        uses: crazy-max/ghaction-import-gpg@v4
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
       -
-        name: Check GoReleaser
-        uses: goreleaser/goreleaser-action@v3
-        with:
-          version: latest
-          args: check --debug
-        env:
-          GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      -
         name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v3
+        uses: goreleaser/goreleaser-action@v2
         with:
           version: latest
           args: release --rm-dist
