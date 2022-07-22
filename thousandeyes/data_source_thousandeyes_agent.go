@@ -14,18 +14,23 @@ func dataSourceThousandeyesAgent() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"agent_name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The agent name.",
 			},
 			"agent_id": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "The agent ID.",
 			},
 			"agent_type": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The agent type.",
 			},
 		},
+
+		Description: "This is an example description for an Agent data source",
 	}
 }
 

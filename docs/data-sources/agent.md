@@ -3,12 +3,12 @@
 page_title: "thousandeyes_agent Data Source - terraform-provider-thousandeyes"
 subcategory: ""
 description: |-
-  
+  This is an example description for an Agent data source
 ---
 
 # thousandeyes_agent (Data Source)
 
-
+This is an example description for an Agent data source
 
 
 
@@ -17,12 +17,12 @@ description: |-
 
 ### Required
 
-- `agent_name` (String)
+- `agent_name` (String) The agent name.
 
 ### Read-Only
 
-- `agent_id` (Number)
-- `agent_type` (String)
+- `agent_id` (Number) The agent ID.
+- `agent_type` (String) The agent type.
 - `id` (String) The ID of this resource.
 
 
