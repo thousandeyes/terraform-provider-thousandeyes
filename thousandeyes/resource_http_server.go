@@ -18,6 +18,7 @@ func resourceHTTPServer() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
+		Description: "This is an example description for the HTTP Server resource.",
 	}
 	return &resource
 }
