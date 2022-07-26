@@ -17,7 +17,7 @@ description: |-
 
 ### Required
 
-- `alert_type` (String) [Page Load, HTTP Server, End-to-End (Server), End-to-End (Agent), DNS+ Domain, DNS+ Server, DNS Server, DNS Trace, DNSSEC, Transactions, Web Transactions, BGP, Path Trace, FTP, SIP Server] The type of alert rule. Acceptable values include the verbose names of supported tests.
+- `alert_type` (String) [Page Load, HTTP Server, End-to-End (Server), End-to-End (Agent), DNS Server, DNS Trace, DNSSEC, Transactions, Web Transactions, BGP, Path Trace, FTP, SIP Server] The type of alert rule. Acceptable values include the verbose names of supported tests.
 - `expression` (String) The alert rule evaluation expression.
 - `rounds_violating_out_of` (Number) Specifies the divisor (Y value) of the “X of Y times” condition in an alert rule.  Minimum value is 1, maximum value is 10.
 - `rounds_violating_required` (Number) Specifies the numerator (X value) of the “X of Y times” condition in an alert rule.  Minimum value is 1, maximum value is 10. Must be less than or equal to 'roundsViolatingOutOf'.
