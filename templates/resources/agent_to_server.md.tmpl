@@ -2,17 +2,13 @@
 page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
 subcategory: ""
 description: |-
-This is an example description for the resources that creates http_server tests.
 ---
 
 # {{.Name}} ({{.Type}})
 
 {{ .Description | trimspace }}
 
-
 ## Example Usage
-
-{{ tffile "examples/resources/thousandeyes_http_server/resource.tf" }}
 
 {{ .SchemaMarkdown | trimspace }}
 
