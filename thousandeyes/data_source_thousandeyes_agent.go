@@ -26,6 +26,7 @@ func dataSourceThousandeyesAgent() *schema.Resource {
 				Computed: true,
 			},
 		},
+		Description: "This data source allows you to define a ThousandEyes agent. For more information, see [Global Vantage Points](https://docs.thousandeyes.com/product-documentation/global-vantage-points).",
 	}
 }
 
