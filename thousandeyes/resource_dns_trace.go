@@ -18,6 +18,7 @@ func resourceDNSTrace() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
+		Description: "This resource provides users with the ability to create a DNS trace test. This test type verifies the delegation of DNS records and ensures the DNS hierarchy is as expected. For more information, see [DNS Trace Tests](https://docs.thousandeyes.com/product-documentation/internet-and-wan-monitoring/tests#dns-trace-test).",
 	}
 	return &resource
 }

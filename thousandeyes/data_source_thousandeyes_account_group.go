@@ -22,6 +22,7 @@ func dataSourceThousandeyesAccountGroup() *schema.Resource {
 				Computed: true,
 			},
 		},
+		Description: "This data source allows you to configure a ThousandEyes account group. For more information, see [What is an Account Group](https://docs.thousandeyes.com/product-documentation/user-management/account-groups/what-is-an-account-group).",
 	}
 }
 

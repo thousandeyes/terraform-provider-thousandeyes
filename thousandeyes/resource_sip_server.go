@@ -18,6 +18,7 @@ func resourceSIPServer() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
+		Description: "This resource allows you to create a SIP server test. This test type checks for the availability and performance of a VoIP SIP server, confirms the ability to perform SIP Register with a target server, and observes the requests and responses. For more information, see [SIP Server Tests](https://docs.thousandeyes.com/product-documentation/internet-and-wan-monitoring/tests#sip-server-test).",
 	}
 	return &resource
 }
