@@ -18,6 +18,7 @@ func resourceDNSServer() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
+		Description: "This resource allows users to create a DNS server test. This test type validates DNS records and provides service performance metrics. For more information, see [DNS Server Tests](https://docs.thousandeyes.com/product-documentation/internet-and-wan-monitoring/tests#dns-server-test).",
 	}
 	return &resource
 }
