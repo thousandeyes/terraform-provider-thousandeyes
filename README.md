@@ -68,7 +68,6 @@ resource "thousandeyes_http_server" "www_thousandeyes_http_test" {
 - [X] http-server
 - [X] page-load
 - [X] sip-server
-- [X] voice-call
 - [X] voice (RTP stream)
 - [X] web-transactions
 
