@@ -18,6 +18,8 @@ func resourceFTPServer() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
+		Description: "
+This resource allows you to create an FTP server test. This test type verifies the availability and performance of FTP servers. For more information, see [FTP Server Tests](https://docs.thousandeyes.com/product-documentation/internet-and-wan-monitoring/tests#ftp-server-test).",
 	}
 	resource.Schema["password"] = schemas["password-ftp"]
 	resource.Schema["username"] = schemas["username-ftp"]
