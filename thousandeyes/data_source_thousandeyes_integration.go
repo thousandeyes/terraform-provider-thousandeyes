@@ -54,6 +54,7 @@ func dataSourceThousandeyesIntegration() *schema.Resource {
 				Description: "target URL of the integration",
 			},
 		},
+		Description: "This data source allows you to configure a third-party integration for ThousandEyes alerts. Supported integrations include PagerDuty, Slack, AppDynamics, and ServiceNow. For more information, see [Alerts Integrations](https://docs.thousandeyes.com/product-documentation/alerts/integrations).",
 	}
 }
 
