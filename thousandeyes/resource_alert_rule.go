@@ -18,6 +18,7 @@ func resourceAlertRule() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
+		Description: "This resource allows you to create alert rules for ThousandEyes alerts. Alert rules define what alerts are sent, when, and to whom. For more information, see [Alert Rules](https://docs.thousandeyes.com/product-documentation/alerts#rule-configuration).",
 	}
 	resource.Schema["direction"] = schemas["direction-alert_rule"]
 	return &resource
