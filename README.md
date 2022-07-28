@@ -60,7 +60,6 @@ resource "thousandeyes_http_server" "www_thousandeyes_http_test" {
 ### Supported tests
 - [X] agent-to-agent
 - [X] agent-to-server
-- [X] alert-rule
 - [X] bgp
 - [X] dnssec
 - [X] dns-server
