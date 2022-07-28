@@ -1,3 +1,17 @@
+terraform {
+  required_providers {
+    thousandeyes = {
+      source = "thousandeyes/thousandeyes"
+      version = "1.0.0-beta"
+    }
+  }
+}
+
+provider "thousandeyes" {
+  token            = "your-token"
+  account_group_id = "your-account-id"
+}
+
 data "thousandeyes_agent" "arg_cordoba" {
   agent_name = "Cordoba, Argentina"
 }
