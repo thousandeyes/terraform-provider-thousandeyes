@@ -543,6 +543,7 @@ var schemas = map[string]*schema.Schema{
 		Type:         schema.TypeInt,
 		Description:  "The duration of the test, in seconds (5 to 30).",
 		Optional:     true,
+		Default:      5,
 		ValidateFunc: validation.IntBetween(5, 30),
 	},
 	"email": {
@@ -689,6 +690,7 @@ var schemas = map[string]*schema.Schema{
 		Type:        schema.TypeBool,
 		Description: "Set to 'true' to capture response headers for objects loaded by the test.",
 		Optional:    true,
+		Default:     true,
 	},
 	"interval": {
 		Type:         schema.TypeInt,
@@ -700,6 +702,7 @@ var schemas = map[string]*schema.Schema{
 		Type:         schema.TypeInt,
 		Description:  "The de-jitter buffer size, in seconds (0 to 150).",
 		Optional:     true,
+		Default:      40,
 		ValidateFunc: validation.IntBetween(0, 150),
 	},
 	"live_share": {
@@ -831,9 +834,11 @@ var schemas = map[string]*schema.Schema{
 		ValidateFunc: validation.StringIsValidRegExp,
 	},
 	"page_load_target_time": {
-		Type:        schema.TypeInt,
-		Description: "The target time for page load completion, specified in seconds (1 to 30). The value cannot exceed the pageLoadTimeLimit value.",
-		Optional:    true,
+		Type:         schema.TypeInt,
+		Description:  "The target time for page load completion, specified in seconds (1 to 30). The value cannot exceed the pageLoadTimeLimit value.",
+		Optional:     true,
+		Default:      6,
+		ValidateFunc: validation.IntBetween(1, 30),
 	},
 	"page_load_time_limit": {
 		Type:         schema.TypeInt,
@@ -864,6 +869,7 @@ var schemas = map[string]*schema.Schema{
 		Type:         schema.TypeInt,
 		Description:  "The target port.",
 		ValidateFunc: validation.IntBetween(1, 65535),
+		Default:      49153,
 		Optional:     true,
 		Required:     false,
 	},
@@ -984,12 +990,14 @@ var schemas = map[string]*schema.Schema{
 		Type:         schema.TypeInt,
 		Description:  "The target time for test completion, specified in milliseconds.",
 		Optional:     true,
+		Default:      1000,
 		ValidateFunc: validation.IntBetween(100, 5000),
 	},
 	"sip_time_limit": {
 		Type:         schema.TypeInt,
 		Description:  "The test time limit. Can be between 5 and 10 seconds, and defaults to 5 seconds.",
 		Optional:     true,
+		Default:      10,
 		ValidateFunc: validation.IntBetween(5, 10),
 	},
 	"source_sip_credentials": {
@@ -1134,7 +1142,6 @@ var schemas = map[string]*schema.Schema{
 		Description:  "Defines the throughput rate. Fo UDP tests only.",
 		Optional:     true,
 		Required:     false,
-		Default:      0,
 		ValidateFunc: validation.IntBetween(8, 1000),
 	},
 	"transaction_script": {

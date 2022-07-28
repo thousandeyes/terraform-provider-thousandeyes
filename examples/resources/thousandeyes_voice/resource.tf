@@ -4,7 +4,6 @@ resource "thousandeyes_voice" "example_voice_test" {
   alerts_enabled = false
 
   target_agent_id = 4 # Tokyo
-  duration = 10
 
   agents {
     agent_id = 3 # Singapur
