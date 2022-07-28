@@ -6,7 +6,6 @@ resource "thousandeyes_agent_to_agent" "example_agent_to_agent_test" {
   direction = "TO_TARGET"
   protocol = "TCP"
   target_agent_id = "5"
-  throughput_rate = 500
 
   agents {
     agent_id = 3 # Singapur

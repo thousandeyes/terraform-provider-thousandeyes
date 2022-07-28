@@ -16,8 +16,6 @@ resource "thousandeyes_sip_server" "example_sip_server_test" {
   interval       = 120
   alerts_enabled = false
 
-  sip_target_time = 500
-
   target_sip_credentials {
     auth_user     = ""
     protocol      = "TCP"
