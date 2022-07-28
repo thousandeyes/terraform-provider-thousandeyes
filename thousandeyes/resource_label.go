@@ -40,11 +40,13 @@ func resourceGroupLabelRead(d *schema.ResourceData, m interface{}) error {
 	// In order to prevent schema conficts for test responses,  we retain
 	// the stored state for tests attached to a group to just a test ID.
 	testIDs := []thousandeyes.GenericTest{}
-	for _, v := range *remote.Tests {
-		test := thousandeyes.GenericTest{TestID: v.TestID}
-		testIDs = append(testIDs, test)
+	if remote.Tests != nil {
+		for _, v := range *remote.Tests {
+			test := thousandeyes.GenericTest{TestID: v.TestID}
+			testIDs = append(testIDs, test)
+		}
 	}
-	*remote.Tests = testIDs
+	remote.Tests = &testIDs
 	err = ResourceRead(d, remote)
 	if err != nil {
 		return err
