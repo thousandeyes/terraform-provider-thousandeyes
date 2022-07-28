@@ -52,7 +52,7 @@ func dataSourceThousandeyesBGPMonitorsRead(d *schema.ResourceData, meta interfac
 	var found *thousandeyes.BGPMonitor
 
 	searchName := d.Get("monitor_name").(string)
-	searchMonitorID := d.Get("monitor_id").(int64)
+	searchMonitorID := int64(d.Get("monitor_id").(int))
 
 	BGPMonitors, err := client.GetBPGMonitors()
 	if err != nil {
