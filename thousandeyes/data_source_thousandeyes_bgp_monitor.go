@@ -42,6 +42,7 @@ func dataSourceThousandeyesBGPMonitor() *schema.Resource {
 				Description: "either Public or Private, shows the type of monitor",
 			},
 		},
+		Description: "This data source allows you to configure private and public BGP monitors. For more information, see [BGP Tests](https://docs.thousandeyes.com/product-documentation/internet-and-wan-monitoring/tests/bgp-tests).",
 	}
 }
 
@@ -51,7 +52,7 @@ func dataSourceThousandeyesBGPMonitorsRead(d *schema.ResourceData, meta interfac
 	var found *thousandeyes.BGPMonitor
 
 	searchName := d.Get("monitor_name").(string)
-	searchMonitorID := d.Get("monitor_id").(int64)
+	searchMonitorID := int64(d.Get("monitor_id").(int))
 
 	BGPMonitors, err := client.GetBPGMonitors()
 	if err != nil {

@@ -18,6 +18,7 @@ func resourceGroupLabel() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
+		Description: "This resource allows you to create labels for ThousandEyes agents and test groups. Labels are used to quickly select an agent group or a test group, and apply them to a specific context (for example, applying a group of tests to an agent). For more information, see [Working with Labels](https://docs.thousandeyes.com/product-documentation/internet-and-wan-monitoring/tests/working-with-labels-for-agent-and-test-groups).",
 	}
 	resource.Schema["type"] = schemas["type-label"]
 	resource.Schema["agents"] = schemas["agents-label"]
@@ -39,11 +40,13 @@ func resourceGroupLabelRead(d *schema.ResourceData, m interface{}) error {
 	// In order to prevent schema conficts for test responses,  we retain
 	// the stored state for tests attached to a group to just a test ID.
 	testIDs := []thousandeyes.GenericTest{}
-	for _, v := range *remote.Tests {
-		test := thousandeyes.GenericTest{TestID: v.TestID}
-		testIDs = append(testIDs, test)
+	if remote.Tests != nil {
+		for _, v := range *remote.Tests {
+			test := thousandeyes.GenericTest{TestID: v.TestID}
+			testIDs = append(testIDs, test)
+		}
 	}
-	*remote.Tests = testIDs
+	remote.Tests = &testIDs
 	err = ResourceRead(d, remote)
 	if err != nil {
 		return err

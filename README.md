@@ -15,6 +15,7 @@ terraform {
   required_providers {
     thousandeyes = {
       source = "thousandeyes/thousandeyes"
+      version = "1.0.0-beta"
     }
   }
 }
@@ -59,7 +60,6 @@ resource "thousandeyes_http_server" "www_thousandeyes_http_test" {
 ### Supported tests
 - [X] agent-to-agent
 - [X] agent-to-server
-- [X] alert-rule
 - [X] bgp
 - [X] dnssec
 - [X] dns-server
@@ -68,7 +68,6 @@ resource "thousandeyes_http_server" "www_thousandeyes_http_test" {
 - [X] http-server
 - [X] page-load
 - [X] sip-server
-- [X] voice-call
 - [X] voice (RTP stream)
 - [X] web-transactions
 
