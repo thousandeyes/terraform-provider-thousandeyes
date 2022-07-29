@@ -27,16 +27,19 @@ func Provider() *schema.Provider {
 				Type:        schema.TypeString,
 				Required:    true,
 				DefaultFunc: schema.EnvDefaultFunc("TE_TOKEN", nil),
+				Description: "The ThousandEyes organization's authentication token.",
 			},
 			"account_group_id": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("TE_AID", nil),
+				Description: "The ThousandEyes account group's unique ID.",
 			},
 			"timeout": {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("TE_TIMEOUT", 0),
+				Description: "The timeout value.",
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
