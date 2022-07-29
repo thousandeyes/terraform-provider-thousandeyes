@@ -208,7 +208,7 @@ Required:
 
 - `aid` (Number) The account group ID.
 
-Optional:
+Read-Only:
 
 - `name` (String) The name of account.
 
