@@ -981,7 +981,7 @@ var schemas = map[string]*schema.Schema{
 				"name": {
 					Type:        schema.TypeString,
 					Description: "The name of account.",
-					Optional:    true,
+					Computed:    true,
 				},
 			},
 		},
