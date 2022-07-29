@@ -1,6 +1,8 @@
 package thousandeyes
 
 import (
+	"regexp"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -520,6 +522,10 @@ var schemas = map[string]*schema.Schema{
 		Description: "See notes	target record for test, suffixed by record type (ie, www.thousandeyes.com CNAME). If no record type is specified, the test will default to an ANY record.",
 		Optional: false,
 		Required: true,
+		ValidateFunc: validation.StringMatch(
+			regexp.MustCompile(`^.* (A|ANY|NS|CNAME|MX|SOA|AAAA|PTR|TXT|NULL|DS|RRSIG|DNSKEY|NSEC)$`),
+			"must suffix with record type; check ThousandEyes Developer Reference for more information",
+		),
 	},
 	"download_limit": {
 		Type:        schema.TypeInt,
