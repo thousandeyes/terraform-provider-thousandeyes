@@ -1181,7 +1181,7 @@ var schemas = map[string]*schema.Schema{
 		Type:        schema.TypeBool,
 		Description: "Enable to automatically add all available Public BGP Monitors to the test.",
 		Optional:    true,
-		Default:     true,
+		Default:     false,
 	},
 	"use_ntlm": {
 		Type:        schema.TypeBool,
