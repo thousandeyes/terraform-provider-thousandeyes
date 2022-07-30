@@ -48,9 +48,9 @@ resource "thousandeyes_http_server" "www_thousandeyes_http_test" {
 
 ### Required
 
-- `token` (String)
+- `token` (String) The ThousandEyes organization's authentication token.
 
 ### Optional
 
-- `account_group_id` (String)
-- `timeout` (Number)
+- `account_group_id` (String) The ThousandEyes account group's unique ID.
+- `timeout` (Number) The timeout value.

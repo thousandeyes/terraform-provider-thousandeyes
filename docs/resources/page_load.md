@@ -182,7 +182,7 @@ Optional:
 
 Required:
 
-- `group_id` (Number) The unique ID of the label
+- `group_id` (Number) The unique ID of the label.
 
 Optional:
 
