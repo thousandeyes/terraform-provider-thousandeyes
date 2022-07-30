@@ -8,19 +8,19 @@ import (
 var schemas = map[string]*schema.Schema{
 	"account_group_roles": {
 		Type:        schema.TypeList,
-		Description: "List of roles for user",
+		Description: "The list of roles assigned to the account group.",
 		Optional:    true,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"account_group": {
 					Type:        schema.TypeMap,
-					Description: "Account group for roles",
+					Description: "The account group.",
 					Optional:    true,
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"aid": {
 								Type:        schema.TypeInt,
-								Description: "Account group ID",
+								Description: "The account group's unique ID.",
 								Optional:    true,
 							},
 						},
@@ -28,13 +28,13 @@ var schemas = map[string]*schema.Schema{
 				},
 				"roles": {
 					Type:        schema.TypeList,
-					Description: "List of roles for user",
+					Description: "The list of roles assigned to the user.",
 					Optional:    true,
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"role_id": {
 								Type:        schema.TypeInt,
-								Description: "Role ID",
+								Description: "The unique ID of the role.",
 								Optional:    true,
 							},
 						},
@@ -612,7 +612,7 @@ var schemas = map[string]*schema.Schema{
 				},
 				"group_id": {
 					Type:        schema.TypeInt,
-					Description: "The unique ID of the label",
+					Description: "The unique ID of the label.",
 					Required:    true,
 				},
 				"name": {
