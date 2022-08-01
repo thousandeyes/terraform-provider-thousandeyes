@@ -16,10 +16,12 @@ func dataSourceThousandeyesAccountGroup() *schema.Resource {
 			"name": {
 				Type:     schema.TypeString,
 				Required: true,
+				Description: "The name of the account group.",
 			},
 			"aid": {
 				Type:     schema.TypeInt,
 				Computed: true,
+				Description: "The unique ID for the account group.",
 			},
 		},
 		Description: "This data source allows you to configure a ThousandEyes account group. For more information, see [What is an Account Group](https://docs.thousandeyes.com/product-documentation/user-management/account-groups/what-is-an-account-group).",

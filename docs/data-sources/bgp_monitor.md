@@ -32,14 +32,14 @@ resource "thousandeyes_bgp" "example_bgp_test" {
 
 ### Optional
 
-- `monitor_id` (Number) unique ID of BGP monitor
-- `monitor_name` (String) display name of the BGP monitor
+- `monitor_id` (Number) The unique ID of BGP monitor.
+- `monitor_name` (String) The display name of the BGP monitor.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `ip_address` (String) IP address of the BGP monitor
-- `monitor_type` (String) either Public or Private, shows the type of monitor
-- `network` (String) name of the autonomous system in which the monitor is found
+- `ip_address` (String) The IP address of the BGP monitor.
+- `monitor_type` (String) The type of BGP monitor (either Public or Private).
+- `network` (String) The name of the autonomous system in which the monitor is found.
 
 

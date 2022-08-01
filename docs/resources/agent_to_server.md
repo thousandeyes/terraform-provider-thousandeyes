@@ -6,7 +6,7 @@ description: |-
 
 # thousandeyes_agent_to_server (Resource)
 
-This resource allows you to create and configure an agent-to-server test. This test type measures network performance as seen from ThousandEyes agent(s) towards a remote server. For more information about agent-to-server tests, see [Agent-to-Server Tests](https://docs.thousandeyes.com/product-documentation/internet-and-wan-monitoring/tests#agent-to-agent-test).
+This resource allows you to create and configure an agent-to-server test. This test type measures network performance as seen from ThousandEyes agent(s) towards a remote server. For more information about agent-to-server tests, see [Agent-to-Server Tests](https://docs.thousandeyes.com/product-documentation/internet-and-wan-monitoring/tests#agent-to-server-test).
 
 ## Example Usage
 
@@ -165,7 +165,7 @@ Optional:
 
 Required:
 
-- `group_id` (Number) The unique ID of the label
+- `group_id` (Number) The unique ID of the label.
 
 Optional:
 

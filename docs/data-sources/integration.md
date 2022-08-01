@@ -21,17 +21,17 @@ data "thousandeyes_integration" "example_integration" {
 
 ### Required
 
-- `integration_name` (String) name of the integration
+- `integration_name` (String) The name of the integration.
 
 ### Read-Only
 
-- `auth_method` (String) (PagerDuty only) always set to `Auth Token`
-- `auth_token` (String) (PagerDuty only) authentication token
-- `auth_user` (String) (PagerDuty only) PagerDuty user`
-- `channel` (String) (Slack only) Slack #channel or @user
+- `auth_method` (String) (PagerDuty only) The authentication method. Always set to `Auth Token`.
+- `auth_token` (String) (PagerDuty only) The PagerDuty authentication token.
+- `auth_user` (String) (PagerDuty only) The PagerDuty user.
+- `channel` (String) (Slack only) The Slack #channel or @user.
 - `id` (String) The ID of this resource.
-- `integration_id` (String) unique ID of the integration
-- `integration_type` (String) Type of integration
-- `target` (String) target URL of the integration
+- `integration_id` (String) The unique ID of the integration.
+- `integration_type` (String) The type of integration.
+- `target` (String) The target URL of the integration.
 
 

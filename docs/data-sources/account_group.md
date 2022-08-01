@@ -37,11 +37,11 @@ resource "thousandeyes_http_server" "thousandeyes_http_test" {
 
 ### Required
 
-- `name` (String)
+- `name` (String) The name of the account group.
 
 ### Read-Only
 
-- `aid` (Number)
+- `aid` (Number) The unique ID for the account group.
 - `id` (String) The ID of this resource.
 
 

@@ -33,12 +33,12 @@ resource "thousandeyes_http_server" "www_thousandeyes_http_test" {
 
 ### Required
 
-- `agent_name` (String)
+- `agent_name` (String) The name of the agent.
 
 ### Read-Only
 
-- `agent_id` (Number)
-- `agent_type` (String)
+- `agent_id` (Number) The unique ID of the agent.
+- `agent_type` (String) The type of agent.
 - `id` (String) The ID of this resource.
 
 

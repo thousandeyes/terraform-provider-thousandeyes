@@ -6,7 +6,7 @@ description: |-
 
 # thousandeyes_voice (Resource)
 
-
+This resource allows you to create a RTP Stream test. This test type measures the quality of real-time protocol (RTP) voice streams between ThousandEyes agents that act as VoIP user agents. For more information, see [RTP Stream Tests](https://docs.thousandeyes.com/product-documentation/internet-and-wan-monitoring/tests#rtp-stream-test).
 
 ## Example Usage
 
@@ -166,7 +166,7 @@ Optional:
 
 Required:
 
-- `group_id` (Number) The unique ID of the label
+- `group_id` (Number) The unique ID of the label.
 
 Optional:
 

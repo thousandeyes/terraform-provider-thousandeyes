@@ -6,7 +6,7 @@ description: |-
 
 # thousandeyes_web_transaction (Resource)
 
-
+This resource allows users to create a transaction test. This test type is a scripted synthetic browser interaction that can traverse multiple pages and user actions. For more information, see [Transaction Tests](https://docs.thousandeyes.com/product-documentation/browser-synthetics/transaction-tests).
 
 ## Example Usage
 
@@ -149,7 +149,7 @@ Optional:
 
 Required:
 
-- `group_id` (Number) The unique ID of the label
+- `group_id` (Number) The unique ID of the label.
 
 Optional:
 
