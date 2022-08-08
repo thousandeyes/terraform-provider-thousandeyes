@@ -54,3 +54,6 @@ resource "thousandeyes_http_server" "www_thousandeyes_http_test" {
 
 - `account_group_id` (String) The ThousandEyes account group's unique ID.
 - `timeout` (Number) The timeout value.
+
+Account group IDs can be retrieved from the API by querying the `/v6/account-groups` endpoint. For more information, check the
+[Developer Reference](https://developer.thousandeyes.com/v6/admin/#/accountgroup_list).
