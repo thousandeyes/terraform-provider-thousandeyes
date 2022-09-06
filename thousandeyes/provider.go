@@ -74,6 +74,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		AuthToken: d.Get("token").(string),
 		AccountID: d.Get("account_group_id").(string),
 		Timeout:   time.Second * time.Duration(d.Get("timeout").(int)),
+		UserAgent: "ThousandEyes Terraform Provider",
 	}
 	var err error
 	if opts.AccountID != "" {
