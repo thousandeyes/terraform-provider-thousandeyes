@@ -12,7 +12,7 @@ import (
 
 func resourceDNSSec() *schema.Resource {
 	resource := schema.Resource{
-		Schema: ResourceSchemaBuild(thousandeyes.DNSSec{}, schemas),
+		Schema: ResourceSchemaBuild(thousandeyes.DNSSec{}, schemas, nil),
 		Create: resourceDNSSecCreate,
 		Read:   resourceDNSSecRead,
 		Update: resourceDNSSecUpdate,

@@ -10,7 +10,7 @@ import (
 
 func resourceSIPServer() *schema.Resource {
 	resource := schema.Resource{
-		Schema: ResourceSchemaBuild(thousandeyes.SIPServer{}, schemas),
+		Schema: ResourceSchemaBuild(thousandeyes.SIPServer{}, schemas, nil),
 		Create: resourceSIPServerCreate,
 		Read:   resourceSIPServerRead,
 		Update: resourceSIPServerUpdate,

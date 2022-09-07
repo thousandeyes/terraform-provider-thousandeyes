@@ -334,15 +334,22 @@ func TestResourceUpdate(t *testing.T) {
 func TestResourceSchemaBuild(t *testing.T) {
 	type refStruct struct {
 		FieldName string `json:"fieldName"`
+		Port      int    `json:"port"`
 	}
 
 	refSchema := map[string]*schema.Schema{
 		"field_name": {
 			Type: schema.TypeString,
 		},
+		"port": {
+			Type:     schema.TypeInt,
+			Default:  41953,
+			Optional: true,
+		},
 	}
 
-	schm := ResourceSchemaBuild(refStruct{}, refSchema)
+	// test with no schema override
+	schm := ResourceSchemaBuild(refStruct{}, refSchema, nil)
 
 	for k, v := range refSchema {
 		if _, ok := schm[k]; !ok {
@@ -353,6 +360,34 @@ func TestResourceSchemaBuild(t *testing.T) {
 		}
 	}
 
+	// test with a schema override
+	schemaOverride := map[string]*schema.Schema{
+		"port": {
+			Type:     schema.TypeInt,
+			Optional: true,
+		},
+	}
+
+	expectedSchemaWithOverride := map[string]*schema.Schema{
+		"field_name": {
+			Type: schema.TypeString,
+		},
+		"port": {
+			Type:     schema.TypeInt,
+			Optional: true,
+		},
+	}
+
+	ovrSchm := ResourceSchemaBuild(refStruct{}, refSchema, schemaOverride)
+
+	for k, v := range expectedSchemaWithOverride {
+		if _, ok := ovrSchm[k]; !ok {
+			t.Errorf("Key %s missing from generated schema", k)
+		}
+		if reflect.DeepEqual(*v, *ovrSchm[k]) != true {
+			t.Errorf("Schemas not equal: Expected schema is %+v\nNew Schema is %+v", expectedSchemaWithOverride, ovrSchm)
+		}
+	}
 }
 
 func TestFillValue(t *testing.T) {

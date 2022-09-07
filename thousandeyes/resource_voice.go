@@ -10,7 +10,7 @@ import (
 
 func resourceRTPStream() *schema.Resource {
 	resource := schema.Resource{
-		Schema: ResourceSchemaBuild(thousandeyes.RTPStream{}, schemas),
+		Schema: ResourceSchemaBuild(thousandeyes.RTPStream{}, schemas, nil),
 		Create: resourceRTPStreamCreate,
 		Read:   resourceRTPStreamRead,
 		Update: resourceRTPStreamUpdate,

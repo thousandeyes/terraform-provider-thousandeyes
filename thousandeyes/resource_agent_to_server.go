@@ -5,12 +5,27 @@ import (
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/thousandeyes/thousandeyes-sdk-go/v2"
 )
 
 func resourceAgentToServer() *schema.Resource {
+	agentToServerSchemasOverride := map[string]*schema.Schema{
+		"port": {
+			Type:         schema.TypeInt,
+			Description:  "The target port.",
+			ValidateFunc: validation.IntBetween(1, 65535),
+			Optional:     true,
+			DiffSuppressFunc: func(k, oldValue, newValue string, d *schema.ResourceData) bool {
+				// allows port to be optional even for TCP tests
+				// it uses ThousandEyes' default which is 80
+				return newValue == "0"
+			},
+		},
+	}
+
 	resource := schema.Resource{
-		Schema: ResourceSchemaBuild(thousandeyes.AgentServer{}, schemas),
+		Schema: ResourceSchemaBuild(thousandeyes.AgentServer{}, schemas, agentToServerSchemasOverride),
 		Create: resourceAgentServerCreate,
 		Read:   resourceAgentServerRead,
 		Update: resourceAgentServerUpdate,

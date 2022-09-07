@@ -10,7 +10,7 @@ import (
 
 func resourceAlertRule() *schema.Resource {
 	resource := schema.Resource{
-		Schema: ResourceSchemaBuild(thousandeyes.AlertRule{}, schemas),
+		Schema: ResourceSchemaBuild(thousandeyes.AlertRule{}, schemas, nil),
 		Create: resourceAlertRuleCreate,
 		Read:   resourceAlertRuleRead,
 		Update: resourceAlertRuleUpdate,

@@ -5,12 +5,23 @@ import (
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/thousandeyes/thousandeyes-sdk-go/v2"
 )
 
 func resourceAgentToAgent() *schema.Resource {
+	agentToAgentSchemasOverride := map[string]*schema.Schema{
+		"port": {
+			Type:         schema.TypeInt,
+			Description:  "The target port.",
+			ValidateFunc: validation.IntBetween(1, 65535),
+			Default:      49153,
+			Optional:     true,
+		},
+	}
+
 	resource := schema.Resource{
-		Schema: ResourceSchemaBuild(thousandeyes.AgentAgent{}, schemas),
+		Schema: ResourceSchemaBuild(thousandeyes.AgentAgent{}, schemas, agentToAgentSchemasOverride),
 		Create: resourceAgentAgentCreate,
 		Read:   resourceAgentAgentRead,
 		Update: resourceAgentAgentUpdate,

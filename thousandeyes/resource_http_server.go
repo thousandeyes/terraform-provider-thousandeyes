@@ -10,7 +10,7 @@ import (
 
 func resourceHTTPServer() *schema.Resource {
 	resource := schema.Resource{
-		Schema: ResourceSchemaBuild(thousandeyes.HTTPServer{}, schemas),
+		Schema: ResourceSchemaBuild(thousandeyes.HTTPServer{}, schemas, nil),
 		Create: resourceHTTPServerCreate,
 		Read:   resourceHTTPServerRead,
 		Update: resourceHTTPServerUpdate,
