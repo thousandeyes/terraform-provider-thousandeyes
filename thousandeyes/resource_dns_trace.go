@@ -10,7 +10,7 @@ import (
 
 func resourceDNSTrace() *schema.Resource {
 	resource := schema.Resource{
-		Schema: ResourceSchemaBuild(thousandeyes.DNSTrace{}, schemas),
+		Schema: ResourceSchemaBuild(thousandeyes.DNSTrace{}, schemas, nil),
 		Create: resourceDNSTraceCreate,
 		Read:   resourceDNSTraceRead,
 		Update: resourceDNSTraceUpdate,

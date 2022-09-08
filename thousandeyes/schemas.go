@@ -518,10 +518,10 @@ var schemas = map[string]*schema.Schema{
 		ValidateFunc: validation.StringInSlice([]string{"UDP", "TCP"}, false),
 	},
 	"domain": {
-		Type: schema.TypeString,
+		Type:        schema.TypeString,
 		Description: "See notes	target record for test, suffixed by record type (ie, www.thousandeyes.com CNAME). If no record type is specified, the test will default to an ANY record.",
-		Optional: false,
-		Required: true,
+		Optional:    false,
+		Required:    true,
 		ValidateFunc: validation.StringMatch(
 			regexp.MustCompile(`^.* (A|ANY|NS|CNAME|MX|SOA|AAAA|PTR|TXT|NULL|DS|RRSIG|DNSKEY|NSEC)$`),
 			"must suffix with record type; check ThousandEyes Developer Reference for more information",
@@ -870,14 +870,6 @@ var schemas = map[string]*schema.Schema{
 		Required:     false,
 		Default:      "classic",
 		ValidateFunc: validation.StringInSlice([]string{"classic", "inSession"}, false),
-	},
-	"port": {
-		Type:         schema.TypeInt,
-		Description:  "The target port.",
-		ValidateFunc: validation.IntBetween(1, 65535),
-		Default:      49153,
-		Optional:     true,
-		Required:     false,
 	},
 	"post_body": {
 		Type:        schema.TypeString,

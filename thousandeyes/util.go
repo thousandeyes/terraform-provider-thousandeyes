@@ -431,7 +431,7 @@ func ResourceUpdate(d *schema.ResourceData, structPtr interface{}) interface{} {
 
 // ResourceSchemaBuild creates a map of schemas based on the fields
 // of the provided struct.
-func ResourceSchemaBuild(referenceStruct interface{}, schemas map[string]*schema.Schema) map[string]*schema.Schema {
+func ResourceSchemaBuild(referenceStruct interface{}, schemas map[string]*schema.Schema, schemasOverride map[string]*schema.Schema) map[string]*schema.Schema {
 	newSchema := map[string]*schema.Schema{}
 	v := reflect.ValueOf(referenceStruct)
 	t := reflect.TypeOf(referenceStruct)
@@ -439,8 +439,18 @@ func ResourceSchemaBuild(referenceStruct interface{}, schemas map[string]*schema
 	for i := 0; i < v.NumField(); i++ {
 		tag := GetJSONKey(t.Field(i))
 		tfName := CamelCaseToUnderscore(tag)
-		if val, ok := schemas[tfName]; ok {
-			newSchema[tfName] = val
+
+		// use the override if there is one
+		if schemasOverride != nil && len(schemasOverride) > 0 {
+			if val, ok := schemasOverride[tfName]; ok {
+				newSchema[tfName] = val
+			} else if val, ok := schemas[tfName]; ok {
+				newSchema[tfName] = val
+			}
+		} else {
+			if val, ok := schemas[tfName]; ok {
+				newSchema[tfName] = val
+			}
 		}
 	}
 	return newSchema
