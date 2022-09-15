@@ -5,7 +5,7 @@ go 1.17
 require (
 	github.com/hashicorp/terraform-plugin-docs v0.9.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.17.0
-	github.com/thousandeyes/thousandeyes-sdk-go/v2 v2.1.0
+	github.com/thousandeyes/thousandeyes-sdk-go/v2 v2.2.0
 )
 
 require (

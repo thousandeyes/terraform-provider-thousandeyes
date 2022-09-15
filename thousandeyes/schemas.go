@@ -811,6 +811,55 @@ var schemas = map[string]*schema.Schema{
 						},
 					},
 				},
+				"thirdParty": {
+					Type:        schema.TypeSet,
+					Description: "Third party notification.",
+					Optional:    true,
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"integrationId": {
+								Type:        schema.TypeString,
+								Description: "The integration ID, as a string.",
+								Optional:    true,
+							},
+							"integrationName": {
+								Type:        schema.TypeString,
+								Description: "The integration name, as a string.",
+								Optional:    true,
+							},
+							"integrationType": {
+								Type:        schema.TypeString,
+								Description: "The integration type, as a string.",
+								Optional:    true,
+							},
+							"target": {
+								Type:        schema.TypeString,
+								Description: "The target, as a string.",
+								Optional:    true,
+							},
+							"authMethod": {
+								Type:        schema.TypeString,
+								Description: "The authentication method, as a string.",
+								Optional:    true,
+							},
+							"authUser": {
+								Type:        schema.TypeString,
+								Description: "The authentication user, as a string.",
+								Optional:    true,
+							},
+							"authToken": {
+								Type:        schema.TypeString,
+								Description: "The authentication token, as a string.",
+								Optional:    true,
+							},
+							"channel": {
+								Type:        schema.TypeString,
+								Description: "The channel to notify, as a string.",
+								Optional:    true,
+							},
+						},
+					},
+				},
 			},
 		},
 	},
