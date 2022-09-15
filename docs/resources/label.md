@@ -51,7 +51,7 @@ Optional:
 - `alerts_enabled` (Boolean) Set to 'true' to enable alerts, or 'false' to disable alerts. The default value is 'true'.
 - `description` (String) A description of the alert rule. Defaults to an empty string.
 - `enabled` (Boolean) Enables or disables the test.
-- `groups` (Block List) The array of label objects. (see [below for nested schema](#nestedblock--tests--groups))
+- `groups` (Block Set) The array of label objects. (see [below for nested schema](#nestedblock--tests--groups))
 - `shared_with_accounts` (Block List) [“serverName”: “fqdn of server”] The array of DNS Server objects. (see [below for nested schema](#nestedblock--tests--shared_with_accounts))
 
 Read-Only:
@@ -78,7 +78,7 @@ Optional:
 - `created_date` (String) The date the agent was created. Expressed in UTC (yyyy-MM-dd hh:mm:ss).
 - `enabled` (Boolean) Shows whether the agent is enabled or disabled.
 - `error_details` (Block List) If one or more errors present in the agent, the error details are shown for each as an array. (see [below for nested schema](#nestedblock--tests--agents--error_details))
-- `groups` (Block List) An array of label objects. (see [below for nested schema](#nestedblock--tests--agents--groups))
+- `groups` (Block Set) An array of label objects. (see [below for nested schema](#nestedblock--tests--agents--groups))
 - `hostname` (String) Fully qualified domain name of the agent.
 - `ip_addresses` (List of String) An array of the ipAddress entries.
 - `ipv6_policy` (String) [FORCE_IPV4, PREFER_IPV6 or FORCE_IPV6] The IP version policy.
@@ -126,7 +126,7 @@ Optional:
 
 Optional:
 
-- `builtin` (Number) Shows whether you are using built-in (1) labels or user-created (2) labels. Built-in labels are read-only.
+- `builtin` (Boolean) Shows whether you are using built-in (1) labels or user-created (2) labels. Built-in labels are read-only.
 - `group_id` (Number) The unique ID of the label. This number is negative for built-in labels. Query the /groups/{id} endpoint to see a list of agents/tests with this label.
 - `name` (String) The name of the label.
 - `type` (String) [tests, agents, endpoint_tests or endpoint_agents] The type of label.

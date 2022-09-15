@@ -171,13 +171,13 @@ var schemas = map[string]*schema.Schema{
 					},
 				},
 				"groups": {
-					Type:        schema.TypeList,
+					Type:        schema.TypeSet,
 					Description: "An array of label objects.",
 					Optional:    true,
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"builtin": {
-								Type:        schema.TypeInt,
+								Type:        schema.TypeBool,
 								Description: "Shows whether you are using built-in (1) labels or user-created (2) labels. Built-in labels are read-only.",
 								Optional:    true,
 							},
@@ -190,11 +190,13 @@ var schemas = map[string]*schema.Schema{
 								Type:        schema.TypeString,
 								Description: "The name of the label.",
 								Optional:    true,
+								Default:     "",
 							},
 							"type": {
 								Type:        schema.TypeString,
 								Description: "[tests, agents, endpoint_tests or endpoint_agents] The type of label.",
 								Optional:    true,
+								Default:     "",
 							},
 						},
 					},
@@ -589,7 +591,7 @@ var schemas = map[string]*schema.Schema{
 		ValidateFunc: validation.IntBetween(10, 60),
 	},
 	"groups": {
-		Type:        schema.TypeList,
+		Type:        schema.TypeSet,
 		Description: "The array of label objects.",
 		Optional:    true,
 		Elem: &schema.Resource{
@@ -625,6 +627,7 @@ var schemas = map[string]*schema.Schema{
 					Type:        schema.TypeString,
 					Description: "The name of the label.",
 					Optional:    true,
+					Default:     "",
 				},
 				"tests": {
 					Type:        schema.TypeList,
@@ -645,6 +648,7 @@ var schemas = map[string]*schema.Schema{
 					Type:        schema.TypeString,
 					Description: "[tests, agents, endpoint_tests, or endpoint_agents] The type of label.",
 					Optional:    true,
+					Default:     "",
 				},
 			},
 		},

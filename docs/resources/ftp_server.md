@@ -33,7 +33,7 @@ This resource allows you to create an FTP server test. This test type verifies t
 - `enabled` (Boolean) Enables or disables the test.
 - `ftp_target_time` (Number) The target time for operation completion. Specified in milliseconds.
 - `ftp_time_limit` (Number) Set the time limit for the test (in seconds). FTP tests default to 10s.
-- `groups` (Block List) The array of label objects. (see [below for nested schema](#nestedblock--groups))
+- `groups` (Block Set) The array of label objects. (see [below for nested schema](#nestedblock--groups))
 - `mtu_measurements` (Boolean) Measure MTU sizes on the network from agents to the target.
 - `network_measurements` (Boolean) Set to 'true' to enable network measurements.
 - `num_path_traces` (Number) The number of path traces.
@@ -70,7 +70,7 @@ Optional:
 - `created_date` (String) The date the agent was created. Expressed in UTC (yyyy-MM-dd hh:mm:ss).
 - `enabled` (Boolean) Shows whether the agent is enabled or disabled.
 - `error_details` (Block List) If one or more errors present in the agent, the error details are shown for each as an array. (see [below for nested schema](#nestedblock--agents--error_details))
-- `groups` (Block List) An array of label objects. (see [below for nested schema](#nestedblock--agents--groups))
+- `groups` (Block Set) An array of label objects. (see [below for nested schema](#nestedblock--agents--groups))
 - `hostname` (String) Fully qualified domain name of the agent.
 - `ip_addresses` (List of String) An array of the ipAddress entries.
 - `ipv6_policy` (String) [FORCE_IPV4, PREFER_IPV6 or FORCE_IPV6] The IP version policy.
@@ -118,7 +118,7 @@ Optional:
 
 Optional:
 
-- `builtin` (Number) Shows whether you are using built-in (1) labels or user-created (2) labels. Built-in labels are read-only.
+- `builtin` (Boolean) Shows whether you are using built-in (1) labels or user-created (2) labels. Built-in labels are read-only.
 - `group_id` (Number) The unique ID of the label. This number is negative for built-in labels. Query the /groups/{id} endpoint to see a list of agents/tests with this label.
 - `name` (String) The name of the label.
 - `type` (String) [tests, agents, endpoint_tests or endpoint_agents] The type of label.
