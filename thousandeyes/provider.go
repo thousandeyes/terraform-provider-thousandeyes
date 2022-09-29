@@ -41,6 +41,12 @@ func Provider() *schema.Provider {
 				DefaultFunc: schema.EnvDefaultFunc("TE_TIMEOUT", 0),
 				Description: "The timeout value.",
 			},
+			"api_endpoint": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("TE_API_ENDPOINT", "https://api.thousandeyes.com/v6"),
+				Description: "The ThousandEyes API Endpoint's URL. E.g. https://api.thousandeyes.com/v6",
+			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"thousandeyes_alert_rule":      resourceAlertRule(),
@@ -71,10 +77,11 @@ func Provider() *schema.Provider {
 func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	log.Println("[INFO] Initializing ThousandEyes client")
 	opts := thousandeyes.ClientOptions{
-		AuthToken: d.Get("token").(string),
-		AccountID: d.Get("account_group_id").(string),
-		Timeout:   time.Second * time.Duration(d.Get("timeout").(int)),
-		UserAgent: "ThousandEyes Terraform Provider",
+		AuthToken:   d.Get("token").(string),
+		AccountID:   d.Get("account_group_id").(string),
+		Timeout:     time.Second * time.Duration(d.Get("timeout").(int)),
+		UserAgent:   "ThousandEyes Terraform Provider",
+		APIEndpoint: d.Get("api_endpoint").(string),
 	}
 	var err error
 	if opts.AccountID != "" {
