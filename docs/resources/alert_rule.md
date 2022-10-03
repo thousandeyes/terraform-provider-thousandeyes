@@ -45,6 +45,7 @@ This resource allows you to create alert rules for ThousandEyes alerts. Alert ru
 Optional:
 
 - `email` (Block Set) The email notification. (see [below for nested schema](#nestedblock--notifications--email))
+- `third_party` (Block Set) Third party notification. (see [below for nested schema](#nestedblock--notifications--third_party))
 
 <a id="nestedblock--notifications--email"></a>
 ### Nested Schema for `notifications.email`
@@ -53,5 +54,14 @@ Optional:
 
 - `message` (String) The contents of the email, as a string.
 - `recipient` (List of String) The email addresses to send the notification to.
+
+
+<a id="nestedblock--notifications--third_party"></a>
+### Nested Schema for `notifications.third_party`
+
+Required:
+
+- `integration_id` (String) The integration ID, as a string.
+- `integration_type` (String) The integration type, as a string.
 
 

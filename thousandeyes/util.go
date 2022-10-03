@@ -295,14 +295,33 @@ func FixReadValues(m interface{}, name string) (interface{}, error) {
 			return nil, err
 		}
 
-		if e != nil {
-			m.(map[string]interface{})["email"] = e
+		// third party notifications
+		var tp interface{}
+		if _, ok := m.(map[string]interface{})["third_party"]; ok {
+			tp, err = FixReadValues(m.(map[string]interface{})["third_party"].([]interface{}), "third_party")
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			tp = nil
+		}
+
+		// update the notifications block if the email block is present and contains recipients, or
+		// the third party notifications are present. Otherwise set the whole notifications block to nil
+		if e == nil && tp == nil {
+			m = nil
+		} else {
+			if e != nil {
+				m.(map[string]interface{})["email"] = e
+			}
+
+			if tp != nil {
+				m.(map[string]interface{})["third_party"] = tp
+			}
 
 			m = []interface{}{
 				m.(map[string]interface{}),
 			}
-		} else {
-			m = nil
 		}
 
 	case "email":
@@ -311,6 +330,19 @@ func FixReadValues(m interface{}, name string) (interface{}, error) {
 		} else {
 			m = []interface{}{
 				m.(map[string]interface{}),
+			}
+		}
+
+	// remove all fields except the integration ID and type to
+	// mimick the behavior of the example in our docs for a
+	// regular create API request for alert rules, where only
+	// these two fields are passed
+	case "third_party":
+		for i, v := range m.([]interface{}) {
+			tpn := v.(map[string]interface{})
+			m.([]interface{})[i] = map[string]interface{}{
+				"integration_id":   tpn["integration_id"],
+				"integration_type": tpn["integration_type"],
 			}
 		}
 
