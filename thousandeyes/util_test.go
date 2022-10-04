@@ -238,7 +238,7 @@ func TestFixReadValues(t *testing.T) {
 	}
 	output, err = FixReadValues(groupsInput, "groups")
 	if err != nil {
-		t.Errorf("bgp_monitors input returned error: %s", err.Error())
+		t.Errorf("groups input returned error: %s", err.Error())
 	}
 	if reflect.DeepEqual(output, groupsTarget) != true {
 		t.Errorf("Values not stripped correctly from groups input: Received %#v Expected %#v", output, groupsTarget)
@@ -325,6 +325,40 @@ func TestFixReadValues(t *testing.T) {
 		t.Errorf("Values not stripped correctly from tests input: Received %#v Expected %#v", output, nil)
 	}
 
+	// thirdParty notifications
+	thirdPartyNotificationsInput := []interface{}{
+		map[string]interface{}{
+			"integration_id":   "sl-0000",
+			"integration_type": "SLACK",
+			"integration_name": "bitconnect",
+			"target":           "https://slack.com/waso",
+			"channel":          "#terraform",
+		},
+		map[string]interface{}{
+			"integration_id":   "pgd-0000",
+			"integration_type": "PAGER_DUTY",
+			"integration_name": "PagerDuty notification",
+			"auth_method":      "Auth Token",
+		},
+	}
+	thirdPartyNotificationsTarget := []interface{}{
+		map[string]interface{}{
+			"integration_id":   "sl-0000",
+			"integration_type": "SLACK",
+		},
+		map[string]interface{}{
+			"integration_id":   "pgd-0000",
+			"integration_type": "PAGER_DUTY",
+		},
+	}
+
+	output, err = FixReadValues(thirdPartyNotificationsInput, "third_party")
+	if err != nil {
+		t.Errorf("third party notifications input returned error: %s", err.Error())
+	}
+	if reflect.DeepEqual(output, thirdPartyNotificationsTarget) != true {
+		t.Errorf("Values not stripped correctly from third party notifications input: Received %#v Expected %#v", output, thirdPartyNotificationsTarget)
+	}
 }
 
 func TestResourceUpdate(t *testing.T) {

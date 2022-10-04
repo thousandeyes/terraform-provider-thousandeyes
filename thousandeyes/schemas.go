@@ -815,6 +815,25 @@ var schemas = map[string]*schema.Schema{
 						},
 					},
 				},
+				"third_party": {
+					Type:        schema.TypeSet,
+					Description: "Third party notification.",
+					Optional:    true,
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"integration_id": {
+								Type:        schema.TypeString,
+								Description: "The integration ID, as a string.",
+								Required:    true,
+							},
+							"integration_type": {
+								Type:        schema.TypeString,
+								Description: "The integration type, as a string.",
+								Required:    true,
+							},
+						},
+					},
+				},
 			},
 		},
 	},
