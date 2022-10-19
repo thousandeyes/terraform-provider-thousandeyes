@@ -45,27 +45,11 @@ func resourceAlertRuleUpdate(d *schema.ResourceData, m interface{}) error {
 
 	log.Printf("[INFO] Updating ThousandEyes Test %s", d.Id())
 	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	update := ResourceUpdate(d, &thousandeyes.AlertRule{}).(*thousandeyes.AlertRule)
 	// While most ThousandEyes updates only require updated fields and specifically
-	// disallow some fields on update, Alert Rules actually require a few fields
-	// to be retained on update.
-	// Terraform schema validation should guarantee their existence.
-	update.AlertType = thousandeyes.String(d.Get("alert_type").(string))
-	update.Expression = thousandeyes.String(d.Get("expression").(string))
-
-	// MinimumSources and MinimumSourcesPct are mutually exclusive
-	minimumSources := d.Get("minimum_sources").(int)
-	if minimumSources > 0 {
-		update.MinimumSources = thousandeyes.Int(minimumSources)
-	} else {
-		update.MinimumSourcesPct = thousandeyes.Int(d.Get("minimum_sources_pct").(int))
-	}
-
-	update.RoundsViolatingRequired = thousandeyes.Int(d.Get("rounds_violating_required").(int))
-	update.RoundsViolatingOutOf = thousandeyes.Int(d.Get("rounds_violating_out_of").(int))
-	update.RuleName = thousandeyes.String(d.Get("rule_name").(string))
-
-	_, err := client.UpdateAlertRule(id, *update)
+	// disallow some fields on update, Alert Rules actually require the full list of
+	// fields. Terraform schema validation should guarantee their existence.
+	local := buildAlertRuleStruct(d)
+	_, err := client.UpdateAlertRule(id, *local)
 	if err != nil {
 		return err
 	}

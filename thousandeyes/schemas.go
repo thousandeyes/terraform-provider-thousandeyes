@@ -805,7 +805,7 @@ var schemas = map[string]*schema.Schema{
 								Optional:    true,
 							},
 							"recipient": {
-								Type:        schema.TypeList,
+								Type:        schema.TypeSet,
 								Description: "The email addresses to send the notification to.",
 								Optional:    true,
 								Elem: &schema.Schema{
