@@ -311,14 +311,13 @@ func FixReadValues(m interface{}, name string) (interface{}, error) {
 		if e == nil && tp == nil {
 			m = nil
 		} else {
-			if e != nil {
-				m.(map[string]interface{})["email"] = e
-			}
-
+			// Add the third party map to the notifications map if they are present
+			// if they're not configured, then the API doesn't return them at all
 			if tp != nil {
 				m.(map[string]interface{})["third_party"] = tp
 			}
 
+			m.(map[string]interface{})["email"] = e
 			m = []interface{}{
 				m.(map[string]interface{}),
 			}

@@ -53,7 +53,7 @@ Optional:
 Optional:
 
 - `message` (String) The contents of the email, as a string.
-- `recipient` (List of String) The email addresses to send the notification to.
+- `recipient` (Set of String) The email addresses to send the notification to.
 
 
 <a id="nestedblock--notifications--third_party"></a>
