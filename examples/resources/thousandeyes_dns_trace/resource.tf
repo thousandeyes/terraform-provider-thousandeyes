@@ -6,6 +6,6 @@ resource "thousandeyes_dns_trace" "example_dns_trace_test" {
   domain = "www.thousandeyes.com ANY"
 
   agents {
-    agent_id = 3 # Singapur
+    agent_id = 3 # Singapore
   }
 }
