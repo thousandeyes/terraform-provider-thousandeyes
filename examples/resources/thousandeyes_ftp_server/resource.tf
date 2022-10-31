@@ -13,6 +13,6 @@ resource "thousandeyes_ftp_server" "example_ftp_server_test" {
   password = "welcome"
 
   agents {
-    agent_id = 3 # Singapur Cloud Agent
+    agent_id = 3 # Singapore
   }
 }
