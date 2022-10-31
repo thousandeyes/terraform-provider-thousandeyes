@@ -19,6 +19,6 @@ resource "thousandeyes_web_transaction" "example_web_transaction_test" {
 EOF
 
   agents {
-    agent_id = 3 # Singapur
+    agent_id = 3 # Singapore
   }
 } 
