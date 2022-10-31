@@ -6,6 +6,6 @@ resource "thousandeyes_dnssec" "example_dnssec_test" {
   domain = "www.thousandeyes.com ANY"
 
   agents {
-    agent_id = 3 # Singapur
+    agent_id = 3 # Singapore
   }
 }
