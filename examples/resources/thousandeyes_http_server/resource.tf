@@ -6,6 +6,6 @@ resource "thousandeyes_http_server" "example_http_server_test" {
   url = "https://www.thousandeyes.com"
 
   agents {
-    agent_id = 3 # Singapur
+    agent_id = 3 # Singapore
   }
 }
