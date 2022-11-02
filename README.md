@@ -15,7 +15,7 @@ terraform {
   required_providers {
     thousandeyes = {
       source = "thousandeyes/thousandeyes"
-      version = "1.0.0-beta"
+      version = ">= 1.3.1"
     }
   }
 }
@@ -85,7 +85,7 @@ $ cd $GOPATH/src/github.com/thousandeyes/terraform-provider-thousandeyes
 $ make build
 ```
 
-Follow the instructions to [install it as a plugin](https://www.terraform.io/docs/plugins/basics.html#installing-a-plugin). After placing it into your plugins directory,  run `terraform init` to initialize it.
+Follow the instructions to [install it as a plugin](https://developer.hashicorp.com/terraform/plugin#installing-a-plugin). After placing it into your plugins directory,  run `terraform init` to initialize it.
 
 ## Maintainers
 This provider plugin is maintained by the ThousandEyes engineering team and accepts community contributions.
