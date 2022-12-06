@@ -21,7 +21,7 @@ resource "thousandeyes_agent_to_server" "example_agent_to_server_test" {
   port   = 443
 
   agents {
-    agent_id = 3 # Singapur
+    agent_id = 3 # Singapore
   }
 }
 ```

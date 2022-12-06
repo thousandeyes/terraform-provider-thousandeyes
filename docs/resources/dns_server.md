@@ -23,7 +23,7 @@ resource "thousandeyes_dns_server" "example_dns_server_test" {
   }
 
   agents {
-    agent_id = 3 # Singapur
+    agent_id = 3 # Singapore
   }
 }
 ```
