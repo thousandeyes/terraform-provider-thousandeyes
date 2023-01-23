@@ -49,7 +49,7 @@ resource "thousandeyes_page_load" "test" {
 - `description` (String) A description of the alert rule. Defaults to an empty string.
 - `enabled` (Boolean) Enables or disables the test.
 - `follow_redirects` (Boolean) Follow HTTP/301 or HTTP/302 redirect directives. Defaults to 'true'.
-- `groups` (Block Set) The array of label objects. (see [below for nested schema](#nestedblock--groups))
+- `groups` (Block Set, Deprecated) The array of label objects. (see [below for nested schema](#nestedblock--groups))
 - `http_target_time` (Number) The target time for HTTP server completion, specified in milliseconds.
 - `http_time_limit` (Number) The target time for HTTP server limits, specified in seconds.
 - `http_version` (Number) Set to 2 for the default HTTP version (prefer HTTP/2), or 1 for HTTP/1.1 only.

@@ -35,7 +35,7 @@ resource "thousandeyes_bgp" "example_bgp_test" {
 - `bgp_monitors` (Block List) The array of BGP monitor object IDs. The monitorIDs can be sourced from the /bgp-monitors endpoint. (see [below for nested schema](#nestedblock--bgp_monitors))
 - `description` (String) A description of the alert rule. Defaults to an empty string.
 - `enabled` (Boolean) Enables or disables the test.
-- `groups` (Block Set) The array of label objects. (see [below for nested schema](#nestedblock--groups))
+- `groups` (Block Set, Deprecated) The array of label objects. (see [below for nested schema](#nestedblock--groups))
 - `include_covered_prefixes` (Boolean) Include queries for subprefixes detected under this prefix.
 - `shared_with_accounts` (Block List) [“serverName”: “fqdn of server”] The array of DNS Server objects. (see [below for nested schema](#nestedblock--shared_with_accounts))
 - `use_public_bgp` (Boolean) Enable to automatically add all available Public BGP Monitors to the test.

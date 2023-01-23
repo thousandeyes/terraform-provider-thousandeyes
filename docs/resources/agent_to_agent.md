@@ -47,7 +47,7 @@ resource "thousandeyes_agent_to_agent" "example_agent_to_agent_test" {
 - `description` (String) A description of the alert rule. Defaults to an empty string.
 - `dscp_id` (Number) The DSCP ID.
 - `enabled` (Boolean) Enables or disables the test.
-- `groups` (Block Set) The array of label objects. (see [below for nested schema](#nestedblock--groups))
+- `groups` (Block Set, Deprecated) The array of label objects. (see [below for nested schema](#nestedblock--groups))
 - `mss` (Number) The maximum segment size, in bytes. Value can be from 30 to 1400.
 - `mtu_measurements` (Boolean) Measure MTU sizes on the network from agents to the target.
 - `network_measurements` (Boolean) Set to 'true' to enable network measurements.

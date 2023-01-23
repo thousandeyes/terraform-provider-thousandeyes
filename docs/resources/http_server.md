@@ -51,7 +51,7 @@ resource "thousandeyes_http_server" "example_http_server_test" {
 - `download_limit` (Number) Specify the maximum number of bytes to download from the target object.
 - `enabled` (Boolean) Enables or disables the test.
 - `follow_redirects` (Boolean) Follow HTTP/301 or HTTP/302 redirect directives. Defaults to 'true'.
-- `groups` (Block Set) The array of label objects. (see [below for nested schema](#nestedblock--groups))
+- `groups` (Block Set, Deprecated) The array of label objects. (see [below for nested schema](#nestedblock--groups))
 - `headers` (List of String) ["header: value", "header2: value"] The array of header strings.
 - `http_target_time` (Number) The target time for HTTP server completion, specified in milliseconds.
 - `http_time_limit` (Number) The target time for HTTP server limits, specified in seconds.

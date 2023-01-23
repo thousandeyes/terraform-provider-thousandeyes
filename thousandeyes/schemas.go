@@ -594,6 +594,7 @@ var schemas = map[string]*schema.Schema{
 		Type:        schema.TypeSet,
 		Description: "The array of label objects.",
 		Optional:    true,
+		Deprecated:  "This attribute will become a computed attribute. Use thousandeyes_label to link labels to tests",
 		Elem: &schema.Resource{
 			// Schema definition here is to support group objects returned from
 			// reads of test resources.

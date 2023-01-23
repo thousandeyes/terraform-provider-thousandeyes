@@ -27,7 +27,7 @@ This resource provides users with the ability to create a DNS trace test. This t
 - `description` (String) A description of the alert rule. Defaults to an empty string.
 - `dns_transport_protocol` (String) [UDP or TCP] The DNS transport protocol used for DNS requests. Defaults to UDP.
 - `enabled` (Boolean) Enables or disables the test.
-- `groups` (Block Set) The array of label objects. (see [below for nested schema](#nestedblock--groups))
+- `groups` (Block Set, Deprecated) The array of label objects. (see [below for nested schema](#nestedblock--groups))
 - `shared_with_accounts` (Block List) [“serverName”: “fqdn of server”] The array of DNS Server objects. (see [below for nested schema](#nestedblock--shared_with_accounts))
 
 ### Read-Only

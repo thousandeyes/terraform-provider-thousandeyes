@@ -49,7 +49,7 @@ resource "thousandeyes_dns_server" "example_dns_server_test" {
 - `description` (String) A description of the alert rule. Defaults to an empty string.
 - `dns_transport_protocol` (String) [UDP or TCP] The DNS transport protocol used for DNS requests. Defaults to UDP.
 - `enabled` (Boolean) Enables or disables the test.
-- `groups` (Block Set) The array of label objects. (see [below for nested schema](#nestedblock--groups))
+- `groups` (Block Set, Deprecated) The array of label objects. (see [below for nested schema](#nestedblock--groups))
 - `mtu_measurements` (Boolean) Measure MTU sizes on the network from agents to the target.
 - `network_measurements` (Boolean) Set to 'true' to enable network measurements.
 - `num_path_traces` (Number) The number of path traces.

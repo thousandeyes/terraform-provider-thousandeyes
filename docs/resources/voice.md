@@ -48,7 +48,7 @@ resource "thousandeyes_voice" "example_voice_test" {
 - `dscp_id` (Number) The DSCP ID.
 - `duration` (Number) The duration of the test, in seconds (5 to 30).
 - `enabled` (Boolean) Enables or disables the test.
-- `groups` (Block Set) The array of label objects. (see [below for nested schema](#nestedblock--groups))
+- `groups` (Block Set, Deprecated) The array of label objects. (see [below for nested schema](#nestedblock--groups))
 - `jitter_buffer` (Number) The de-jitter buffer size, in seconds (0 to 150).
 - `mtu_measurements` (Boolean) Measure MTU sizes on the network from agents to the target.
 - `num_path_traces` (Number) The number of path traces.

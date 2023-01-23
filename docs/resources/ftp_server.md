@@ -33,7 +33,7 @@ This resource allows you to create an FTP server test. This test type verifies t
 - `enabled` (Boolean) Enables or disables the test.
 - `ftp_target_time` (Number) The target time for operation completion. Specified in milliseconds.
 - `ftp_time_limit` (Number) Set the time limit for the test (in seconds). FTP tests default to 10s.
-- `groups` (Block Set) The array of label objects. (see [below for nested schema](#nestedblock--groups))
+- `groups` (Block Set, Deprecated) The array of label objects. (see [below for nested schema](#nestedblock--groups))
 - `mtu_measurements` (Boolean) Measure MTU sizes on the network from agents to the target.
 - `network_measurements` (Boolean) Set to 'true' to enable network measurements.
 - `num_path_traces` (Number) The number of path traces.
