@@ -95,6 +95,10 @@ func dataSourceThousandeyesIntegrationRead(d *schema.ResourceData, meta interfac
 	if err != nil {
 		return err
 	}
+	err = d.Set("integration_type", found.IntegrationType)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
