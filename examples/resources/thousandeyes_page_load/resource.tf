@@ -7,6 +7,6 @@ resource "thousandeyes_page_load" "test" {
   http_interval = 120
 
   agents {
-    agent_id = 3 # Singapur
+    agent_id = 3 # Singapore
   }
 }

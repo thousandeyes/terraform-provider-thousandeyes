@@ -24,7 +24,7 @@ resource "thousandeyes_sip_server" "example_sip_server_test" {
   }
 
   agents {
-    agent_id = 3 # Singapur
+    agent_id = 3 # Singapore
   }
 }
 ```

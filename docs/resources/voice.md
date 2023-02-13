@@ -22,7 +22,7 @@ resource "thousandeyes_voice" "example_voice_test" {
   target_agent_id = 4 # Tokyo
 
   agents {
-    agent_id = 3 # Singapur
+    agent_id = 3 # Singapore
   }
 }
 ```

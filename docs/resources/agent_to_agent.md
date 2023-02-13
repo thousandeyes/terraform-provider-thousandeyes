@@ -21,7 +21,7 @@ resource "thousandeyes_agent_to_agent" "example_agent_to_agent_test" {
   target_agent_id = "5"
 
   agents {
-    agent_id = 3 # Singapur
+    agent_id = 3 # Singapore
   }
 }
 ```
