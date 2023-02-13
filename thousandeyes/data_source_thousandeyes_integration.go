@@ -86,16 +86,9 @@ func dataSourceThousandeyesIntegrationRead(d *schema.ResourceData, meta interfac
 	if found == (thousandeyes.Integration{}) {
 		return fmt.Errorf("unable to locate any integration by name: %s", searchName)
 	}
+
 	d.SetId(*found.IntegrationID)
-	err = d.Set("integration_name", found.IntegrationName)
-	if err != nil {
-		return err
-	}
-	err = d.Set("integration_id", found.IntegrationID)
-	if err != nil {
-		return err
-	}
-	err = d.Set("integration_type", found.IntegrationType)
+	err = ResourceRead(d, &found)
 	if err != nil {
 		return err
 	}
