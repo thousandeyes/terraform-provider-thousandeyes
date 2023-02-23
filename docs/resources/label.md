@@ -20,8 +20,8 @@ This resource allows you to create labels for ThousandEyes agents and test group
 
 ### Optional
 
-- `agents` (Block List) The list of agents to use. (see [below for nested schema](#nestedblock--agents))
-- `tests` (Block List) The list of included tests. (see [below for nested schema](#nestedblock--tests))
+- `agents` (Block Set) The list of agents to use. (see [below for nested schema](#nestedblock--agents))
+- `tests` (Block Set) The list of included tests. (see [below for nested schema](#nestedblock--tests))
 
 ### Read-Only
 
@@ -32,7 +32,7 @@ This resource allows you to create labels for ThousandEyes agents and test group
 <a id="nestedblock--agents"></a>
 ### Nested Schema for `agents`
 
-Optional:
+Required:
 
 - `agent_id` (Number) The list of unique agent IDs that the label is applied to.
 
@@ -42,158 +42,6 @@ Optional:
 
 Required:
 
-- `agents` (Block Set, Min: 1) The list of ThousandEyes agents to use. (see [below for nested schema](#nestedblock--tests--agents))
-- `test_name` (String) The name of the test.
-
-Optional:
-
-- `alert_rules` (Block Set) Gets the ruleId from the /alert-rules endpoint. If alertsEnabled is set to 'true' and alertRules is not included in a creation/update query, the applicable defaults will be used. (see [below for nested schema](#nestedblock--tests--alert_rules))
-- `alerts_enabled` (Boolean) Set to 'true' to enable alerts, or 'false' to disable alerts. The default value is 'true'.
-- `description` (String) A description of the alert rule. Defaults to an empty string.
-- `enabled` (Boolean) Enables or disables the test.
-- `groups` (Block Set, Deprecated) The array of label objects. (see [below for nested schema](#nestedblock--tests--groups))
-- `shared_with_accounts` (Block List) [“serverName”: “fqdn of server”] The array of DNS Server objects. (see [below for nested schema](#nestedblock--tests--shared_with_accounts))
-
-Read-Only:
-
-- `api_links` (List of Object) Self links to the endpoint to pull test metadata, and data links to the endpoint for test data. Read-only, and shows rel and href elements. (see [below for nested schema](#nestedatt--tests--api_links))
-- `created_by` (String) Created by user.
-- `created_date` (String) The date of creation.
-- `modified_by` (String) Last modified by this user.
-- `modified_date` (String) The date the test was last modified. Shown in UTC.
-- `saved_event` (Boolean) Set to 'true' for a saved event, or to 'false' for a normal test.
-- `test_id` (Number) The unique ID of the test.
-- `type` (String) The type of test.
-
-<a id="nestedblock--tests--agents"></a>
-### Nested Schema for `tests.agents`
-
-Optional:
-
-- `agent_id` (Number) The unique ID for the ThousandEyes agent.
-- `agent_name` (String) The name of the agent.
-- `agent_state` (String) Defines whether the agent's status is online, offline, or disabled.
-- `cluster_members` (Block List) Detailed information about each cluster member, shown as an array. This field is not shown for Enterprise Agents in standalone mode, or for Cloud Agents. (see [below for nested schema](#nestedblock--tests--agents--cluster_members))
-- `country_id` (String) The two-digit ISO country code of the agent.
-- `created_date` (String) The date the agent was created. Expressed in UTC (yyyy-MM-dd hh:mm:ss).
-- `enabled` (Boolean) Shows whether the agent is enabled or disabled.
-- `error_details` (Block List) If one or more errors present in the agent, the error details are shown for each as an array. (see [below for nested schema](#nestedblock--tests--agents--error_details))
-- `groups` (Block Set) An array of label objects. (see [below for nested schema](#nestedblock--tests--agents--groups))
-- `hostname` (String) Fully qualified domain name of the agent.
-- `ip_addresses` (List of String) An array of the ipAddress entries.
-- `ipv6_policy` (String) [FORCE_IPV4, PREFER_IPV6 or FORCE_IPV6] The IP version policy.
-- `keep_browser_cache` (Boolean) Defines whether the browser cache should be kept. Either 1 for enabled or 0 for disabled.
-- `last_seen` (String) The last time the agent connected with ThousandEyes. Shown in UTC (yyyy-MM-dd hh:mm:ss).
-- `location` (String) The location of the agent.
-- `network` (String) The name of the autonomous system in which the agent is found.
-- `prefix` (String) The network prefix, expressed in CIDR format.
-- `target_for_tests` (String) The target IP address or domain name representing the test destination when the agent is acting as a test target in an agent-to-agent test.
-- `utilization` (Number) Shows the overall utilization percentage.
-- `verify_ssl_certificate` (Boolean) Shows whether the SSL certificate needs to be verified. 1 for enabled and 0 for disabled.
-
-Read-Only:
-
-- `agent_type` (String) The type of ThousandEyes agent. Default value is enterprise.
-
-<a id="nestedblock--tests--agents--cluster_members"></a>
-### Nested Schema for `tests.agents.cluster_members`
-
-Optional:
-
-- `agent_state` (String) Defines whether the agent's status is online, offline, or disabled.
-- `ip_addresses` (List of String) The array of ipAddress entries.
-- `last_seen` (String) The last time the agent connected with ThousandEyes. Uses UTC (yyyy-MM-dd hh:mm:ss).
-- `member_id` (Number) The unique ID of the cluster member.
-- `name` (String) The name of the cluster member.
-- `network` (String) The name of the autonomous system in which the Enterprise Agent is found (Enterprise Agents only).
-- `prefix` (String) The network prefix, in CIDR format (Enterprise Agents only).
-- `public_ip_addresses` (List of String) The array of public ipAddress entries.
-- `target_for_tests` (String) The target IP address or domain name. Represents the test's destination when the agent is acting as a test target in an agent-to-agent test.
-- `utilization` (Number) Shows the overall utilization percentage of a cluster member.
-
-
-<a id="nestedblock--tests--agents--error_details"></a>
-### Nested Schema for `tests.agents.error_details`
-
-Optional:
-
-- `code` (String) [AGENT_VERSION_OUTDATED, APPLIANCE_VERSION_OUTDATED, BROWSERBOT_VERSION_OUTDATED, CLOCK_OFFSET, NAT_TRAVERSAL_ERROR, OS_END_OF_INSTALLATION_SUPPORT, OS_END_OF_SUPPORT, or OS_END_OF_LIFE] The error code.
-- `description` (String) A detailed explanation of the error code.
-
-
-<a id="nestedblock--tests--agents--groups"></a>
-### Nested Schema for `tests.agents.groups`
-
-Optional:
-
-- `builtin` (Boolean) Shows whether you are using built-in (1) labels or user-created (2) labels. Built-in labels are read-only.
-- `group_id` (Number) The unique ID of the label. This number is negative for built-in labels. Query the /groups/{id} endpoint to see a list of agents/tests with this label.
-- `name` (String) The name of the label.
-- `type` (String) [tests, agents, endpoint_tests or endpoint_agents] The type of label.
-
-
-
-<a id="nestedblock--tests--alert_rules"></a>
-### Nested Schema for `tests.alert_rules`
-
-Optional:
-
-- `rule_id` (Number) The unique ID of the alert rule.
-
-
-<a id="nestedblock--tests--groups"></a>
-### Nested Schema for `tests.groups`
-
-Required:
-
-- `group_id` (Number) The unique ID of the label.
-
-Optional:
-
-- `agents` (Block List) Define the ThousandEyes agents to use. (see [below for nested schema](#nestedblock--tests--groups--agents))
-- `name` (String) The name of the label.
-- `tests` (Block List) The list of tests. (see [below for nested schema](#nestedblock--tests--groups--tests))
-- `type` (String) [tests, agents, endpoint_tests, or endpoint_agents] The type of label.
-
-Read-Only:
-
-- `builtin` (Boolean) Shows whether you are using built-in (true) labels or user-created (false) labels. Built-in labels are read-only.
-
-<a id="nestedblock--tests--groups--agents"></a>
-### Nested Schema for `tests.groups.agents`
-
-Optional:
-
-- `agent_id` (Number) The unique ThousandEyes agent ID.
-
-
-<a id="nestedblock--tests--groups--tests"></a>
-### Nested Schema for `tests.groups.tests`
-
-Optional:
-
-- `test_id` (Number) The unique ID of the test.
-
-
-
-<a id="nestedblock--tests--shared_with_accounts"></a>
-### Nested Schema for `tests.shared_with_accounts`
-
-Required:
-
-- `aid` (Number) The account group ID.
-
-Read-Only:
-
-- `name` (String) The name of account.
-
-
-<a id="nestedatt--tests--api_links"></a>
-### Nested Schema for `tests.api_links`
-
-Read-Only:
-
-- `href` (String)
-- `rel` (String)
+- `test_id` (Number) The list of unique test IDs.
 
 

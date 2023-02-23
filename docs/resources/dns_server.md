@@ -49,7 +49,6 @@ resource "thousandeyes_dns_server" "example_dns_server_test" {
 - `description` (String) A description of the alert rule. Defaults to an empty string.
 - `dns_transport_protocol` (String) [UDP or TCP] The DNS transport protocol used for DNS requests. Defaults to UDP.
 - `enabled` (Boolean) Enables or disables the test.
-- `groups` (Block Set, Deprecated) The array of label objects. (see [below for nested schema](#nestedblock--groups))
 - `mtu_measurements` (Boolean) Measure MTU sizes on the network from agents to the target.
 - `network_measurements` (Boolean) Set to 'true' to enable network measurements.
 - `num_path_traces` (Number) The number of path traces.
@@ -65,6 +64,7 @@ resource "thousandeyes_dns_server" "example_dns_server_test" {
 - `api_links` (List of Object) Self links to the endpoint to pull test metadata, and data links to the endpoint for test data. Read-only, and shows rel and href elements. (see [below for nested schema](#nestedatt--api_links))
 - `created_by` (String) Created by user.
 - `created_date` (String) The date of creation.
+- `groups` (Set of Object) The array of label objects. (see [below for nested schema](#nestedatt--groups))
 - `id` (String) The ID of this resource.
 - `live_share` (Boolean) Set to 'true' for a test shared with your account group, or to 'false' for a normal test.
 - `modified_by` (String) Last modified by this user.
@@ -173,41 +173,6 @@ Optional:
 - `network` (String) The name of the autonomous system in which the BGP monitor is found.
 
 
-<a id="nestedblock--groups"></a>
-### Nested Schema for `groups`
-
-Required:
-
-- `group_id` (Number) The unique ID of the label.
-
-Optional:
-
-- `agents` (Block List) Define the ThousandEyes agents to use. (see [below for nested schema](#nestedblock--groups--agents))
-- `name` (String) The name of the label.
-- `tests` (Block List) The list of tests. (see [below for nested schema](#nestedblock--groups--tests))
-- `type` (String) [tests, agents, endpoint_tests, or endpoint_agents] The type of label.
-
-Read-Only:
-
-- `builtin` (Boolean) Shows whether you are using built-in (true) labels or user-created (false) labels. Built-in labels are read-only.
-
-<a id="nestedblock--groups--agents"></a>
-### Nested Schema for `groups.agents`
-
-Optional:
-
-- `agent_id` (Number) The unique ThousandEyes agent ID.
-
-
-<a id="nestedblock--groups--tests"></a>
-### Nested Schema for `groups.tests`
-
-Optional:
-
-- `test_id` (Number) The unique ID of the test.
-
-
-
 <a id="nestedblock--shared_with_accounts"></a>
 ### Nested Schema for `shared_with_accounts`
 
@@ -227,5 +192,33 @@ Read-Only:
 
 - `href` (String)
 - `rel` (String)
+
+
+<a id="nestedatt--groups"></a>
+### Nested Schema for `groups`
+
+Read-Only:
+
+- `agents` (List of Object) (see [below for nested schema](#nestedobjatt--groups--agents))
+- `builtin` (Boolean)
+- `group_id` (Number)
+- `name` (String)
+- `tests` (List of Object) (see [below for nested schema](#nestedobjatt--groups--tests))
+- `type` (String)
+
+<a id="nestedobjatt--groups--agents"></a>
+### Nested Schema for `groups.agents`
+
+Read-Only:
+
+- `agent_id` (Number)
+
+
+<a id="nestedobjatt--groups--tests"></a>
+### Nested Schema for `groups.tests`
+
+Read-Only:
+
+- `test_id` (Number)
 
 

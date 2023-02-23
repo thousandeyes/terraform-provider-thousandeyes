@@ -22,9 +22,8 @@ func resourceGroupLabel() *schema.Resource {
 	}
 	resource.Schema["type"] = schemas["type-label"]
 	resource.Schema["agents"] = schemas["agents-label"]
-	resource.Schema["tests"].Elem = &schema.Resource{
-		Schema: ResourceSchemaBuild(thousandeyes.GenericTest{}, schemas, nil),
-	}
+	resource.Schema["tests"] = schemas["tests-label"]
+
 	return &resource
 }
 
@@ -47,10 +46,21 @@ func resourceGroupLabelRead(d *schema.ResourceData, m interface{}) error {
 		}
 	}
 	remote.Tests = &testIDs
+
+	agentIDs := []thousandeyes.Agent{}
+	if remote.Agents != nil {
+		for _, v := range *remote.Agents {
+			agent := thousandeyes.Agent{AgentID: v.AgentID}
+			agentIDs = append(agentIDs, agent)
+		}
+	}
+	remote.Agents = &agentIDs
+
 	err = ResourceRead(d, remote)
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 
