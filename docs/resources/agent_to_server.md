@@ -169,7 +169,7 @@ Required:
 
 Read-Only:
 
-- `name` (String) The name of account.
+- `name` (String) Account name.
 
 
 <a id="nestedatt--api_links"></a>

@@ -999,7 +999,7 @@ var schemas = map[string]*schema.Schema{
 				},
 				"name": {
 					Type:        schema.TypeString,
-					Description: "The name of account.",
+					Description: "Account name.",
 					Computed:    true,
 				},
 			},
