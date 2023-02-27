@@ -345,9 +345,13 @@ func FixReadValues(m interface{}, name string) (interface{}, error) {
 			}
 		}
 
-	// Remove tests.
 	case "tests":
-		m = nil
+		for i, v := range m.([]interface{}) {
+			test := v.(map[string]interface{})
+			m.([]interface{})[i] = map[string]interface{}{
+				"test_id": test["test_id"],
+			}
+		}
 	}
 
 	return m, nil

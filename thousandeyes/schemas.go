@@ -264,7 +264,7 @@ var schemas = map[string]*schema.Schema{
 		},
 	},
 	"agents-label": {
-		Type:        schema.TypeList,
+		Type:        schema.TypeSet,
 		Description: "The list of agents to use.",
 		Optional:    true,
 		Elem: &schema.Resource{
@@ -272,7 +272,7 @@ var schemas = map[string]*schema.Schema{
 				"agent_id": {
 					Type:        schema.TypeInt,
 					Description: "The list of unique agent IDs that the label is applied to.",
-					Optional:    true,
+					Required:    true,
 				},
 			},
 		},
@@ -593,8 +593,7 @@ var schemas = map[string]*schema.Schema{
 	"groups": {
 		Type:        schema.TypeSet,
 		Description: "The array of label objects.",
-		Optional:    true,
-		Deprecated:  "This attribute will become a computed attribute. Use thousandeyes_label to link labels to tests",
+		Computed:    true,
 		Elem: &schema.Resource{
 			// Schema definition here is to support group objects returned from
 			// reads of test resources.
@@ -603,13 +602,13 @@ var schemas = map[string]*schema.Schema{
 					// See `agents-label` rather than `agents`
 					Type:        schema.TypeList,
 					Description: "Define the ThousandEyes agents to use.",
-					Optional:    true,
+					Computed:    true,
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"agent_id": {
 								Type:        schema.TypeInt,
 								Description: "The unique ThousandEyes agent ID.",
-								Optional:    true,
+								Computed:    true,
 							},
 						},
 					},
@@ -622,24 +621,23 @@ var schemas = map[string]*schema.Schema{
 				"group_id": {
 					Type:        schema.TypeInt,
 					Description: "The unique ID of the label.",
-					Required:    true,
+					Computed:    true,
 				},
 				"name": {
 					Type:        schema.TypeString,
 					Description: "The name of the label.",
-					Optional:    true,
-					Default:     "",
+					Computed:    true,
 				},
 				"tests": {
 					Type:        schema.TypeList,
 					Description: "The list of tests.",
-					Optional:    true,
+					Computed:    true,
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"test_id": {
 								Type:        schema.TypeInt,
 								Description: "The unique ID of the test.",
-								Optional:    true,
+								Computed:    true,
 							},
 						},
 					},
@@ -648,8 +646,7 @@ var schemas = map[string]*schema.Schema{
 					// See `type-label` rather than `type`
 					Type:        schema.TypeString,
 					Description: "[tests, agents, endpoint_tests, or endpoint_agents] The type of label.",
-					Optional:    true,
-					Default:     "",
+					Computed:    true,
 				},
 			},
 		},
@@ -1002,7 +999,7 @@ var schemas = map[string]*schema.Schema{
 				},
 				"name": {
 					Type:        schema.TypeString,
-					Description: "The name of account.",
+					Description: "Account name.",
 					Computed:    true,
 				},
 			},
@@ -1133,6 +1130,20 @@ var schemas = map[string]*schema.Schema{
 					Type:        schema.TypeInt,
 					Description: "The list of unique test IDs.",
 					Optional:    true,
+				},
+			},
+		},
+	},
+	"tests-label": {
+		Type:        schema.TypeSet,
+		Description: "The list of included tests.",
+		Optional:    true,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"test_id": {
+					Type:        schema.TypeInt,
+					Description: "The list of unique test IDs.",
+					Required:    true,
 				},
 			},
 		},
