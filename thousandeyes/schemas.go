@@ -495,7 +495,7 @@ var schemas = map[string]*schema.Schema{
 		Description: "The array of DNS Server objects (“serverName”: “fqdn of server”).",
 		Optional:    false,
 		Required:    true,
-		Type:        schema.TypeList,
+		Type:        schema.TypeSet,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"server_name": {

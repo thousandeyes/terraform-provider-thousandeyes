@@ -34,7 +34,7 @@ resource "thousandeyes_dns_server" "example_dns_server_test" {
 ### Required
 
 - `agents` (Block Set, Min: 1) The list of ThousandEyes agents to use. (see [below for nested schema](#nestedblock--agents))
-- `dns_servers` (Block List, Min: 1) The array of DNS Server objects (“serverName”: “fqdn of server”). (see [below for nested schema](#nestedblock--dns_servers))
+- `dns_servers` (Block Set, Min: 1) The array of DNS Server objects (“serverName”: “fqdn of server”). (see [below for nested schema](#nestedblock--dns_servers))
 - `domain` (String) See notes	target record for test, suffixed by record type (ie, www.thousandeyes.com CNAME). If no record type is specified, the test will default to an ANY record.
 - `interval` (Number) The interval to run the test on, in seconds.
 - `test_name` (String) The name of the test.
