@@ -67,3 +67,5 @@ require (
 	google.golang.org/grpc v1.46.0 // indirect
 	google.golang.org/protobuf v1.28.0 // indirect
 )
+
+replace github.com/thousandeyes/thousandeyes-sdk-go/v2 v2.3.1 => github.com/brumarqu-te/thousandeyes-sdk-go/v2 v2.0.0-20230417065742-0a47037e4d12
