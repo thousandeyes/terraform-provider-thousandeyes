@@ -1,0 +1,66 @@
+name: Bug Report
+description: File a bug report
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for taking the time to fill out this bug report!
+  - type: textarea
+    id: versions
+    attributes:
+      label: What versions are you using?
+      description: Please share the provider and terraform versions, and any other version that is relevant to troubleshoot the issue
+      placeholder: Terraform version 1.5.2, Provider version 2.0.1
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect to happen?
+      description: Please provide a detailed description of what was expected to happen
+      placeholder: Plan should have produced X or Y
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: What actually happened?
+      description: Please provide a detailed description of what actually happened
+      placeholder: Provider produced inconsistent final plan
+    validations:
+      required: true
+  - type: textarea
+    id: code
+    attributes:
+      label: Terraform code to reproduce the bug
+      description: Please provide the minimum required amount of code to reproduce the bug. If the code is not sufficient to reproduce the issue, then we might discard the bug
+      placeholder: <code>
+      render: hcl
+    validations:
+      required: true
+  - type: textarea
+    id: addcode
+    attributes:
+      label: Any additional code to reproduce the bug
+      description: Please provide any additional code to reproduce the bug. You may use markdown inside the textbox to format your code
+      placeholder: <code>
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce the bug
+      description: Please provide the steps to reproduce the issue
+      placeholder: Step 1...
+    validations:
+      required: true
+  - type: textarea
+    id: addcomments
+    attributes:
+      label: Any additional comments?
+      description: Use this space to write down any additional comments
+      placeholder: Comment
+    validations:
+      required: true
