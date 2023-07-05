@@ -41,26 +41,18 @@ body:
     validations:
       required: true
   - type: textarea
-    id: addcode
+    id: addcommentscode
     attributes:
-      label: Any additional code to reproduce the bug
-      description: Please provide any additional code to reproduce the bug. You may use markdown inside the textbox to format your code
-      placeholder: <code>
+      label: Any additional comments or code?
+      description: Use this space to write down any additional comments or code to reproduce the bug. You may use markdown inside the textbox to format your code
+      placeholder: Comment or <code>
     validations:
-      required: true
+      required: false
   - type: textarea
     id: reproduce
     attributes:
       label: Steps to reproduce the bug
       description: Please provide the steps to reproduce the issue
       placeholder: Step 1...
-    validations:
-      required: true
-  - type: textarea
-    id: addcomments
-    attributes:
-      label: Any additional comments?
-      description: Use this space to write down any additional comments
-      placeholder: Comment
     validations:
       required: true
