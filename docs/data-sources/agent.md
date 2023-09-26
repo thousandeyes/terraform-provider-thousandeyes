@@ -38,7 +38,6 @@ resource "thousandeyes_http_server" "www_thousandeyes_http_test" {
 ### Read-Only
 
 - `agent_id` (Number) The unique ID of the agent.
-- `agent_type` (String) The type of agent.
 - `id` (String) The ID of this resource.
 
 
