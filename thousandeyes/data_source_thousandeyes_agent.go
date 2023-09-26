@@ -14,19 +14,14 @@ func dataSourceThousandeyesAgent() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"agent_name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
 				Description: "The name of the agent.",
 			},
 			"agent_id": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeInt,
+				Computed:    true,
 				Description: "The unique ID of the agent.",
-			},
-			"agent_type": {
-				Type:     schema.TypeString,
-				Computed: true,
-				Description: "The type of agent.",
 			},
 		},
 		Description: "This data source allows you to define a ThousandEyes agent. For more information, see [Global Vantage Points](https://docs.thousandeyes.com/product-documentation/global-vantage-points).",
