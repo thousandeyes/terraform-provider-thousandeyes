@@ -935,7 +935,7 @@ var schemas = map[string]*schema.Schema{
 		Description:  "The time limit for the transaction. The default value is 30s.",
 		Optional:     true,
 		Default:      30,
-		ValidateFunc: validation.IntBetween(1, 60),
+		ValidateFunc: validation.IntBetween(5, 180),
 	},
 	"throughput_duration": {
 		Type:         schema.TypeInt,
