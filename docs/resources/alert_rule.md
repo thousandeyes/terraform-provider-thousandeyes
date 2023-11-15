@@ -31,6 +31,7 @@ This resource allows you to create alert rules for ThousandEyes alerts. Alert ru
 - `notifications` (Block Set) The list of notifications for the alert rule. (see [below for nested schema](#nestedblock--notifications))
 - `notify_on_clear` (Boolean) Set to 'true' to trigger the notification when the alert clears.
 - `rounds_violating_mode` (String) [ANY or EXACT] Defines whether the same agent(s) must meet the EXACT same threshold in consecutive rounds or not. The default value is ANY.
+- `severity` (String) [INFO, MINOR, MAJOR or CRITICAL] The severity level of the alert rule. The default value is INFO.
 - `test_ids` (List of Number) The valid test IDs.
 
 ### Read-Only
