@@ -768,6 +768,13 @@ var schemas = map[string]*schema.Schema{
 		Description: "The target host.",
 		Required:    true,
 	},
+	"severity": {
+		Type:         schema.TypeString,
+		Description:  "[INFO, MINOR, MAJOR or CRITICAL] The severity level of the alert rule. The default value is INFO.",
+		Default:      "INFO",
+		Optional:     true,
+		ValidateFunc: validation.StringInSlice([]string{"INFO", "MINOR", "MAJOR", "CRITICAL"}, false),
+	},
 	"shared_with_accounts": {
 		Type:        schema.TypeList,
 		Description: "[“serverName”: “fqdn of server”] The array of DNS Server objects.",
