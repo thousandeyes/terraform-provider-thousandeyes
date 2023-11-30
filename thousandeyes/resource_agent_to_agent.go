@@ -36,19 +36,9 @@ func resourceAgentToAgent() *schema.Resource {
 }
 
 func resourceAgentAgentRead(d *schema.ResourceData, m interface{}) error {
-	client := m.(*thousandeyes.Client)
-
-	log.Printf("[INFO] Reading Thousandeyes Test %s", d.Id())
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	remote, err := client.GetAgentAgent(id)
-	if err != nil {
-		return err
-	}
-	err = ResourceRead(d, remote)
-	if err != nil {
-		return err
-	}
-	return nil
+	return GetResource(d, m, func(client *thousandeyes.Client, id int64) (interface{}, error) {
+		return client.GetAgentAgent(id)
+	})
 }
 
 func resourceAgentAgentUpdate(d *schema.ResourceData, m interface{}) error {

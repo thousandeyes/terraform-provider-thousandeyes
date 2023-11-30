@@ -46,9 +46,15 @@ func resourceGroupLabelRead(d *schema.ResourceData, m interface{}) error {
 	log.Printf("[INFO] Reading Thousandeyes Label %s", d.Id())
 	id, _ := strconv.ParseInt(d.Id(), 10, 64)
 	remote, err := client.GetGroupLabel(id)
-	if err != nil {
+
+	if err != nil && IsNotFoundError(err) {
+		log.Printf("[INFO] Resource was deleted - will recreate it")
+		d.SetId("") // Set ID to empty to mark the resource as non-existent
+		return nil
+	} else if err != nil {
 		return err
 	}
+	
 	// In order to prevent schema conficts for test responses,  we retain
 	// the stored state for tests attached to a group to just a test ID.
 	testIDs := []thousandeyes.GenericTest{}
