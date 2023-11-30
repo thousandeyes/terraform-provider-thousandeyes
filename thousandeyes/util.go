@@ -139,7 +139,7 @@ func ResourceBuildStruct(d *schema.ResourceData, structPtr interface{}) interfac
 func GetResource(d *schema.ResourceData, m interface{}, readFunc ResourceReadFunc) error {
 	client := m.(*thousandeyes.Client)
 
-	log.Printf("[INFO] Reading Thousandeyes Test %s", d.Id())
+	log.Printf("[INFO] Reading Thousandeyes Resource %s", d.Id())
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		return err
