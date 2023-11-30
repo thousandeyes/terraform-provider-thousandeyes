@@ -15,9 +15,9 @@ import (
 type ResourceReadFunc func(client *thousandeyes.Client, id int64) (interface{}, error)
 
 func IsNotFoundError(err error) bool {
-    notFoundPatterns := []string{"404", "Not Found"}
+    notFoundPatterns := []string{"404", "not found"}
     for _, pattern := range notFoundPatterns {
-        if strings.Contains(err.Error(), pattern) {
+        if strings.Contains(strings.ToLower(err.Error()), pattern) {
             return true
         }
     }
