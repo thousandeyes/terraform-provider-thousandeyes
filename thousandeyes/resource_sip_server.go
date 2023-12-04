@@ -24,19 +24,9 @@ func resourceSIPServer() *schema.Resource {
 }
 
 func resourceSIPServerRead(d *schema.ResourceData, m interface{}) error {
-	client := m.(*thousandeyes.Client)
-
-	log.Printf("[INFO] Reading Thousandeyes Test %s", d.Id())
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	remote, err := client.GetSIPServer(id)
-	if err != nil {
-		return err
-	}
-	err = ResourceRead(d, remote)
-	if err != nil {
-		return err
-	}
-	return nil
+	return GetResource(d, m, func(client *thousandeyes.Client, id int64) (interface{}, error) {
+		return client.GetSIPServer(id)
+	})
 }
 
 func resourceSIPServerUpdate(d *schema.ResourceData, m interface{}) error {

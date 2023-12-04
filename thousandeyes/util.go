@@ -2,6 +2,7 @@ package thousandeyes
 
 import (
 	"errors"
+	"log"
 	"reflect"
 	"strconv"
 	"strings"
@@ -10,6 +11,18 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/thousandeyes/thousandeyes-sdk-go/v2"
 )
+
+type ResourceReadFunc func(client *thousandeyes.Client, id int64) (interface{}, error)
+
+func IsNotFoundError(err error) bool {
+    notFoundPatterns := []string{"404", "not found"}
+    for _, pattern := range notFoundPatterns {
+        if strings.Contains(strings.ToLower(err.Error()), pattern) {
+            return true
+        }
+    }
+    return false
+}
 
 func expandAgents(v interface{}) thousandeyes.Agents {
 	var agents thousandeyes.Agents
@@ -120,6 +133,36 @@ func ResourceBuildStruct(d *schema.ResourceData, structPtr interface{}) interfac
 		}
 	}
 	return resourceFixups(d, structPtr)
+}
+
+// resourceRead is a generic function for reading resources.
+func GetResource(d *schema.ResourceData, m interface{}, readFunc ResourceReadFunc) error {
+	client := m.(*thousandeyes.Client)
+
+	log.Printf("[INFO] Reading Thousandeyes Resource %s", d.Id())
+	id, err := strconv.ParseInt(d.Id(), 10, 64)
+	if err != nil {
+		return err
+	}
+
+	remote, err := readFunc(client, id)
+
+	// Check if the resource no longer exists
+	if err != nil && IsNotFoundError(err) {
+		log.Printf("[INFO] Resource was deleted - will recreate it")
+		d.SetId("") // Set ID to empty to mark the resource as non-existent
+		return nil
+	} else if err != nil {
+		return err
+	}
+
+	// Continue with updating the state
+	err = ResourceRead(d, remote)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // ResourceRead sets values for a schema.ResourceData object by names derived
