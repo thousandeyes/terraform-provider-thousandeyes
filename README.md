@@ -90,5 +90,9 @@ Follow the instructions to [install it as a plugin](https://developer.hashicorp.
 ## Maintainers
 This provider plugin is maintained by the ThousandEyes engineering team and accepts community contributions.
 
+> [!NOTE]  
+> The `docs/` folder should not be changed manually. Instead, if there are changes to the examples, inputs/outputs of any `data_source` or `resource`, you need to run `go generate` locally and commit the resulting changes to the `.md` files. 
+
+
 ## Acknowledgements
 ThousandEyes would like to thank William Fleming, John Dyer, and Joshua Blanchard for their contribution and community maintenance of this project.
