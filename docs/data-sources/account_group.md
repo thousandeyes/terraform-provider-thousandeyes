@@ -27,7 +27,7 @@ resource "thousandeyes_http_server" "thousandeyes_http_test" {
   }
 
   agents {
-    agent_id = 3 # Singapure
+    agent_id = 3 # Singapur
   }
 }
 ```
