@@ -213,21 +213,17 @@ func FixReadValues(m interface{}, name string) (interface{}, error) {
 		}
 
 	// Remove all alert rule fields except for rule ID. Ignore default rules.
+	// Remove all alert rule fields except for rule ID.
 	case "alert_rules":
 		alert_rules := m.([]interface{})
 		// Edit the alert_rules slice in place, to return the same type.
 		i := 0
 		for i < len(alert_rules) {
 			rule := alert_rules[i].(map[string]interface{})
-			if is_default, ok := rule["default"]; ok && is_default != nil && *is_default.(*bool) {
-				// Remove this item from the slice
-				alert_rules = append(alert_rules[:i], alert_rules[i+1:]...)
-			} else {
-				alert_rules[i] = map[string]interface{}{
-					"rule_id": rule["rule_id"],
-				}
-				i = i + 1
+			alert_rules[i] = map[string]interface{}{
+				"rule_id": rule["rule_id"],
 			}
+			i = i + 1
 		}
 		m = alert_rules
 
