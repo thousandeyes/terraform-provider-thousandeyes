@@ -23,6 +23,12 @@ func dataSourceThousandeyesAgent() *schema.Resource {
 				Computed:    true,
 				Description: "The unique ID of the agent.",
 			},
+			"ip_addresses": {
+				Type:        schema.TypeList,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Computed:    true,
+				Description: "The array of IP Addresses entries for the agent.",
+			},
 		},
 		Description: "This data source allows you to define a ThousandEyes agent. For more information, see [Global Vantage Points](https://docs.thousandeyes.com/product-documentation/global-vantage-points).",
 	}
@@ -60,6 +66,10 @@ func dataSourceThousandeyesAgentRead(d *schema.ResourceData, meta interface{}) e
 		return err
 	}
 	err = d.Set("agent_id", found.AgentID)
+	if err != nil {
+		return err
+	}
+	err = d.Set("ip_addresses", found.IPAddresses)
 	if err != nil {
 		return err
 	}
