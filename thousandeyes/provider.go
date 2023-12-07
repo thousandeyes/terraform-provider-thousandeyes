@@ -1,6 +1,8 @@
 package thousandeyes
 
 import (
+	"context"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"log"
 	"strconv"
 	"time"
@@ -11,9 +13,9 @@ import (
 
 // Global variable for account group ID, as we must be aware of it in
 // functions that will not have access to it otherwise.
-var account_group_id int64
+var accountGroupId int64
 
-func New(version string) func() *schema.Provider {
+func New() func() *schema.Provider {
 	return func() *schema.Provider {
 		return Provider()
 	}
@@ -70,11 +72,11 @@ func Provider() *schema.Provider {
 			"thousandeyes_bgp_monitor":   dataSourceThousandeyesBGPMonitor(),
 			"thousandeyes_integration":   dataSourceThousandeyesIntegration(),
 		},
-		ConfigureFunc: providerConfigure,
+		ConfigureContextFunc: providerConfigureWithContext,
 	}
 }
 
-func providerConfigure(d *schema.ResourceData) (interface{}, error) {
+func providerConfigureWithContext(_ context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
 	log.Println("[INFO] Initializing ThousandEyes client")
 	opts := thousandeyes.ClientOptions{
 		AuthToken:   d.Get("token").(string),
@@ -85,11 +87,11 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	}
 	var err error
 	if opts.AccountID != "" {
-		account_group_id, err = strconv.ParseInt(opts.AccountID, 10, 64)
+		accountGroupId, err = strconv.ParseInt(opts.AccountID, 10, 64)
 		if err != nil {
-			return nil, err
+			return nil, diag.FromErr(err)
 		}
-
 	}
+
 	return thousandeyes.NewClient(&opts), nil
 }

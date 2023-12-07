@@ -24,7 +24,7 @@ func main() {
 	opts := &plugin.ServeOpts{
 		Debug:        debugMode,
 		ProviderAddr: "registry.terraform.io/thousandeyes/thousandeyes",
-		ProviderFunc: thousandeyes.New(version),
+		ProviderFunc: thousandeyes.New(),
 	}
 
 	plugin.Serve(opts)

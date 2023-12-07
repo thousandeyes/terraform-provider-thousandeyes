@@ -248,7 +248,7 @@ func TestFixReadValues(t *testing.T) {
 	}
 
 	//	shared_with_accounts
-	account_group_id = 2
+	accountGroupId = 2
 	accountsInput := []interface{}{
 		map[string]interface{}{
 			"name": thousandeyes.String("foo"),
@@ -272,7 +272,7 @@ func TestFixReadValues(t *testing.T) {
 		t.Errorf("Values not stripped correctly from shared_with_accounts input: Received %#v Expected %#v", output, accountsTarget)
 	}
 	//  We should fail if account_group_id isn't set and the list of account groups is > 1
-	account_group_id = 0
+	accountGroupId = 0
 	output, err = FixReadValues(accountsInput, "shared_with_accounts")
 	if err == nil {
 		t.Errorf("Error was not returned when shared_with_accounts length was > 1 and account_group_id  was not set")
