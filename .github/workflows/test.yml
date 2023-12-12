@@ -8,7 +8,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Set up Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v4
         with:
           go-version-file: 'go.mod'
           cache: true
@@ -33,6 +33,7 @@ jobs:
       - uses: actions/setup-go@v4
         with:
           go-version-file: 'go.mod'
+          cache: true
       - uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: '1.5.*'
@@ -51,4 +52,5 @@ jobs:
       - uses: actions/setup-go@v4
         with:
           go-version-file: 'go.mod'
+          cache: true
       - run: go test -v -cover ./...
