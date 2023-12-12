@@ -44,7 +44,7 @@ func testAccCheckThousandEyesFTPServerSteps(testName, resourceName string) []res
 			Check: resource.ComposeTestCheckFunc(
 				resource.TestCheckResourceAttr(resourceName, "password", "test_password"),
 				resource.TestCheckResourceAttr(resourceName, "username", "test_username"),
-				// Add more checks based on your resource attributes
+				// Add more checks based on the resource attributes
 			),
 		},
 	}
@@ -72,7 +72,6 @@ func testAccThousandEyesFTPServerConfig(testName string) string {
 	  	agents {
 				agent_id = data.thousandeyes_agent.test.agent_id
 	  	}
-		# Add more configurations as needed
 	}
 	`)
 }
