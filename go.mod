@@ -1,6 +1,6 @@
 module github.com/thousandeyes/terraform-provider-thousandeyes
 
-go 1.17
+go 1.20
 
 require (
 	github.com/hashicorp/terraform-plugin-docs v0.9.0
