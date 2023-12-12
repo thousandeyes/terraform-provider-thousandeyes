@@ -15,13 +15,13 @@ import (
 type ResourceReadFunc func(client *thousandeyes.Client, id int64) (interface{}, error)
 
 func IsNotFoundError(err error) bool {
-    notFoundPatterns := []string{"404", "not found"}
-    for _, pattern := range notFoundPatterns {
-        if strings.Contains(strings.ToLower(err.Error()), pattern) {
-            return true
-        }
-    }
-    return false
+	notFoundPatterns := []string{"404", "not found"}
+	for _, pattern := range notFoundPatterns {
+		if strings.Contains(strings.ToLower(err.Error()), pattern) {
+			return true
+		}
+	}
+	return false
 }
 
 func expandAgents(v interface{}) thousandeyes.Agents {
@@ -53,68 +53,6 @@ func expandAlertRules(alertRules *[]thousandeyes.AlertRule) *[]thousandeyes.Aler
 	return ret
 }
 
-func expandBGPMonitors(v interface{}) thousandeyes.BGPMonitors {
-	var bgpMonitors thousandeyes.BGPMonitors
-
-	for _, er := range v.([]interface{}) {
-		rer := er.(map[string]interface{})
-		bgpMonitor := &thousandeyes.BGPMonitor{
-			MonitorID: thousandeyes.Int64(rer["monitor_id"].(int64)),
-		}
-		bgpMonitors = append(bgpMonitors, *bgpMonitor)
-	}
-
-	return bgpMonitors
-}
-
-func expandDNSServers(v interface{}) []thousandeyes.Server {
-	var dnsServers []thousandeyes.Server
-
-	for _, er := range v.([]interface{}) {
-		rer := er.(map[string]interface{})
-		targetDNSServer := &thousandeyes.Server{
-			ServerName: thousandeyes.String(rer["server_name"].(string)),
-		}
-		dnsServers = append(dnsServers, *targetDNSServer)
-	}
-
-	return dnsServers
-}
-
-func unpackSIPAuthData(i interface{}) thousandeyes.SIPAuthData {
-	var m = i.(map[string]interface{})
-	var sipAuthData = thousandeyes.SIPAuthData{}
-
-	for k, v := range m {
-		if k == "auth_user" {
-			sipAuthData.AuthUser = thousandeyes.String(v.(string))
-		}
-		if k == "password" {
-			sipAuthData.Password = thousandeyes.String(v.(string))
-		}
-		if k == "port" {
-			port, err := strconv.Atoi(v.(string))
-			if err == nil {
-				sipAuthData.Port = thousandeyes.Int(port)
-			}
-		}
-		if k == "protocol" {
-			sipAuthData.Protocol = thousandeyes.String(v.(string))
-		}
-		if k == "sip_proxy" {
-			sipAuthData.SIPProxy = thousandeyes.String(v.(string))
-		}
-		if k == "sip_registrar" {
-			sipAuthData.SIPRegistrar = thousandeyes.String(v.(string))
-		}
-		if k == "user" {
-			sipAuthData.User = thousandeyes.String(v.(string))
-		}
-	}
-
-	return sipAuthData
-}
-
 // ResourceBuildStruct fills the struct at a given address by querying a
 // schema.ResourceData object for the matching field.  It discovers the
 // matching value name by getting the JSON key from the struct field,
@@ -135,7 +73,7 @@ func ResourceBuildStruct(d *schema.ResourceData, structPtr interface{}) interfac
 	return resourceFixups(d, structPtr)
 }
 
-// resourceRead is a generic function for reading resources.
+// GetResource is a generic function for reading resources.
 func GetResource(d *schema.ResourceData, m interface{}, readFunc ResourceReadFunc) error {
 	client := m.(*thousandeyes.Client)
 
@@ -213,23 +151,14 @@ func FixReadValues(m interface{}, name string) (interface{}, error) {
 		}
 
 	// Remove all alert rule fields except for rule ID. Ignore default rules.
+	// Remove all alert rule fields except for rule ID.
 	case "alert_rules":
-		alert_rules := m.([]interface{})
-		// Edit the alert_rules slice in place, to return the same type.
-		i := 0
-		for i < len(alert_rules) {
-			rule := alert_rules[i].(map[string]interface{})
-			if is_default, ok := rule["default"]; ok && is_default != nil && *is_default.(*bool) {
-				// Remove this item from the slice
-				alert_rules = append(alert_rules[:i], alert_rules[i+1:]...)
-			} else {
-				alert_rules[i] = map[string]interface{}{
-					"rule_id": rule["rule_id"],
-				}
-				i = i + 1
+		for i, v := range m.([]interface{}) {
+			rule := v.(map[string]interface{})
+			m.([]interface{})[i] = map[string]interface{}{
+				"rule_id": rule["rule_id"],
 			}
 		}
-		m = alert_rules
 
 	// Remove all public BGP monitors. (ThousandEyes does not allow
 	// specifying individual public BGP monitors, and all available

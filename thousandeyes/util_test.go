@@ -182,6 +182,9 @@ func TestFixReadValues(t *testing.T) {
 		map[string]interface{}{
 			"rule_id": thousandeyes.Int(2),
 		},
+		map[string]interface{}{
+			"rule_id": thousandeyes.Int(3),
+		},
 	}
 	output, err = FixReadValues(alertRulesInput, "alert_rules")
 	if err != nil {
@@ -317,11 +320,19 @@ func TestFixReadValues(t *testing.T) {
 			"test_id":   "2",
 		},
 	}
+	testsTarget := []interface{}{
+		map[string]interface{}{
+			"test_id": "1",
+		},
+		map[string]interface{}{
+			"test_id": "2",
+		},
+	}
 	output, err = FixReadValues(testsInput, "tests")
 	if err != nil {
 		t.Errorf("tests input returned error: %s", err.Error())
 	}
-	if output != nil {
+	if reflect.DeepEqual(output, testsTarget) != true {
 		t.Errorf("Values not stripped correctly from tests input: Received %#v Expected %#v", output, nil)
 	}
 
