@@ -1,5 +1,9 @@
----
-on: [pull_request]
+on:
+  pull_request_target:
+    types:
+      - opened
+      - synchronize
+      - reopened
 jobs:
   goreleaser:
     name: "Release"
@@ -38,7 +42,6 @@ jobs:
         with:
           terraform_version: '1.5.*'
           terraform_wrapper: false
-          token: ${{ secrets.GITHUB_TOKEN }}
       - run: |
           if [ -z "${{ secrets.TE_TOKEN }}" ]; then
             echo "TE_TOKEN is not set. Please configure the TE_TOKEN secret in your repository."
