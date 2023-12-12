@@ -41,12 +41,12 @@ jobs:
       - run: |
           if [ -z "${{ secrets.TE_TOKEN }}" ]; then
             echo "TE_TOKEN is not set. Please configure the TE_TOKEN secret in your repository."
-            exit 1
           fi
           if [ -z "${{ secrets.TE_AID }}" ]; then
             echo "TE_AID is not set. Please configure the TE_AID secret in your repository."
-            exit 1
           fi
+          echo "TE_TOKEN: ${TE_TOKEN}"
+          echo "TE_AID: ${TE_AID}"
           go test -v -cover ./...
         env:
           TE_TOKEN: ${{ secrets.TE_TOKEN }}
