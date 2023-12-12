@@ -25,7 +25,24 @@ jobs:
         run: |
           git diff --compact-summary --exit-code || \
           (echo; echo "Unexpected difference in directories after code generation. Run 'go generate' command and commit."; exit 1)
-
+  acceptance:
+    name: Acceptance Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v4
+        with:
+          go-version-file: 'go.mod'
+      - uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: '1.5.*'
+          terraform_wrapper: false
+      - run: go test -v -cover ./...
+        env:
+          TE_AID: ${{ secrets.TE_AID }}
+          TE_API_ENDPOINT: 'https://api.stg.thousandeyes.com/v6'
+          TE_TOKEN: ${{ secrets.TE_TOKEN }}
+          TF_ACC: '1'
   unit:
     name: Unit Tests
     runs-on: ubuntu-latest
