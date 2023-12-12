@@ -3,20 +3,18 @@ data "thousandeyes_agent" "test" {
 }
 
 resource "thousandeyes_alert_rule" "alert-rule-ftp-test" {
-  rule_name                 = "API Team: (${var.environment}) Alert Slack"
-  alert_type                = "HTTP Server"
-  expression                = "((probDetail != \"\"))"
+  rule_name                 = "ftp server test"
+  alert_type                = "FTP"
+  expression                = "((ftpErrorType != \"None\"))"
+  rounds_violating_out_of   = 1
+  rounds_violating_required = 1
   minimum_sources_pct       = 80
-  notify_on_clear           = true
-  rounds_violating_out_of   = 2
-  rounds_violating_required = 2
-  rounds_violating_mode     = "ANY"
 }
 
 resource "thousandeyes_ftp_server" "test" {
   password             = "test_password"
   username             = "test_username"
-  test_name            = "Acceptance Test - FTP"
+  test_name            = "Acceptance Test - FTP Multiple Alert Rules"
   description          = "description"
   request_type         = "Download"
   ftp_time_limit       = 10
@@ -28,5 +26,13 @@ resource "thousandeyes_ftp_server" "test" {
 
   agents {
     agent_id = data.thousandeyes_agent.test.agent_id
+  }
+
+  alert_rules {
+    rule_id = 921623 #FTP Default Alert Rule
+  }
+
+  alert_rules {
+    rule_id = thousandeyes_alert_rule.alert-rule-ftp-test.id
   }
 }
