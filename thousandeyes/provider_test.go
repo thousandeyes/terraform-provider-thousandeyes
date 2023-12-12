@@ -60,7 +60,7 @@ func testAccCheckResourceDestroy(resources []ResourceType, s *terraform.State) e
 				if err != nil {
 					return err
 				}
-				_, err = testClient.GetAlertRule(id)
+				_, err = resource.GetResource(id)
 				if err == nil {
 					return fmt.Errorf("%s with id %s still exists", resource.ResourceName, rs.Primary.ID)
 				}

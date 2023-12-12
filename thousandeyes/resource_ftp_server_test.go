@@ -40,7 +40,7 @@ func TestAccThousandEyesFTPServer(t *testing.T) {
 							return testClient.GetFTPServer(id)
 						}},
 					{
-						Name:         "Alert Rules",
+						Name:         "Alert Rule",
 						ResourceName: "thousandeyes_alert_rule",
 						GetResource: func(id int64) (interface{}, error) {
 							return testClient.GetAlertRule(id)
