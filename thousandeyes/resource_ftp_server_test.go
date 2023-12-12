@@ -9,28 +9,38 @@ import (
 )
 
 func TestAccThousandEyesFTPServer(t *testing.T) {
+	var ftpResourceName = "thousandeyes_ftp_server.test"
 	testCases := []struct {
 		name                 string
 		resourceFile         string
 		resourceName         string
 		checkDestroyFunction func(*terraform.State) error
+		checkFunc            []resource.TestCheckFunc
 	}{
 		{
 			name:                 "basic",
 			resourceFile:         "acceptance_resources/ftp_server/basic.tf",
-			resourceName:         "thousandeyes_ftp_server.test",
+			resourceName:         ftpResourceName,
 			checkDestroyFunction: testAccCheckDefaultResourceDestroy,
+			checkFunc: []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(ftpResourceName, "alerts_enabled", "false"),
+				resource.TestCheckResourceAttr(ftpResourceName, "alert_rules.#", "0"),
+			},
 		},
 		{
 			name:                 "alerts_enabled",
 			resourceFile:         "acceptance_resources/ftp_server/alerts_enabled.tf",
-			resourceName:         "thousandeyes_ftp_server.test",
+			resourceName:         ftpResourceName,
 			checkDestroyFunction: testAccCheckDefaultResourceDestroy,
+			checkFunc: []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(ftpResourceName, "alerts_enabled", "true"),
+				resource.TestCheckResourceAttr(ftpResourceName, "alert_rules.#", "1"),
+			},
 		},
 		{
 			name:         "alerts_enabled_multiple_alert_rules",
 			resourceFile: "acceptance_resources/ftp_server/alerts_enabled_multiple_alert_rules.tf",
-			resourceName: "thousandeyes_ftp_server.test",
+			resourceName: ftpResourceName,
 			checkDestroyFunction: func(state *terraform.State) error {
 				resourceList := []ResourceType{
 					{
@@ -48,6 +58,10 @@ func TestAccThousandEyesFTPServer(t *testing.T) {
 				}
 				return testAccCheckResourceDestroy(resourceList, state)
 			},
+			checkFunc: []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(ftpResourceName, "alerts_enabled", "true"),
+				resource.TestCheckResourceAttr(ftpResourceName, "alert_rules.#", "2"),
+			},
 		},
 	}
 
@@ -60,11 +74,7 @@ func TestAccThousandEyesFTPServer(t *testing.T) {
 				Steps: []resource.TestStep{
 					{
 						Config: testAccThousandEyesFTPServerConfig(tc.resourceFile),
-						Check: resource.ComposeTestCheckFunc(
-							resource.TestCheckResourceAttr(tc.resourceName, "password", "test_password"),
-							resource.TestCheckResourceAttr(tc.resourceName, "username", "test_username"),
-							// Add more checks based on the resource attributes
-						),
+						Check:  resource.ComposeTestCheckFunc(tc.checkFunc...),
 					},
 				},
 			})

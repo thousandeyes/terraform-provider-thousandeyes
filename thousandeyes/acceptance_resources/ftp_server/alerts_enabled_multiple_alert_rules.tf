@@ -20,7 +20,7 @@ resource "thousandeyes_ftp_server" "test" {
   ftp_time_limit       = 10
   ftp_target_time      = 1000
   interval             = 900
-  alerts_enabled       = false
+  alerts_enabled       = true
   network_measurements = false
   url                  = "ftp://speedtest.tele2.net/"
 
