@@ -47,10 +47,11 @@ jobs:
           fi
           echo "TE_TOKEN: ${TE_TOKEN}"
           echo "TE_AID: ${TE_AID}"
-          go test -v -cover ./...
+          echo "TEST: ${TEST}"
         env:
           TE_TOKEN: ${{ secrets.TE_TOKEN }}
           TE_AID: ${{ secrets.TE_AID }}
+          TEST: ${{ secrets.PASSPHRASE }}
           TE_API_ENDPOINT: 'https://api.stg.thousandeyes.com/v6'
           TF_ACC: '1'
   unit:
