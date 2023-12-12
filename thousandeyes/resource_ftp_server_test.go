@@ -2,6 +2,7 @@ package thousandeyes
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 	"testing"
 
@@ -9,16 +10,46 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-func TestAccThousandEyesFTPServer_basic(t *testing.T) {
-	testName := "tf-acc-test-ftp-server"
-	resourceName := "thousandeyes_ftp_server.test"
+func TestAccThousandEyesFTPServer(t *testing.T) {
+	testCases := []struct {
+		name                 string
+		resourceFile         string
+		resourceName         string
+		checkDestroyFunction func(*terraform.State) error
+	}{
+		{
+			name:                 "basic",
+			resourceFile:         "acceptance_resources/ftp_server/basic.tf",
+			resourceName:         "thousandeyes_ftp_server.test",
+			checkDestroyFunction: testAccCheckThousandEyesFTPServerDestroy,
+		},
+		{
+			name:                 "alerts_enabled",
+			resourceFile:         "acceptance_resources/ftp_server/alerts_enabled.tf",
+			resourceName:         "thousandeyes_ftp_server.test",
+			checkDestroyFunction: testAccCheckThousandEyesFTPServerDestroy,
+		},
+	}
 
-	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ProviderFactories: providerFactories,
-		CheckDestroy:      testAccCheckThousandEyesFTPServerDestroy,
-		Steps:             testAccCheckThousandEyesFTPServerSteps(testName, resourceName),
-	})
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			resource.Test(t, resource.TestCase{
+				PreCheck:          func() { testAccPreCheck(t) },
+				ProviderFactories: providerFactories,
+				CheckDestroy:      tc.checkDestroyFunction,
+				Steps: []resource.TestStep{
+					{
+						Config: testAccThousandEyesFTPServerConfig(tc.resourceFile),
+						Check: resource.ComposeTestCheckFunc(
+							resource.TestCheckResourceAttr(tc.resourceName, "password", "test_password"),
+							resource.TestCheckResourceAttr(tc.resourceName, "username", "test_username"),
+							// Add more checks based on the resource attributes
+						),
+					},
+				},
+			})
+		})
+	}
 }
 
 func testAccCheckThousandEyesFTPServerDestroy(s *terraform.State) error {
@@ -37,10 +68,10 @@ func testAccCheckThousandEyesFTPServerDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckThousandEyesFTPServerSteps(testName, resourceName string) []resource.TestStep {
+func testAccCheckThousandEyesFTPServerSteps(testResource, resourceName string) []resource.TestStep {
 	return []resource.TestStep{
 		{
-			Config: testAccThousandEyesFTPServerConfig(testName),
+			Config: testAccThousandEyesFTPServerConfig(testResource),
 			Check: resource.ComposeTestCheckFunc(
 				resource.TestCheckResourceAttr(resourceName, "password", "test_password"),
 				resource.TestCheckResourceAttr(resourceName, "username", "test_username"),
@@ -50,28 +81,10 @@ func testAccCheckThousandEyesFTPServerSteps(testName, resourceName string) []res
 	}
 }
 
-func testAccThousandEyesFTPServerConfig(testName string) string {
-	return fmt.Sprintf(`
-	data "thousandeyes_agent" "test"{
-		agent_name = "Vancouver, Canada"
+func testAccThousandEyesFTPServerConfig(testResource string) string {
+	content, err := os.ReadFile(testResource)
+	if err != nil {
+		panic(err)
 	}
-		
-	resource "thousandeyes_ftp_server" "test" {
-		password       = "test_password"
-		username       = "test_username"
-		test_name      = "Acceptance Test - FTP"
-  		description    = "description"
-		request_type   = "Download"
-  		ftp_time_limit = 10
-		ftp_target_time = 1000
-		interval       = 900
-		alerts_enabled = false
-        network_measurements = false
- 		url 		   = "ftp://speedtest.tele2.net/"
-
-	  	agents {
-				agent_id = data.thousandeyes_agent.test.agent_id
-	  	}
-	}
-	`)
+	return string(content)
 }
