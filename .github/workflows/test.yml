@@ -38,11 +38,20 @@ jobs:
         with:
           terraform_version: '1.5.*'
           terraform_wrapper: false
-      - run: go test -v -cover ./...
+      - run: |
+          if [ -z "${{ secrets.TE_TOKEN }}" ]; then
+            echo "TE_TOKEN is not set. Please configure the TE_TOKEN secret in your repository."
+            exit 1
+          fi
+          if [ -z "${{ secrets.TE_AID }}" ]; then
+            echo "TE_AID is not set. Please configure the TE_AID secret in your repository."
+            exit 1
+          fi
+          go test -v -cover ./...
         env:
+          TE_TOKEN: ${{ secrets.TE_TOKEN }}
           TE_AID: ${{ secrets.TE_AID }}
           TE_API_ENDPOINT: 'https://api.stg.thousandeyes.com/v6'
-          TE_TOKEN: ${{ secrets.TE_TOKEN }}
           TF_ACC: '1'
   unit:
     name: Unit Tests
