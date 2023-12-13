@@ -223,7 +223,7 @@ func FixReadValues(m interface{}, name string) (interface{}, error) {
 	// Remove the owning account from the list of shared accounts.
 	case "shared_with_accounts":
 		accounts := m.([]interface{})
-		if account_group_id == 0 {
+		if accountGroupId == 0 {
 			if len(accounts) > 1 {
 				return nil, errors.New("Resources are shared between account groups, but account_group_id is not set.")
 			}
@@ -237,7 +237,7 @@ func FixReadValues(m interface{}, name string) (interface{}, error) {
 			account := accounts[i].(map[string]interface{})
 			//  Compare to account group ID stored in global variable.
 			shared_aid := account["aid"].(*int64)
-			if *shared_aid == account_group_id {
+			if *shared_aid == accountGroupId {
 				// Remove this item from the slice
 				accounts = append(accounts[:i], accounts[i+1:]...)
 			} else {
