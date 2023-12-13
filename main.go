@@ -11,12 +11,12 @@ import (
 //go:generate go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs
 
 func main() {
-	var debugMode bool
+	var debugModeTest bool
 
-	flag.BoolVar(&debugMode, "debug", false, "set to true to run the provider with support for debuggers like delve")
+	flag.BoolVar(&debugModeTest, "debug", false, "set to true to run the provider with support for debuggers like delve")
 	flag.Parse()
 	opts := &plugin.ServeOpts{
-		Debug:        debugMode,
+		Debug:        debugModeTest,
 		ProviderAddr: "registry.terraform.io/thousandeyes/thousandeyes",
 		ProviderFunc: thousandeyes.New(),
 	}
