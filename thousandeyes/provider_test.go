@@ -31,7 +31,7 @@ func init() {
 func testAccPreCheck(t *testing.T) {
 	providerFunc, _ := providerFactories["thousandeyes"]
 	provider, err := providerFunc()
-	require.Nil(t, err, "Error creating provider: %v", err)
+	require.NotNil(t, err, "Error creating provider: %v", err)
 
 	ctx := context.TODO()
 	resourceData := schema.TestResourceDataRaw(t, provider.Schema, map[string]interface{}{})
