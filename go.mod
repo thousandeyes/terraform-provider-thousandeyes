@@ -6,7 +6,7 @@ require (
 	github.com/hashicorp/terraform-plugin-docs v0.9.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.30.0
 	github.com/stretchr/testify v1.8.4
-	github.com/thousandeyes/thousandeyes-sdk-go/v2 v2.4.1
+	github.com/thousandeyes/thousandeyes-sdk-go/v2 v2.4.2
 )
 
 require (

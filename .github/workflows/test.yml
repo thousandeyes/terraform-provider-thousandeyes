@@ -26,6 +26,7 @@ jobs:
           (echo; echo "Unexpected difference in directories after code generation. Run 'go generate' command and commit."; exit 1)
   acceptance:
     name: Acceptance Tests
+    if: github.event.pull_request.head.repo.full_name == github.event.pull_request.base.repo.full_name
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
