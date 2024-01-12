@@ -277,17 +277,33 @@ func FixReadValues(m interface{}, name string) (interface{}, error) {
 		} else {
 			tp = nil
 		}
+		
+		// webhook notifications
+		var w interface{}
+		if _, ok := m.(map[string]interface{})["webhook"]; ok {
+			w, err = FixReadValues(m.(map[string]interface{})["webhook"].([]interface{}), "webhook")
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			w = nil
+		}
 
 		// update the notifications block if the email block is present and contains recipients, or
-		// the third party notifications are present. Otherwise set the whole notifications block to nil
-		if e == nil && tp == nil {
+		// the third party notifications are present, or webhook notifications are present.
+		// Otherwise set the whole notifications block to nil
+		if e == nil && tp == nil && w == nil {
 			m = nil
 		} else {
-			// Add the third party map to the notifications map if they are present
+			// Add the third party map and or webhook map to the notifications map if they are present
 			// if they're not configured, then the API doesn't return them at all
 			if tp != nil {
 				m.(map[string]interface{})["third_party"] = tp
-			}
+			} 
+
+			if w != nil {
+				m.(map[string]interface{})["webhook"] = w
+			} 
 
 			m.(map[string]interface{})["email"] = e
 			m = []interface{}{
@@ -314,6 +330,15 @@ func FixReadValues(m interface{}, name string) (interface{}, error) {
 			m.([]interface{})[i] = map[string]interface{}{
 				"integration_id":   tpn["integration_id"],
 				"integration_type": tpn["integration_type"],
+			}
+		}
+
+	case "webhook":
+		for i, v := range m.([]interface{}) {
+			webhookNotifications := v.(map[string]interface{})
+			m.([]interface{})[i] = map[string]interface{}{
+				"integration_id":   webhookNotifications["integration_id"],
+				"integration_type": webhookNotifications["integration_type"],
 			}
 		}
 

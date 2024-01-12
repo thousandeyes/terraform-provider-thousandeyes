@@ -370,6 +370,30 @@ func TestFixReadValues(t *testing.T) {
 	if reflect.DeepEqual(output, thirdPartyNotificationsTarget) != true {
 		t.Errorf("Values not stripped correctly from third party notifications input: Received %#v Expected %#v", output, thirdPartyNotificationsTarget)
 	}
+
+	// webhook notifications
+	webhookNotificationsInput := []interface{}{
+		map[string]interface{}{
+			"integration_id":   "wb-0000",
+			"integration_type": "WEBHOOK",
+			"integration_name": "TEAMS CHANNEL",
+			"target":           "https://webhook.office.com",
+		},
+	}
+	webhookNotificationsTarget := []interface{}{
+		map[string]interface{}{
+			"integration_id":   "wb-0000",
+			"integration_type": "WEBHOOK",
+		},
+	}
+	
+	output, err = FixReadValues(webhookNotificationsInput, "webhook")
+	if err != nil {
+		t.Errorf("webhook notifications input returned error: %s", err.Error())
+	}
+	if reflect.DeepEqual(output, webhookNotificationsTarget) != true {
+		t.Errorf("Values not stripped correctly from webhook notifications input: Received %#v Expected %#v", output, webhookNotificationsTarget)
+	}
 }
 
 func TestResourceUpdate(t *testing.T) {

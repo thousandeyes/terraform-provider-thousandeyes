@@ -614,6 +614,25 @@ var schemas = map[string]*schema.Schema{
 						},
 					},
 				},
+				"webhook": {
+					Type:        schema.TypeSet,
+					Description: "Webhook notification.",
+					Optional:    true,
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"integration_id": {
+								Type:        schema.TypeString,
+								Description: "The integration ID, as a string.",
+								Required:    true,
+							},
+							"integration_type": {
+								Type:        schema.TypeString,
+								Description: "The integration type, as a string.",
+								Required:    true,
+							},
+						},
+					},
+				},
 			},
 		},
 	},
