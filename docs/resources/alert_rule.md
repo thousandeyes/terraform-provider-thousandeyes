@@ -59,6 +59,7 @@ Optional:
 
 - `email` (Block Set) The email notification. (see [below for nested schema](#nestedblock--notifications--email))
 - `third_party` (Block Set) Third party notification. (see [below for nested schema](#nestedblock--notifications--third_party))
+- `webhook` (Block Set) Webhook notification. (see [below for nested schema](#nestedblock--notifications--webhook))
 
 <a id="nestedblock--notifications--email"></a>
 ### Nested Schema for `notifications.email`
@@ -71,6 +72,15 @@ Optional:
 
 <a id="nestedblock--notifications--third_party"></a>
 ### Nested Schema for `notifications.third_party`
+
+Required:
+
+- `integration_id` (String) The integration ID, as a string.
+- `integration_type` (String) The integration type, as a string.
+
+
+<a id="nestedblock--notifications--webhook"></a>
+### Nested Schema for `notifications.webhook`
 
 Required:
 
