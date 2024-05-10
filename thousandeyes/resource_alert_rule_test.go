@@ -40,10 +40,15 @@ func TestAccThousandEyesAlertRule(t *testing.T) {
 				return testAccCheckResourceDestroy(resourceList, state)
 			},
 			checkCreateFunc: []resource.TestCheckFunc{
+				//alert rule is created
+				//with 3 required violating rounds
 				resource.TestCheckResourceAttr(alertRuleResourceName, "rounds_violating_required", "3"),
 			},
 			checkUpdateFunc: []resource.TestCheckFunc{
+				//alert rule is updated
+				//to 4 required violating rounds
 				resource.TestCheckResourceAttr(alertRuleResourceName, "rounds_violating_required", "4"),
+				//and the test association is maintained
 				resource.TestCheckResourceAttr(alertRuleResourceName, "test_ids.#", "1"),
 			},
 		},
