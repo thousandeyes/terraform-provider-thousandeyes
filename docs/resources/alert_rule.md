@@ -44,13 +44,14 @@ resource "thousandeyes_alert_rule" "example_alert_rule" {
 - `notify_on_clear` (Boolean) Set to 'true' to trigger the notification when the alert clears.
 - `rounds_violating_mode` (String) [ANY or EXACT] Defines whether the same agent(s) must meet the EXACT same threshold in consecutive rounds or not. The default value is ANY.
 - `severity` (String) [INFO, MINOR, MAJOR or CRITICAL] The severity level of the alert rule. The default value is INFO.
-- `test_ids` (List of Number) The valid test IDs.
+- `tests` (Block List) The list of included tests. (see [below for nested schema](#nestedblock--tests))
 
 ### Read-Only
 
 - `alert_rule_id` (Number) The unique ID of the alert rule.
 - `id` (String) The ID of this resource.
 - `rule_id` (Number) The unique ID of the alert rule.
+- `test_ids` (List of Number) The valid test IDs.
 
 <a id="nestedblock--notifications"></a>
 ### Nested Schema for `notifications`
@@ -86,5 +87,14 @@ Required:
 
 - `integration_id` (String) The integration ID, as a string.
 - `integration_type` (String) The integration type, as a string.
+
+
+
+<a id="nestedblock--tests"></a>
+### Nested Schema for `tests`
+
+Optional:
+
+- `test_id` (Number) The list of unique test IDs.
 
 
