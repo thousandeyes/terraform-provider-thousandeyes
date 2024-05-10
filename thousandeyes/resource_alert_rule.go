@@ -26,13 +26,13 @@ func resourceAlertRule() *schema.Resource {
 
 func resourceAlertRuleRead(d *schema.ResourceData, m interface{}) error {
 	return GetResource(d, m, func(client *thousandeyes.Client, id int64) (interface{}, error) {
-		var alerRule, err = client.GetAlertRule(id)
+		var alertRule, err = client.GetAlertRule(id)
 		if err != nil {
 			return nil, err
 		}
-		alerRule.TestIds = testIds(*alerRule.Tests)
-		alerRule.Tests = nil
-		return alerRule, nil
+		alertRule.TestIds = testIds(*alertRule.Tests)
+		alertRule.Tests = nil
+		return alertRule, nil
 	})
 }
 
