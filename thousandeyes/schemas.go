@@ -918,7 +918,7 @@ var schemas = map[string]*schema.Schema{
 	"test_ids": {
 		Type:        schema.TypeList,
 		Description: "The valid test IDs.",
-		Optional:    true,
+		Computed:    true,
 		Elem: &schema.Schema{
 			Type: schema.TypeInt,
 		},

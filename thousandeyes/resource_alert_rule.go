@@ -26,14 +26,20 @@ func resourceAlertRule() *schema.Resource {
 
 func resourceAlertRuleRead(d *schema.ResourceData, m interface{}) error {
 	return GetResource(d, m, func(client *thousandeyes.Client, id int64) (interface{}, error) {
-		return client.GetAlertRule(id)
+		var alertRule, err = client.GetAlertRule(id)
+		if err != nil {
+			return nil, err
+		}
+		alertRule.TestIds = testIds(*alertRule.Tests)
+		alertRule.Tests = nil
+		return alertRule, nil
 	})
 }
 
 func resourceAlertRuleUpdate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*thousandeyes.Client)
 
-	log.Printf("[INFO] Updating ThousandEyes Test %s", d.Id())
+	log.Printf("[INFO] Updating ThousandEyes Alert Rule %s", d.Id())
 	id, _ := strconv.ParseInt(d.Id(), 10, 64)
 	// While most ThousandEyes updates only require updated fields and specifically
 	// disallow some fields on update, Alert Rules actually require the full list of
@@ -73,4 +79,12 @@ func resourceAlertRuleCreate(d *schema.ResourceData, m interface{}) error {
 
 func buildAlertRuleStruct(d *schema.ResourceData) *thousandeyes.AlertRule {
 	return ResourceBuildStruct(d, &thousandeyes.AlertRule{}).(*thousandeyes.AlertRule)
+}
+
+func testIds(tests []thousandeyes.GenericTest) *[]int64 {
+	var testIds []int64
+	for _, test := range tests {
+		testIds = append(testIds, *test.TestID)
+	}
+	return &testIds
 }
