@@ -120,7 +120,7 @@ func (sc *StreamClient) GetStream(id string) (*Stream, error) {
 }
 
 func (sc *StreamClient) UpdateStream(id string, s Stream) (*Stream, error) {
-	resp, err := sc.do("PUT", fmt.Sprintf("/stream/%d", id), s)
+	resp, err := sc.do("PUT", fmt.Sprintf("/stream/%s", id), s)
 	if err != nil {
 		return nil, err
 	}
