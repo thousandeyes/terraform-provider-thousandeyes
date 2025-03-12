@@ -24,6 +24,8 @@ func TestAccThousandEyesHTTPServer(t *testing.T) {
 			checkDestroyFunction: testAccCheckDefaultHTTPResourceDestroy,
 			checkFunc: []resource.TestCheckFunc{
 				resource.TestCheckResourceAttr(httpResourceName, "url", "https://www.thousandeyes.com"),
+				resource.TestCheckResourceAttr(httpResourceName, "test_name", "User Acceptance Test - HTTP"),
+				resource.TestCheckResourceAttr(httpResourceName, "interval", "120"),
 				resource.TestCheckResourceAttr(httpResourceName, "alerts_enabled", "true"),
 				resource.TestCheckResourceAttr(httpResourceName, "alert_rules.#", "2"),
 			},
@@ -50,7 +52,6 @@ func TestAccThousandEyesHTTPServer(t *testing.T) {
 func testAccCheckDefaultHTTPResourceDestroy(s *terraform.State) error {
 	resourceList := []ResourceType{
 		{
-			// Name:         "User Acceptance Test - HTTP",
 			ResourceName: "thousandeyes_http_server",
 			GetResource: func(id int64) (interface{}, error) {
 				return testClient.GetHTTPServer(id)
