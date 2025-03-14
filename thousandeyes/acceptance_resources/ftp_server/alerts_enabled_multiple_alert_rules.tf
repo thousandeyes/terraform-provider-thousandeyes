@@ -1,5 +1,5 @@
 data "thousandeyes_agent" "test" {
-  agent_name = "Vancouver, Canada"
+  agent_name = "Amsterdam, Netherlands"
 }
 
 resource "thousandeyes_alert_rule" "alert-rule-ftp-test" {
