@@ -65,6 +65,7 @@ func Provider() *schema.Provider {
 			"thousandeyes_sip_server":      resourceSIPServer(),
 			"thousandeyes_voice":           resourceRTPStream(),
 			"thousandeyes_label":           resourceGroupLabel(),
+			"thousandeyes_stream":          resourceStream(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"thousandeyes_account_group": dataSourceThousandeyesAccountGroup(),
