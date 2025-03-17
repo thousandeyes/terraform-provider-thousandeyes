@@ -21,7 +21,7 @@ jobs:
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
         with:
-          languages: go, terraform
+          languages: go
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
@@ -40,16 +40,6 @@ jobs:
           ignore-unfixed: true
           exit-code: 1
           severity: CRITICAL,HIGH
-
-  secret-detection:
-    name: Secret Detection
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Run GitHub Secret Scanning
-        uses: actions/secret-scanning@v1
 
   go-lint:
     name: Go Linter
@@ -80,3 +70,9 @@ jobs:
 
       - name: Run tfsec
         uses: aquasecurity/tfsec-action@v1.0.0
+
+      - name: Run Checkov
+        uses: bridgecrewio/checkov-action@v12
+        with:
+          directory: .
+          framework: terraform
