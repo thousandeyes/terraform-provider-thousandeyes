@@ -2,15 +2,15 @@ package thousandeyes
 
 import (
 	"log"
-	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/thousandeyes/thousandeyes-sdk-go/v2"
+	"github.com/thousandeyes/thousandeyes-sdk-go/v3/alerts"
+	"github.com/thousandeyes/thousandeyes-sdk-go/v3/client"
 )
 
 func resourceAlertRule() *schema.Resource {
 	resource := schema.Resource{
-		Schema: ResourceSchemaBuild(thousandeyes.AlertRule{}, schemas, nil),
+		Schema: ResourceSchemaBuild(alerts.Rule{}, schemas, nil),
 		Create: resourceAlertRuleCreate,
 		Read:   resourceAlertRuleRead,
 		Update: resourceAlertRuleUpdate,
@@ -25,39 +25,52 @@ func resourceAlertRule() *schema.Resource {
 }
 
 func resourceAlertRuleRead(d *schema.ResourceData, m interface{}) error {
-	return GetResource(d, m, func(client *thousandeyes.Client, id int64) (interface{}, error) {
-		var alertRule, err = client.GetAlertRule(id)
+	return GetResource(d, m, func(apiClient *client.APIClient, id string) (interface{}, error) {
+		api := (*alerts.AlertRulesAPIService)(&apiClient.Common)
+
+		req := api.GetAlertRule(id)
+		req = SetAidFromContext(apiClient.GetConfig().Context, req, req)
+
+		alertRule, _, err := req.Execute()
 		if err != nil {
 			return nil, err
 		}
-		alertRule.TestIds = testIds(*alertRule.Tests)
-		alertRule.Tests = nil
+
 		return alertRule, nil
 	})
 }
 
 func resourceAlertRuleUpdate(d *schema.ResourceData, m interface{}) error {
-	client := m.(*thousandeyes.Client)
+	apiClient := m.(*client.APIClient)
+	api := (*alerts.AlertRulesAPIService)(&apiClient.Common)
 
 	log.Printf("[INFO] Updating ThousandEyes Alert Rule %s", d.Id())
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
+
 	// While most ThousandEyes updates only require updated fields and specifically
 	// disallow some fields on update, Alert Rules actually require the full list of
 	// fields. Terraform schema validation should guarantee their existence.
 	local := buildAlertRuleStruct(d)
-	_, err := client.UpdateAlertRule(id, *local)
+	req := api.UpdateAlertRule(d.Id()).RuleDetailUpdate(*local)
+	req = SetAidFromContext(apiClient.GetConfig().Context, req, req)
+
+	_, _, err := req.Execute()
 	if err != nil {
 		return err
 	}
+
 	return resourceAlertRuleRead(d, m)
 }
 
 func resourceAlertRuleDelete(d *schema.ResourceData, m interface{}) error {
-	client := m.(*thousandeyes.Client)
+	apiClient := m.(*client.APIClient)
+	api := (*alerts.AlertRulesAPIService)(&apiClient.Common)
 
 	log.Printf("[INFO] Deleting ThousandEyes Test %s", d.Id())
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	if err := client.DeleteAlertRule(id); err != nil {
+
+	req := api.DeleteAlertRule(d.Id())
+	req = SetAidFromContext(apiClient.GetConfig().Context, req, req)
+
+	if _, err := req.Execute(); err != nil {
 		return err
 	}
 	d.SetId("")
@@ -65,26 +78,33 @@ func resourceAlertRuleDelete(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceAlertRuleCreate(d *schema.ResourceData, m interface{}) error {
-	client := m.(*thousandeyes.Client)
+	apiClient := m.(*client.APIClient)
+	api := (*alerts.AlertRulesAPIService)(&apiClient.Common)
+
 	log.Printf("[INFO] Creating ThousandEyes Test %s", d.Id())
+
 	local := buildAlertRuleStruct(d)
-	remote, err := client.CreateAlertRule(*local)
+	req := api.CreateAlertRule().RuleDetailUpdate(*local)
+	req = SetAidFromContext(apiClient.GetConfig().Context, req, req)
+
+	resp, _, err := req.Execute()
 	if err != nil {
 		return err
 	}
-	id := remote.RuleID
-	d.SetId(strconv.FormatInt(*id, 10))
+
+	id := *resp.RuleId
+	d.SetId(id)
 	return resourceAlertRuleRead(d, m)
 }
 
-func buildAlertRuleStruct(d *schema.ResourceData) *thousandeyes.AlertRule {
-	return ResourceBuildStruct(d, &thousandeyes.AlertRule{}).(*thousandeyes.AlertRule)
+func buildAlertRuleStruct(d *schema.ResourceData) *alerts.RuleDetailUpdate {
+	return ResourceBuildStruct(d, &alerts.RuleDetailUpdate{})
 }
 
-func testIds(tests []thousandeyes.GenericTest) *[]int64 {
-	var testIds []int64
-	for _, test := range tests {
-		testIds = append(testIds, *test.TestID)
-	}
-	return &testIds
-}
+// func testIds(tests []alerts.AlertSimpleTest) *[]string {
+// 	var testIds []string
+// 	for _, test := range tests {
+// 		testIds = append(testIds, *test.TestId)
+// 	}
+// 	return &testIds
+// }

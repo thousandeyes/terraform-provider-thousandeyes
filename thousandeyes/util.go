@@ -1,6 +1,7 @@
 package thousandeyes
 
 import (
+	"context"
 	"errors"
 	"log"
 	"reflect"
@@ -9,10 +10,15 @@ import (
 	"unicode"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/thousandeyes/thousandeyes-sdk-go/v2"
+	"github.com/thousandeyes/thousandeyes-sdk-go/v3"
+	"github.com/thousandeyes/thousandeyes-sdk-go/v3/client"
 )
 
-type ResourceReadFunc func(client *thousandeyes.Client, id int64) (interface{}, error)
+type ResourceReadFunc func(client *client.APIClient, id string) (interface{}, error)
+
+type RequestWithAid[T any] interface {
+	Aid(aid string) T
+}
 
 func IsNotFoundError(err error) bool {
 	notFoundPatterns := []string{"404", "not found"}
@@ -24,40 +30,42 @@ func IsNotFoundError(err error) bool {
 	return false
 }
 
-func expandAgents(v interface{}) thousandeyes.Agents {
-	var agents thousandeyes.Agents
+// TO DO
+// func expandAgents(v interface{}) thousandeyes.Agents {
+// 	var agents thousandeyes.Agents
 
-	for _, er := range v.([]interface{}) {
-		rer := er.(map[string]interface{})
-		agent := &thousandeyes.Agent{
-			AgentID: thousandeyes.Int64(rer["agent_id"].(int64)),
-		}
-		agents = append(agents, *agent)
-	}
+// 	for _, er := range v.([]interface{}) {
+// 		rer := er.(map[string]interface{})
+// 		agent := &thousandeyes.Agent{
+// 			AgentID: thousandeyes.Int64(rer["agent_id"].(int64)),
+// 		}
+// 		agents = append(agents, *agent)
+// 	}
 
-	return agents
-}
+// 	return agents
+// }
 
-func expandAlertRules(alertRules *[]thousandeyes.AlertRule) *[]thousandeyes.AlertRule {
-	if alertRules == nil {
-		return nil
-	}
+// TO DO
+// func expandAlertRules(alertRules *[]alerts.Alert) *[]thousandeyes.AlertRule {
+// 	if alertRules == nil {
+// 		return nil
+// 	}
 
-	ret := &[]thousandeyes.AlertRule{}
-	for _, ar := range *alertRules {
-		*ret = append(*ret, thousandeyes.AlertRule{
-			RuleID: ar.RuleID,
-		})
-	}
+// 	ret := &[]thousandeyes.AlertRule{}
+// 	for _, ar := range *alertRules {
+// 		*ret = append(*ret, thousandeyes.AlertRule{
+// 			RuleID: ar.RuleID,
+// 		})
+// 	}
 
-	return ret
-}
+// 	return ret
+// }
 
 // ResourceBuildStruct fills the struct at a given address by querying a
 // schema.ResourceData object for the matching field.  It discovers the
 // matching value name by getting the JSON key from the struct field,
 // and then fills in the value according to the struct field's type.
-func ResourceBuildStruct(d *schema.ResourceData, structPtr interface{}) interface{} {
+func ResourceBuildStruct[T any](d *schema.ResourceData, structPtr *T) *T {
 	v := reflect.ValueOf(structPtr).Elem()
 	t := reflect.TypeOf(v.Interface())
 	for i := 0; i < v.NumField(); i++ {
@@ -70,20 +78,15 @@ func ResourceBuildStruct(d *schema.ResourceData, structPtr interface{}) interfac
 			v.Field(i).Set(setVal)
 		}
 	}
-	return resourceFixups(d, structPtr)
+	return resourceFixups[T](d, structPtr)
 }
 
 // GetResource is a generic function for reading resources.
 func GetResource(d *schema.ResourceData, m interface{}, readFunc ResourceReadFunc) error {
-	client := m.(*thousandeyes.Client)
+	apiClient := m.(*client.APIClient)
 
 	log.Printf("[INFO] Reading Thousandeyes Resource %s", d.Id())
-	id, err := strconv.ParseInt(d.Id(), 10, 64)
-	if err != nil {
-		return err
-	}
-
-	remote, err := readFunc(client, id)
+	remote, err := readFunc(apiClient, d.Id())
 
 	// Check if the resource no longer exists
 	if err != nil && IsNotFoundError(err) {
@@ -277,7 +280,7 @@ func FixReadValues(m interface{}, name string) (interface{}, error) {
 		} else {
 			tp = nil
 		}
-		
+
 		// webhook notifications
 		var w interface{}
 		if _, ok := m.(map[string]interface{})["webhook"]; ok {
@@ -299,11 +302,11 @@ func FixReadValues(m interface{}, name string) (interface{}, error) {
 			// if they're not configured, then the API doesn't return them at all
 			if tp != nil {
 				m.(map[string]interface{})["third_party"] = tp
-			} 
+			}
 
 			if w != nil {
 				m.(map[string]interface{})["webhook"] = w
-			} 
+			}
 
 			m.(map[string]interface{})["email"] = e
 			m = []interface{}{
@@ -400,7 +403,7 @@ func ReadValue(structPtr interface{}) (interface{}, error) {
 
 // resourceFixups sanitizes values to ensure that the ThousandEyes API
 // behavior does not surprise Terraform's state.
-func resourceFixups(d *schema.ResourceData, structPtr interface{}) interface{} {
+func resourceFixups[T any](d *schema.ResourceData, structPtr *T) *T {
 	v := reflect.ValueOf(structPtr).Elem()
 	t := reflect.TypeOf(v.Interface())
 
@@ -432,11 +435,12 @@ func resourceFixups(d *schema.ResourceData, structPtr interface{}) interface{} {
 		}
 	}
 
-	_, hasAlertRules := t.FieldByName("AlertRules")
-	if hasAlertRules {
-		scrappedAlertRules := expandAlertRules(v.FieldByName("AlertRules").Interface().(*[]thousandeyes.AlertRule))
-		v.FieldByName("AlertRules").Set(reflect.ValueOf(scrappedAlertRules))
-	}
+	// TO DO
+	// _, hasAlertRules := t.FieldByName("AlertRules")
+	// if hasAlertRules {
+	// 	scrappedAlertRules := expandAlertRules(v.FieldByName("AlertRules").Interface().(*[]thousandeyes.AlertRule))
+	// 	v.FieldByName("AlertRules").Set(reflect.ValueOf(scrappedAlertRules))
+	// }
 
 	return structPtr
 }
@@ -444,7 +448,7 @@ func resourceFixups(d *schema.ResourceData, structPtr interface{}) interface{} {
 // ResourceUpdate updates values of a struct for the provided pointer if
 // matching changes for those values are found in a provided
 // schema.ResourceData object.
-func ResourceUpdate(d *schema.ResourceData, structPtr interface{}) interface{} {
+func ResourceUpdate[T any](d *schema.ResourceData, structPtr *T) *T {
 	d.Partial(true)
 	v := reflect.ValueOf(structPtr).Elem()
 	t := reflect.TypeOf(v.Interface())
@@ -458,7 +462,7 @@ func ResourceUpdate(d *schema.ResourceData, structPtr interface{}) interface{} {
 		}
 	}
 	d.Partial(false)
-	return resourceFixups(d, structPtr)
+	return resourceFixups[T](d, structPtr)
 }
 
 // ResourceSchemaBuild creates a map of schemas based on the fields
@@ -630,4 +634,12 @@ func CamelCaseToUnderscore(s string) string {
 func GetJSONKey(v reflect.StructField) string {
 	s := v.Tag.Get("json")
 	return strings.Split(s, ",")[0]
+}
+
+func SetAidFromContext[T any](ctx context.Context, srcReq T, reqAid RequestWithAid[T]) T {
+	aid, ok := ctx.Value("aid").(string)
+	if ok && len(aid) > 0 {
+		return reqAid.Aid(aid)
+	}
+	return srcReq
 }
