@@ -45,7 +45,7 @@ resource "thousandeyes_page_load" "test" {
 - `bgp_measurements` (Boolean) Enable BGP measurements. Set to true for enabled, false for disabled.
 - `bgp_monitors` (Block List) The array of BGP monitor object IDs. The monitorIDs can be sourced from the /bgp-monitors endpoint. (see [below for nested schema](#nestedblock--bgp_monitors))
 - `content_regex` (String) Verify content using a regular expression. This field does not require escaping.
-- `custom_headers` (Map of String) The custom headers.
+- `custom_headers` (Map of String, Sensitive) The custom headers.
 - `description` (String) A description of the alert rule. Defaults to an empty string.
 - `enabled` (Boolean) Enables or disables the test.
 - `follow_redirects` (Boolean) Follow HTTP/301 or HTTP/302 redirect directives. Defaults to 'true'.
