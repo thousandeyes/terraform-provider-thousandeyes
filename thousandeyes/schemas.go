@@ -235,6 +235,7 @@ var schemas = map[string]*schema.Schema{
 		Type:        schema.TypeMap,
 		Description: "The custom headers.",
 		Optional:    true,
+		Sensitive:   true,
 	},
 	"default": {
 		Type:        schema.TypeBool,
@@ -444,7 +445,8 @@ var schemas = map[string]*schema.Schema{
 		Elem: &schema.Schema{
 			Type: schema.TypeString,
 		},
-		Optional: true,
+		Optional:  true,
+		Sensitive: true,
 	},
 	"http_interval": {
 		Type:        schema.TypeInt,
