@@ -2,11 +2,13 @@ package thousandeyes
 
 import (
 	"log"
-	"strconv"
+
+	"github.com/thousandeyes/terraform-provider-thousandeyes/thousandeyes/schemas"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/thousandeyes/thousandeyes-sdk-go/v2"
+	"github.com/thousandeyes/thousandeyes-sdk-go/v3/client"
+	"github.com/thousandeyes/thousandeyes-sdk-go/v3/tests"
 )
 
 func resourceAgentToAgent() *schema.Resource {
@@ -19,9 +21,8 @@ func resourceAgentToAgent() *schema.Resource {
 			Optional:     true,
 		},
 	}
-
 	resource := schema.Resource{
-		Schema: ResourceSchemaBuild(thousandeyes.AgentAgent{}, schemas, agentToAgentSchemasOverride),
+		Schema: ResourceSchemaBuild(tests.AgentToAgentTestRequest{}, schemas.CommonSchema, agentToAgentSchemasOverride),
 		Create: resourceAgentAgentCreate,
 		Read:   resourceAgentAgentRead,
 		Update: resourceAgentAgentUpdate,
@@ -31,35 +32,50 @@ func resourceAgentToAgent() *schema.Resource {
 		},
 		Description: "This resource allows you to create and configure an agent-to-agent test. This test type evaluates the performance of the underlying network between two physical sites. For more information about agent-to-agent tests, see [Agent-to-Agent Tests](https://docs.thousandeyes.com/product-documentation/internet-and-wan-monitoring/tests#agent-to-agent-test).",
 	}
-	resource.Schema["protocol"] = schemas["protocol-agent_to_agent"]
+	resource.Schema["protocol"] = schemas.CommonSchema["protocol-a2a"]
 	return &resource
 }
 
 func resourceAgentAgentRead(d *schema.ResourceData, m interface{}) error {
-	return GetResource(d, m, func(client *thousandeyes.Client, id int64) (interface{}, error) {
-		return client.GetAgentAgent(id)
+	return GetResource(d, m, func(apiClient *client.APIClient, id string) (interface{}, error) {
+		api := (*tests.AgentToAgentTestsAPIService)(&apiClient.Common)
+
+		req := api.GetAgentToAgentTest(id).Expand(tests.AllowedExpandTestOptionsEnumValues)
+		req = SetAidFromContext(apiClient.GetConfig().Context, req, req)
+
+		resp, _, err := req.Execute()
+		return resp, err
 	})
 }
 
 func resourceAgentAgentUpdate(d *schema.ResourceData, m interface{}) error {
-	client := m.(*thousandeyes.Client)
+	apiClient := m.(*client.APIClient)
+	api := (*tests.AgentToAgentTestsAPIService)(&apiClient.Common)
 
 	log.Printf("[INFO] Updating ThousandEyes Test %s", d.Id())
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	update := ResourceUpdate(d, &thousandeyes.AgentAgent{}).(*thousandeyes.AgentAgent)
-	_, err := client.UpdateAgentAgent(id, *update)
+	update := ResourceUpdate(d, &tests.AgentToAgentTestRequest{})
+
+	req := api.UpdateAgentToAgentTest(d.Id()).AgentToAgentTestRequest(*update).Expand(tests.AllowedExpandTestOptionsEnumValues)
+	req = SetAidFromContext(apiClient.GetConfig().Context, req, req)
+
+	_, _, err := req.Execute()
 	if err != nil {
 		return err
 	}
+
 	return resourceAgentAgentRead(d, m)
 }
 
 func resourceAgentAgentDelete(d *schema.ResourceData, m interface{}) error {
-	client := m.(*thousandeyes.Client)
+	apiClient := m.(*client.APIClient)
+	api := (*tests.AgentToAgentTestsAPIService)(&apiClient.Common)
 
 	log.Printf("[INFO] Deleting ThousandEyes Test %s", d.Id())
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	if err := client.DeleteAgentAgent(id); err != nil {
+
+	req := api.DeleteAgentToAgentTest(d.Id())
+	req = SetAidFromContext(apiClient.GetConfig().Context, req, req)
+
+	if _, err := req.Execute(); err != nil {
 		return err
 	}
 	d.SetId("")
@@ -67,18 +83,25 @@ func resourceAgentAgentDelete(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceAgentAgentCreate(d *schema.ResourceData, m interface{}) error {
-	client := m.(*thousandeyes.Client)
+	apiClient := m.(*client.APIClient)
+	api := (*tests.AgentToAgentTestsAPIService)(&apiClient.Common)
+
 	log.Printf("[INFO] Creating ThousandEyes Test %s", d.Id())
 	local := buildAgentAgentStruct(d)
-	remote, err := client.CreateAgentAgent(*local)
+
+	req := api.CreateAgentToAgentTest().AgentToAgentTestRequest(*local).Expand(tests.AllowedExpandTestOptionsEnumValues)
+	req = SetAidFromContext(apiClient.GetConfig().Context, req, req)
+
+	resp, _, err := req.Execute()
 	if err != nil {
 		return err
 	}
-	id := *remote.TestID
-	d.SetId(strconv.FormatInt(id, 10))
+
+	id := *resp.TestId
+	d.SetId(id)
 	return resourceAgentAgentRead(d, m)
 }
 
-func buildAgentAgentStruct(d *schema.ResourceData) *thousandeyes.AgentAgent {
-	return ResourceBuildStruct(d, &thousandeyes.AgentAgent{}).(*thousandeyes.AgentAgent)
+func buildAgentAgentStruct(d *schema.ResourceData) *tests.AgentToAgentTestRequest {
+	return ResourceBuildStruct(d, &tests.AgentToAgentTestRequest{})
 }
