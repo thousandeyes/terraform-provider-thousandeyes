@@ -148,6 +148,7 @@ var AlertRuleSchema = map[string]*schema.Schema{
 		Description: "[high, medium or low] Defines sensitivity level.",
 		Type:        schema.TypeString,
 		Required:    false,
+		Optional:    true,
 		ValidateFunc: validation.StringInSlice([]string{
 			"high",
 			"medium",

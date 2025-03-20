@@ -214,6 +214,7 @@ var CommonSchema = map[string]*schema.Schema{
 	// fixedPacketRate
 	"fixed_packet_rate": { // New
 		Type:        schema.TypeInt,
+		Optional:    true,
 		Required:    false,
 		Description: "Sets packets rate sent to measure the network in packets per second.",
 	},
@@ -324,6 +325,7 @@ var CommonSchema = map[string]*schema.Schema{
 		Type:         schema.TypeString,
 		Description:  "[tcp or udp] The protocol for agent to agent tests. Defaults to 'tcp'.",
 		Required:     false,
+		Optional:     true,
 		Default:      "tcp",
 		ValidateFunc: validation.StringInSlice([]string{"tcp", "udp"}, false),
 	},
@@ -783,12 +785,14 @@ var CommonSchema = map[string]*schema.Schema{
 	"page_load_target_time": { // New
 		Type:        schema.TypeInt,
 		Required:    false,
+		Optional:    true,
 		Description: "Target time for page load completion, specified in seconds and cannot exceed the `pageLoadTimeLimit`.",
 	},
 	// pageLoadTimeLimit
 	"page_load_time_limit": { // New
 		Type:        schema.TypeInt,
 		Required:    false,
+		Optional:    true,
 		Description: "Page load time limit. Must be larger than the `httpTimeLimit`.",
 	},
 	// blockDomains
