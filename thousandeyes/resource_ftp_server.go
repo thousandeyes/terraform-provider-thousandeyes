@@ -3,6 +3,8 @@ package thousandeyes
 import (
 	"log"
 
+	"github.com/thousandeyes/terraform-provider-thousandeyes/thousandeyes/schemas"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/thousandeyes/thousandeyes-sdk-go/v3/client"
 	"github.com/thousandeyes/thousandeyes-sdk-go/v3/tests"
@@ -10,7 +12,7 @@ import (
 
 func resourceFTPServer() *schema.Resource {
 	resource := schema.Resource{
-		Schema: ResourceSchemaBuild(tests.FtpServerTest{}, schemas, nil),
+		Schema: ResourceSchemaBuild(tests.FtpServerTestRequest{}, schemas.CommonSchema, nil),
 		Create: resourceFTPServerCreate,
 		Read:   resourceFTPServerRead,
 		Update: resourceFTPServerUpdate,
@@ -20,8 +22,8 @@ func resourceFTPServer() *schema.Resource {
 		},
 		Description: "This resource allows you to create an FTP server test. This test type verifies the availability and performance of FTP servers. For more information, see [FTP Server Tests](https://docs.thousandeyes.com/product-documentation/internet-and-wan-monitoring/tests#ftp-server-test).",
 	}
-	resource.Schema["password"] = schemas["password-ftp"]
-	resource.Schema["username"] = schemas["username-ftp"]
+	resource.Schema["password"] = schemas.CommonSchema["password-ftp"]
+	resource.Schema["username"] = schemas.CommonSchema["username-ftp"]
 	return &resource
 }
 

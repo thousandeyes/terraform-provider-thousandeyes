@@ -3,6 +3,8 @@ package thousandeyes
 import (
 	"log"
 
+	"github.com/thousandeyes/terraform-provider-thousandeyes/thousandeyes/schemas"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/thousandeyes/thousandeyes-sdk-go/v3/alerts"
 	"github.com/thousandeyes/thousandeyes-sdk-go/v3/client"
@@ -10,7 +12,7 @@ import (
 
 func resourceAlertRule() *schema.Resource {
 	resource := schema.Resource{
-		Schema: ResourceSchemaBuild(alerts.Rule{}, schemas, nil),
+		Schema: ResourceSchemaBuild(alerts.RuleDetail{}, schemas.AlertRuleSchema, nil),
 		Create: resourceAlertRuleCreate,
 		Read:   resourceAlertRuleRead,
 		Update: resourceAlertRuleUpdate,
@@ -20,7 +22,7 @@ func resourceAlertRule() *schema.Resource {
 		},
 		Description: "This resource allows you to create alert rules for ThousandEyes alerts. Alert rules define what alerts are sent, when, and to whom. For more information, see [Alert Rules](https://docs.thousandeyes.com/product-documentation/alerts#rule-configuration).",
 	}
-	resource.Schema["direction"] = schemas["direction-alert_rule"]
+	resource.Schema["test_ids"] = schemas.AlertRuleSchema["test_ids"]
 	return &resource
 }
 
@@ -101,10 +103,10 @@ func buildAlertRuleStruct(d *schema.ResourceData) *alerts.RuleDetailUpdate {
 	return ResourceBuildStruct(d, &alerts.RuleDetailUpdate{})
 }
 
-// func testIds(tests []alerts.AlertSimpleTest) *[]string {
-// 	var testIds []string
-// 	for _, test := range tests {
-// 		testIds = append(testIds, *test.TestId)
-// 	}
-// 	return &testIds
-// }
+func testIds(tests []alerts.AlertSimpleTest) *[]string {
+	var testIds []string
+	for _, test := range tests {
+		testIds = append(testIds, *test.TestId)
+	}
+	return &testIds
+}

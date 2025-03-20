@@ -3,6 +3,8 @@ package thousandeyes
 import (
 	"log"
 
+	"github.com/thousandeyes/terraform-provider-thousandeyes/thousandeyes/schemas"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/thousandeyes/thousandeyes-sdk-go/v3/client"
 	"github.com/thousandeyes/thousandeyes-sdk-go/v3/tests"
@@ -10,7 +12,7 @@ import (
 
 func resourceWebTransaction() *schema.Resource {
 	resource := schema.Resource{
-		Schema: ResourceSchemaBuild(tests.WebTransactionTest{}, schemas, nil),
+		Schema: ResourceSchemaBuild(tests.WebTransactionTestRequest{}, schemas.CommonSchema, nil),
 		Create: resourceWebTransactionCreate,
 		Read:   resourceWebTransactionRead,
 		Update: resourceWebTransactionUpdate,

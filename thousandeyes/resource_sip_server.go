@@ -3,6 +3,8 @@ package thousandeyes
 import (
 	"log"
 
+	"github.com/thousandeyes/terraform-provider-thousandeyes/thousandeyes/schemas"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/thousandeyes/thousandeyes-sdk-go/v3/client"
 	"github.com/thousandeyes/thousandeyes-sdk-go/v3/tests"
@@ -10,7 +12,7 @@ import (
 
 func resourceSIPServer() *schema.Resource {
 	resource := schema.Resource{
-		Schema: ResourceSchemaBuild(tests.SipServerTest{}, schemas, nil),
+		Schema: ResourceSchemaBuild(tests.SipServerTestRequest{}, schemas.CommonSchema, nil),
 		Create: resourceSIPServerCreate,
 		Read:   resourceSIPServerRead,
 		Update: resourceSIPServerUpdate,
@@ -20,6 +22,7 @@ func resourceSIPServer() *schema.Resource {
 		},
 		Description: "This resource allows you to create a SIP server test. This test type checks for the availability and performance of a VoIP SIP server, confirms the ability to perform SIP Register with a target server, and observes the requests and responses. For more information, see [SIP Server Tests](https://docs.thousandeyes.com/product-documentation/internet-and-wan-monitoring/tests#sip-server-test).",
 	}
+	resource.Schema["protocol"] = schemas.CommonSchema["protocol-sip"]
 	return &resource
 }
 

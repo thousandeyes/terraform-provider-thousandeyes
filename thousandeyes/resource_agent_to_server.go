@@ -3,6 +3,8 @@ package thousandeyes
 import (
 	"log"
 
+	"github.com/thousandeyes/terraform-provider-thousandeyes/thousandeyes/schemas"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/thousandeyes/thousandeyes-sdk-go/v3/client"
@@ -25,7 +27,7 @@ func resourceAgentToServer() *schema.Resource {
 	}
 
 	resource := schema.Resource{
-		Schema: ResourceSchemaBuild(tests.AgentToServerTest{}, schemas, agentToServerSchemasOverride),
+		Schema: ResourceSchemaBuild(tests.AgentToServerTestRequest{}, schemas.CommonSchema, agentToServerSchemasOverride),
 		Create: resourceAgentServerCreate,
 		Read:   resourceAgentServerRead,
 		Update: resourceAgentServerUpdate,

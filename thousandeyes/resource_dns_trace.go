@@ -3,6 +3,8 @@ package thousandeyes
 import (
 	"log"
 
+	"github.com/thousandeyes/terraform-provider-thousandeyes/thousandeyes/schemas"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/thousandeyes/thousandeyes-sdk-go/v3/client"
 	"github.com/thousandeyes/thousandeyes-sdk-go/v3/tests"
@@ -10,7 +12,7 @@ import (
 
 func resourceDNSTrace() *schema.Resource {
 	resource := schema.Resource{
-		Schema: ResourceSchemaBuild(tests.DnsTraceTest{}, schemas, nil),
+		Schema: ResourceSchemaBuild(tests.DnsTraceTestRequest{}, schemas.CommonSchema, nil),
 		Create: resourceDNSTraceCreate,
 		Read:   resourceDNSTraceRead,
 		Update: resourceDNSTraceUpdate,

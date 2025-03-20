@@ -10,10 +10,6 @@ import (
 	"github.com/thousandeyes/thousandeyes-sdk-go/v3/client"
 )
 
-// Global variable for account group ID, as we must be aware of it in
-// functions that will not have access to it otherwise.
-var accountGroupId int64
-
 func New() func() *schema.Provider {
 	return func() *schema.Provider {
 		return Provider()

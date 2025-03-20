@@ -3,6 +3,8 @@ package thousandeyes
 import (
 	"log"
 
+	"github.com/thousandeyes/terraform-provider-thousandeyes/thousandeyes/schemas"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/thousandeyes/thousandeyes-sdk-go/v3/client"
@@ -19,9 +21,8 @@ func resourceAgentToAgent() *schema.Resource {
 			Optional:     true,
 		},
 	}
-
 	resource := schema.Resource{
-		Schema: ResourceSchemaBuild(tests.AgentToAgentTest{}, schemas, agentToAgentSchemasOverride),
+		Schema: ResourceSchemaBuild(tests.AgentToAgentTestRequest{}, schemas.CommonSchema, agentToAgentSchemasOverride),
 		Create: resourceAgentAgentCreate,
 		Read:   resourceAgentAgentRead,
 		Update: resourceAgentAgentUpdate,
@@ -31,7 +32,7 @@ func resourceAgentToAgent() *schema.Resource {
 		},
 		Description: "This resource allows you to create and configure an agent-to-agent test. This test type evaluates the performance of the underlying network between two physical sites. For more information about agent-to-agent tests, see [Agent-to-Agent Tests](https://docs.thousandeyes.com/product-documentation/internet-and-wan-monitoring/tests#agent-to-agent-test).",
 	}
-	resource.Schema["protocol"] = schemas["protocol-agent_to_agent"]
+	resource.Schema["protocol"] = schemas.CommonSchema["protocol-a2a"]
 	return &resource
 }
 
