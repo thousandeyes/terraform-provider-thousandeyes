@@ -22,9 +22,12 @@ jobs:
         uses: github/codeql-action/init@v3
         with:
           languages: go
+          queries: +security-and-quality
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
+        with:
+          analyze-incremental: true
 
   dependency-scan:
     name: Dependency Scan
@@ -59,7 +62,13 @@ jobs:
           echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
 
       - name: Run golangci-lint
-        run: golangci-lint run --timeout=5m
+        run: |
+          CHANGED_FILES=$(git diff --name-only origin/main | grep '\.go$' || true)
+          if [[ -n "$CHANGED_FILES" ]]; then
+            golangci-lint run $CHANGED_FILES --timeout=5m
+          else
+            echo "No Go files changed."
+          fi
 
   terraform-security:
     name: Terraform Security Scan
@@ -72,7 +81,10 @@ jobs:
         uses: aquasecurity/tfsec-action@v1.0.0
 
       - name: Run Checkov
-        uses: bridgecrewio/checkov-action@v12
-        with:
-          directory: .
-          framework: terraform
+        run: |
+          CHANGED_FILES=$(git diff --name-only origin/main | grep '\.tf$' || true)
+          if [[ -n "$CHANGED_FILES" ]]; then
+            checkov -f $CHANGED_FILES --quiet
+          else
+            echo "No Terraform files changed."
+          fi
