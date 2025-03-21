@@ -4,9 +4,12 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/thousandeyes/terraform-provider-thousandeyes/thousandeyes/schemas"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/thousandeyes/thousandeyes-sdk-go/v2"
+	"github.com/thousandeyes/thousandeyes-sdk-go/v3/administrative"
+	"github.com/thousandeyes/thousandeyes-sdk-go/v3/tests"
 )
 
 func getReferenceData(schemaData map[string]*schema.Schema, attrs map[string]string) *schema.ResourceData {
@@ -23,17 +26,17 @@ func getReferenceData(schemaData map[string]*schema.Schema, attrs map[string]str
 
 func TestResourceBuildStruct(t *testing.T) {
 	prefix := "8.19.2.2/19"
-	cmpStruct := thousandeyes.BGP{
-		Prefix: thousandeyes.String(prefix),
+	cmpStruct := tests.BgpTestRequest{
+		Prefix: prefix,
 	}
-	newStruct := thousandeyes.BGP{}
+	newStruct := tests.BgpTestRequest{}
 	attrs := map[string]string{
 		"prefix": "8.19.2.2/19",
 	}
-	d := getReferenceData(schemas, attrs)
+	d := getReferenceData(schemas.CommonSchema, attrs)
 	ResourceBuildStruct(d, &newStruct)
 
-	if *newStruct.Prefix != *cmpStruct.Prefix {
+	if newStruct.Prefix != cmpStruct.Prefix {
 		t.Error("Building resource did not assign struct field correctly.")
 	}
 
@@ -42,53 +45,51 @@ func TestResourceBuildStruct(t *testing.T) {
 func TestResourceRead(t *testing.T) {
 	prefix := "8.19.2.2/19"
 	attrs := map[string]string{}
-	d := getReferenceData(schemas, attrs)
-	remoteResource := thousandeyes.BGP{
-		Prefix: thousandeyes.String(prefix),
+	d := getReferenceData(schemas.CommonSchema, attrs)
+	remoteResource := tests.BgpTestResponse{
+		Prefix: prefix,
 	}
-	err := ResourceRead(d, &remoteResource)
+	err := ResourceRead(d, &remoteResource, "aid")
 	if err != nil {
 		t.Errorf("Setting resource data returned error: %+v", err.Error())
 	}
-	if d.Get("prefix") != *remoteResource.Prefix {
+	if d.Get("prefix") != remoteResource.Prefix {
 		t.Errorf("Reading resource did not assign resource data correctly.\nStruct is %+v\nResource is %+v", remoteResource, d.State().Attributes)
 	}
 }
 
 func TestResourceReadValue(t *testing.T) {
-	testStruct := thousandeyes.AccountGroupRole{
-		RoleName:                 thousandeyes.String("TestRole"),
-		RoleID:                   thousandeyes.Int64(1),
-		HasManagementPermissions: thousandeyes.Bool(true),
-		Builtin:                  thousandeyes.Bool(false),
-		Permissions: &[]thousandeyes.Permission{
+	testStruct := administrative.RoleDetail{
+		Name:      getPointer("TestRole"),
+		RoleId:    getPointer("1"),
+		IsBuiltin: getPointer(false),
+		Permissions: []administrative.Permission{
 			{
-				IsManagementPermission: thousandeyes.Bool(false),
-				Label:                  thousandeyes.String("foo"),
-				PermissionID:           thousandeyes.Int64(27),
+				IsManagementPermission: getPointer(false),
+				Label:                  getPointer("foo"),
+				PermissionId:           getPointer("27"),
 			},
 			{
-				IsManagementPermission: thousandeyes.Bool(true),
-				Label:                  thousandeyes.String("bar"),
-				PermissionID:           thousandeyes.Int64(28),
+				IsManagementPermission: getPointer(true),
+				Label:                  getPointer("bar"),
+				PermissionId:           getPointer("28"),
 			},
 		},
 	}
 	resultMap := map[string]interface{}{
-		"role_name":                  thousandeyes.String("TestRole"),
-		"role_id":                    thousandeyes.Int64(1),
-		"has_management_permissions": thousandeyes.Bool(true),
-		"builtin":                    thousandeyes.Bool(false),
+		"name":       getPointer("TestRole"),
+		"role_id":    getPointer("1"),
+		"is_builtin": getPointer(false),
 		"permissions": []map[string]interface{}{
 			{
-				"is_management_permission": thousandeyes.Bool(false),
-				"label":                    thousandeyes.String("foo"),
-				"permission_id":            thousandeyes.Int64(27),
+				"is_management_permission": getPointer(false),
+				"label":                    getPointer("foo"),
+				"permission_id":            getPointer("27"),
 			},
 			{
-				"is_management_permission": thousandeyes.Bool(true),
-				"label":                    thousandeyes.String("bar"),
-				"permission_id":            thousandeyes.Int64(28),
+				"is_management_permission": getPointer(true),
+				"label":                    getPointer("bar"),
+				"permission_id":            getPointer("28"),
 			},
 		},
 	}
@@ -122,7 +123,7 @@ func TestFixReadValues(t *testing.T) {
 	// non-map, non-list
 	normalInput := 4
 	normalTarget := 4
-	output, err = FixReadValues(normalInput, "normal")
+	output, err = FixReadValues(normalInput, "normal", "")
 	if err != nil {
 		t.Errorf("normal input returned error: %s", err.Error())
 	}
@@ -134,22 +135,22 @@ func TestFixReadValues(t *testing.T) {
 	agentsInput := []interface{}{
 		map[string]interface{}{
 			"agent_name": "foo",
-			"agent_id":   1,
+			"agent_id":   "1",
 		},
 		map[string]interface{}{
 			"agent_name": "bar",
-			"agent_id":   2,
+			"agent_id":   "2",
 		},
 	}
 	agentsTarget := []interface{}{
 		map[string]interface{}{
-			"agent_id": 1,
+			"agent_id": "1",
 		},
 		map[string]interface{}{
-			"agent_id": 2,
+			"agent_id": "2",
 		},
 	}
-	output, err = FixReadValues(agentsInput, "agents")
+	output, err = FixReadValues(agentsInput, "agents", "")
 	if err != nil {
 		t.Errorf("agents input returned error: %s", err.Error())
 	}
@@ -160,33 +161,33 @@ func TestFixReadValues(t *testing.T) {
 	// alert_rules
 	alertRulesInput := []interface{}{
 		map[string]interface{}{
-			"rule_name": thousandeyes.String("foo"),
-			"rule_id":   thousandeyes.Int(1),
-			"default":   thousandeyes.Bool(false),
+			"rule_name": getPointer("foo"),
+			"rule_id":   getPointer("1"),
+			"default":   getPointer(false),
 		},
 		map[string]interface{}{
-			"rule_name": thousandeyes.String("bar"),
-			"rule_id":   thousandeyes.Int(2),
-			"default":   thousandeyes.Bool(false),
+			"rule_name": getPointer("bar"),
+			"rule_id":   getPointer("2"),
+			"default":   getPointer(false),
 		},
 		map[string]interface{}{
-			"rule_name": thousandeyes.String("bar"),
-			"rule_id":   thousandeyes.Int(3),
-			"default":   thousandeyes.Bool(true),
+			"rule_name": getPointer("bar"),
+			"rule_id":   getPointer("3"),
+			"default":   getPointer(true),
 		},
 	}
 	alertRulesTarget := []interface{}{
 		map[string]interface{}{
-			"rule_id": thousandeyes.Int(1),
+			"rule_id": getPointer("1"),
 		},
 		map[string]interface{}{
-			"rule_id": thousandeyes.Int(2),
+			"rule_id": getPointer("2"),
 		},
 		map[string]interface{}{
-			"rule_id": thousandeyes.Int(3),
+			"rule_id": getPointer("3"),
 		},
 	}
-	output, err = FixReadValues(alertRulesInput, "alert_rules")
+	output, err = FixReadValues(alertRulesInput, "alert_rules", "")
 	if err != nil {
 		t.Errorf("alert_rules input returned error: %s", err.Error())
 	}
@@ -197,22 +198,22 @@ func TestFixReadValues(t *testing.T) {
 	// bgp_monitors
 	monitorsInput := []interface{}{
 		map[string]interface{}{
-			"monitor_name": thousandeyes.String("foo"),
-			"monitor_id":   thousandeyes.Int(1),
-			"monitor_type": thousandeyes.String("Public"),
+			"monitor_name": getPointer("foo"),
+			"monitor_id":   getPointer("1"),
+			"monitor_type": getPointer("public"),
 		},
 		map[string]interface{}{
-			"monitor_name": thousandeyes.String("bar"),
-			"monitor_id":   thousandeyes.Int(2),
-			"monitor_type": thousandeyes.String("Private"),
+			"monitor_name": getPointer("bar"),
+			"monitor_id":   getPointer("2"),
+			"monitor_type": getPointer("private"),
 		},
 	}
 	monitorsTarget := []interface{}{
 		map[string]interface{}{
-			"monitor_id": thousandeyes.Int(2),
+			"monitor_id": getPointer("2"),
 		},
 	}
-	output, err = FixReadValues(monitorsInput, "bgp_monitors")
+	output, err = FixReadValues(monitorsInput, "monitors", "")
 	if err != nil {
 		t.Errorf("bgp_monitors input returned error: %s", err.Error())
 	}
@@ -220,51 +221,23 @@ func TestFixReadValues(t *testing.T) {
 		t.Errorf("Values not stripped correctly from bgp_monitors input: Received %#v Expected %#v", output, monitorsTarget)
 	}
 
-	// groups
-	groupsInput := []interface{}{
-		map[string]interface{}{
-			"group_name": "foo",
-			"group_id":   1,
-		},
-		map[string]interface{}{
-			"group_name": "bar",
-			"group_id":   2,
-		},
-	}
-	groupsTarget := []interface{}{
-		map[string]interface{}{
-			"group_id": 1,
-		},
-		map[string]interface{}{
-			"group_id": 2,
-		},
-	}
-	output, err = FixReadValues(groupsInput, "groups")
-	if err != nil {
-		t.Errorf("groups input returned error: %s", err.Error())
-	}
-	if reflect.DeepEqual(output, groupsTarget) != true {
-		t.Errorf("Values not stripped correctly from groups input: Received %#v Expected %#v", output, groupsTarget)
-	}
-
 	//	shared_with_accounts
-	accountGroupId = 2
 	accountsInput := []interface{}{
 		map[string]interface{}{
-			"name": thousandeyes.String("foo"),
-			"aid":  thousandeyes.Int64(1),
+			"name": getPointer("foo"),
+			"aid":  getPointer("1"),
 		},
 		map[string]interface{}{
-			"name": thousandeyes.String("bar"),
-			"aid":  thousandeyes.Int64(2),
+			"name": getPointer("bar"),
+			"aid":  getPointer("2"),
 		},
 	}
 	accountsTarget := []interface{}{
 		map[string]interface{}{
-			"aid": thousandeyes.Int64(1),
+			"aid": getPointer("1"),
 		},
 	}
-	output, err = FixReadValues(accountsInput, "shared_with_accounts")
+	output, err = FixReadValues(accountsInput, "shared_with_accounts", "2")
 	if err != nil {
 		t.Errorf("shared_with_accounts input returned error: %s", err.Error())
 	}
@@ -272,8 +245,7 @@ func TestFixReadValues(t *testing.T) {
 		t.Errorf("Values not stripped correctly from shared_with_accounts input: Received %#v Expected %#v", output, accountsTarget)
 	}
 	//  We should fail if account_group_id isn't set and the list of account groups is > 1
-	accountGroupId = 0
-	output, err = FixReadValues(accountsInput, "shared_with_accounts")
+	output, err = FixReadValues(accountsInput, "shared_with_accounts", "")
 	if err == nil {
 		t.Errorf("Error was not returned when shared_with_accounts length was > 1 and account_group_id  was not set")
 	}
@@ -281,10 +253,10 @@ func TestFixReadValues(t *testing.T) {
 	accountsInput = []interface{}{
 		map[string]interface{}{
 			"name": "bar",
-			"aid":  2,
+			"aid":  "2",
 		},
 	}
-	output, err = FixReadValues(accountsInput, "shared_with_accounts")
+	output, err = FixReadValues(accountsInput, "shared_with_accounts", "")
 	if err != nil {
 		t.Errorf("shared_with_accounts input returned error when shared_with_accounts wasn't set despite list of account groups being < 2: %s", err.Error())
 	}
@@ -301,7 +273,7 @@ func TestFixReadValues(t *testing.T) {
 			"sip_proxy": "foo.com",
 		},
 	}
-	output, err = FixReadValues(sipCredsInput, "target_sip_credentials")
+	output, err = FixReadValues(sipCredsInput, "target_sip_credentials", "")
 	if err != nil {
 		t.Errorf("target_sip_credentials input returned error: %s", err.Error())
 	}
@@ -328,7 +300,7 @@ func TestFixReadValues(t *testing.T) {
 			"test_id": "2",
 		},
 	}
-	output, err = FixReadValues(testsInput, "tests")
+	output, err = FixReadValues(testsInput, "tests", "")
 	if err != nil {
 		t.Errorf("tests input returned error: %s", err.Error())
 	}
@@ -363,7 +335,7 @@ func TestFixReadValues(t *testing.T) {
 		},
 	}
 
-	output, err = FixReadValues(thirdPartyNotificationsInput, "third_party")
+	output, err = FixReadValues(thirdPartyNotificationsInput, "third_party", "")
 	if err != nil {
 		t.Errorf("third party notifications input returned error: %s", err.Error())
 	}
@@ -386,8 +358,8 @@ func TestFixReadValues(t *testing.T) {
 			"integration_type": "WEBHOOK",
 		},
 	}
-	
-	output, err = FixReadValues(webhookNotificationsInput, "webhook")
+
+	output, err = FixReadValues(webhookNotificationsInput, "webhook", "")
 	if err != nil {
 		t.Errorf("webhook notifications input returned error: %s", err.Error())
 	}
