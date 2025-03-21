@@ -2,15 +2,17 @@ package thousandeyes
 
 import (
 	"log"
-	"strconv"
+
+	"github.com/thousandeyes/terraform-provider-thousandeyes/thousandeyes/schemas"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/thousandeyes/thousandeyes-sdk-go/v2"
+	"github.com/thousandeyes/thousandeyes-sdk-go/v3/client"
+	"github.com/thousandeyes/thousandeyes-sdk-go/v3/tests"
 )
 
 func resourceDNSTrace() *schema.Resource {
 	resource := schema.Resource{
-		Schema: ResourceSchemaBuild(thousandeyes.DNSTrace{}, schemas, nil),
+		Schema: ResourceSchemaBuild(tests.DnsTraceTestRequest{}, schemas.CommonSchema, nil),
 		Create: resourceDNSTraceCreate,
 		Read:   resourceDNSTraceRead,
 		Update: resourceDNSTraceUpdate,
@@ -24,18 +26,28 @@ func resourceDNSTrace() *schema.Resource {
 }
 
 func resourceDNSTraceRead(d *schema.ResourceData, m interface{}) error {
-	return GetResource(d, m, func(client *thousandeyes.Client, id int64) (interface{}, error) {
-		return client.GetDNSTrace(id)
+	return GetResource(d, m, func(apiClient *client.APIClient, id string) (interface{}, error) {
+		api := (*tests.DNSTraceTestsAPIService)(&apiClient.Common)
+
+		req := api.GetDnsTraceTest(id).Expand(tests.AllowedExpandTestOptionsEnumValues)
+		req = SetAidFromContext(apiClient.GetConfig().Context, req, req)
+
+		resp, _, err := req.Execute()
+		return resp, err
 	})
 }
 
 func resourceDNSTraceUpdate(d *schema.ResourceData, m interface{}) error {
-	client := m.(*thousandeyes.Client)
+	apiClient := m.(*client.APIClient)
+	api := (*tests.DNSTraceTestsAPIService)(&apiClient.Common)
 
 	log.Printf("[INFO] Updating ThousandEyes Test %s", d.Id())
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	update := ResourceUpdate(d, &thousandeyes.DNSTrace{}).(*thousandeyes.DNSTrace)
-	_, err := client.UpdateDNSTrace(id, *update)
+	update := ResourceUpdate(d, &tests.DnsTraceTestRequest{})
+
+	req := api.UpdateDnsTraceTest(d.Id()).DnsTraceTestRequest(*update).Expand(tests.AllowedExpandTestOptionsEnumValues)
+	req = SetAidFromContext(apiClient.GetConfig().Context, req, req)
+
+	_, _, err := req.Execute()
 	if err != nil {
 		return err
 	}
@@ -43,11 +55,15 @@ func resourceDNSTraceUpdate(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceDNSTraceDelete(d *schema.ResourceData, m interface{}) error {
-	client := m.(*thousandeyes.Client)
+	apiClient := m.(*client.APIClient)
+	api := (*tests.DNSTraceTestsAPIService)(&apiClient.Common)
 
 	log.Printf("[INFO] Deleting ThousandEyes Test %s", d.Id())
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	if err := client.DeleteDNSTrace(id); err != nil {
+
+	req := api.DeleteDnsTraceTest(d.Id())
+	req = SetAidFromContext(apiClient.GetConfig().Context, req, req)
+
+	if _, err := req.Execute(); err != nil {
 		return err
 	}
 	d.SetId("")
@@ -55,18 +71,25 @@ func resourceDNSTraceDelete(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceDNSTraceCreate(d *schema.ResourceData, m interface{}) error {
-	client := m.(*thousandeyes.Client)
+	apiClient := m.(*client.APIClient)
+	api := (*tests.DNSTraceTestsAPIService)(&apiClient.Common)
+
 	log.Printf("[INFO] Creating ThousandEyes Test %s", d.Id())
 	local := buildDNSTraceStruct(d)
-	remote, err := client.CreateDNSTrace(*local)
+
+	req := api.CreateDnsTraceTest().DnsTraceTestRequest(*local).Expand(tests.AllowedExpandTestOptionsEnumValues)
+	req = SetAidFromContext(apiClient.GetConfig().Context, req, req)
+
+	resp, _, err := req.Execute()
 	if err != nil {
 		return err
 	}
-	id := *remote.TestID
-	d.SetId(strconv.FormatInt(id, 10))
+
+	id := *resp.TestId
+	d.SetId(id)
 	return resourceDNSTraceRead(d, m)
 }
 
-func buildDNSTraceStruct(d *schema.ResourceData) *thousandeyes.DNSTrace {
-	return ResourceBuildStruct(d, &thousandeyes.DNSTrace{}).(*thousandeyes.DNSTrace)
+func buildDNSTraceStruct(d *schema.ResourceData) *tests.DnsTraceTestRequest {
+	return ResourceBuildStruct(d, &tests.DnsTraceTestRequest{})
 }
