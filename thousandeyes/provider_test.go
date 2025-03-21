@@ -3,12 +3,13 @@ package thousandeyes
 import (
 	"context"
 	"fmt"
+	"strconv"
+	"testing"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/stretchr/testify/require"
-	"github.com/thousandeyes/thousandeyes-sdk-go/v2"
-	"strconv"
-	"testing"
+	"github.com/thousandeyes/thousandeyes-sdk-go/v3/client"
 )
 
 type ResourceType struct {
@@ -17,7 +18,7 @@ type ResourceType struct {
 	GetResource  func(id int64) (interface{}, error)
 }
 
-var testClient *thousandeyes.Client
+var testClient *client.APIClient
 
 var providerFactories = map[string]func() (*schema.Provider, error){
 	"thousandeyes": func() (*schema.Provider, error) {
@@ -39,7 +40,7 @@ func testAccPreCheck(t *testing.T) {
 
 	require.False(t, diags != nil && diags.HasError(), "Error configuring client: %v", diags)
 
-	testClient = testClientRaw.(*thousandeyes.Client)
+	testClient = testClientRaw.(*client.APIClient)
 	require.NotNil(t, testClient, "Error converting client: unexpected type")
 }
 
