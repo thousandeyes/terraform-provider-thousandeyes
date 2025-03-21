@@ -1,6 +1,7 @@
 package thousandeyes
 
 import (
+	"context"
 	"errors"
 	"log"
 	"reflect"
@@ -9,10 +10,14 @@ import (
 	"unicode"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/thousandeyes/thousandeyes-sdk-go/v2"
+	"github.com/thousandeyes/thousandeyes-sdk-go/v3/client"
 )
 
-type ResourceReadFunc func(client *thousandeyes.Client, id int64) (interface{}, error)
+type ResourceReadFunc func(client *client.APIClient, id string) (interface{}, error)
+
+type RequestWithAid[T any] interface {
+	Aid(aid string) T
+}
 
 func IsNotFoundError(err error) bool {
 	notFoundPatterns := []string{"404", "not found"}
@@ -24,40 +29,11 @@ func IsNotFoundError(err error) bool {
 	return false
 }
 
-func expandAgents(v interface{}) thousandeyes.Agents {
-	var agents thousandeyes.Agents
-
-	for _, er := range v.([]interface{}) {
-		rer := er.(map[string]interface{})
-		agent := &thousandeyes.Agent{
-			AgentID: thousandeyes.Int64(rer["agent_id"].(int64)),
-		}
-		agents = append(agents, *agent)
-	}
-
-	return agents
-}
-
-func expandAlertRules(alertRules *[]thousandeyes.AlertRule) *[]thousandeyes.AlertRule {
-	if alertRules == nil {
-		return nil
-	}
-
-	ret := &[]thousandeyes.AlertRule{}
-	for _, ar := range *alertRules {
-		*ret = append(*ret, thousandeyes.AlertRule{
-			RuleID: ar.RuleID,
-		})
-	}
-
-	return ret
-}
-
 // ResourceBuildStruct fills the struct at a given address by querying a
 // schema.ResourceData object for the matching field.  It discovers the
 // matching value name by getting the JSON key from the struct field,
 // and then fills in the value according to the struct field's type.
-func ResourceBuildStruct(d *schema.ResourceData, structPtr interface{}) interface{} {
+func ResourceBuildStruct[T any](d *schema.ResourceData, structPtr *T) *T {
 	v := reflect.ValueOf(structPtr).Elem()
 	t := reflect.TypeOf(v.Interface())
 	for i := 0; i < v.NumField(); i++ {
@@ -70,20 +46,16 @@ func ResourceBuildStruct(d *schema.ResourceData, structPtr interface{}) interfac
 			v.Field(i).Set(setVal)
 		}
 	}
-	return resourceFixups(d, structPtr)
+	return resourceFixups[T](d, structPtr)
 }
 
 // GetResource is a generic function for reading resources.
 func GetResource(d *schema.ResourceData, m interface{}, readFunc ResourceReadFunc) error {
-	client := m.(*thousandeyes.Client)
+	apiClient := m.(*client.APIClient)
+	aid := apiClient.GetConfig().Context.Value("aid").(string)
 
 	log.Printf("[INFO] Reading Thousandeyes Resource %s", d.Id())
-	id, err := strconv.ParseInt(d.Id(), 10, 64)
-	if err != nil {
-		return err
-	}
-
-	remote, err := readFunc(client, id)
+	remote, err := readFunc(apiClient, d.Id())
 
 	// Check if the resource no longer exists
 	if err != nil && IsNotFoundError(err) {
@@ -95,7 +67,7 @@ func GetResource(d *schema.ResourceData, m interface{}, readFunc ResourceReadFun
 	}
 
 	// Continue with updating the state
-	err = ResourceRead(d, remote)
+	err = ResourceRead(d, remote, aid)
 	if err != nil {
 		return err
 	}
@@ -105,7 +77,7 @@ func GetResource(d *schema.ResourceData, m interface{}, readFunc ResourceReadFun
 
 // ResourceRead sets values for a schema.ResourceData object by names derived
 // from the fields of the struct at the provided pointer.
-func ResourceRead(d *schema.ResourceData, structPtr interface{}) error {
+func ResourceRead(d *schema.ResourceData, structPtr interface{}, aid string) error {
 	v := reflect.ValueOf(structPtr).Elem()
 	t := reflect.TypeOf(v.Interface())
 
@@ -120,7 +92,7 @@ func ResourceRead(d *schema.ResourceData, structPtr interface{}) error {
 		if err != nil {
 			return err
 		}
-		val, err = FixReadValues(val, tfName)
+		val, err = FixReadValues(val, tfName, aid)
 		if err != nil {
 			return err
 		}
@@ -139,7 +111,7 @@ func ResourceRead(d *schema.ResourceData, structPtr interface{}) error {
 // and transforms certain values to match the expected schema.
 // We need to account for this data on so that it does not get saved to state and
 // cause conflict with configuration.
-func FixReadValues(m interface{}, name string) (interface{}, error) {
+func FixReadValues(m interface{}, name string, aid string) (interface{}, error) {
 	switch name {
 	// Remove all fields from agent definitions except for agent ID.
 	case "agents":
@@ -163,13 +135,13 @@ func FixReadValues(m interface{}, name string) (interface{}, error) {
 	// Remove all public BGP monitors. (ThousandEyes does not allow
 	// specifying individual public BGP monitors, and all available
 	// public BGP monitors are returned if public BGP monitors are enabled.)
-	case "bgp_monitors":
+	case "monitors":
 		monitors := m.([]interface{})
 		// Edit the monitors slice in place, to return the same type.
 		i := 0
 		for i < len(monitors) {
 			monitor := monitors[i].(map[string]interface{})
-			if *monitor["monitor_type"].(*string) == "Public" {
+			if *monitor["monitor_type"].(*string) == "public" {
 				// Remove this item from the slice
 				monitors = append(monitors[:i], monitors[i+1:]...)
 			} else {
@@ -187,15 +159,6 @@ func FixReadValues(m interface{}, name string) (interface{}, error) {
 			servers := v.(map[string]interface{})
 			m.([]interface{})[i] = map[string]interface{}{
 				"server_name": servers["server_name"],
-			}
-		}
-
-	// Remove all group fields except for the group ID.
-	case "groups":
-		for i, v := range m.([]interface{}) {
-			group := v.(map[string]interface{})
-			m.([]interface{})[i] = map[string]interface{}{
-				"group_id": group["group_id"],
 			}
 		}
 
@@ -223,7 +186,7 @@ func FixReadValues(m interface{}, name string) (interface{}, error) {
 	// Remove the owning account from the list of shared accounts.
 	case "shared_with_accounts":
 		accounts := m.([]interface{})
-		if accountGroupId == 0 {
+		if len(aid) == 0 {
 			if len(accounts) > 1 {
 				return nil, errors.New("Resources are shared between account groups, but account_group_id is not set.")
 			}
@@ -236,8 +199,8 @@ func FixReadValues(m interface{}, name string) (interface{}, error) {
 		for i < len(accounts) {
 			account := accounts[i].(map[string]interface{})
 			//  Compare to account group ID stored in global variable.
-			shared_aid := account["aid"].(*int64)
-			if *shared_aid == accountGroupId {
+			shared_aid := account["aid"].(*string)
+			if *shared_aid == aid {
 				// Remove this item from the slice
 				accounts = append(accounts[:i], accounts[i+1:]...)
 			} else {
@@ -262,7 +225,7 @@ func FixReadValues(m interface{}, name string) (interface{}, error) {
 		var e interface{}
 		var err error
 		// this is a special case to handle internal email structure inside the notifications block
-		e, err = FixReadValues(m.(map[string]interface{})["email"].(map[string]interface{}), "email")
+		e, err = FixReadValues(m.(map[string]interface{})["email"].(map[string]interface{}), "email", aid)
 		if err != nil {
 			return nil, err
 		}
@@ -270,18 +233,18 @@ func FixReadValues(m interface{}, name string) (interface{}, error) {
 		// third party notifications
 		var tp interface{}
 		if _, ok := m.(map[string]interface{})["third_party"]; ok {
-			tp, err = FixReadValues(m.(map[string]interface{})["third_party"].([]interface{}), "third_party")
+			tp, err = FixReadValues(m.(map[string]interface{})["third_party"].([]interface{}), "third_party", aid)
 			if err != nil {
 				return nil, err
 			}
 		} else {
 			tp = nil
 		}
-		
+
 		// webhook notifications
 		var w interface{}
 		if _, ok := m.(map[string]interface{})["webhook"]; ok {
-			w, err = FixReadValues(m.(map[string]interface{})["webhook"].([]interface{}), "webhook")
+			w, err = FixReadValues(m.(map[string]interface{})["webhook"].([]interface{}), "webhook", aid)
 			if err != nil {
 				return nil, err
 			}
@@ -299,11 +262,11 @@ func FixReadValues(m interface{}, name string) (interface{}, error) {
 			// if they're not configured, then the API doesn't return them at all
 			if tp != nil {
 				m.(map[string]interface{})["third_party"] = tp
-			} 
+			}
 
 			if w != nil {
 				m.(map[string]interface{})["webhook"] = w
-			} 
+			}
 
 			m.(map[string]interface{})["email"] = e
 			m = []interface{}{
@@ -400,7 +363,7 @@ func ReadValue(structPtr interface{}) (interface{}, error) {
 
 // resourceFixups sanitizes values to ensure that the ThousandEyes API
 // behavior does not surprise Terraform's state.
-func resourceFixups(d *schema.ResourceData, structPtr interface{}) interface{} {
+func resourceFixups[T any](d *schema.ResourceData, structPtr *T) *T {
 	v := reflect.ValueOf(structPtr).Elem()
 	t := reflect.TypeOf(v.Interface())
 
@@ -414,7 +377,7 @@ func resourceFixups(d *schema.ResourceData, structPtr interface{}) interface{} {
 		_, bandwidthMeasurementsSet := d.GetOk("bandwidth_measurements")
 		_, hasBandwidthMeasurementsField := t.FieldByName("BandwidthMeasurements")
 		if hasBandwidthMeasurementsField && !bandwidthMeasurementsSet {
-			setVal := reflect.ValueOf(thousandeyes.Bool(false))
+			setVal := reflect.ValueOf(getPointer(false))
 			v.FieldByName("BandwidthMeasurements").Set(setVal)
 			d.Set("bandwidth_measurements", false)
 		}
@@ -424,18 +387,12 @@ func resourceFixups(d *schema.ResourceData, structPtr interface{}) interface{} {
 		// not supported. Better to let users explicitly set it to
 		// true.
 		_, bgpMeasurementsSet := d.GetOk("bgp_measurements")
-		_, hasBgpMeasurements := t.FieldByName("BGPMeasurements")
+		_, hasBgpMeasurements := t.FieldByName("BgpMeasurements")
 		if hasBgpMeasurements && !bgpMeasurementsSet {
-			setVal := reflect.ValueOf(thousandeyes.Bool(false))
-			v.FieldByName("BGPMeasurements").Set(setVal)
+			setVal := reflect.ValueOf(getPointer(false))
+			v.FieldByName("BgpMeasurements").Set(setVal)
 			d.Set("bgp_measurements", false)
 		}
-	}
-
-	_, hasAlertRules := t.FieldByName("AlertRules")
-	if hasAlertRules {
-		scrappedAlertRules := expandAlertRules(v.FieldByName("AlertRules").Interface().(*[]thousandeyes.AlertRule))
-		v.FieldByName("AlertRules").Set(reflect.ValueOf(scrappedAlertRules))
 	}
 
 	return structPtr
@@ -444,7 +401,7 @@ func resourceFixups(d *schema.ResourceData, structPtr interface{}) interface{} {
 // ResourceUpdate updates values of a struct for the provided pointer if
 // matching changes for those values are found in a provided
 // schema.ResourceData object.
-func ResourceUpdate(d *schema.ResourceData, structPtr interface{}) interface{} {
+func ResourceUpdate[T any](d *schema.ResourceData, structPtr *T) *T {
 	d.Partial(true)
 	v := reflect.ValueOf(structPtr).Elem()
 	t := reflect.TypeOf(v.Interface())
@@ -458,7 +415,7 @@ func ResourceUpdate(d *schema.ResourceData, structPtr interface{}) interface{} {
 		}
 	}
 	d.Partial(false)
-	return resourceFixups(d, structPtr)
+	return resourceFixups[T](d, structPtr)
 }
 
 // ResourceSchemaBuild creates a map of schemas based on the fields
@@ -473,7 +430,7 @@ func ResourceSchemaBuild(referenceStruct interface{}, schemas map[string]*schema
 		tfName := CamelCaseToUnderscore(tag)
 
 		// use the override if there is one
-		if schemasOverride != nil && len(schemasOverride) > 0 {
+		if len(schemasOverride) > 0 {
 			if val, ok := schemasOverride[tfName]; ok {
 				newSchema[tfName] = val
 			} else if val, ok := schemas[tfName]; ok {
@@ -630,4 +587,16 @@ func CamelCaseToUnderscore(s string) string {
 func GetJSONKey(v reflect.StructField) string {
 	s := v.Tag.Get("json")
 	return strings.Split(s, ",")[0]
+}
+
+func SetAidFromContext[T any](ctx context.Context, srcReq T, reqAid RequestWithAid[T]) T {
+	aid, ok := ctx.Value("aid").(string)
+	if ok && len(aid) > 0 {
+		return reqAid.Aid(aid)
+	}
+	return srcReq
+}
+
+func getPointer[T any](v T) *T {
+	return &v
 }
