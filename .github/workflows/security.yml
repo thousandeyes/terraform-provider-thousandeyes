@@ -43,6 +43,7 @@ jobs:
           ignore-unfixed: true
           exit-code: 1
           severity: CRITICAL,HIGH
+          scanners: vuln,config,secret
 
   go-lint:
     name: Go Linter
