@@ -589,12 +589,12 @@ func GetJSONKey(v reflect.StructField) string {
 	return strings.Split(s, ",")[0]
 }
 
-func SetAidFromContext[T any](ctx context.Context, srcReq T, reqAid RequestWithAid[T]) T {
+func SetAidFromContext[T RequestWithAid[T]](ctx context.Context, req T) T {
 	aid, ok := ctx.Value("aid").(string)
 	if ok && len(aid) > 0 {
-		return reqAid.Aid(aid)
+		return req.Aid(aid)
 	}
-	return srcReq
+	return req
 }
 
 func getPointer[T any](v T) *T {

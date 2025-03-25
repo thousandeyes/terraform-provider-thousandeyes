@@ -38,7 +38,7 @@ func dataSourceThousandeyesAlertRuleRead(d *schema.ResourceData, meta interface{
 	searchName := d.Get("rule_name").(string)
 
 	req := api.GetAlertsRules()
-	req = SetAidFromContext(apiClient.GetConfig().Context, req, req)
+	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 	resp, _, err := req.Execute()
 	if err != nil {
