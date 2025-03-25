@@ -41,8 +41,8 @@ func Provider() *schema.Provider {
 			"api_endpoint": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("TE_API_ENDPOINT", "https://api.thousandeyes.com/v6"),
-				Description: "The ThousandEyes API Endpoint's URL. E.g. https://api.thousandeyes.com/v6",
+				DefaultFunc: schema.EnvDefaultFunc("TE_API_ENDPOINT", "https://api.thousandeyes.com/v7"),
+				Description: "The ThousandEyes API Endpoint's URL. E.g. https://api.thousandeyes.com/v7",
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{

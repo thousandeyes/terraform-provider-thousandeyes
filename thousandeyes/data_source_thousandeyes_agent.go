@@ -43,9 +43,7 @@ func dataSourceThousandeyesAgentRead(d *schema.ResourceData, meta interface{}) e
 
 	searchName := d.Get("agent_name").(string)
 
-	req := api.GetAgents().
-		Expand(agents.AllowedAgentListExpandEnumValues).
-		AgentTypes(agents.AllowedCloudEnterpriseAgentTypeEnumValues)
+	req := api.GetAgents()
 	req = SetAidFromContext(apiClient.GetConfig().Context, req, req)
 
 	resp, _, err := req.Execute()

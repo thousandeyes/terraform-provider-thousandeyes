@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/thousandeyes/thousandeyes-sdk-go/v3/tests"
 )
 
 func TestAccThousandEyesAgentToAgent(t *testing.T) {
@@ -54,8 +55,8 @@ func testAccCheckAgentToAgentResourceDestroy(s *terraform.State) error {
 	resourceList := []ResourceType{
 		{
 			ResourceName: "thousandeyes_agent_to_agent",
-			GetResource: func(id int64) (interface{}, error) {
-				return testClient.GetAgentAgent(id)
+			GetResource: func(id string) (interface{}, error) {
+				return getAgentToAgent(id)
 			}},
 	}
 	return testAccCheckResourceDestroy(resourceList, s)
@@ -67,4 +68,12 @@ func testAccThousandEyesAgentToAgentConfig(testResource string) string {
 		panic(err)
 	}
 	return string(content)
+}
+
+func getAgentToAgent(id string) (interface{}, error) {
+	api := (*tests.AgentToAgentTestsAPIService)(&testClient.Common)
+	req := api.GetAgentToAgentTest(id).Expand(tests.AllowedExpandTestOptionsEnumValues)
+	req = SetAidFromContext(testClient.GetConfig().Context, req, req)
+	resp, _, err := req.Execute()
+	return resp, err
 }
