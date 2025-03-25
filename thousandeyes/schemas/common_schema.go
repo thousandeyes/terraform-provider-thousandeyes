@@ -150,7 +150,8 @@ var CommonSchema = map[string]*schema.Schema{
 				"test_results": {
 					Type:        schema.TypeList,
 					Description: "Reference to the test results.",
-					Elem:        link,
+					Elem:        link.Elem,
+					Optional: true,
 				},
 			},
 		},
@@ -178,7 +179,7 @@ var CommonSchema = map[string]*schema.Schema{
 		Type:        schema.TypeBool,
 		Description: "Enable to automatically add all available Public BGP Monitors to the test.",
 		Optional:    true,
-		Default:     false,
+		Default:     true,
 	},
 	// monitors (ex. bgp_monitors)
 	"monitors": {

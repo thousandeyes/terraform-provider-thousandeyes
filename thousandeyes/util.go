@@ -11,6 +11,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/thousandeyes/thousandeyes-sdk-go/v3/client"
+	"github.com/thousandeyes/thousandeyes-sdk-go/v3/tests"
 )
 
 type ResourceReadFunc func(client *client.APIClient, id string) (interface{}, error)
@@ -36,14 +37,64 @@ func IsNotFoundError(err error) bool {
 func ResourceBuildStruct[T any](d *schema.ResourceData, structPtr *T) *T {
 	v := reflect.ValueOf(structPtr).Elem()
 	t := reflect.TypeOf(v.Interface())
+ 
 	for i := 0; i < v.NumField(); i++ {
+		field := v.Field(i)
+		fieldType := field.Type()
+ 
 		tag := GetJSONKey(t.Field(i))
 		tfName := CamelCaseToUnderscore(tag)
+ 
 		val, ok := d.GetOkExists(tfName)
-		if ok {
-			newVal := FillValue(val, v.Field(i).Interface())
-			setVal := reflect.ValueOf(newVal)
-			v.Field(i).Set(setVal)
+		if !ok || val == nil {
+			continue
+		}
+		if set, ok := val.(*schema.Set); ok {
+			switch fieldType.String() {
+ 
+			case "*tests.TestLinks":
+				var links tests.TestLinks
+				field.Set(reflect.ValueOf(&links))
+ 
+			case "[]tests.TestAgentRequest":
+				var agents []tests.TestAgentRequest
+				for _, item := range set.List() {
+					m := item.(map[string]interface{})
+					agent := tests.TestAgentRequest{}
+			
+					if idVal, ok := m["agent_id"].(string); ok {
+						agent.AgentId = idVal
+					}
+					if ipVal, ok := m["source_ip_address"].(string); ok {
+						agent.SourceIpAddress = &ipVal
+					}
+			 
+					agents = append(agents, agent)
+				}
+				field.Set(reflect.ValueOf(agents))
+ 
+			default:
+				log.Printf("Type mismatch: cannot convert %T to %v", val, fieldType)
+			}
+			continue
+		}
+ 
+		rawVal := reflect.ValueOf(val)
+		if fieldType.Kind() == reflect.Ptr {
+			elemType := fieldType.Elem()
+			if rawVal.Type().ConvertibleTo(elemType) {
+				ptr := reflect.New(elemType)
+				ptr.Elem().Set(rawVal.Convert(elemType))
+				field.Set(ptr)
+			} else {
+				log.Printf("Type mismatch: cannot convert %v (%T) to %v", val, val, fieldType)
+			}
+		} else {
+			if rawVal.Type().ConvertibleTo(fieldType) {
+				field.Set(rawVal.Convert(fieldType))
+			} else {
+				log.Printf("Type mismatch: cannot convert %v (%T) to %v", val, val, fieldType)
+			}
 		}
 	}
 	return resourceFixups[T](d, structPtr)
@@ -451,6 +502,8 @@ func FillValue(source interface{}, target interface{}) interface{} {
 	// We determine how to interpret the supplied value based on
 	// the type of the target argument.
 	vt := reflect.ValueOf(target)
+	vtKind := vt.Kind()
+	log.Println(vtKind)
 	switch vt.Kind() {
 	case reflect.Ptr:
 		p := reflect.New(reflect.TypeOf(target).Elem())
@@ -533,6 +586,16 @@ func FillValue(source interface{}, target interface{}) interface{} {
 		}
 
 		return int64(source.(int))
+
+	case reflect.Int32:
+		// Values destined to be int32 may come to us as strings.
+		if reflect.TypeOf(source).Kind() == reflect.String {
+			i, _ := strconv.ParseInt(source.(string), 10, 32)
+			return i
+		}
+
+		return int32(source.(int))
+
 
 	default:
 		// If we haven't matched one of the above cases, then there
