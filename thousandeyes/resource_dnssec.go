@@ -30,7 +30,7 @@ func resourceDNSSecRead(d *schema.ResourceData, m interface{}) error {
 		api := (*tests.DNSSECTestsAPIService)(&apiClient.Common)
 
 		req := api.GetDnsSecTest(id).Expand(tests.AllowedExpandTestOptionsEnumValues)
-		req = SetAidFromContext(apiClient.GetConfig().Context, req, req)
+		req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 		resp, _, err := req.Execute()
 		return resp, err
@@ -45,7 +45,7 @@ func resourceDNSSecUpdate(d *schema.ResourceData, m interface{}) error {
 	update := ResourceUpdate(d, &tests.DnsSecTestRequest{})
 
 	req := api.UpdateDnsSecTest(d.Id()).DnsSecTestRequest(*update).Expand(tests.AllowedExpandTestOptionsEnumValues)
-	req = SetAidFromContext(apiClient.GetConfig().Context, req, req)
+	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 	_, _, err := req.Execute()
 	if err != nil {
@@ -61,7 +61,7 @@ func resourceDNSSecDelete(d *schema.ResourceData, m interface{}) error {
 	log.Printf("[INFO] Deleting ThousandEyes Test %s", d.Id())
 
 	req := api.DeleteDnsSecTest(d.Id())
-	req = SetAidFromContext(apiClient.GetConfig().Context, req, req)
+	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 	if _, err := req.Execute(); err != nil {
 		return err
@@ -78,7 +78,7 @@ func resourceDNSSecCreate(d *schema.ResourceData, m interface{}) error {
 	local := buildDNSSecStruct(d)
 
 	req := api.CreateDnsSecTest().DnsSecTestRequest(*local).Expand(tests.AllowedExpandTestOptionsEnumValues)
-	req = SetAidFromContext(apiClient.GetConfig().Context, req, req)
+	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 	resp, _, err := req.Execute()
 	if err != nil {

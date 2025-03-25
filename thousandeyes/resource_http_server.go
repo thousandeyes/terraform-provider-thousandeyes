@@ -30,7 +30,7 @@ func resourceHTTPServerRead(d *schema.ResourceData, m interface{}) error {
 		api := (*tests.HTTPServerTestsAPIService)(&apiClient.Common)
 
 		req := api.GetHttpServerTest(id).Expand(tests.AllowedExpandTestOptionsEnumValues)
-		req = SetAidFromContext(apiClient.GetConfig().Context, req, req)
+		req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 		resp, _, err := req.Execute()
 		return resp, err
@@ -45,7 +45,7 @@ func resourceHTTPServerUpdate(d *schema.ResourceData, m interface{}) error {
 	update := ResourceUpdate(d, &tests.HttpServerTestRequest{})
 
 	req := api.UpdateHttpServerTest(d.Id()).HttpServerTestRequest(*update).Expand(tests.AllowedExpandTestOptionsEnumValues)
-	req = SetAidFromContext(apiClient.GetConfig().Context, req, req)
+	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 	_, _, err := req.Execute()
 	if err != nil {
@@ -61,7 +61,7 @@ func resourceHTTPServerDelete(d *schema.ResourceData, m interface{}) error {
 	log.Printf("[INFO] Deleting ThousandEyes Test %s", d.Id())
 
 	req := api.DeleteHttpServerTest(d.Id())
-	req = SetAidFromContext(apiClient.GetConfig().Context, req, req)
+	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 	if _, err := req.Execute(); err != nil {
 		return err
@@ -78,7 +78,7 @@ func resourceHTTPServerCreate(d *schema.ResourceData, m interface{}) error {
 	local := buildHTTPServerStruct(d)
 
 	req := api.CreateHttpServerTest().HttpServerTestRequest(*local).Expand(tests.AllowedExpandTestOptionsEnumValues)
-	req = SetAidFromContext(apiClient.GetConfig().Context, req, req)
+	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 	resp, _, err := req.Execute()
 	if err != nil {

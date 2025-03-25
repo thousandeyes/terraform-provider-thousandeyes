@@ -30,7 +30,7 @@ func resourcePageLoadRead(d *schema.ResourceData, m interface{}) error {
 		api := (*tests.PageLoadTestsAPIService)(&apiClient.Common)
 
 		req := api.GetPageLoadTest(id).Expand(tests.AllowedExpandTestOptionsEnumValues)
-		req = SetAidFromContext(apiClient.GetConfig().Context, req, req)
+		req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 		resp, _, err := req.Execute()
 		return resp, err
@@ -45,7 +45,7 @@ func resourcePageLoadUpdate(d *schema.ResourceData, m interface{}) error {
 	update := ResourceUpdate(d, &tests.PageLoadTestRequest{})
 
 	req := api.UpdatePageLoadTest(d.Id()).PageLoadTestRequest(*update).Expand(tests.AllowedExpandTestOptionsEnumValues)
-	req = SetAidFromContext(apiClient.GetConfig().Context, req, req)
+	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 	_, _, err := req.Execute()
 	if err != nil {
@@ -61,7 +61,7 @@ func resourcePageLoadDelete(d *schema.ResourceData, m interface{}) error {
 	log.Printf("[INFO] Deleting ThousandEyes Test %s", d.Id())
 
 	req := api.DeletePageLoadTest(d.Id())
-	req = SetAidFromContext(apiClient.GetConfig().Context, req, req)
+	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 	if _, err := req.Execute(); err != nil {
 		return err
@@ -78,7 +78,7 @@ func resourcePageLoadCreate(d *schema.ResourceData, m interface{}) error {
 	local := buildPageLoadStruct(d)
 
 	req := api.CreatePageLoadTest().PageLoadTestRequest(*local).Expand(tests.AllowedExpandTestOptionsEnumValues)
-	req = SetAidFromContext(apiClient.GetConfig().Context, req, req)
+	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 	resp, _, err := req.Execute()
 	if err != nil {

@@ -31,7 +31,7 @@ func resourceAlertRuleRead(d *schema.ResourceData, m interface{}) error {
 		api := (*alerts.AlertRulesAPIService)(&apiClient.Common)
 
 		req := api.GetAlertRule(id)
-		req = SetAidFromContext(apiClient.GetConfig().Context, req, req)
+		req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 		alertRule, _, err := req.Execute()
 		if err != nil {
@@ -53,7 +53,7 @@ func resourceAlertRuleUpdate(d *schema.ResourceData, m interface{}) error {
 	// fields. Terraform schema validation should guarantee their existence.
 	local := buildAlertRuleStruct(d)
 	req := api.UpdateAlertRule(d.Id()).RuleDetailUpdate(*local)
-	req = SetAidFromContext(apiClient.GetConfig().Context, req, req)
+	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 	_, _, err := req.Execute()
 	if err != nil {
@@ -70,7 +70,7 @@ func resourceAlertRuleDelete(d *schema.ResourceData, m interface{}) error {
 	log.Printf("[INFO] Deleting ThousandEyes Test %s", d.Id())
 
 	req := api.DeleteAlertRule(d.Id())
-	req = SetAidFromContext(apiClient.GetConfig().Context, req, req)
+	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 	if _, err := req.Execute(); err != nil {
 		return err
@@ -87,7 +87,7 @@ func resourceAlertRuleCreate(d *schema.ResourceData, m interface{}) error {
 
 	local := buildAlertRuleStruct(d)
 	req := api.CreateAlertRule().RuleDetailUpdate(*local)
-	req = SetAidFromContext(apiClient.GetConfig().Context, req, req)
+	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 	resp, _, err := req.Execute()
 	if err != nil {

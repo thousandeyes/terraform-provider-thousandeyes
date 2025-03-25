@@ -30,7 +30,7 @@ func resourceWebTransactionRead(d *schema.ResourceData, m interface{}) error {
 		api := (*tests.WebTransactionTestsAPIService)(&apiClient.Common)
 
 		req := api.GetWebTransactionsTest(id).Expand(tests.AllowedExpandTestOptionsEnumValues)
-		req = SetAidFromContext(apiClient.GetConfig().Context, req, req)
+		req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 		resp, _, err := req.Execute()
 		return resp, err
@@ -45,7 +45,7 @@ func resourceWebTransactionUpdate(d *schema.ResourceData, m interface{}) error {
 	update := ResourceUpdate(d, &tests.WebTransactionTestRequest{})
 
 	req := api.UpdateWebTransactionsTest(d.Id()).WebTransactionTestRequest(*update).Expand(tests.AllowedExpandTestOptionsEnumValues)
-	req = SetAidFromContext(apiClient.GetConfig().Context, req, req)
+	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 	_, _, err := req.Execute()
 	if err != nil {
@@ -61,7 +61,7 @@ func resourceWebTransactionDelete(d *schema.ResourceData, m interface{}) error {
 	log.Printf("[INFO] Deleting ThousandEyes Test %s", d.Id())
 
 	req := api.DeleteWebTransactionsTest(d.Id())
-	req = SetAidFromContext(apiClient.GetConfig().Context, req, req)
+	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 	if _, err := req.Execute(); err != nil {
 		return err
@@ -78,7 +78,7 @@ func resourceWebTransactionCreate(d *schema.ResourceData, m interface{}) error {
 	local := buildWebTransactionStruct(d)
 
 	req := api.CreateWebTransactionsTest().WebTransactionTestRequest(*local).Expand(tests.AllowedExpandTestOptionsEnumValues)
-	req = SetAidFromContext(apiClient.GetConfig().Context, req, req)
+	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 	resp, _, err := req.Execute()
 	if err != nil {

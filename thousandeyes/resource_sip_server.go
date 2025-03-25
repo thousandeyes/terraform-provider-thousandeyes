@@ -31,7 +31,7 @@ func resourceSIPServerRead(d *schema.ResourceData, m interface{}) error {
 		api := (*tests.SIPServerTestsAPIService)(&apiClient.Common)
 
 		req := api.GetSipServerTest(id).Expand(tests.AllowedExpandTestOptionsEnumValues)
-		req = SetAidFromContext(apiClient.GetConfig().Context, req, req)
+		req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 		resp, _, err := req.Execute()
 		return resp, err
@@ -54,7 +54,7 @@ func resourceSIPServerUpdate(d *schema.ResourceData, m interface{}) error {
 	fullUpdate := buildSIPServerStruct(d)
 	update.TargetSipCredentials = fullUpdate.TargetSipCredentials
 	req := api.UpdateSipServerTest(d.Id()).SipServerTestRequest(*update).Expand(tests.AllowedExpandTestOptionsEnumValues)
-	req = SetAidFromContext(apiClient.GetConfig().Context, req, req)
+	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 	if _, _, err := req.Execute(); err != nil {
 		return err
@@ -69,7 +69,7 @@ func resourceSIPServerDelete(d *schema.ResourceData, m interface{}) error {
 	log.Printf("[INFO] Deleting ThousandEyes Test %s", d.Id())
 
 	req := api.DeleteSipServerTest(d.Id())
-	req = SetAidFromContext(apiClient.GetConfig().Context, req, req)
+	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 	if _, err := req.Execute(); err != nil {
 		return err
@@ -86,7 +86,7 @@ func resourceSIPServerCreate(d *schema.ResourceData, m interface{}) error {
 	local := buildSIPServerStruct(d)
 
 	req := api.CreateSipServerTest().SipServerTestRequest(*local).Expand(tests.AllowedExpandTestOptionsEnumValues)
-	req = SetAidFromContext(apiClient.GetConfig().Context, req, req)
+	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 	resp, _, err := req.Execute()
 	if err != nil {
