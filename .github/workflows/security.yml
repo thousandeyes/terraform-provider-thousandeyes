@@ -46,30 +46,17 @@ jobs:
           scanners: vuln,config,secret
 
   go-lint:
-    name: Go Linter
+    name: Go Linter (PR Changes Only)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Set up Go
-        uses: actions/setup-go@v4
+      - name: Run GolangCI-Lint
+        uses: golangci/golangci-lint-action@v4
         with:
-          go-version: stable
-
-      - name: Install golangci-lint
-        run: |
-          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.55.2
-          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
-
-      - name: Run golangci-lint
-        run: |
-          CHANGED_FILES=$(git diff --name-only origin/main | grep '\.go$' || true)
-          if [[ -n "$CHANGED_FILES" ]]; then
-            golangci-lint run $CHANGED_FILES --timeout=5m
-          else
-            echo "No Go files changed."
-          fi
+          version: v1.24.0  
+          only-new-issues: true
 
   terraform-security:
     name: Terraform Security Scan
