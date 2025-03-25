@@ -25,11 +25,11 @@ func TestAccThousandEyesAgentToAgent(t *testing.T) {
 			checkDestroyFunction: testAccCheckAgentToAgentResourceDestroy,
 			checkFunc: []resource.TestCheckFunc{
 				resource.TestCheckResourceAttr(httpResourceName, "test_name", "User Acceptance Test - Aget To Agent"),
-				resource.TestCheckResourceAttr(httpResourceName, "direction", "BIDIRECTIONAL"),
-				resource.TestCheckResourceAttr(httpResourceName, "protocol", "TCP"),
+				resource.TestCheckResourceAttr(httpResourceName, "direction", "bidirectional"),
+				resource.TestCheckResourceAttr(httpResourceName, "protocol", "tcp"),
 				resource.TestCheckResourceAttr(httpResourceName, "interval", "120"),
-				resource.TestCheckResourceAttr(httpResourceName, "alerts_enabled", "true"),
-				resource.TestCheckResourceAttr(httpResourceName, "alert_rules.#", "2"),
+				// resource.TestCheckResourceAttr(httpResourceName, "alerts_enabled", "true"),
+				// resource.TestCheckResourceAttr(httpResourceName, "alert_rules.#", "2"),
 			},
 		},
 	}

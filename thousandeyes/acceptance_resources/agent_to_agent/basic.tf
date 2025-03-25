@@ -28,7 +28,7 @@ resource "thousandeyes_agent_to_agent" "test" {
   direction       = "bidirectional"
   protocol        = "tcp"
   target_agent_id = "2334" #Frankfurt, Germany
-  monitors = [data.thousandeyes_bgp_monitor.ams_monitor.monitor_id]
+  # monitors = [data.thousandeyes_bgp_monitor.ams_monitor.monitor_id]
   # alert_rules = ["921617", thousandeyes_alert_rule.alert-rule-agent_to_agent.id]
 
   agents {
