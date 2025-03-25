@@ -55,7 +55,7 @@ jobs:
       - name: Run GolangCI-Lint
         uses: golangci/golangci-lint-action@v4
         with:
-          version: v1.24.0  
+          version: v2.0.1 
           only-new-issues: true
 
   terraform-security:
