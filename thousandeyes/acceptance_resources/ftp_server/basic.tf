@@ -1,5 +1,5 @@
 data "thousandeyes_agent" "test" {
-  agent_name = "Vancouver, Canada"
+  agent_name = "Amsterdam, Netherlands"
 }
 
 resource "thousandeyes_ftp_server" "test" {

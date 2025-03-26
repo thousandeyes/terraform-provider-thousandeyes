@@ -170,7 +170,7 @@ var CommonSchema = map[string]*schema.Schema{
 		Type:        schema.TypeBool,
 		Description: "Enable to automatically add all available Public BGP Monitors to the test.",
 		Optional:    true,
-		Default:     false,
+		Default:     true, // TO DO: set false
 	},
 	// monitors (ex. bgp_monitors)
 	"monitors": {
@@ -184,16 +184,10 @@ var CommonSchema = map[string]*schema.Schema{
 	// agents
 	"agents": {
 		Type:        schema.TypeList,
-		Description: "The list of ThousandEyes agents to use.",
+		Description: "The list of ThousandEyes agent IDs to use.",
 		Required:    true,
-		Elem: &schema.Resource{
-			Schema: map[string]*schema.Schema{
-				"agent_id": {
-					Type:        schema.TypeString,
-					Description: "The unique ID for the ThousandEyes agent.",
-					Required:    true,
-				},
-			},
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
 		},
 	},
 	// interval
@@ -245,6 +239,7 @@ var CommonSchema = map[string]*schema.Schema{
 		Description: "The DSCP ID.",
 		Required:    false,
 		Optional:    true,
+		Computed:    true,
 	},
 	// randomizedStartTime
 	"randomized_start_time": {
@@ -260,6 +255,7 @@ var CommonSchema = map[string]*schema.Schema{
 		Description: "Enable BGP measurements. Set to true for enabled, false for disabled.",
 		Optional:    true,
 		Required:    false,
+		Computed:    true,
 	},
 
 	// AGENT TO AGENT

@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"time"
 	"unicode"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -49,29 +50,29 @@ func ResourceBuildStruct[T any](d *schema.ResourceData, structPtr *T) *T {
 		if !ok || val == nil {
 			continue
 		}
-		if set, ok := val.(*schema.Set); ok {
+		if _, ok := val.(*schema.Set); ok {
 			switch fieldType.String() {
 
-			case "*tests.TestLinks":
-				var links tests.TestLinks
-				field.Set(reflect.ValueOf(&links))
+			// case "*tests.TestLinks":
+			// 	var links tests.TestLinks
+			// 	field.Set(reflect.ValueOf(&links))
 
-			case "[]tests.TestAgentRequest":
-				var agents []tests.TestAgentRequest
-				for _, item := range set.List() {
-					m := item.(map[string]interface{})
-					agent := tests.TestAgentRequest{}
+			// case "[]tests.TestAgentRequest":
+			// 	var agents []tests.TestAgentRequest
+			// 	for _, item := range set.List() {
+			// 		m := item.(map[string]interface{})
+			// 		agent := tests.TestAgentRequest{}
 
-					if idVal, ok := m["agent_id"].(string); ok {
-						agent.AgentId = idVal
-					}
-					if ipVal, ok := m["source_ip_address"].(string); ok {
-						agent.SourceIpAddress = &ipVal
-					}
+			// 		if idVal, ok := m["agent_id"].(string); ok {
+			// 			agent.AgentId = idVal
+			// 		}
+			// 		if ipVal, ok := m["source_ip_address"].(string); ok {
+			// 			agent.SourceIpAddress = &ipVal
+			// 		}
 
-					agents = append(agents, agent)
-				}
-				field.Set(reflect.ValueOf(agents))
+			// 		agents = append(agents, agent)
+			// 	}
+			// 	field.Set(reflect.ValueOf(agents))
 
 			default:
 				log.Printf("Type mismatch: cannot convert %T to %v", val, fieldType)
@@ -96,6 +97,7 @@ func ResourceBuildStruct[T any](d *schema.ResourceData, structPtr *T) *T {
 				log.Printf("Type mismatch: cannot convert %v (%T) to %v", val, val, fieldType)
 			}
 		}
+		log.Printf("[INFO] Value %v of field %v has been set", val, tag)
 	}
 	return resourceFixups[T](d, structPtr)
 }
@@ -140,6 +142,7 @@ func ResourceRead(d *schema.ResourceData, structPtr interface{}, aid string) err
 		tag := GetJSONKey(t.Field(i))
 		tfName := CamelCaseToUnderscore(tag)
 		val, err := ReadValue(v.Field(i).Interface())
+		log.Printf("[INFO] Value %v of field %v has been read", val, tag)
 		if err != nil {
 			return err
 		}
@@ -192,7 +195,7 @@ func FixReadValues(m interface{}, name string, aid string) (interface{}, error) 
 		i := 0
 		for i < len(monitors) {
 			monitor := monitors[i].(map[string]interface{})
-			if *monitor["monitor_type"].(*string) == "public" {
+			if *monitor["monitor_type"].(*tests.MonitorType) == tests.MONITORTYPE_PUBLIC {
 				// Remove this item from the slice
 				monitors = append(monitors[:i], monitors[i+1:]...)
 			} else {
@@ -363,6 +366,26 @@ func FixReadValues(m interface{}, name string, aid string) (interface{}, error) 
 				"test_id": test["test_id"],
 			}
 		}
+
+	// TO DO
+	case "_links":
+		newMap := map[string]interface{}{}
+		if self, ok := m.(map[string]interface{})["self"].(map[string]interface{}); ok {
+			newMap["self"] = []interface{}{self}
+		}
+		if testResults, ok := m.(map[string]interface{})["test_results"].([]interface{}); ok {
+			resultList := make([]interface{}, len(testResults))
+			for i, item := range testResults {
+				resultList[i] = item
+			}
+			newMap["test_results"] = resultList
+		}
+		m = []interface{}{newMap}
+
+	case "created_date":
+		{
+			m = m.(*time.Time).Format(time.RFC3339)
+		}
 	}
 
 	return m, nil
@@ -376,10 +399,14 @@ func ReadValue(structPtr interface{}) (interface{}, error) {
 	var err error
 	v := reflect.Indirect(reflect.ValueOf(structPtr))
 	t := reflect.TypeOf(v.Interface())
+	eltype := v.Type()
 	switch t.Kind() {
 	case reflect.Struct:
 		// For structs, return a map with key names set to be translations of
 		// the JSON key names.
+		if (eltype == reflect.TypeOf(time.Time{})) {
+			return structPtr, nil
+		}
 		newMap := make(map[string]interface{})
 		for i := 0; i < v.NumField(); i++ {
 			if v.Field(i).Kind() == reflect.Ptr && v.Field(i).IsNil() {
