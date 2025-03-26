@@ -4,7 +4,7 @@ data "thousandeyes_agent" "amsterdam" {
 
 resource "thousandeyes_alert_rule" "test" {
   rule_name                 = "Custom UAT DNS Server Alert Rule"
-  alert_type                = "DNS Server"
+  alert_type                = "dns-server"
   expression                = "((probDetail != \"\") && (Auto(delay >= Medium sensitivity)))"
   minimum_sources           = 1
   rounds_violating_required = 1
@@ -16,28 +16,31 @@ resource "thousandeyes_dns_server" "test" {
   interval       = 120
   alerts_enabled = true
   domain         = "thousandeyes.com A"
+  agents         = [data.thousandeyes_agent.amsterdam.agent_id]
+  alert_rules    = ["921612", thousandeyes_alert_rule.test.id]
+  dns_servers    = ["ns-cloud-d1.googledomains.com", "ns-1458.awsdns-54.org", "ns-597.awsdns-10.net"]
 
-  agents {
-    agent_id = data.thousandeyes_agent.amsterdam.agent_id
-  }
+  # agents {
+  #   agent_id = data.thousandeyes_agent.amsterdam.agent_id
+  # }
 
-  alert_rules {
-    rule_id = thousandeyes_alert_rule.test.id
-  }
+  # alert_rules {
+  #   rule_id = thousandeyes_alert_rule.test.id
+  # }
 
-  alert_rules {
-    rule_id = 921612 #DNS Server Default Alert Rule
-  }
+  # alert_rules {
+  #   rule_id = 921612 #DNS Server Default Alert Rule
+  # }
 
-  dns_servers {
-    server_name = "ns-cloud-d1.googledomains.com"
-  }
+  # dns_servers {
+  #   server_name = "ns-cloud-d1.googledomains.com"
+  # }
 
-  dns_servers {
-    server_name = "ns-1458.awsdns-54.org"
-  }
+  # dns_servers {
+  #   server_name = "ns-1458.awsdns-54.org"
+  # }
 
-  dns_servers {
-    server_name = "ns-597.awsdns-10.net"
-  }
+  # dns_servers {
+  #   server_name = "ns-597.awsdns-10.net"
+  # }
 }

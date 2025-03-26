@@ -445,7 +445,6 @@ func resourceFixups[T any](d *schema.ResourceData, structPtr *T) *T {
 		scrappedAgents := expandAgents(d.Get("agents"))
 		v.FieldByName("Agents").Set(reflect.ValueOf(scrappedAgents))
 	}
-
 	return structPtr
 }
 

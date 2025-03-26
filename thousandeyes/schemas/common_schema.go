@@ -170,7 +170,7 @@ var CommonSchema = map[string]*schema.Schema{
 		Type:        schema.TypeBool,
 		Description: "Enable to automatically add all available Public BGP Monitors to the test.",
 		Optional:    true,
-		Default:     true, // TO DO: set false
+		Default: false,
 	},
 	// monitors (ex. bgp_monitors)
 	"monitors": {
@@ -370,6 +370,7 @@ var CommonSchema = map[string]*schema.Schema{
 		Description: "[force-ipv4, prefer-ipv6, force-ipv6, or use-agent-policy]", // TO DO describe
 		Optional:    true,
 		Required:    false,
+		Computed: true,
 		ValidateFunc: validation.StringInSlice([]string{
 			"force-ipv4",
 			"prefer-ipv6",
@@ -420,21 +421,11 @@ var CommonSchema = map[string]*schema.Schema{
 		Optional:    false,
 		Required:    true,
 		Type:        schema.TypeSet,
-		Elem: &schema.Resource{
-			Schema: map[string]*schema.Schema{
-				"server_name": {
-					Type:        schema.TypeString,
-					Description: "The DNS server name.",
-					Optional:    true,
-				},
-				"server_id": {
-					Type:        schema.TypeString,
-					Description: "The unique ID of the DNS server.",
-					Optional:    true,
-				},
-			},
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
 		},
 	},
+
 	// dnsTransportProtocol
 	"dns_transport_protocol": {
 		Type:         schema.TypeString,
@@ -478,6 +469,7 @@ var CommonSchema = map[string]*schema.Schema{
 		Description:  "Domain class used by this test. 'in' stands for Internet, while 'ch' stands for Chaos.",
 		Optional:     true,
 		Required:     false,
+		Computed: true,
 		ValidateFunc: validation.StringInSlice([]string{"in", "ch"}, false),
 	},
 

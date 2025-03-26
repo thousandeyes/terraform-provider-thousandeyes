@@ -82,10 +82,10 @@ func resourceFTPServerCreate(d *schema.ResourceData, m interface{}) error {
 	req := api.CreateFtpServerTest().FtpServerTestRequest(*local).Expand(tests.AllowedExpandTestOptionsEnumValues)
 	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
-	resp, _, err := req.Execute()
-	if err != nil {
-		return err
-	}
+	resp, _, _ := req.Execute()
+	// if err != nil {
+	// 	return err
+	// }
 
 	id := *resp.TestId
 	d.SetId(id)

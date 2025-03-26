@@ -3,19 +3,16 @@ data "thousandeyes_agent" "test" {
 }
 
 resource "thousandeyes_ftp_server" "test" {
-  password             = "test_password"
+  password            = "test_password"
   username             = "test_username"
   test_name            = "Acceptance Test - FTP"
   description          = "description"
-  request_type         = "Download"
+  request_type         = "download"
   ftp_time_limit       = 10
   ftp_target_time      = 1000
   interval             = 900
   alerts_enabled       = false
   network_measurements = false
   url                  = "ftp://speedtest.tele2.net/"
-
-  agents {
-    agent_id = data.thousandeyes_agent.test.agent_id
-  }
+  agents               = [data.thousandeyes_agent.test.agent_id]
 }
