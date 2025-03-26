@@ -164,7 +164,7 @@ func ResourceRead(d *schema.ResourceData, structPtr interface{}, aid string) err
 		if err != nil {
 			return err
 		}
-		val, err = FixReadValues(val, tfName, aid)
+		val, err = FixReadValues(val, &tfName, aid)
 		if err != nil {
 			return err
 		}
@@ -183,15 +183,13 @@ func ResourceRead(d *schema.ResourceData, structPtr interface{}, aid string) err
 // and transforms certain values to match the expected schema.
 // We need to account for this data on so that it does not get saved to state and
 // cause conflict with configuration.
-func FixReadValues(m interface{}, name string, aid string) (interface{}, error) {
-	switch name {
+func FixReadValues(m interface{}, name *string, aid string) (interface{}, error) {
+	switch *name {
 	// Remove all fields from agent definitions except for agent ID.
 	case "agents":
 		for i, v := range m.([]interface{}) {
 			agent := v.(map[string]interface{})
-			m.([]interface{})[i] = map[string]interface{}{
-				"agent_id": agent["agent_id"],
-			}
+			m.([]interface{})[i] = agent["agent_id"]
 		}
 
 	// Remove all alert rule fields except for rule ID. Ignore default rules.
@@ -199,9 +197,7 @@ func FixReadValues(m interface{}, name string, aid string) (interface{}, error) 
 	case "alert_rules":
 		for i, v := range m.([]interface{}) {
 			rule := v.(map[string]interface{})
-			m.([]interface{})[i] = map[string]interface{}{
-				"rule_id": rule["rule_id"],
-			}
+			m.([]interface{})[i] = rule["rule_id"]
 		}
 
 	// Remove all public BGP monitors. (ThousandEyes does not allow
@@ -217,9 +213,7 @@ func FixReadValues(m interface{}, name string, aid string) (interface{}, error) 
 				// Remove this item from the slice
 				monitors = append(monitors[:i], monitors[i+1:]...)
 			} else {
-				monitors[i] = map[string]interface{}{
-					"monitor_id": monitor["monitor_id"],
-				}
+				monitors[i] = monitor["monitor_id"]
 				i = i + 1
 			}
 		}
@@ -229,9 +223,7 @@ func FixReadValues(m interface{}, name string, aid string) (interface{}, error) 
 	case "dns_servers":
 		for i, v := range m.([]interface{}) {
 			servers := v.(map[string]interface{})
-			m.([]interface{})[i] = map[string]interface{}{
-				"server_name": servers["server_name"],
-			}
+			m.([]interface{})[i] = servers["server_name"]
 		}
 
 	// custom_headers is currently unsupported due to complications with Terraform
@@ -297,7 +289,7 @@ func FixReadValues(m interface{}, name string, aid string) (interface{}, error) 
 		var e interface{}
 		var err error
 		// this is a special case to handle internal email structure inside the notifications block
-		e, err = FixReadValues(m.(map[string]interface{})["email"].(map[string]interface{}), "email", aid)
+		e, err = FixReadValues(m.(map[string]interface{})["email"].(map[string]interface{}), getPointer("email"), aid)
 		if err != nil {
 			return nil, err
 		}
@@ -305,7 +297,7 @@ func FixReadValues(m interface{}, name string, aid string) (interface{}, error) 
 		// third party notifications
 		var tp interface{}
 		if _, ok := m.(map[string]interface{})["third_party"]; ok {
-			tp, err = FixReadValues(m.(map[string]interface{})["third_party"].([]interface{}), "third_party", aid)
+			tp, err = FixReadValues(m.(map[string]interface{})["third_party"].([]interface{}), getPointer("third_party"), aid)
 			if err != nil {
 				return nil, err
 			}
@@ -316,7 +308,7 @@ func FixReadValues(m interface{}, name string, aid string) (interface{}, error) 
 		// webhook notifications
 		var w interface{}
 		if _, ok := m.(map[string]interface{})["webhook"]; ok {
-			w, err = FixReadValues(m.(map[string]interface{})["webhook"].([]interface{}), "webhook", aid)
+			w, err = FixReadValues(m.(map[string]interface{})["webhook"].([]interface{}), getPointer("webhook"), aid)
 			if err != nil {
 				return nil, err
 			}
@@ -385,22 +377,31 @@ func FixReadValues(m interface{}, name string, aid string) (interface{}, error) 
 			}
 		}
 
-	// TO DO
 	case "_links":
-		newMap := map[string]interface{}{}
+		*name = "link"
 		if self, ok := m.(map[string]interface{})["self"].(map[string]interface{}); ok {
-			newMap["self"] = []interface{}{self}
+			m = self["href"]
 		}
-		if testResults, ok := m.(map[string]interface{})["test_results"].([]interface{}); ok {
-			resultList := make([]interface{}, len(testResults))
-			for i, item := range testResults {
-				resultList[i] = item
-			}
-			newMap["test_results"] = resultList
-		}
-		m = []interface{}{newMap}
+
+		// newMap := map[string]interface{}{}
+		// if self, ok := m.(map[string]interface{})["self"].(map[string]interface{}); ok {
+		// 	newMap["self"] = []interface{}{self}
+		// }
+		// if testResults, ok := m.(map[string]interface{})["test_results"].([]interface{}); ok {
+		// 	resultList := make([]interface{}, len(testResults))
+		// 	for i, item := range testResults {
+		// 		resultList[i] = item
+		// 	}
+		// 	newMap["test_results"] = resultList
+		// }
+		// m = []interface{}{newMap}
 
 	case "created_date":
+		{
+			m = m.(*time.Time).Format(time.RFC3339)
+		}
+
+	case "modified_date":
 		{
 			m = m.(*time.Time).Format(time.RFC3339)
 		}

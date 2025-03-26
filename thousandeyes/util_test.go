@@ -123,7 +123,7 @@ func TestFixReadValues(t *testing.T) {
 	// non-map, non-list
 	normalInput := 4
 	normalTarget := 4
-	output, err = FixReadValues(normalInput, "normal", "")
+	output, err = FixReadValues(normalInput, getPointer("normal"), "")
 	if err != nil {
 		t.Errorf("normal input returned error: %s", err.Error())
 	}
@@ -150,7 +150,7 @@ func TestFixReadValues(t *testing.T) {
 			"agent_id": "2",
 		},
 	}
-	output, err = FixReadValues(agentsInput, "agents", "")
+	output, err = FixReadValues(agentsInput, getPointer("agents"), "")
 	if err != nil {
 		t.Errorf("agents input returned error: %s", err.Error())
 	}
@@ -187,7 +187,7 @@ func TestFixReadValues(t *testing.T) {
 			"rule_id": getPointer("3"),
 		},
 	}
-	output, err = FixReadValues(alertRulesInput, "alert_rules", "")
+	output, err = FixReadValues(alertRulesInput, getPointer("alert_rules"), "")
 	if err != nil {
 		t.Errorf("alert_rules input returned error: %s", err.Error())
 	}
@@ -213,7 +213,7 @@ func TestFixReadValues(t *testing.T) {
 			"monitor_id": getPointer("2"),
 		},
 	}
-	output, err = FixReadValues(monitorsInput, "monitors", "")
+	output, err = FixReadValues(monitorsInput, getPointer("monitors"), "")
 	if err != nil {
 		t.Errorf("bgp_monitors input returned error: %s", err.Error())
 	}
@@ -237,7 +237,7 @@ func TestFixReadValues(t *testing.T) {
 			"aid": getPointer("1"),
 		},
 	}
-	output, err = FixReadValues(accountsInput, "shared_with_accounts", "2")
+	output, err = FixReadValues(accountsInput, getPointer("shared_with_accounts"), "2")
 	if err != nil {
 		t.Errorf("shared_with_accounts input returned error: %s", err.Error())
 	}
@@ -245,7 +245,7 @@ func TestFixReadValues(t *testing.T) {
 		t.Errorf("Values not stripped correctly from shared_with_accounts input: Received %#v Expected %#v", output, accountsTarget)
 	}
 	//  We should fail if account_group_id isn't set and the list of account groups is > 1
-	output, err = FixReadValues(accountsInput, "shared_with_accounts", "")
+	output, err = FixReadValues(accountsInput, getPointer("shared_with_accounts"), "")
 	if err == nil {
 		t.Errorf("Error was not returned when shared_with_accounts length was > 1 and account_group_id  was not set")
 	}
@@ -256,7 +256,7 @@ func TestFixReadValues(t *testing.T) {
 			"aid":  "2",
 		},
 	}
-	output, err = FixReadValues(accountsInput, "shared_with_accounts", "")
+	output, err = FixReadValues(accountsInput, getPointer("shared_with_accounts"), "")
 	if err != nil {
 		t.Errorf("shared_with_accounts input returned error when shared_with_accounts wasn't set despite list of account groups being < 2: %s", err.Error())
 	}
@@ -273,7 +273,7 @@ func TestFixReadValues(t *testing.T) {
 			"sip_proxy": "foo.com",
 		},
 	}
-	output, err = FixReadValues(sipCredsInput, "target_sip_credentials", "")
+	output, err = FixReadValues(sipCredsInput, getPointer("target_sip_credentials"), "")
 	if err != nil {
 		t.Errorf("target_sip_credentials input returned error: %s", err.Error())
 	}
@@ -300,7 +300,7 @@ func TestFixReadValues(t *testing.T) {
 			"test_id": "2",
 		},
 	}
-	output, err = FixReadValues(testsInput, "tests", "")
+	output, err = FixReadValues(testsInput, getPointer("tests"), "")
 	if err != nil {
 		t.Errorf("tests input returned error: %s", err.Error())
 	}
@@ -335,7 +335,7 @@ func TestFixReadValues(t *testing.T) {
 		},
 	}
 
-	output, err = FixReadValues(thirdPartyNotificationsInput, "third_party", "")
+	output, err = FixReadValues(thirdPartyNotificationsInput, getPointer("third_party"), "")
 	if err != nil {
 		t.Errorf("third party notifications input returned error: %s", err.Error())
 	}
@@ -359,7 +359,7 @@ func TestFixReadValues(t *testing.T) {
 		},
 	}
 
-	output, err = FixReadValues(webhookNotificationsInput, "webhook", "")
+	output, err = FixReadValues(webhookNotificationsInput, getPointer("webhook"), "")
 	if err != nil {
 		t.Errorf("webhook notifications input returned error: %s", err.Error())
 	}
