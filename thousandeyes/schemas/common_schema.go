@@ -74,7 +74,7 @@ var CommonSchema = map[string]*schema.Schema{
 		Description: "List of alert rules IDs to apply to the test (get `ruleId` from `/alerts/rules` endpoint. If `alertsEnabled` is set to `true` and `alertRules` is not included on test creation or update, applicable user default alert rules will be used)",
 		Optional:    true,
 		Required:    false,
-		Type:        schema.TypeList,
+		Type:        schema.TypeSet,
 		Elem: &schema.Schema{
 			Type: schema.TypeString,
 		},
@@ -149,7 +149,7 @@ var CommonSchema = map[string]*schema.Schema{
 	},
 	// labels
 	"labels": {
-		Type:        schema.TypeList,
+		Type:        schema.TypeSet,
 		Description: "[\"1\", \"2\", \"uuid\"] The array of label or tag ids.",
 		Elem: &schema.Schema{
 			Type: schema.TypeString,
@@ -158,7 +158,7 @@ var CommonSchema = map[string]*schema.Schema{
 	},
 	// sharedWithAccounts
 	"shared_with_accounts": {
-		Type:        schema.TypeList,
+		Type:        schema.TypeSet,
 		Description: "List of accounts",
 		Optional:    true,
 		Elem: &schema.Schema{
@@ -174,7 +174,7 @@ var CommonSchema = map[string]*schema.Schema{
 	},
 	// monitors (ex. bgp_monitors)
 	"monitors": {
-		Type:        schema.TypeList,
+		Type:        schema.TypeSet,
 		Description: " Contains list of BGP monitor IDs (get `monitorId` from `/monitors` endpoint)",
 		Optional:    true,
 		Elem: &schema.Schema{
@@ -183,7 +183,7 @@ var CommonSchema = map[string]*schema.Schema{
 	},
 	// agents
 	"agents": {
-		Type:        schema.TypeList,
+		Type:        schema.TypeSet,
 		Description: "The list of ThousandEyes agent IDs to use.",
 		Required:    true,
 		Elem: &schema.Schema{
@@ -750,7 +750,7 @@ var CommonSchema = map[string]*schema.Schema{
 	},
 	// headers
 	"headers": {
-		Type:        schema.TypeList,
+		Type:        schema.TypeSet,
 		Description: "[\"header: value\", \"header2: value\"] The array of header strings.",
 		Elem: &schema.Schema{
 			Type: schema.TypeString,
@@ -958,7 +958,7 @@ var CommonSchema = map[string]*schema.Schema{
 	},
 	// credentials
 	"credentials": {
-		Type:        schema.TypeList,
+		Type:        schema.TypeSet,
 		Description: "The array of credentialID integers. You can get the credentialId from the /credentials endpoint.",
 		Optional:    true,
 		Elem: &schema.Schema{

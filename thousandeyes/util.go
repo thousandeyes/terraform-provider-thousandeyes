@@ -33,9 +33,9 @@ func IsNotFoundError(err error) bool {
 
 func expandAgents(v interface{}) []tests.TestAgentRequest {
 	agents := make([]tests.TestAgentRequest, 0)
-	agentsIDs, ok := v.([]interface{})
-	if !ok {
-		return agents
+	var agentsIDs []interface{}
+	if rawAgents, ok := v.(*schema.Set); ok {
+		agentsIDs = rawAgents.List()
 	}
 	for _, item := range agentsIDs {
 		id := item.(string)
@@ -56,66 +56,15 @@ func expandAgents(v interface{}) []tests.TestAgentRequest {
 func ResourceBuildStruct[T any](d *schema.ResourceData, structPtr *T) *T {
 	v := reflect.ValueOf(structPtr).Elem()
 	t := reflect.TypeOf(v.Interface())
-
 	for i := 0; i < v.NumField(); i++ {
-		field := v.Field(i)
-		fieldType := field.Type()
-
 		tag := GetJSONKey(t.Field(i))
 		tfName := CamelCaseToUnderscore(tag)
-
 		val, ok := d.GetOkExists(tfName)
-		if !ok || val == nil {
-			continue
+		if ok {
+			newVal := FillValue(val, v.Field(i).Interface())
+			setVal := reflect.ValueOf(newVal)
+			v.Field(i).Set(setVal)
 		}
-		if _, ok := val.(*schema.Set); ok {
-			switch fieldType.String() {
-
-			// case "*tests.TestLinks":
-			// 	var links tests.TestLinks
-			// 	field.Set(reflect.ValueOf(&links))
-
-			// case "[]tests.TestAgentRequest":
-			// 	var agents []tests.TestAgentRequest
-			// 	for _, item := range set.List() {
-			// 		m := item.(map[string]interface{})
-			// 		agent := tests.TestAgentRequest{}
-
-			// 		if idVal, ok := m["agent_id"].(string); ok {
-			// 			agent.AgentId = idVal
-			// 		}
-			// 		if ipVal, ok := m["source_ip_address"].(string); ok {
-			// 			agent.SourceIpAddress = &ipVal
-			// 		}
-
-			// 		agents = append(agents, agent)
-			// 	}
-			// 	field.Set(reflect.ValueOf(agents))
-
-			default:
-				log.Printf("Type mismatch: cannot convert %T to %v", val, fieldType)
-			}
-			continue
-		}
-
-		rawVal := reflect.ValueOf(val)
-		if fieldType.Kind() == reflect.Ptr {
-			elemType := fieldType.Elem()
-			if rawVal.Type().ConvertibleTo(elemType) {
-				ptr := reflect.New(elemType)
-				ptr.Elem().Set(rawVal.Convert(elemType))
-				field.Set(ptr)
-			} else {
-				log.Printf("Type mismatch: cannot convert %v (%T) to %v", val, val, fieldType)
-			}
-		} else {
-			if rawVal.Type().ConvertibleTo(fieldType) {
-				field.Set(rawVal.Convert(fieldType))
-			} else {
-				log.Printf("Type mismatch: cannot convert %v (%T) to %v", val, val, fieldType)
-			}
-		}
-		log.Printf("[INFO] Value %v of field %v has been set", val, tag)
 	}
 	return resourceFixups[T](d, structPtr)
 }
@@ -339,7 +288,7 @@ func FixReadValues(m interface{}, name *string, aid string) (interface{}, error)
 		}
 
 	case "email":
-		if len(m.(map[string]interface{})["recipient"].([]interface{})) == 0 {
+		if len(m.(map[string]interface{})["recipients"].([]interface{})) == 0 {
 			m = nil
 		} else {
 			m = []interface{}{
@@ -370,11 +319,10 @@ func FixReadValues(m interface{}, name *string, aid string) (interface{}, error)
 		}
 
 	case "tests":
+		*name = "test_ids"
 		for i, v := range m.([]interface{}) {
 			test := v.(map[string]interface{})
-			m.([]interface{})[i] = map[string]interface{}{
-				"test_id": test["test_id"],
-			}
+			m.([]interface{})[i] = test["test_id"]
 		}
 
 	case "_links":
@@ -558,8 +506,8 @@ func FillValue(source interface{}, target interface{}) interface{} {
 	// We determine how to interpret the supplied value based on
 	// the type of the target argument.
 	vt := reflect.ValueOf(target)
-	vtKind := vt.Kind()
-	log.Println(vtKind)
+	sourceType := reflect.TypeOf(source)
+	sourceValue := reflect.ValueOf(source)
 	switch vt.Kind() {
 	case reflect.Ptr:
 		p := reflect.New(reflect.TypeOf(target).Elem())
@@ -614,7 +562,10 @@ func FillValue(source interface{}, target interface{}) interface{} {
 		newStruct := reflect.New(t).Interface()
 		setStruct := reflect.ValueOf(newStruct).Elem()
 		if source != nil {
-			m := structSource.(map[string]interface{})
+			m, ok := structSource.(map[string]interface{})
+			if !ok {
+				return setStruct.Interface()
+			}
 			for i := 0; i < vt.NumField(); i++ {
 				tag := GetJSONKey(t.Field(i))
 				tfName := CamelCaseToUnderscore(tag)
@@ -636,6 +587,9 @@ func FillValue(source interface{}, target interface{}) interface{} {
 
 	case reflect.Int64:
 		// Values destined to be int64 may come to us as strings.
+		if sourceType.ConvertibleTo(vt.Type()) {
+			return sourceValue.Convert(vt.Type()).Interface()
+		}
 		if reflect.TypeOf(source).Kind() == reflect.String {
 			i, _ := strconv.ParseInt(source.(string), 10, 64)
 			return i
@@ -645,6 +599,9 @@ func FillValue(source interface{}, target interface{}) interface{} {
 
 	case reflect.Int32:
 		// Values destined to be int32 may come to us as strings.
+		if sourceType.ConvertibleTo(vt.Type()) {
+			return sourceValue.Convert(vt.Type()).Interface()
+		}
 		if reflect.TypeOf(source).Kind() == reflect.String {
 			i, _ := strconv.ParseInt(source.(string), 10, 32)
 			return i
@@ -655,6 +612,9 @@ func FillValue(source interface{}, target interface{}) interface{} {
 	default:
 		// If we haven't matched one of the above cases, then there
 		// is likely no reason to translate.
+		if sourceType.ConvertibleTo(vt.Type()) {
+			return sourceValue.Convert(vt.Type()).Interface()
+		}
 		return source
 	}
 }
