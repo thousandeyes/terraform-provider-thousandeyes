@@ -5,7 +5,8 @@ import (
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/thousandeyes/thousandeyes-sdk-go/v2"
+	"github.com/thousandeyes/thousandeyes-sdk-go/v3/administrative"
+	"github.com/thousandeyes/thousandeyes-sdk-go/v3/client"
 )
 
 func dataSourceThousandeyesAccountGroup() *schema.Resource {
@@ -14,13 +15,13 @@ func dataSourceThousandeyesAccountGroup() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
 				Description: "The name of the account group.",
 			},
 			"aid": {
-				Type:     schema.TypeInt,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
 				Description: "The unique ID for the account group.",
 			},
 		},
@@ -29,20 +30,21 @@ func dataSourceThousandeyesAccountGroup() *schema.Resource {
 }
 
 func dataSourceThousandeyesAccountGroupRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*thousandeyes.Client)
+	apiClient := meta.(*client.APIClient)
+	api := (*administrative.AccountGroupsAPIService)(&apiClient.Common)
 
 	log.Printf("[INFO] Reading Thousandeyes account group")
 
 	searchName := d.Get("name").(string)
 
-	accounts, err := client.GetAccountGroups()
+	resp, _, err := api.GetAccountGroups().Execute()
 	if err != nil {
 		return err
 	}
 
-	var found *thousandeyes.SharedWithAccount
+	var found *administrative.AccountGroupInfo
 
-	for _, account := range *accounts {
+	for _, account := range resp.GetAccountGroups() {
 		if *account.AccountGroupName == searchName {
 			found = &account
 			break
@@ -52,14 +54,14 @@ func dataSourceThousandeyesAccountGroupRead(d *schema.ResourceData, meta interfa
 	if found == nil {
 		return fmt.Errorf("unable to locate any account group with the name: %s", searchName)
 	}
-	log.Printf("[INFO] ## Found AccountGroup ID: %d - name: %s", found.AID, *found.AccountGroupName)
+	log.Printf("[INFO] ## Found AccountGroup ID: %s - name: %s", *found.Aid, *found.AccountGroupName)
 
-	d.SetId(fmt.Sprint(found.AID))
+	d.SetId(*found.Aid)
 	err = d.Set("name", found.AccountGroupName)
 	if err != nil {
 		return err
 	}
-	err = d.Set("aid", found.AID)
+	err = d.Set("aid", found.Aid)
 	if err != nil {
 		return err
 	}
