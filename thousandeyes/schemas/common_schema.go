@@ -74,7 +74,7 @@ var CommonSchema = map[string]*schema.Schema{
 		Description: "List of alert rules IDs to apply to the test (get `ruleId` from `/alerts/rules` endpoint. If `alertsEnabled` is set to `true` and `alertRules` is not included on test creation or update, applicable user default alert rules will be used)",
 		Optional:    true,
 		Required:    false,
-		Type:        schema.TypeList,
+		Type:        schema.TypeSet,
 		Elem: &schema.Schema{
 			Type: schema.TypeString,
 		},
@@ -149,7 +149,7 @@ var CommonSchema = map[string]*schema.Schema{
 	},
 	// labels
 	"labels": {
-		Type:        schema.TypeList,
+		Type:        schema.TypeSet,
 		Description: "[\"1\", \"2\", \"uuid\"] The array of label or tag ids.",
 		Elem: &schema.Schema{
 			Type: schema.TypeString,
@@ -158,7 +158,7 @@ var CommonSchema = map[string]*schema.Schema{
 	},
 	// sharedWithAccounts
 	"shared_with_accounts": {
-		Type:        schema.TypeList,
+		Type:        schema.TypeSet,
 		Description: "List of accounts",
 		Optional:    true,
 		Elem: &schema.Schema{
@@ -174,7 +174,7 @@ var CommonSchema = map[string]*schema.Schema{
 	},
 	// monitors (ex. bgp_monitors)
 	"monitors": {
-		Type:        schema.TypeList,
+		Type:        schema.TypeSet,
 		Description: " Contains list of BGP monitor IDs (get `monitorId` from `/monitors` endpoint)",
 		Optional:    true,
 		Elem: &schema.Schema{
@@ -183,17 +183,11 @@ var CommonSchema = map[string]*schema.Schema{
 	},
 	// agents
 	"agents": {
-		Type:        schema.TypeList,
-		Description: "The list of ThousandEyes agents to use.",
+		Type:        schema.TypeSet,
+		Description: "The list of ThousandEyes agent IDs to use.",
 		Required:    true,
-		Elem: &schema.Resource{
-			Schema: map[string]*schema.Schema{
-				"agent_id": {
-					Type:        schema.TypeString,
-					Description: "The unique ID for the ThousandEyes agent.",
-					Required:    true,
-				},
-			},
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
 		},
 	},
 	// interval
@@ -245,6 +239,7 @@ var CommonSchema = map[string]*schema.Schema{
 		Description: "The DSCP ID.",
 		Required:    false,
 		Optional:    true,
+		Computed:    true,
 	},
 	// randomizedStartTime
 	"randomized_start_time": {
@@ -260,6 +255,7 @@ var CommonSchema = map[string]*schema.Schema{
 		Description: "Enable BGP measurements. Set to true for enabled, false for disabled.",
 		Optional:    true,
 		Required:    false,
+		Computed:    true,
 	},
 
 	// AGENT TO AGENT
@@ -374,6 +370,7 @@ var CommonSchema = map[string]*schema.Schema{
 		Description: "[force-ipv4, prefer-ipv6, force-ipv6, or use-agent-policy]", // TO DO describe
 		Optional:    true,
 		Required:    false,
+		Computed:    true,
 		ValidateFunc: validation.StringInSlice([]string{
 			"force-ipv4",
 			"prefer-ipv6",
@@ -424,21 +421,11 @@ var CommonSchema = map[string]*schema.Schema{
 		Optional:    false,
 		Required:    true,
 		Type:        schema.TypeSet,
-		Elem: &schema.Resource{
-			Schema: map[string]*schema.Schema{
-				"server_name": {
-					Type:        schema.TypeString,
-					Description: "The DNS server name.",
-					Optional:    true,
-				},
-				"server_id": {
-					Type:        schema.TypeString,
-					Description: "The unique ID of the DNS server.",
-					Optional:    true,
-				},
-			},
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
 		},
 	},
+
 	// dnsTransportProtocol
 	"dns_transport_protocol": {
 		Type:         schema.TypeString,
@@ -482,6 +469,7 @@ var CommonSchema = map[string]*schema.Schema{
 		Description:  "Domain class used by this test. 'in' stands for Internet, while 'ch' stands for Chaos.",
 		Optional:     true,
 		Required:     false,
+		Computed:     true,
 		ValidateFunc: validation.StringInSlice([]string{"in", "ch"}, false),
 	},
 
@@ -754,7 +742,7 @@ var CommonSchema = map[string]*schema.Schema{
 	},
 	// headers
 	"headers": {
-		Type:        schema.TypeList,
+		Type:        schema.TypeSet,
 		Description: "[\"header: value\", \"header2: value\"] The array of header strings.",
 		Elem: &schema.Schema{
 			Type: schema.TypeString,
@@ -962,7 +950,7 @@ var CommonSchema = map[string]*schema.Schema{
 	},
 	// credentials
 	"credentials": {
-		Type:        schema.TypeList,
+		Type:        schema.TypeSet,
 		Description: "The array of credentialID integers. You can get the credentialId from the /credentials endpoint.",
 		Optional:    true,
 		Elem: &schema.Schema{

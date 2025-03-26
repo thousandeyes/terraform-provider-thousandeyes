@@ -15,7 +15,7 @@ var _ = alerts.Link{}
 var AlertRuleSchema = map[string]*schema.Schema{
 	// ruleId
 	"rule_id": {
-		Type:        schema.TypeInt,
+		Type:        schema.TypeString,
 		Description: "The unique ID of the alert rule.",
 		Computed:    true,
 	},
@@ -92,6 +92,7 @@ var AlertRuleSchema = map[string]*schema.Schema{
 		Description: "The type of alert group.",
 		Type:        schema.TypeString,
 		Optional:    true,
+		Computed:    true,
 		ValidateFunc: validation.StringInSlice([]string{
 			"bgp",
 			"browser-session",
@@ -173,7 +174,7 @@ var AlertRuleSchema = map[string]*schema.Schema{
 	},
 	// endpointAgentIds
 	"endpoint_agent_ids": {
-		Type:        schema.TypeList,
+		Type:        schema.TypeSet,
 		Description: "An array of endpoint agent IDs associated with the rule (get `id` from `/endpoint/agents` API). This is applicable when `alertGroupType` is `browser-session`.",
 		Optional:    true,
 		Elem: &schema.Schema{
@@ -182,7 +183,7 @@ var AlertRuleSchema = map[string]*schema.Schema{
 	},
 	// endpointLabelIds
 	"endpoint_label_ids": {
-		Type:        schema.TypeList,
+		Type:        schema.TypeSet,
 		Description: "An array of label IDs used to assign specific Endpoint Agents to the test (get `id` from `/endpoint/labels`). This is applicable when `alertGroupType` is `browser-session`.",
 		Optional:    true,
 		Elem: &schema.Schema{
@@ -191,7 +192,7 @@ var AlertRuleSchema = map[string]*schema.Schema{
 	},
 	// visitedSitesFilter
 	"visited_sites_filter": {
-		Type:        schema.TypeList,
+		Type:        schema.TypeSet,
 		Description: "A list of website domains visited during the session. This is applicable when `alertGroupType` is `browser-session`.",
 		Optional:    true,
 		Elem: &schema.Schema{
@@ -203,6 +204,7 @@ var AlertRuleSchema = map[string]*schema.Schema{
 		Type:        schema.TypeSet,
 		Description: "The list of notifications for the alert rule.",
 		Optional:    true,
+		Computed:    true,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"email": {
@@ -216,7 +218,7 @@ var AlertRuleSchema = map[string]*schema.Schema{
 								Description: "The contents of the email, as a string.",
 								Optional:    true,
 							},
-							"recipient": {
+							"recipients": {
 								Type:        schema.TypeSet,
 								Description: "The email addresses to send the notification to.",
 								Optional:    true,
@@ -309,7 +311,7 @@ var AlertRuleSchema = map[string]*schema.Schema{
 	},
 	// testIds (or ids from "tests")
 	"test_ids": {
-		Type:        schema.TypeList,
+		Type:        schema.TypeSet,
 		Description: "The valid test IDs.",
 		Computed:    true,
 		Elem: &schema.Schema{
