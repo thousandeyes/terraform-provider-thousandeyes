@@ -31,6 +31,24 @@ func IsNotFoundError(err error) bool {
 	return false
 }
 
+func expandAgents(v interface{}) []tests.TestAgentRequest {
+	agents := make([]tests.TestAgentRequest, 0)
+	agentsIDs, ok := v.([]interface{})
+	if !ok {
+		return agents
+	}
+	for _, item := range agentsIDs {
+		id := item.(string)
+		if len(id) == 0 {
+			continue
+		}
+		agents = append(agents, tests.TestAgentRequest{
+			AgentId: id,
+		})
+	}
+	return agents
+}
+
 // ResourceBuildStruct fills the struct at a given address by querying a
 // schema.ResourceData object for the matching field.  It discovers the
 // matching value name by getting the JSON key from the struct field,
@@ -471,6 +489,12 @@ func resourceFixups[T any](d *schema.ResourceData, structPtr *T) *T {
 			v.FieldByName("BgpMeasurements").Set(setVal)
 			d.Set("bgp_measurements", false)
 		}
+	}
+
+	_, hasAgents := t.FieldByName("Agents")
+	if hasAgents {
+		scrappedAgents := expandAgents(d.Get("agents"))
+		v.FieldByName("Agents").Set(reflect.ValueOf(scrappedAgents))
 	}
 
 	return structPtr
