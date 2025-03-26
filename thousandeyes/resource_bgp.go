@@ -30,7 +30,7 @@ func resourceBGPRead(d *schema.ResourceData, m interface{}) error {
 		api := (*tests.BGPTestsAPIService)(&apiClient.Common)
 
 		req := api.GetBgpTest(id).Expand(tests.AllowedExpandBgpTestOptionsEnumValues)
-		req = SetAidFromContext(apiClient.GetConfig().Context, req, req)
+		req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 		resp, _, err := req.Execute()
 		return resp, err
@@ -45,7 +45,7 @@ func resourceBGPUpdate(d *schema.ResourceData, m interface{}) error {
 	update := ResourceUpdate(d, &tests.UpdateBgpTestRequest{})
 
 	req := api.UpdateBgpTest(d.Id()).UpdateBgpTestRequest(*update).Expand(tests.AllowedExpandBgpTestOptionsEnumValues)
-	req = SetAidFromContext(apiClient.GetConfig().Context, req, req)
+	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 	_, _, err := req.Execute()
 	if err != nil {
@@ -62,7 +62,7 @@ func resourceBGPDelete(d *schema.ResourceData, m interface{}) error {
 	log.Printf("[INFO] Deleting ThousandEyes Test %s", d.Id())
 
 	req := api.DeleteBgpTest(d.Id())
-	req = SetAidFromContext(apiClient.GetConfig().Context, req, req)
+	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 	if _, err := req.Execute(); err != nil {
 		return err
@@ -79,7 +79,7 @@ func resourceBGPCreate(d *schema.ResourceData, m interface{}) error {
 	local := buildBGPStruct(d)
 
 	req := api.CreateBgpTest().BgpTestRequest(*local).Expand(tests.AllowedExpandBgpTestOptionsEnumValues)
-	req = SetAidFromContext(apiClient.GetConfig().Context, req, req)
+	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 	resp, _, err := req.Execute()
 	if err != nil {

@@ -46,6 +46,8 @@ var (
 
 	_ = tests.WebTransactionTestRequest{}
 	_ = tests.WebTransactionTestResponse{}
+
+	_ = tests.TestSelfLink{}
 )
 
 var CommonSchema = map[string]*schema.Schema{
@@ -139,22 +141,11 @@ var CommonSchema = map[string]*schema.Schema{
 		Description: "The type of test.",
 		Computed:    true,
 	},
-	// _links
-	"_links": { // New
-		Type:        schema.TypeSet,
-		Description: "Self links to the endpoint to pull test metadata, and data links to the endpoint for test data. Read-only, and shows rel and href elements.",
+	// link (_links.self.href)
+	"link": {
+		Type:        schema.TypeString,
+		Description: "Its value is either a URI [RFC3986] or a URI template [RFC6570].",
 		Computed:    true,
-		Elem: &schema.Resource{
-			Schema: map[string]*schema.Schema{
-				"self": link,
-				"test_results": {
-					Type:        schema.TypeList,
-					Description: "Reference to the test results.",
-					Elem:        link.Elem,
-					Optional: true,
-				},
-			},
-		},
 	},
 	// labels
 	"labels": {
@@ -179,7 +170,7 @@ var CommonSchema = map[string]*schema.Schema{
 		Type:        schema.TypeBool,
 		Description: "Enable to automatically add all available Public BGP Monitors to the test.",
 		Optional:    true,
-		Default:     true,
+		Default:     false,
 	},
 	// monitors (ex. bgp_monitors)
 	"monitors": {
@@ -192,7 +183,7 @@ var CommonSchema = map[string]*schema.Schema{
 	},
 	// agents
 	"agents": {
-		Type:        schema.TypeSet,
+		Type:        schema.TypeList,
 		Description: "The list of ThousandEyes agents to use.",
 		Required:    true,
 		Elem: &schema.Resource{
@@ -213,7 +204,7 @@ var CommonSchema = map[string]*schema.Schema{
 		ValidateFunc: validation.IntInSlice([]int{60, 120, 300, 600, 900, 1800, 3600}),
 	},
 	// fixedPacketRate
-	"fixed_packet_rate": { // New
+	"fixed_packet_rate": {
 		Type:        schema.TypeInt,
 		Optional:    true,
 		Required:    false,
@@ -342,7 +333,7 @@ var CommonSchema = map[string]*schema.Schema{
 		Default:     false,
 	},
 	// continuousMode
-	"continuous_mode": { // New
+	"continuous_mode": {
 		Type:        schema.TypeBool,
 		Description: "To enable continuous monitoring, set this parameter to `true` to.  When continuous monitoring is enabled, the following actions occur: * `fixedPacketRate` is enforced * `bandwidthMeasurements` are disabled * If the `protocol` is set to `tcp`, `probeMode` is set to `syn`.",
 		Optional:    true,
@@ -378,7 +369,7 @@ var CommonSchema = map[string]*schema.Schema{
 		Required:    true,
 	},
 	// ipv6Policy
-	"ipv6_policy": { // New
+	"ipv6_policy": {
 		Type:        schema.TypeString,
 		Description: "[force-ipv4, prefer-ipv6, force-ipv6, or use-agent-policy]", // TO DO describe
 		Optional:    true,
@@ -396,7 +387,7 @@ var CommonSchema = map[string]*schema.Schema{
 		Description:  "Payload size (not total packet size) for the end-to-end metric's probes, ping payload size allows values from 0 to 1400 bytes. When set to null, payload sizes are 0 bytes for ICMP-based tests and 1 byte for TCP-based tests.",
 		Optional:     true,
 		ValidateFunc: validation.IntBetween(1, 1400),
-	}, // New
+	},
 	// networkMeasurements
 	"network_measurements": {
 		Type:        schema.TypeBool,
@@ -486,7 +477,7 @@ var CommonSchema = map[string]*schema.Schema{
 		Required:    false,
 	},
 	// dnsQueryClass
-	"dns_query_class": { // New
+	"dns_query_class": {
 		Type:         schema.TypeString,
 		Description:  "Domain class used by this test. 'in' stands for Internet, while 'ch' stands for Chaos.",
 		Optional:     true,
@@ -520,6 +511,7 @@ var CommonSchema = map[string]*schema.Schema{
 	"password-ftp": {
 		Type:        schema.TypeString,
 		Required:    true,
+		Sensitive:   true,
 		Description: "The password to be used to authenticate with the destination server (required for FTP).",
 	},
 	// requestType
@@ -571,7 +563,7 @@ var CommonSchema = map[string]*schema.Schema{
 		}, false),
 	},
 	// agentInterfaces
-	"agent_interfaces": { // New
+	"agent_interfaces": {
 		Description: "Agent interfaces",
 		Optional:    true,
 		Required:    false,
@@ -609,6 +601,7 @@ var CommonSchema = map[string]*schema.Schema{
 	"custom_headers": {
 		Description: "The custom headers.",
 		Optional:    true,
+		Sensitive:   true,
 		Type:        schema.TypeSet,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
@@ -674,11 +667,12 @@ var CommonSchema = map[string]*schema.Schema{
 		Default:     true,
 	},
 	// oAuth
-	"o_auth": oauth, // New
+	"oauth": oauth,
 	// password
 	"password": {
 		Type:        schema.TypeString,
 		Optional:    true,
+		Sensitive:   true,
 		Description: "The password to be used to authenticate with the destination server.",
 	},
 	// sslVersion
@@ -727,7 +721,7 @@ var CommonSchema = map[string]*schema.Schema{
 		Default:     true,
 	},
 	// allowUnsafeLegacyRenegotiation
-	"allow_unsafe_legacy_renegotiation": { // New
+	"allow_unsafe_legacy_renegotiation": {
 		Type:        schema.TypeBool,
 		Description: "Allows TLS renegotiation with servers not supporting RFC 5746. Default Set to true to allow unsafe legacy renegotiation.",
 		Optional:    true,
@@ -741,13 +735,13 @@ var CommonSchema = map[string]*schema.Schema{
 		Default:     true,
 	},
 	// overrideAgentProxy
-	"override_agent_proxy": { // New
+	"override_agent_proxy": {
 		Type:        schema.TypeBool,
 		Description: "Flag indicating if a proxy other than the default should be used. To override the default proxy for agents, set to `true` and specify a value for `overrideProxyId`.",
 		Optional:    true,
 	},
 	// overrideProxyId
-	"override_proxy_id": { // New
+	"override_proxy_id": {
 		Type:        schema.TypeString,
 		Description: "ID of the proxy to be used if the default proxy is overridden.",
 		Optional:    true,
@@ -765,7 +759,8 @@ var CommonSchema = map[string]*schema.Schema{
 		Elem: &schema.Schema{
 			Type: schema.TypeString,
 		},
-		Optional: true,
+		Optional:  true,
+		Sensitive: true,
 	},
 	// postBody
 	"post_body": {
@@ -777,51 +772,51 @@ var CommonSchema = map[string]*schema.Schema{
 	// PAGE LOAD
 
 	// emulatedDeviceId
-	"emulated_device_id": { // New
+	"emulated_device_id": {
 		Type:        schema.TypeString,
 		Description: "ID of the emulated device, if one was given when the test was created.",
 		Optional:    true,
 	},
 	// pageLoadTargetTime
-	"page_load_target_time": { // New
+	"page_load_target_time": {
 		Type:        schema.TypeInt,
 		Required:    false,
 		Optional:    true,
 		Description: "Target time for page load completion, specified in seconds and cannot exceed the `pageLoadTimeLimit`.",
 	},
 	// pageLoadTimeLimit
-	"page_load_time_limit": { // New
+	"page_load_time_limit": {
 		Type:        schema.TypeInt,
 		Required:    false,
 		Optional:    true,
 		Description: "Page load time limit. Must be larger than the `httpTimeLimit`.",
 	},
 	// blockDomains
-	"block_domains": { // New
+	"block_domains": {
 		Type:        schema.TypeString,
 		Description: "Domains or full object URLs to be excluded from metrics and waterfall data for transaction tests.",
 		Optional:    true,
 	},
 	// disableScreenshot
-	"disable_screenshot": { // New
+	"disable_screenshot": {
 		Type:        schema.TypeBool,
 		Description: "Enables or disables screenshots on error. Set true to not capture",
 		Optional:    true,
 	},
 	// allowMicAndCamera
-	"allow_mic_and_camera": { // New
+	"allow_mic_and_camera": {
 		Type:        schema.TypeBool,
 		Description: "Set true allow the use of a fake mic and camera in the browser.",
 		Optional:    true,
 	},
 	// allowGeolocation
-	"allow_geolocation": { // New
+	"allow_geolocation": {
 		Type:        schema.TypeBool,
 		Description: "Set true to use the agent's geolocation by the web page.",
 		Optional:    true,
 	},
 	// browserLanguage
-	"browser_language": { // New
+	"browser_language": {
 		Type:        schema.TypeString,
 		Description: "Set one of the available browser language that you want to use to configure the browser.",
 		Optional:    true,

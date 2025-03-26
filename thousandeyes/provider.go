@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -80,7 +81,7 @@ func providerConfigureWithContext(_ context.Context, d *schema.ResourceData) (in
 		AuthToken:  d.Get("token").(string),
 		UserAgent:  "ThousandEyes Terraform Provider",
 		ServerURL:  d.Get("api_endpoint").(string),
-		HTTPClient: http.DefaultClient,
+		HTTPClient: &http.Client{Timeout: time.Second * time.Duration(d.Get("timeout").(int))},
 		Context:    ctx,
 	}
 

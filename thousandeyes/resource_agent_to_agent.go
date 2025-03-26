@@ -41,7 +41,7 @@ func resourceAgentAgentRead(d *schema.ResourceData, m interface{}) error {
 		api := (*tests.AgentToAgentTestsAPIService)(&apiClient.Common)
 
 		req := api.GetAgentToAgentTest(id).Expand(tests.AllowedExpandTestOptionsEnumValues)
-		req = SetAidFromContext(apiClient.GetConfig().Context, req, req)
+		req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 		resp, _, err := req.Execute()
 		return resp, err
@@ -56,7 +56,7 @@ func resourceAgentAgentUpdate(d *schema.ResourceData, m interface{}) error {
 	update := ResourceUpdate(d, &tests.AgentToAgentTestRequest{})
 
 	req := api.UpdateAgentToAgentTest(d.Id()).AgentToAgentTestRequest(*update).Expand(tests.AllowedExpandTestOptionsEnumValues)
-	req = SetAidFromContext(apiClient.GetConfig().Context, req, req)
+	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 	_, _, err := req.Execute()
 	if err != nil {
@@ -73,7 +73,7 @@ func resourceAgentAgentDelete(d *schema.ResourceData, m interface{}) error {
 	log.Printf("[INFO] Deleting ThousandEyes Test %s", d.Id())
 
 	req := api.DeleteAgentToAgentTest(d.Id())
-	req = SetAidFromContext(apiClient.GetConfig().Context, req, req)
+	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 	if _, err := req.Execute(); err != nil {
 		return err
@@ -90,7 +90,7 @@ func resourceAgentAgentCreate(d *schema.ResourceData, m interface{}) error {
 	local := buildAgentAgentStruct(d)
 
 	req := api.CreateAgentToAgentTest().AgentToAgentTestRequest(*local).Expand(tests.AllowedExpandTestOptionsEnumValues)
-	req = SetAidFromContext(apiClient.GetConfig().Context, req, req)
+	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 	resp, _, err := req.Execute()
 	if err != nil {

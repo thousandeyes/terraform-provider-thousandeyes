@@ -32,7 +32,7 @@ func resourceFTPServerRead(d *schema.ResourceData, m interface{}) error {
 		api := (*tests.FTPServerTestsAPIService)(&apiClient.Common)
 
 		req := api.GetFtpServerTest(id).Expand(tests.AllowedExpandTestOptionsEnumValues)
-		req = SetAidFromContext(apiClient.GetConfig().Context, req, req)
+		req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 		resp, _, err := req.Execute()
 		return resp, err
@@ -47,7 +47,7 @@ func resourceFTPServerUpdate(d *schema.ResourceData, m interface{}) error {
 	update := ResourceUpdate(d, &tests.FtpServerTestRequest{})
 
 	req := api.UpdateFtpServerTest(d.Id()).FtpServerTestRequest(*update).Expand(tests.AllowedExpandTestOptionsEnumValues)
-	req = SetAidFromContext(apiClient.GetConfig().Context, req, req)
+	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 	_, _, err := req.Execute()
 	if err != nil {
@@ -63,7 +63,7 @@ func resourceFTPServerDelete(d *schema.ResourceData, m interface{}) error {
 	log.Printf("[INFO] Deleting ThousandEyes Test %s", d.Id())
 
 	req := api.DeleteFtpServerTest(d.Id())
-	req = SetAidFromContext(apiClient.GetConfig().Context, req, req)
+	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 	if _, err := req.Execute(); err != nil {
 		return err
@@ -80,7 +80,7 @@ func resourceFTPServerCreate(d *schema.ResourceData, m interface{}) error {
 	local := buildFTPServerStruct(d)
 
 	req := api.CreateFtpServerTest().FtpServerTestRequest(*local).Expand(tests.AllowedExpandTestOptionsEnumValues)
-	req = SetAidFromContext(apiClient.GetConfig().Context, req, req)
+	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 	resp, _, err := req.Execute()
 	if err != nil {

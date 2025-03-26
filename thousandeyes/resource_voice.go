@@ -30,7 +30,7 @@ func resourceRTPStreamRead(d *schema.ResourceData, m interface{}) error {
 		api := (*tests.VoiceTestsAPIService)(&apiClient.Common)
 
 		req := api.GetVoiceTest(id).Expand(tests.AllowedExpandTestOptionsEnumValues)
-		req = SetAidFromContext(apiClient.GetConfig().Context, req, req)
+		req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 		resp, _, err := req.Execute()
 		return resp, err
@@ -45,7 +45,7 @@ func resourceRTPStreamUpdate(d *schema.ResourceData, m interface{}) error {
 	update := ResourceUpdate(d, &tests.VoiceTestRequest{})
 
 	req := api.UpdateVoiceTest(d.Id()).VoiceTestRequest(*update).Expand(tests.AllowedExpandTestOptionsEnumValues)
-	req = SetAidFromContext(apiClient.GetConfig().Context, req, req)
+	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 	_, _, err := req.Execute()
 	if err != nil {
@@ -61,7 +61,7 @@ func resourceRTPStreamDelete(d *schema.ResourceData, m interface{}) error {
 	log.Printf("[INFO] Deleting ThousandEyes Test %s", d.Id())
 
 	req := api.DeleteVoiceTest(d.Id())
-	req = SetAidFromContext(apiClient.GetConfig().Context, req, req)
+	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 	if _, err := req.Execute(); err != nil {
 		return err
@@ -78,7 +78,7 @@ func resourceRTPStreamCreate(d *schema.ResourceData, m interface{}) error {
 	local := buildRTPStreamStruct(d)
 
 	req := api.CreateVoiceTest().VoiceTestRequest(*local).Expand(tests.AllowedExpandTestOptionsEnumValues)
-	req = SetAidFromContext(apiClient.GetConfig().Context, req, req)
+	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 	resp, _, err := req.Execute()
 	if err != nil {

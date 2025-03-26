@@ -9,6 +9,8 @@ import (
 // Structs used for mapping
 var _ = alerts.RuleDetailUpdate{}
 var _ = alerts.RuleDetail{}
+var _ = alerts.AlertNotification{}
+var _ = alerts.Link{}
 
 var AlertRuleSchema = map[string]*schema.Schema{
 	// ruleId
@@ -197,8 +199,115 @@ var AlertRuleSchema = map[string]*schema.Schema{
 		},
 	},
 	// notifications
-	"notifications": notifications,
-	// testIds
+	"notifications": {
+		Type:        schema.TypeSet,
+		Description: "The list of notifications for the alert rule.",
+		Optional:    true,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"email": {
+					Type:        schema.TypeSet,
+					Description: "The email notification.",
+					Optional:    true,
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"message": {
+								Type:        schema.TypeString,
+								Description: "The contents of the email, as a string.",
+								Optional:    true,
+							},
+							"recipient": {
+								Type:        schema.TypeSet,
+								Description: "The email addresses to send the notification to.",
+								Optional:    true,
+								Elem: &schema.Schema{
+									Type: schema.TypeString,
+								},
+							},
+						},
+					},
+				},
+				"third_party": {
+					Type:        schema.TypeSet,
+					Description: "Third party notification.",
+					Optional:    true,
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"integration_id": {
+								Type:        schema.TypeString,
+								Description: "The integration ID, as a string.",
+								Required:    true,
+							},
+							"integration_type": {
+								Type:        schema.TypeString,
+								Description: "The integration type, as a string.",
+								Required:    true,
+							},
+						},
+					},
+				},
+				"webhook": {
+					Type:        schema.TypeSet,
+					Description: "Webhook notification.",
+					Optional:    true,
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"integration_id": {
+								Type:        schema.TypeString,
+								Description: "The integration ID, as a string.",
+								Required:    true,
+							},
+							"integration_type": {
+								Type:        schema.TypeString,
+								Description: "The integration type, as a string.",
+								Required:    true,
+							},
+							"integration_name": {
+								Type:        schema.TypeString,
+								Description: "Name of the integration, configured by the user.",
+								Required:    true,
+							},
+							"target": {
+								Type:        schema.TypeString,
+								Description: "Webhook target URL.",
+								Required:    true,
+							},
+						},
+					},
+				},
+				"custom_webhook": {
+					Type:        schema.TypeSet,
+					Description: "Webhook notification.",
+					Optional:    true,
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"integration_id": {
+								Type:        schema.TypeString,
+								Description: "The integration ID, as a string.",
+								Required:    true,
+							},
+							"integration_type": {
+								Type:        schema.TypeString,
+								Description: "The integration type, as a string.",
+								Required:    true,
+							},
+							"integration_name": {
+								Type:        schema.TypeString,
+								Description: "Name of the integration, configured by the user.",
+								Required:    true,
+							},
+							"target": {
+								Type:        schema.TypeString,
+								Description: "Webhook target URL.",
+								Required:    true,
+							},
+						},
+					},
+				},
+			},
+		},
+	},
+	// testIds (or ids from "tests")
 	"test_ids": {
 		Type:        schema.TypeList,
 		Description: "The valid test IDs.",
@@ -207,35 +316,10 @@ var AlertRuleSchema = map[string]*schema.Schema{
 			Type: schema.TypeString,
 		},
 	},
-	// tests
-	"tests": {
-		Type:        schema.TypeList,
-		Description: "The list of tests.",
+	// link (_links.self.href)
+	"link": {
+		Type:        schema.TypeString,
+		Description: "Its value is either a URI [RFC3986] or a URI template [RFC6570].",
 		Computed:    true,
-		Elem: &schema.Resource{
-			Schema: map[string]*schema.Schema{
-				"test_id": {
-					Type:        schema.TypeString,
-					Description: "The unique ID of the test.",
-					Computed:    true,
-				},
-				"test_name": {
-					Type:        schema.TypeString,
-					Description: "The name of the test. Test name must be unique.",
-					Required:    true,
-				},
-			},
-		},
-	},
-	// _links
-	"_links": {
-		Type:        schema.TypeSet,
-		Description: "Self links to the endpoint to pull test metadata, and data links to the endpoint for test data. Read-only, and shows rel and href elements.",
-		Computed:    true,
-		Elem: &schema.Resource{
-			Schema: map[string]*schema.Schema{
-				"self": link,
-			},
-		},
 	},
 }

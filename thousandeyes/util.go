@@ -37,48 +37,48 @@ func IsNotFoundError(err error) bool {
 func ResourceBuildStruct[T any](d *schema.ResourceData, structPtr *T) *T {
 	v := reflect.ValueOf(structPtr).Elem()
 	t := reflect.TypeOf(v.Interface())
- 
+
 	for i := 0; i < v.NumField(); i++ {
 		field := v.Field(i)
 		fieldType := field.Type()
- 
+
 		tag := GetJSONKey(t.Field(i))
 		tfName := CamelCaseToUnderscore(tag)
- 
+
 		val, ok := d.GetOkExists(tfName)
 		if !ok || val == nil {
 			continue
 		}
 		if set, ok := val.(*schema.Set); ok {
 			switch fieldType.String() {
- 
+
 			case "*tests.TestLinks":
 				var links tests.TestLinks
 				field.Set(reflect.ValueOf(&links))
- 
+
 			case "[]tests.TestAgentRequest":
 				var agents []tests.TestAgentRequest
 				for _, item := range set.List() {
 					m := item.(map[string]interface{})
 					agent := tests.TestAgentRequest{}
-			
+
 					if idVal, ok := m["agent_id"].(string); ok {
 						agent.AgentId = idVal
 					}
 					if ipVal, ok := m["source_ip_address"].(string); ok {
 						agent.SourceIpAddress = &ipVal
 					}
-			 
+
 					agents = append(agents, agent)
 				}
 				field.Set(reflect.ValueOf(agents))
- 
+
 			default:
 				log.Printf("Type mismatch: cannot convert %T to %v", val, fieldType)
 			}
 			continue
 		}
- 
+
 		rawVal := reflect.ValueOf(val)
 		if fieldType.Kind() == reflect.Ptr {
 			elemType := fieldType.Elem()
@@ -493,6 +493,10 @@ func ResourceSchemaBuild(referenceStruct interface{}, schemas map[string]*schema
 			}
 		}
 	}
+
+	// instead of "_links"
+	newSchema["link"] = schemas["link"]
+
 	return newSchema
 }
 
@@ -596,7 +600,6 @@ func FillValue(source interface{}, target interface{}) interface{} {
 
 		return int32(source.(int))
 
-
 	default:
 		// If we haven't matched one of the above cases, then there
 		// is likely no reason to translate.
@@ -652,12 +655,12 @@ func GetJSONKey(v reflect.StructField) string {
 	return strings.Split(s, ",")[0]
 }
 
-func SetAidFromContext[T any](ctx context.Context, srcReq T, reqAid RequestWithAid[T]) T {
+func SetAidFromContext[T RequestWithAid[T]](ctx context.Context, req T) T {
 	aid, ok := ctx.Value("aid").(string)
 	if ok && len(aid) > 0 {
-		return reqAid.Aid(aid)
+		return req.Aid(aid)
 	}
-	return srcReq
+	return req
 }
 
 func getPointer[T any](v T) *T {
