@@ -2,10 +2,10 @@ package thousandeyes
 
 import (
 	"fmt"
-	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/thousandeyes/thousandeyes-sdk-go/v2"
+	"github.com/thousandeyes/thousandeyes-sdk-go/v3/bgpmonitors"
+	"github.com/thousandeyes/thousandeyes-sdk-go/v3/client"
 )
 
 func dataSourceThousandeyesBGPMonitor() *schema.Resource {
@@ -15,7 +15,7 @@ func dataSourceThousandeyesBGPMonitor() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 
 			"monitor_id": {
-				Type:          schema.TypeInt,
+				Type:          schema.TypeString,
 				Optional:      true,
 				Description:   "The unique ID of BGP monitor.",
 				ConflictsWith: []string{"monitor_name"},
@@ -47,39 +47,43 @@ func dataSourceThousandeyesBGPMonitor() *schema.Resource {
 }
 
 func dataSourceThousandeyesBGPMonitorsRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*thousandeyes.Client)
+	apiClient := meta.(*client.APIClient)
+	api := (*bgpmonitors.BGPMonitorsAPIService)(&apiClient.Common)
 
-	var found *thousandeyes.BGPMonitor
+	var found *bgpmonitors.Monitor
 
 	searchName := d.Get("monitor_name").(string)
-	searchMonitorID := int64(d.Get("monitor_id").(int))
+	searchMonitorID := d.Get("monitor_id").(string)
 
-	BGPMonitors, err := client.GetBPGMonitors()
+	req := api.GetBgpMonitors()
+	req = SetAidFromContext(apiClient.GetConfig().Context, req)
+
+	resp, _, err := req.Execute()
 	if err != nil {
 		return err
 	}
 
-	for _, ar := range *BGPMonitors {
+	for _, ar := range resp.GetMonitors() {
 		if *ar.MonitorName == searchName {
 			found = &ar
 			break
 		}
-		if *ar.MonitorID == searchMonitorID {
+		if *ar.MonitorId == searchMonitorID {
 			found = &ar
 			break
 		}
 
 	}
 	if found == nil {
-		return fmt.Errorf("unable to locate any bgp by name: [%s] or ID: [%d]", searchName, searchMonitorID)
+		return fmt.Errorf("unable to locate any bgp by name: [%s] or ID: [%s]", searchName, searchMonitorID)
 	}
 
-	d.SetId(strconv.FormatInt(*found.MonitorID, 10))
+	d.SetId(*found.MonitorId)
 	err = d.Set("monitor_name", *found.MonitorName)
 	if err != nil {
 		return err
 	}
-	err = d.Set("monitor_id", *found.MonitorID)
+	err = d.Set("monitor_id", *found.MonitorId)
 	if err != nil {
 		return err
 	}
