@@ -151,7 +151,7 @@ var CommonSchema = map[string]*schema.Schema{
 					Type:        schema.TypeList,
 					Description: "Reference to the test results.",
 					Elem:        link.Elem,
-					Optional: true,
+					Optional:    true,
 				},
 			},
 		},
@@ -255,6 +255,7 @@ var CommonSchema = map[string]*schema.Schema{
 		Description: "The DSCP ID.",
 		Required:    false,
 		Optional:    true,
+		Computed:    true,
 	},
 	// randomizedStartTime
 	"randomized_start_time": {
@@ -270,6 +271,7 @@ var CommonSchema = map[string]*schema.Schema{
 		Description: "Enable BGP measurements. Set to true for enabled, false for disabled.",
 		Optional:    true,
 		Required:    false,
+		Computed:    true,
 	},
 
 	// AGENT TO AGENT
