@@ -183,7 +183,7 @@ var CommonSchema = map[string]*schema.Schema{
 	},
 	// agents
 	"agents": {
-		Type:        schema.TypeSet,
+		Type:        schema.TypeList,
 		Description: "The list of ThousandEyes agents to use.",
 		Required:    true,
 		Elem: &schema.Resource{
