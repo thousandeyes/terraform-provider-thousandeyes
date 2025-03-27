@@ -28,8 +28,8 @@ func TestAccThousandEyesAgentToAgent(t *testing.T) {
 				resource.TestCheckResourceAttr(httpResourceName, "direction", "bidirectional"),
 				resource.TestCheckResourceAttr(httpResourceName, "protocol", "tcp"),
 				resource.TestCheckResourceAttr(httpResourceName, "interval", "120"),
-				// resource.TestCheckResourceAttr(httpResourceName, "alerts_enabled", "true"),
-				// resource.TestCheckResourceAttr(httpResourceName, "alert_rules.#", "2"),
+				resource.TestCheckResourceAttr(httpResourceName, "alerts_enabled", "true"),
+				resource.TestCheckResourceAttr(httpResourceName, "alert_rules.#", "2"),
 			},
 		},
 	}

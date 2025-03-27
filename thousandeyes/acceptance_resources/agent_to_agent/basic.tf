@@ -6,10 +6,6 @@ data "thousandeyes_agent" "arg_amsterdam" {
   agent_name = "Amsterdam, Netherlands"
 }
 
-data "thousandeyes_bgp_monitor" "ams_monitor" {
-  monitor_name = "Amsterdam-40"
-}
-
 resource "thousandeyes_alert_rule" "alert-rule-agent_to_agent" {
   rule_name                 = "Custom UAT Agent To Agent Alert Rule"
   alert_type                = "end-to-end-agent"
@@ -28,20 +24,7 @@ resource "thousandeyes_agent_to_agent" "test" {
   direction       = "bidirectional"
   protocol        = "tcp"
   target_agent_id = "2334" #Frankfurt, Germany
-  agents = [data.thousandeyes_agent.arg_amsterdam.agent_id]
-  use_public_bgp = true
-  # monitors = [data.thousandeyes_bgp_monitor.ams_monitor.monitor_id]
-  alert_rules = ["921617", thousandeyes_alert_rule.alert-rule-agent_to_agent.id]
-
-  # agents {
-  #   agent_id = data.thousandeyes_agent.arg_amsterdam.agent_id
-  # }
-
-  # alert_rules {
-  #   rule_id = 921617 #Agent-To-Agent Default Alert Rule
-  # }
-
-  # alert_rules {
-  #   rule_id = thousandeyes_alert_rule.alert-rule-agent_to_agent.id
-  # }
+  agents          = [data.thousandeyes_agent.arg_amsterdam.agent_id]
+  use_public_bgp  = true
+  alert_rules     = ["921617", thousandeyes_alert_rule.alert-rule-agent_to_agent.id]
 }
