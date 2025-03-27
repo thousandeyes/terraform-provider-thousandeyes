@@ -6,7 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-		"github.com/thousandeyes/thousandeyes-sdk-go/v3/tests"
+	"github.com/thousandeyes/thousandeyes-sdk-go/v3/tests"
 )
 
 func TestAccThousandEyesDNSServer(t *testing.T) {
