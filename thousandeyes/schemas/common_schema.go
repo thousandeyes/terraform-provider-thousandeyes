@@ -370,7 +370,7 @@ var CommonSchema = map[string]*schema.Schema{
 		Description: "[force-ipv4, prefer-ipv6, force-ipv6, or use-agent-policy]", // TO DO describe
 		Optional:    true,
 		Required:    false,
-		Computed: true,
+		Computed:    true,
 		ValidateFunc: validation.StringInSlice([]string{
 			"force-ipv4",
 			"prefer-ipv6",
@@ -469,7 +469,7 @@ var CommonSchema = map[string]*schema.Schema{
 		Description:  "Domain class used by this test. 'in' stands for Internet, while 'ch' stands for Chaos.",
 		Optional:     true,
 		Required:     false,
-		Computed: true,
+		Computed:     true,
 		ValidateFunc: validation.StringInSlice([]string{"in", "ch"}, false),
 	},
 

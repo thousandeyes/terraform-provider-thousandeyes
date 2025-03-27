@@ -331,19 +331,6 @@ func FixReadValues(m interface{}, name *string, aid string) (interface{}, error)
 			m = self["href"]
 		}
 
-		// newMap := map[string]interface{}{}
-		// if self, ok := m.(map[string]interface{})["self"].(map[string]interface{}); ok {
-		// 	newMap["self"] = []interface{}{self}
-		// }
-		// if testResults, ok := m.(map[string]interface{})["test_results"].([]interface{}); ok {
-		// 	resultList := make([]interface{}, len(testResults))
-		// 	for i, item := range testResults {
-		// 		resultList[i] = item
-		// 	}
-		// 	newMap["test_results"] = resultList
-		// }
-		// m = []interface{}{newMap}
-
 	case "created_date":
 		{
 			m = m.(*time.Time).Format(time.RFC3339)
