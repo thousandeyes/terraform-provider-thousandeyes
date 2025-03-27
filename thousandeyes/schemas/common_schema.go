@@ -764,12 +764,14 @@ var CommonSchema = map[string]*schema.Schema{
 		Type:        schema.TypeString,
 		Description: "ID of the emulated device, if one was given when the test was created.",
 		Optional:    true,
+		Computed:    true,
 	},
 	// pageLoadTargetTime
 	"page_load_target_time": {
 		Type:        schema.TypeInt,
 		Required:    false,
 		Optional:    true,
+		Computed:    true,
 		Description: "Target time for page load completion, specified in seconds and cannot exceed the `pageLoadTimeLimit`.",
 	},
 	// pageLoadTimeLimit
@@ -777,6 +779,7 @@ var CommonSchema = map[string]*schema.Schema{
 		Type:        schema.TypeInt,
 		Required:    false,
 		Optional:    true,
+		Computed:    true,
 		Description: "Page load time limit. Must be larger than the `httpTimeLimit`.",
 	},
 	// blockDomains
@@ -808,6 +811,7 @@ var CommonSchema = map[string]*schema.Schema{
 		Type:        schema.TypeString,
 		Description: "Set one of the available browser language that you want to use to configure the browser.",
 		Optional:    true,
+		Computed:    true,
 	},
 	// pageLoadingStrategy
 	"page_loading_strategy": {

@@ -2,9 +2,9 @@ data "thousandeyes_agent" "arg_amsterdam" {
   agent_name = "Amsterdam, Netherlands"
 }
 
-resource "thousandeyes_alert_rule" "alert-rule-http-test" {
+resource "thousandeyes_alert_rule" "test" {
   rule_name                 = "Custom UAT Page Load Alert Rule"
-  alert_type                = "Page Load"
+  alert_type                = "page-load"
   expression                = "((errorCount >= 50) && (pageLoadHasError == true) && (Auto(timeToFirstByte >= Medium sensitivity)) && (Auto(onContentLoadTime >= Medium sensitivity)))"
   rounds_violating_out_of   = 1
   rounds_violating_required = 1
@@ -17,16 +17,6 @@ resource "thousandeyes_page_load" "test" {
   http_interval  = 120
   alerts_enabled = true
   url            = "https://www.thousandeyes.com"
-
-  agents {
-    agent_id = data.thousandeyes_agent.arg_amsterdam.agent_id
-  }
-
-  alert_rules {
-    rule_id = 921620 #Page Load Default Alert Rule
-  }
-
-  alert_rules {
-    rule_id = thousandeyes_alert_rule.alert-rule-http-test.id
-  }
+  agents         = [data.thousandeyes_agent.arg_amsterdam.agent_id]
+  alert_rules    = [thousandeyes_alert_rule.test.id, "921620"]
 }
