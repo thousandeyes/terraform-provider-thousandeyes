@@ -129,7 +129,7 @@ func ResourceRead(d *schema.ResourceData, structPtr interface{}, aid string) err
 	}
 
 	for k, v := range targetMaps {
-		if err := d.Set(k, v); err != nil {
+		if err := d.Set(k, []interface{}{v}); err != nil {
 			return err
 		}
 	}
@@ -150,7 +150,7 @@ func getTargetFieldsMaps(structPtr interface{}) map[string]map[string]interface{
 	// 		...
 	// 	}
 	// 	return res
-	case (tests.SipServerTestResponse):
+	case (*tests.SipServerTestResponse):
 		res := make(map[string]map[string]interface{})
 		res["target_sip_credentials"] = map[string]interface{}{
 			"auth_user":     nil,
