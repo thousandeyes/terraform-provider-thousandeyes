@@ -6,29 +6,42 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/thousandeyes/thousandeyes-sdk-go/v3/tests"	
+	"github.com/thousandeyes/thousandeyes-sdk-go/v3/tests"
 )
 
 func TestAccThousandEyesAgentToServer(t *testing.T) {
 	var resourceName = "thousandeyes_agent_to_server.test"
 	var testCases = []struct {
 		name                 string
-		resourceFile         string
+		createResourceFile   string
+		updateResourceFile   string
 		resourceName         string
 		checkDestroyFunction func(*terraform.State) error
-		checkFunc            []resource.TestCheckFunc
+		checkCreateFunc      []resource.TestCheckFunc
+		checkUpdateFunc      []resource.TestCheckFunc
 	}{
 		{
-			name:                 "basic",
-			resourceFile:         "acceptance_resources/agent_to_server/basic.tf",
+			name:                 "create_udate_delete_agent_to_server_test",
+			createResourceFile:   "acceptance_resources/agent_to_server/basic.tf",
+			updateResourceFile:   "acceptance_resources/agent_to_server/update.tf",
 			resourceName:         resourceName,
 			checkDestroyFunction: testAccCheckAgentToServerResourceDestroy,
-			checkFunc: []resource.TestCheckFunc{
+			checkCreateFunc: []resource.TestCheckFunc{
 				resource.TestCheckResourceAttr(resourceName, "test_name", "User Acceptance Test - Agent To Server"),
 				resource.TestCheckResourceAttr(resourceName, "server", "api.stg.thousandeyes.com"),
 				resource.TestCheckResourceAttr(resourceName, "protocol", "tcp"),
 				resource.TestCheckResourceAttr(resourceName, "port", "443"),
 				resource.TestCheckResourceAttr(resourceName, "interval", "120"),
+				resource.TestCheckResourceAttr(resourceName, "probe_mode", "sack"),
+				resource.TestCheckResourceAttr(resourceName, "alerts_enabled", "true"),
+				resource.TestCheckResourceAttr(resourceName, "alert_rules.#", "2"),
+			},
+			checkUpdateFunc: []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(resourceName, "test_name", "User Acceptance Test - Agent To Server (Updated)"),
+				resource.TestCheckResourceAttr(resourceName, "server", "api.stg.thousandeyes.com"),
+				resource.TestCheckResourceAttr(resourceName, "protocol", "tcp"),
+				resource.TestCheckResourceAttr(resourceName, "port", "443"),
+				resource.TestCheckResourceAttr(resourceName, "interval", "300"),
 				resource.TestCheckResourceAttr(resourceName, "probe_mode", "sack"),
 				resource.TestCheckResourceAttr(resourceName, "alerts_enabled", "true"),
 				resource.TestCheckResourceAttr(resourceName, "alert_rules.#", "2"),
@@ -44,8 +57,12 @@ func TestAccThousandEyesAgentToServer(t *testing.T) {
 				CheckDestroy:      tc.checkDestroyFunction,
 				Steps: []resource.TestStep{
 					{
-						Config: testAccThousandEyesAgentToServerConfig(tc.resourceFile),
-						Check:  resource.ComposeTestCheckFunc(tc.checkFunc...),
+						Config: testAccThousandEyesAgentToServerConfig(tc.createResourceFile),
+						Check:  resource.ComposeTestCheckFunc(tc.checkCreateFunc...),
+					},
+					{
+						Config: testAccThousandEyesAgentToServerConfig(tc.updateResourceFile),
+						Check:  resource.ComposeTestCheckFunc(tc.checkUpdateFunc...),
 					},
 				},
 			})
