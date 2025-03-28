@@ -123,7 +123,7 @@ func TestFixReadValues(t *testing.T) {
 	// non-map, non-list
 	normalInput := 4
 	normalTarget := 4
-	output, err = FixReadValues(normalInput, "normal", "")
+	output, err = FixReadValues(nil, normalInput, getPointer("normal"), "")
 	if err != nil {
 		t.Errorf("normal input returned error: %s", err.Error())
 	}
@@ -143,19 +143,55 @@ func TestFixReadValues(t *testing.T) {
 		},
 	}
 	agentsTarget := []interface{}{
-		map[string]interface{}{
-			"agent_id": "1",
-		},
-		map[string]interface{}{
-			"agent_id": "2",
-		},
+		"1", "2",
 	}
-	output, err = FixReadValues(agentsInput, "agents", "")
+	output, err = FixReadValues(nil, agentsInput, getPointer("agents"), "")
 	if err != nil {
 		t.Errorf("agents input returned error: %s", err.Error())
 	}
 	if reflect.DeepEqual(output, agentsTarget) != true {
 		t.Errorf("Values not stripped correctly from agents input: Received %#v Expected %#v", output, agentsTarget)
+	}
+
+	// dns_servers
+	dnsServersInput := []interface{}{
+		map[string]interface{}{
+			"server_name": "foo.com",
+			"server_id":   "1",
+		},
+		map[string]interface{}{
+			"server_name": "bar.com",
+			"server_id":   "2",
+		},
+	}
+	dnsServersTarget := []interface{}{
+		"foo.com", "bar.com",
+	}
+	output, err = FixReadValues(nil, dnsServersInput, getPointer("dns_servers"), "")
+	if err != nil {
+		t.Errorf("dns_servers input returned error: %s", err.Error())
+	}
+	if reflect.DeepEqual(output, dnsServersTarget) != true {
+		t.Errorf("Values not stripped correctly from dns_servers input: Received %#v Expected %#v", output, agentsTarget)
+	}
+
+	// _links
+	fieldName := getPointer("_links")
+	linksInput := map[string]interface{}{
+		"self": map[string]interface{}{
+			"href": "foo.com",
+		},
+	}
+	linksTarget := "foo.com"
+	output, err = FixReadValues(nil, linksInput, fieldName, "")
+	if err != nil {
+		t.Errorf("links input returned error: %s", err.Error())
+	}
+	if *fieldName != "link" {
+		t.Errorf("link name returned error: %s", err.Error())
+	}
+	if reflect.DeepEqual(output, linksTarget) != true {
+		t.Errorf("Values not stripped correctly from links input: Received %#v Expected %#v", output, agentsTarget)
 	}
 
 	// alert_rules
@@ -177,17 +213,9 @@ func TestFixReadValues(t *testing.T) {
 		},
 	}
 	alertRulesTarget := []interface{}{
-		map[string]interface{}{
-			"rule_id": getPointer("1"),
-		},
-		map[string]interface{}{
-			"rule_id": getPointer("2"),
-		},
-		map[string]interface{}{
-			"rule_id": getPointer("3"),
-		},
+		getPointer("1"), getPointer("2"), getPointer("3"),
 	}
-	output, err = FixReadValues(alertRulesInput, "alert_rules", "")
+	output, err = FixReadValues(nil, alertRulesInput, getPointer("alert_rules"), "")
 	if err != nil {
 		t.Errorf("alert_rules input returned error: %s", err.Error())
 	}
@@ -200,20 +228,18 @@ func TestFixReadValues(t *testing.T) {
 		map[string]interface{}{
 			"monitor_name": getPointer("foo"),
 			"monitor_id":   getPointer("1"),
-			"monitor_type": getPointer("public"),
+			"monitor_type": getPointer(tests.MonitorType("public")),
 		},
 		map[string]interface{}{
 			"monitor_name": getPointer("bar"),
 			"monitor_id":   getPointer("2"),
-			"monitor_type": getPointer("private"),
+			"monitor_type": getPointer(tests.MonitorType("private")),
 		},
 	}
 	monitorsTarget := []interface{}{
-		map[string]interface{}{
-			"monitor_id": getPointer("2"),
-		},
+		getPointer("2"),
 	}
-	output, err = FixReadValues(monitorsInput, "monitors", "")
+	output, err = FixReadValues(nil, monitorsInput, getPointer("monitors"), "")
 	if err != nil {
 		t.Errorf("bgp_monitors input returned error: %s", err.Error())
 	}
@@ -237,7 +263,7 @@ func TestFixReadValues(t *testing.T) {
 			"aid": getPointer("1"),
 		},
 	}
-	output, err = FixReadValues(accountsInput, "shared_with_accounts", "2")
+	output, err = FixReadValues(nil, accountsInput, getPointer("shared_with_accounts"), "2")
 	if err != nil {
 		t.Errorf("shared_with_accounts input returned error: %s", err.Error())
 	}
@@ -245,7 +271,7 @@ func TestFixReadValues(t *testing.T) {
 		t.Errorf("Values not stripped correctly from shared_with_accounts input: Received %#v Expected %#v", output, accountsTarget)
 	}
 	//  We should fail if account_group_id isn't set and the list of account groups is > 1
-	output, err = FixReadValues(accountsInput, "shared_with_accounts", "")
+	output, err = FixReadValues(nil, accountsInput, getPointer("shared_with_accounts"), "")
 	if err == nil {
 		t.Errorf("Error was not returned when shared_with_accounts length was > 1 and account_group_id  was not set")
 	}
@@ -256,7 +282,7 @@ func TestFixReadValues(t *testing.T) {
 			"aid":  "2",
 		},
 	}
-	output, err = FixReadValues(accountsInput, "shared_with_accounts", "")
+	output, err = FixReadValues(nil, accountsInput, getPointer("shared_with_accounts"), "")
 	if err != nil {
 		t.Errorf("shared_with_accounts input returned error when shared_with_accounts wasn't set despite list of account groups being < 2: %s", err.Error())
 	}
@@ -264,21 +290,30 @@ func TestFixReadValues(t *testing.T) {
 		t.Errorf("Values not stripped correctly from shared_with_accounts input: Received %#v Expected %#v", output, accountsTarget)
 	}
 
-	// target_sip_credentials
-	sipCredsInput := map[string]interface{}{
-		"sip_proxy": "foo.com",
-	}
-	sipCredsTarget := []interface{}{
-		map[string]interface{}{
-			"sip_proxy": "foo.com",
+	// use target map
+	targetMapInput := map[string]map[string]interface{}{
+		"target": {
+			"source_1": nil,
+			"source_2": nil,
+			"source_3": nil,
 		},
 	}
-	output, err = FixReadValues(sipCredsInput, "target_sip_credentials", "")
-	if err != nil {
-		t.Errorf("target_sip_credentials input returned error: %s", err.Error())
+	targetMapOutput := map[string]map[string]interface{}{
+		"target": {
+			"source_1": 1,
+			"source_2": 2,
+			"source_3": 3,
+		},
 	}
-	if reflect.DeepEqual(output, sipCredsTarget) != true {
-		t.Errorf("Values not stripped correctly from target_sip_credentials input: Received %#v Expected %#v", output, accountsTarget)
+	nameSource1 := getPointer("source_1")
+	FixReadValues(targetMapInput, 1, nameSource1, "")
+	FixReadValues(targetMapInput, 2, getPointer("source_2"), "")
+	FixReadValues(targetMapInput, 3, getPointer("source_3"), "")
+	if len(*nameSource1) != 0 {
+		t.Errorf("Name wasn't cleared when target map was set")
+	}
+	if reflect.DeepEqual(targetMapOutput, targetMapInput) != true {
+		t.Errorf("Target Map didn't set correctly: Received %#v Expected %#v", targetMapInput, targetMapOutput)
 	}
 
 	//	tests
@@ -293,16 +328,15 @@ func TestFixReadValues(t *testing.T) {
 		},
 	}
 	testsTarget := []interface{}{
-		map[string]interface{}{
-			"test_id": "1",
-		},
-		map[string]interface{}{
-			"test_id": "2",
-		},
+		"1", "2",
 	}
-	output, err = FixReadValues(testsInput, "tests", "")
+	fieldName = getPointer("tests")
+	output, err = FixReadValues(nil, testsInput, fieldName, "")
 	if err != nil {
 		t.Errorf("tests input returned error: %s", err.Error())
+	}
+	if *fieldName != "test_ids" {
+		t.Errorf("tests name returned error: %s", err.Error())
 	}
 	if reflect.DeepEqual(output, testsTarget) != true {
 		t.Errorf("Values not stripped correctly from tests input: Received %#v Expected %#v", output, nil)
@@ -335,7 +369,7 @@ func TestFixReadValues(t *testing.T) {
 		},
 	}
 
-	output, err = FixReadValues(thirdPartyNotificationsInput, "third_party", "")
+	output, err = FixReadValues(nil, thirdPartyNotificationsInput, getPointer("third_party"), "")
 	if err != nil {
 		t.Errorf("third party notifications input returned error: %s", err.Error())
 	}
@@ -359,7 +393,7 @@ func TestFixReadValues(t *testing.T) {
 		},
 	}
 
-	output, err = FixReadValues(webhookNotificationsInput, "webhook", "")
+	output, err = FixReadValues(nil, webhookNotificationsInput, getPointer("webhook"), "")
 	if err != nil {
 		t.Errorf("webhook notifications input returned error: %s", err.Error())
 	}
