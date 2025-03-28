@@ -17,12 +17,13 @@ resource "thousandeyes_sip_server" "test" {
   alerts_enabled = true
   probe_mode     = "sack"
   protocol      = "tcp"
-  # target_sip_credentials {
-  #   auth_user     = ""
-  #   protocol      = "tcp"
-  #   port          = 5060
-  #   sip_registrar = "thousandeyes.com"
-  # }
+  # sip_registrar = "thousandeyes.com"
+  target_sip_credentials {
+    auth_user     = ""
+    protocol      = "tcp"
+    port          = 5060
+    sip_registrar = "thousandeyes.com"
+  }
   agents     = [data.thousandeyes_agent.amsterdam.agent_id]
   alert_rules = [thousandeyes_alert_rule.test.id, "921618"]
 }
