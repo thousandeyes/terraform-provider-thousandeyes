@@ -6,6 +6,7 @@ package thousandeyes
 
 // 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 // 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+// 	"github.com/thousandeyes/thousandeyes-sdk-go/v3/tests"
 // )
 
 // func TestAccThousandEyesSIPServer(t *testing.T) {
@@ -25,10 +26,10 @@ package thousandeyes
 // 			checkFunc: []resource.TestCheckFunc{
 // 				resource.TestCheckResourceAttr(resourceName, "test_name", "User Acceptance Test - SIP Server"),
 // 				resource.TestCheckResourceAttr(resourceName, "target_sip_credentials.0.sip_registrar", "thousandeyes.com"),
-// 				resource.TestCheckResourceAttr(resourceName, "target_sip_credentials.0.protocol", "TCP"),
+// 				resource.TestCheckResourceAttr(resourceName, "target_sip_credentials.0.protocol", "tcp"),
 // 				resource.TestCheckResourceAttr(resourceName, "target_sip_credentials.0.port", "5060"),
 // 				resource.TestCheckResourceAttr(resourceName, "interval", "120"),
-// 				resource.TestCheckResourceAttr(resourceName, "probe_mode", "SACK"),
+// 				resource.TestCheckResourceAttr(resourceName, "probe_mode", "sack"),
 // 				resource.TestCheckResourceAttr(resourceName, "alerts_enabled", "true"),
 // 				resource.TestCheckResourceAttr(resourceName, "alert_rules.#", "2"),
 // 			},
@@ -56,8 +57,8 @@ package thousandeyes
 // 	resourceList := []ResourceType{
 // 		{
 // 			ResourceName: "thousandeyes_sip_server",
-// 			GetResource: func(id int64) (interface{}, error) {
-// 				return testClient.GetSIPServer(id)
+// 			GetResource: func(id string) (interface{}, error) {
+// 				return getSIPServer(id)
 // 			}},
 // 	}
 // 	return testAccCheckResourceDestroy(resourceList, s)
@@ -69,4 +70,12 @@ package thousandeyes
 // 		panic(err)
 // 	}
 // 	return string(content)
+// }
+
+// func getSIPServer(id string) (interface{}, error) {
+// 	api := (*tests.SIPServerTestsAPIService)(&testClient.Common)
+// 	req := api.GetSipServerTest(id).Expand(tests.AllowedExpandTestOptionsEnumValues)
+// 	req = SetAidFromContext(testClient.GetConfig().Context, req)
+// 	resp, _, err := req.Execute()
+// 	return resp, err
 // }

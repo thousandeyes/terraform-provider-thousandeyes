@@ -911,6 +911,7 @@ var CommonSchema = map[string]*schema.Schema{
 		Type:        schema.TypeString,
 		Description: "The unique ID of the codec to use.",
 		Optional:    true,
+		Computed:    true,
 	},
 	// duration
 	"duration": {
