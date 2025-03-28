@@ -101,6 +101,8 @@ func ResourceRead(d *schema.ResourceData, structPtr interface{}, aid string) err
 	v := reflect.ValueOf(structPtr).Elem()
 	t := reflect.TypeOf(v.Interface())
 
+	targetMaps := getTargetFieldsMaps(structPtr)
+
 	for i := 0; i < v.NumField(); i++ {
 		if v.Field(i).Kind() == reflect.Ptr && v.Field(i).IsNil() {
 			continue
@@ -113,15 +115,54 @@ func ResourceRead(d *schema.ResourceData, structPtr interface{}, aid string) err
 		if err != nil {
 			return err
 		}
-		val, err = FixReadValues(val, &tfName, aid)
+		val, err = FixReadValues(targetMaps, val, &tfName, aid)
 		if err != nil {
 			return err
+		}
+		if len(tfName) == 0 {
+			continue
 		}
 		err = d.Set(tfName, val)
 		if err != nil {
 			return err
 		}
 	}
+
+	for k, v := range targetMaps {
+		if err := d.Set(k, v); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// getTargetFieldsMaps gets a map of target fields for a specific resource when multiple fields need to be set in a single target map.
+func getTargetFieldsMaps(structPtr interface{}) map[string]map[string]interface{} {
+	switch structPtr.(type) {
+	// Example:
+	// case (tests.Example):
+	// 	res := make(map[string]map[string]interface{})
+	// 	res["TARGET_FIELD"] = map[string]interface{}{
+	// 		"SOURCE_FIELD_1":     nil,
+	// 		"SOURCE_FIELD_2":     nil,
+	// 		"SOURCE_FIELD_3":     nil,
+	// 		...
+	// 	}
+	// 	return res
+	case (tests.SipServerTestResponse):
+		res := make(map[string]map[string]interface{})
+		res["target_sip_credentials"] = map[string]interface{}{
+			"auth_user":     nil,
+			"password":      nil,
+			"port":          nil,
+			"protocol":      nil,
+			"sip_registrar": nil,
+			"user":          nil,
+		}
+		return res
+	}
+
 	return nil
 }
 
@@ -132,7 +173,16 @@ func ResourceRead(d *schema.ResourceData, structPtr interface{}, aid string) err
 // and transforms certain values to match the expected schema.
 // We need to account for this data on so that it does not get saved to state and
 // cause conflict with configuration.
-func FixReadValues(m interface{}, name *string, aid string) (interface{}, error) {
+func FixReadValues(targetMaps map[string]map[string]interface{}, m interface{}, name *string, aid string) (interface{}, error) {
+	// Set fields into map to match schema
+	for targetField := range targetMaps {
+		if _, ok := targetMaps[targetField][*name]; ok {
+			targetMaps[targetField][*name] = m
+			*name = ""
+			return nil, nil
+		}
+	}
+
 	switch *name {
 	// Remove all fields from agent definitions except for agent ID.
 	case "agents":
@@ -141,6 +191,10 @@ func FixReadValues(m interface{}, name *string, aid string) (interface{}, error)
 			m.([]interface{})[i] = agent["agent_id"]
 		}
 	//Return only host when host:port pattern obtained
+	case "server":
+		m = strings.Split(m.(string), ":")[0]
+
+	// Return only host when host:port pattern obtained
 	case "server":
 		m = strings.Split(m.(string), ":")[0]
 
@@ -228,20 +282,11 @@ func FixReadValues(m interface{}, name *string, aid string) (interface{}, error)
 		}
 		m = accounts
 
-	// target_sip_credentials is presented as a map by ThousandEyes, but
-	// limitations in Terraform's type system require us to declare its schema
-	// as a single-item list in order to represent the map with values of
-	// mixed types.
-	case "target_sip_credentials":
-		m = []interface{}{
-			m.(map[string]interface{}),
-		}
-
 	case "notifications":
 		var e interface{}
 		var err error
 		// this is a special case to handle internal email structure inside the notifications block
-		e, err = FixReadValues(m.(map[string]interface{})["email"].(map[string]interface{}), getPointer("email"), aid)
+		e, err = FixReadValues(nil, m.(map[string]interface{})["email"].(map[string]interface{}), getPointer("email"), aid)
 		if err != nil {
 			return nil, err
 		}
@@ -249,7 +294,7 @@ func FixReadValues(m interface{}, name *string, aid string) (interface{}, error)
 		// third party notifications
 		var tp interface{}
 		if _, ok := m.(map[string]interface{})["third_party"]; ok {
-			tp, err = FixReadValues(m.(map[string]interface{})["third_party"].([]interface{}), getPointer("third_party"), aid)
+			tp, err = FixReadValues(nil, m.(map[string]interface{})["third_party"].([]interface{}), getPointer("third_party"), aid)
 			if err != nil {
 				return nil, err
 			}
@@ -260,7 +305,7 @@ func FixReadValues(m interface{}, name *string, aid string) (interface{}, error)
 		// webhook notifications
 		var w interface{}
 		if _, ok := m.(map[string]interface{})["webhook"]; ok {
-			w, err = FixReadValues(m.(map[string]interface{})["webhook"].([]interface{}), getPointer("webhook"), aid)
+			w, err = FixReadValues(nil, m.(map[string]interface{})["webhook"].([]interface{}), getPointer("webhook"), aid)
 			if err != nil {
 				return nil, err
 			}
@@ -435,6 +480,7 @@ func resourceFixups[T any](d *schema.ResourceData, structPtr *T) *T {
 		scrappedAgents := expandAgents(d.Get("agents"))
 		v.FieldByName("Agents").Set(reflect.ValueOf(scrappedAgents))
 	}
+
 	return structPtr
 }
 

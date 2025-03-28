@@ -872,31 +872,8 @@ var CommonSchema = map[string]*schema.Schema{
 		Default:      10,
 		ValidateFunc: validation.IntBetween(5, 10),
 	},
-	// authUser
-	"auth_user": {
-		Type:        schema.TypeString,
-		Description: "The username for authentication with the SIP server.",
-		Required:    true,
-	},
-	// protocol
-	"protocol-sip": {
-		Type:         schema.TypeString,
-		Description:  "[tcp, tls, or udp] The transport layer for SIP communication. Can be either TCP, TLS (TLS over TCP), or UDP, and defaults to tcp.",
-		Required:     true,
-		ValidateFunc: validation.StringInSlice([]string{"tcp", "tls", "udp"}, false),
-	},
-	// sipRegistrar
-	"sip_registrar": {
-		Type:        schema.TypeString,
-		Description: "The SIP server to be tested, specified by domain name or IP address.",
-		Required:    true,
-	},
-	// user
-	"user": {
-		Type:        schema.TypeString,
-		Description: "The username for SIP registration. This should be unique within a ThousandEyes account group.",
-		Optional:    true,
-	},
+	// targetSipCredentials
+	"target_sip_credentials": targetSipCredentials,
 
 	// VOICE
 

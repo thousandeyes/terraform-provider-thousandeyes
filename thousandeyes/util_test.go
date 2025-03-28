@@ -123,7 +123,7 @@ func TestFixReadValues(t *testing.T) {
 	// non-map, non-list
 	normalInput := 4
 	normalTarget := 4
-	output, err = FixReadValues(normalInput, getPointer("normal"), "")
+	output, err = FixReadValues(nil, normalInput, getPointer("normal"), "")
 	if err != nil {
 		t.Errorf("normal input returned error: %s", err.Error())
 	}
@@ -145,7 +145,7 @@ func TestFixReadValues(t *testing.T) {
 	agentsTarget := []interface{}{
 		"1", "2",
 	}
-	output, err = FixReadValues(agentsInput, getPointer("agents"), "")
+	output, err = FixReadValues(nil, agentsInput, getPointer("agents"), "")
 	if err != nil {
 		t.Errorf("agents input returned error: %s", err.Error())
 	}
@@ -167,7 +167,7 @@ func TestFixReadValues(t *testing.T) {
 	dnsServersTarget := []interface{}{
 		"foo.com", "bar.com",
 	}
-	output, err = FixReadValues(dnsServersInput, getPointer("dns_servers"), "")
+	output, err = FixReadValues(nil, dnsServersInput, getPointer("dns_servers"), "")
 	if err != nil {
 		t.Errorf("dns_servers input returned error: %s", err.Error())
 	}
@@ -183,7 +183,7 @@ func TestFixReadValues(t *testing.T) {
 		},
 	}
 	linksTarget := "foo.com"
-	output, err = FixReadValues(linksInput, fieldName, "")
+	output, err = FixReadValues(nil, linksInput, fieldName, "")
 	if err != nil {
 		t.Errorf("links input returned error: %s", err.Error())
 	}
@@ -215,7 +215,7 @@ func TestFixReadValues(t *testing.T) {
 	alertRulesTarget := []interface{}{
 		getPointer("1"), getPointer("2"), getPointer("3"),
 	}
-	output, err = FixReadValues(alertRulesInput, getPointer("alert_rules"), "")
+	output, err = FixReadValues(nil, alertRulesInput, getPointer("alert_rules"), "")
 	if err != nil {
 		t.Errorf("alert_rules input returned error: %s", err.Error())
 	}
@@ -239,7 +239,7 @@ func TestFixReadValues(t *testing.T) {
 	monitorsTarget := []interface{}{
 		getPointer("2"),
 	}
-	output, err = FixReadValues(monitorsInput, getPointer("monitors"), "")
+	output, err = FixReadValues(nil, monitorsInput, getPointer("monitors"), "")
 	if err != nil {
 		t.Errorf("bgp_monitors input returned error: %s", err.Error())
 	}
@@ -263,7 +263,7 @@ func TestFixReadValues(t *testing.T) {
 			"aid": getPointer("1"),
 		},
 	}
-	output, err = FixReadValues(accountsInput, getPointer("shared_with_accounts"), "2")
+	output, err = FixReadValues(nil, accountsInput, getPointer("shared_with_accounts"), "2")
 	if err != nil {
 		t.Errorf("shared_with_accounts input returned error: %s", err.Error())
 	}
@@ -271,7 +271,7 @@ func TestFixReadValues(t *testing.T) {
 		t.Errorf("Values not stripped correctly from shared_with_accounts input: Received %#v Expected %#v", output, accountsTarget)
 	}
 	//  We should fail if account_group_id isn't set and the list of account groups is > 1
-	output, err = FixReadValues(accountsInput, getPointer("shared_with_accounts"), "")
+	output, err = FixReadValues(nil, accountsInput, getPointer("shared_with_accounts"), "")
 	if err == nil {
 		t.Errorf("Error was not returned when shared_with_accounts length was > 1 and account_group_id  was not set")
 	}
@@ -282,7 +282,7 @@ func TestFixReadValues(t *testing.T) {
 			"aid":  "2",
 		},
 	}
-	output, err = FixReadValues(accountsInput, getPointer("shared_with_accounts"), "")
+	output, err = FixReadValues(nil, accountsInput, getPointer("shared_with_accounts"), "")
 	if err != nil {
 		t.Errorf("shared_with_accounts input returned error when shared_with_accounts wasn't set despite list of account groups being < 2: %s", err.Error())
 	}
@@ -290,21 +290,30 @@ func TestFixReadValues(t *testing.T) {
 		t.Errorf("Values not stripped correctly from shared_with_accounts input: Received %#v Expected %#v", output, accountsTarget)
 	}
 
-	// target_sip_credentials
-	sipCredsInput := map[string]interface{}{
-		"sip_proxy": "foo.com",
-	}
-	sipCredsTarget := []interface{}{
-		map[string]interface{}{
-			"sip_proxy": "foo.com",
+	// use target map
+	targetMapInput := map[string]map[string]interface{}{
+		"target": {
+			"source_1": nil,
+			"source_2": nil,
+			"source_3": nil,
 		},
 	}
-	output, err = FixReadValues(sipCredsInput, getPointer("target_sip_credentials"), "")
-	if err != nil {
-		t.Errorf("target_sip_credentials input returned error: %s", err.Error())
+	targetMapOutput := map[string]map[string]interface{}{
+		"target": {
+			"source_1": 1,
+			"source_2": 2,
+			"source_3": 3,
+		},
 	}
-	if reflect.DeepEqual(output, sipCredsTarget) != true {
-		t.Errorf("Values not stripped correctly from target_sip_credentials input: Received %#v Expected %#v", output, accountsTarget)
+	nameSource1 := getPointer("source_1")
+	FixReadValues(targetMapInput, 1, nameSource1, "")
+	FixReadValues(targetMapInput, 2, getPointer("source_2"), "")
+	FixReadValues(targetMapInput, 3, getPointer("source_3"), "")
+	if len(*nameSource1) != 0 {
+		t.Errorf("Name wasn't cleared when target map was set")
+	}
+	if reflect.DeepEqual(targetMapOutput, targetMapInput) != true {
+		t.Errorf("Target Map didn't set correctly: Received %#v Expected %#v", targetMapInput, targetMapOutput)
 	}
 
 	//	tests
@@ -322,7 +331,7 @@ func TestFixReadValues(t *testing.T) {
 		"1", "2",
 	}
 	fieldName = getPointer("tests")
-	output, err = FixReadValues(testsInput, fieldName, "")
+	output, err = FixReadValues(nil, testsInput, fieldName, "")
 	if err != nil {
 		t.Errorf("tests input returned error: %s", err.Error())
 	}
@@ -360,7 +369,7 @@ func TestFixReadValues(t *testing.T) {
 		},
 	}
 
-	output, err = FixReadValues(thirdPartyNotificationsInput, getPointer("third_party"), "")
+	output, err = FixReadValues(nil, thirdPartyNotificationsInput, getPointer("third_party"), "")
 	if err != nil {
 		t.Errorf("third party notifications input returned error: %s", err.Error())
 	}
@@ -384,7 +393,7 @@ func TestFixReadValues(t *testing.T) {
 		},
 	}
 
-	output, err = FixReadValues(webhookNotificationsInput, getPointer("webhook"), "")
+	output, err = FixReadValues(nil, webhookNotificationsInput, getPointer("webhook"), "")
 	if err != nil {
 		t.Errorf("webhook notifications input returned error: %s", err.Error())
 	}
