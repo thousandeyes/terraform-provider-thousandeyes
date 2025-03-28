@@ -194,10 +194,6 @@ func FixReadValues(targetMaps map[string]map[string]interface{}, m interface{}, 
 	case "server":
 		m = strings.Split(m.(string), ":")[0]
 
-	// Return only host when host:port pattern obtained
-	case "server":
-		m = strings.Split(m.(string), ":")[0]
-
 	// Remove all alert rule fields except for rule ID. Ignore default rules.
 	// Remove all alert rule fields except for rule ID.
 	case "alert_rules":
