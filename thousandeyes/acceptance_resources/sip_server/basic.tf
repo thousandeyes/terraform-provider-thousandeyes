@@ -16,8 +16,6 @@ resource "thousandeyes_sip_server" "test" {
   interval       = 120
   alerts_enabled = true
   probe_mode     = "sack"
-  protocol      = "tcp"
-  # sip_registrar = "thousandeyes.com"
   target_sip_credentials {
     auth_user     = ""
     protocol      = "tcp"
