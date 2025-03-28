@@ -29,7 +29,7 @@ This resource allows users to create a transaction test. This test type is a scr
 - `bandwidth_measurements` (Boolean) Set to 1 to measure bandwidth. This only applies to Enterprise Agents assigned to the test, and requires that networkMeasurements is set. Defaults to 'false'.
 - `content_regex` (String) Verify content using a regular expression. This field does not require escaping.
 - `credentials` (List of Number) The array of credentialID integers. You can get the credentialId from the /credentials endpoint.
-- `custom_headers` (Map of String) The custom headers.
+- `custom_headers` (Map of String, Sensitive) The custom headers.
 - `description` (String) A description of the alert rule. Defaults to an empty string.
 - `desired_status_code` (String) The valid HTTP response code you’re interested in retrieving.
 - `enabled` (Boolean) Enables or disables the test.

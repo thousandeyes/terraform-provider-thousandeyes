@@ -44,14 +44,14 @@ resource "thousandeyes_http_server" "example_http_server_test" {
 - `bgp_monitors` (Block List) The array of BGP monitor object IDs. The monitorIDs can be sourced from the /bgp-monitors endpoint. (see [below for nested schema](#nestedblock--bgp_monitors))
 - `client_certificate` (String) String representation (containing newline characters) of the client certificate, if used.
 - `content_regex` (String) Verify content using a regular expression. This field does not require escaping.
-- `custom_headers` (Map of String) The custom headers.
+- `custom_headers` (Map of String, Sensitive) The custom headers.
 - `description` (String) A description of the alert rule. Defaults to an empty string.
 - `desired_status_code` (String) The valid HTTP response code you’re interested in retrieving.
 - `dns_override` (String) The IP address to use for DNS override.
 - `download_limit` (Number) Specify the maximum number of bytes to download from the target object.
 - `enabled` (Boolean) Enables or disables the test.
 - `follow_redirects` (Boolean) Follow HTTP/301 or HTTP/302 redirect directives. Defaults to 'true'.
-- `headers` (List of String) ["header: value", "header2: value"] The array of header strings.
+- `headers` (List of String, Sensitive) ["header: value", "header2: value"] The array of header strings.
 - `http_target_time` (Number) The target time for HTTP server completion, specified in milliseconds.
 - `http_time_limit` (Number) The target time for HTTP server limits, specified in seconds.
 - `http_version` (Number) Set to 2 for the default HTTP version (prefer HTTP/2), or 1 for HTTP/1.1 only.
