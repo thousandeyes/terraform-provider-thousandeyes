@@ -13,21 +13,32 @@ func TestAccThousandEyesAgentToAgent(t *testing.T) {
 	var httpResourceName = "thousandeyes_agent_to_agent.test"
 	var testCases = []struct {
 		name                 string
-		resourceFile         string
+		createResourceFile   string
+		updateResourceFile   string
 		resourceName         string
 		checkDestroyFunction func(*terraform.State) error
-		checkFunc            []resource.TestCheckFunc
+		checkCreateFunc      []resource.TestCheckFunc
+		checkUpdateFunc      []resource.TestCheckFunc
 	}{
 		{
-			name:                 "basic",
-			resourceFile:         "acceptance_resources/agent_to_agent/basic.tf",
+			name:                 "create_update_delete_agent_to_agent_test",
+			createResourceFile:   "acceptance_resources/agent_to_agent/basic.tf",
+			updateResourceFile:   "acceptance_resources/agent_to_agent/update.tf",
 			resourceName:         httpResourceName,
 			checkDestroyFunction: testAccCheckAgentToAgentResourceDestroy,
-			checkFunc: []resource.TestCheckFunc{
+			checkCreateFunc: []resource.TestCheckFunc{
 				resource.TestCheckResourceAttr(httpResourceName, "test_name", "User Acceptance Test - Aget To Agent"),
 				resource.TestCheckResourceAttr(httpResourceName, "direction", "bidirectional"),
 				resource.TestCheckResourceAttr(httpResourceName, "protocol", "tcp"),
 				resource.TestCheckResourceAttr(httpResourceName, "interval", "120"),
+				resource.TestCheckResourceAttr(httpResourceName, "alerts_enabled", "true"),
+				resource.TestCheckResourceAttr(httpResourceName, "alert_rules.#", "2"),
+			},
+			checkUpdateFunc: []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(httpResourceName, "test_name", "User Acceptance Test - Aget To Agent (Updated)"),
+				resource.TestCheckResourceAttr(httpResourceName, "direction", "bidirectional"),
+				resource.TestCheckResourceAttr(httpResourceName, "protocol", "tcp"),
+				resource.TestCheckResourceAttr(httpResourceName, "interval", "300"),
 				resource.TestCheckResourceAttr(httpResourceName, "alerts_enabled", "true"),
 				resource.TestCheckResourceAttr(httpResourceName, "alert_rules.#", "2"),
 			},
@@ -42,8 +53,12 @@ func TestAccThousandEyesAgentToAgent(t *testing.T) {
 				CheckDestroy:      tc.checkDestroyFunction,
 				Steps: []resource.TestStep{
 					{
-						Config: testAccThousandEyesAgentToAgentConfig(tc.resourceFile),
-						Check:  resource.ComposeTestCheckFunc(tc.checkFunc...),
+						Config: testAccThousandEyesAgentToAgentConfig(tc.createResourceFile),
+						Check:  resource.ComposeTestCheckFunc(tc.checkCreateFunc...),
+					},
+					{
+						Config: testAccThousandEyesAgentToAgentConfig(tc.updateResourceFile),
+						Check:  resource.ComposeTestCheckFunc(tc.checkUpdateFunc...),
 					},
 				},
 			})
