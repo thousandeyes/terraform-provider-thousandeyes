@@ -13,20 +13,30 @@ func TestAccThousandEyesDNSSEC(t *testing.T) {
 	var resourceName = "thousandeyes_dnssec.test"
 	var testCases = []struct {
 		name                 string
-		resourceFile         string
+		createResourceFile   string
+		updateResourceFile   string
 		resourceName         string
 		checkDestroyFunction func(*terraform.State) error
-		checkFunc            []resource.TestCheckFunc
+		checkCreateFunc      []resource.TestCheckFunc
+		checkUpdateFunc      []resource.TestCheckFunc
 	}{
 		{
-			name:                 "basic",
-			resourceFile:         "acceptance_resources/dnssec/basic.tf",
+			name:                 "create_update_delete_dnssec_test",
+			createResourceFile:   "acceptance_resources/dnssec/basic.tf",
+			updateResourceFile:   "acceptance_resources/dnssec/update.tf",
 			resourceName:         resourceName,
 			checkDestroyFunction: testAccCheckDNSSECResourceDestroy,
-			checkFunc: []resource.TestCheckFunc{
+			checkCreateFunc: []resource.TestCheckFunc{
 				resource.TestCheckResourceAttr(resourceName, "test_name", "User Acceptance Test - DNSSEC"),
 				resource.TestCheckResourceAttr(resourceName, "domain", "thousandeyes.com A"),
 				resource.TestCheckResourceAttr(resourceName, "interval", "120"),
+				resource.TestCheckResourceAttr(resourceName, "alerts_enabled", "true"),
+				resource.TestCheckResourceAttr(resourceName, "alert_rules.#", "2"),
+			},
+			checkUpdateFunc: []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(resourceName, "test_name", "User Acceptance Test - DNSSEC (Updated)"),
+				resource.TestCheckResourceAttr(resourceName, "domain", "thousandeyes.com A"),
+				resource.TestCheckResourceAttr(resourceName, "interval", "300"),
 				resource.TestCheckResourceAttr(resourceName, "alerts_enabled", "true"),
 				resource.TestCheckResourceAttr(resourceName, "alert_rules.#", "2"),
 			},
@@ -41,8 +51,12 @@ func TestAccThousandEyesDNSSEC(t *testing.T) {
 				CheckDestroy:      tc.checkDestroyFunction,
 				Steps: []resource.TestStep{
 					{
-						Config: testAccThousandEyesDNSSECConfig(tc.resourceFile),
-						Check:  resource.ComposeTestCheckFunc(tc.checkFunc...),
+						Config: testAccThousandEyesDNSSECConfig(tc.createResourceFile),
+						Check:  resource.ComposeTestCheckFunc(tc.checkCreateFunc...),
+					},
+					{
+						Config: testAccThousandEyesDNSSECConfig(tc.updateResourceFile),
+						Check:  resource.ComposeTestCheckFunc(tc.checkUpdateFunc...),
 					},
 				},
 			})

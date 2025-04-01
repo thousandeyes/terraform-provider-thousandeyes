@@ -21,7 +21,7 @@ func TestAccThousandEyesDNSTrace(t *testing.T) {
 		checkUpdateFunc      []resource.TestCheckFunc
 	}{
 		{
-			name:                 "basic",
+			name:                 "create_update_delete_dns_trace_test",
 			createResourceFile:   "acceptance_resources/dns_trace/basic.tf",
 			updateResourceFile:   "acceptance_resources/dns_trace/update.tf",
 			resourceName:         resourceName,
