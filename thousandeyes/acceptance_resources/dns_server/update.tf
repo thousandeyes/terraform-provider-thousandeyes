@@ -3,7 +3,7 @@ data "thousandeyes_agent" "amsterdam" {
 }
 
 resource "thousandeyes_alert_rule" "test" {
-  rule_name                 = "Custom UAT DNS Server Alert Rule"
+  rule_name                 = "Custom UAT DNS Server Alert Rule (Updated)"
   alert_type                = "dns-server"
   expression                = "((probDetail != \"\") && (Auto(delay >= Medium sensitivity)))"
   minimum_sources           = 1
@@ -12,11 +12,11 @@ resource "thousandeyes_alert_rule" "test" {
 }
 
 resource "thousandeyes_dns_server" "test" {
-  test_name      = "User Acceptance Test - DNS Server"
-  interval       = 120
+  test_name      = "User Acceptance Test - DNS Server (Updated)"
+  interval       = 300
   alerts_enabled = true
   domain         = "thousandeyes.com A"
   agents         = [data.thousandeyes_agent.amsterdam.agent_id]
   alert_rules    = ["921612", thousandeyes_alert_rule.test.id]
-  dns_servers    = ["ns-cloud-d1.googledomains.com", "ns-1458.awsdns-54.org", "ns-597.awsdns-10.net"]
+  dns_servers    = ["ns-cloud-d1.googledomains.com", "ns-1458.awsdns-54.org"]
 }
