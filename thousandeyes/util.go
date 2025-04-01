@@ -312,6 +312,7 @@ func FixReadValues(targetMaps map[string]map[string]interface{}, m interface{}, 
 			w = nil
 		}
 
+		// custom webhook notifications
 		var cw interface{}
 		if _, ok := notifications["custom_webhook"]; ok {
 			cw, err = FixReadValues(nil, notifications["custom_webhook"].([]interface{}), getPointer("custom_webhook"), aid)
@@ -325,7 +326,11 @@ func FixReadValues(targetMaps map[string]map[string]interface{}, m interface{}, 
 		// update the notifications block if the email block is present and contains recipients, or
 		// the third party notifications are present, or webhook notifications are present.
 		// Otherwise set the whole notifications block to nil
-		if e == nil && tp == nil && w == nil && cw == nil {
+		if len(e.(map[string]interface{})) == 0 &&
+			len(tp.([]interface{})) == 0 &&
+			len(w.([]interface{})) == 0 &&
+			len(cw.([]interface{})) == 0 {
+			// *name = ""
 			m = nil
 		} else {
 			// Add the third party map and or webhook map to the notifications map if they are present
