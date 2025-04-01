@@ -43,7 +43,7 @@ func resourceHTTPServerUpdate(d *schema.ResourceData, m interface{}) error {
 	api := (*tests.HTTPServerTestsAPIService)(&apiClient.Common)
 
 	log.Printf("[INFO] Updating ThousandEyes Test %s", d.Id())
-	update := ResourceUpdate(d, &tests.HttpServerTestRequest{})
+	update := buildHTTPServerStruct(d)
 
 	req := api.UpdateHttpServerTest(d.Id()).HttpServerTestRequest(*update).Expand(tests.AllowedExpandTestOptionsEnumValues)
 	req = SetAidFromContext(apiClient.GetConfig().Context, req)

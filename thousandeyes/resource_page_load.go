@@ -42,7 +42,7 @@ func resourcePageLoadUpdate(d *schema.ResourceData, m interface{}) error {
 	api := (*tests.PageLoadTestsAPIService)(&apiClient.Common)
 
 	log.Printf("[INFO] Updating ThousandEyes Test %s", d.Id())
-	update := ResourceUpdate(d, &tests.PageLoadTestRequest{})
+	update := buildPageLoadStruct(d)
 
 	req := api.UpdatePageLoadTest(d.Id()).PageLoadTestRequest(*update).Expand(tests.AllowedExpandTestOptionsEnumValues)
 	req = SetAidFromContext(apiClient.GetConfig().Context, req)
