@@ -7,17 +7,17 @@ data "thousandeyes_alert_rule" "def_alert_rule" {
 }
 
 resource "thousandeyes_alert_rule" "alert-rule-http-test" {
-  rule_name                 = "Custom UAT HTTP Alert Rule"
+  rule_name                 = "Custom UAT HTTP Alert Rule (Updated)"
   alert_type                = "http-server"
   expression                = "(((responseCode >= 400) || (responseCode == 0)))"
-  rounds_violating_out_of   = 1
-  rounds_violating_required = 1
+  rounds_violating_out_of   = 3
+  rounds_violating_required = 3
   minimum_sources           = 1
 }
 
 resource "thousandeyes_http_server" "test" {
-  test_name      = "User Acceptance Test - HTTP"
-  interval       = 120
+  test_name      = "User Acceptance Test - HTTP (Updated)"
+  interval       = 300
   alerts_enabled = true
   url            = "https://www.thousandeyes.com"
   agents         = [data.thousandeyes_agent.arg_amsterdam.agent_id]

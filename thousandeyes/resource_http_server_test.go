@@ -13,20 +13,30 @@ func TestAccThousandEyesHTTPServer(t *testing.T) {
 	var httpResourceName = "thousandeyes_http_server.test"
 	var testCases = []struct {
 		name                 string
-		resourceFile         string
+		createResourceFile   string
+		updateResourceFile   string
 		resourceName         string
 		checkDestroyFunction func(*terraform.State) error
-		checkFunc            []resource.TestCheckFunc
+		checkCreateFunc      []resource.TestCheckFunc
+		checkUpdateFunc      []resource.TestCheckFunc
 	}{
 		{
-			name:                 "basic",
-			resourceFile:         "acceptance_resources/http_server/basic.tf",
+			name:                 "create_update_delete_http_server_test",
+			createResourceFile:   "acceptance_resources/http_server/basic.tf",
+			updateResourceFile:   "acceptance_resources/http_server/update.tf",
 			resourceName:         httpResourceName,
 			checkDestroyFunction: testAccCheckDefaultHTTPResourceDestroy,
-			checkFunc: []resource.TestCheckFunc{
+			checkCreateFunc: []resource.TestCheckFunc{
 				resource.TestCheckResourceAttr(httpResourceName, "url", "https://www.thousandeyes.com"),
 				resource.TestCheckResourceAttr(httpResourceName, "test_name", "User Acceptance Test - HTTP"),
 				resource.TestCheckResourceAttr(httpResourceName, "interval", "120"),
+				resource.TestCheckResourceAttr(httpResourceName, "alerts_enabled", "true"),
+				resource.TestCheckResourceAttr(httpResourceName, "alert_rules.#", "2"),
+			},
+			checkUpdateFunc: []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(httpResourceName, "url", "https://www.thousandeyes.com"),
+				resource.TestCheckResourceAttr(httpResourceName, "test_name", "User Acceptance Test - HTTP (Updated)"),
+				resource.TestCheckResourceAttr(httpResourceName, "interval", "300"),
 				resource.TestCheckResourceAttr(httpResourceName, "alerts_enabled", "true"),
 				resource.TestCheckResourceAttr(httpResourceName, "alert_rules.#", "2"),
 			},
@@ -41,8 +51,12 @@ func TestAccThousandEyesHTTPServer(t *testing.T) {
 				CheckDestroy:      tc.checkDestroyFunction,
 				Steps: []resource.TestStep{
 					{
-						Config: testAccThousandEyesHTTPServerConfig(tc.resourceFile),
-						Check:  resource.ComposeTestCheckFunc(tc.checkFunc...),
+						Config: testAccThousandEyesHTTPServerConfig(tc.createResourceFile),
+						Check:  resource.ComposeTestCheckFunc(tc.checkCreateFunc...),
+					},
+					{
+						Config: testAccThousandEyesHTTPServerConfig(tc.updateResourceFile),
+						Check:  resource.ComposeTestCheckFunc(tc.checkUpdateFunc...),
 					},
 				},
 			})
