@@ -281,16 +281,22 @@ func FixReadValues(targetMaps map[string]map[string]interface{}, m interface{}, 
 	case "notifications":
 		var e interface{}
 		var err error
+
+		notifications := m.(map[string]interface{})
+		if len(notifications) == 0 {
+			return nil, nil
+		}
+
 		// this is a special case to handle internal email structure inside the notifications block
-		e, err = FixReadValues(nil, m.(map[string]interface{})["email"].(map[string]interface{}), getPointer("email"), aid)
+		e, err = FixReadValues(nil, notifications["email"].(map[string]interface{}), getPointer("email"), aid)
 		if err != nil {
 			return nil, err
 		}
 
 		// third party notifications
 		var tp interface{}
-		if _, ok := m.(map[string]interface{})["third_party"]; ok {
-			tp, err = FixReadValues(nil, m.(map[string]interface{})["third_party"].([]interface{}), getPointer("third_party"), aid)
+		if _, ok := notifications["third_party"]; ok {
+			tp, err = FixReadValues(nil, notifications["third_party"].([]interface{}), getPointer("third_party"), aid)
 			if err != nil {
 				return nil, err
 			}
@@ -300,8 +306,8 @@ func FixReadValues(targetMaps map[string]map[string]interface{}, m interface{}, 
 
 		// webhook notifications
 		var w interface{}
-		if _, ok := m.(map[string]interface{})["webhook"]; ok {
-			w, err = FixReadValues(nil, m.(map[string]interface{})["webhook"].([]interface{}), getPointer("webhook"), aid)
+		if _, ok := notifications["webhook"]; ok {
+			w, err = FixReadValues(nil, notifications["webhook"].([]interface{}), getPointer("webhook"), aid)
 			if err != nil {
 				return nil, err
 			}
@@ -318,16 +324,16 @@ func FixReadValues(targetMaps map[string]map[string]interface{}, m interface{}, 
 			// Add the third party map and or webhook map to the notifications map if they are present
 			// if they're not configured, then the API doesn't return them at all
 			if tp != nil {
-				m.(map[string]interface{})["third_party"] = tp
+				notifications["third_party"] = tp
 			}
 
 			if w != nil {
-				m.(map[string]interface{})["webhook"] = w
+				notifications["webhook"] = w
 			}
 
-			m.(map[string]interface{})["email"] = e
+			notifications["email"] = e
 			m = []interface{}{
-				m.(map[string]interface{}),
+				notifications,
 			}
 		}
 

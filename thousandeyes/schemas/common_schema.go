@@ -239,7 +239,7 @@ var CommonSchema = map[string]*schema.Schema{
 		Description: "The DSCP ID.",
 		Required:    false,
 		Optional:    true,
-		Computed:    true,
+		Default:     "0",
 	},
 	// randomizedStartTime
 	"randomized_start_time": {
@@ -255,7 +255,6 @@ var CommonSchema = map[string]*schema.Schema{
 		Description: "Enable BGP measurements. Set to true for enabled, false for disabled.",
 		Optional:    true,
 		Required:    false,
-		Computed:    true,
 	},
 
 	// AGENT TO AGENT
@@ -370,7 +369,7 @@ var CommonSchema = map[string]*schema.Schema{
 		Description: "[force-ipv4, prefer-ipv6, force-ipv6, or use-agent-policy]", // TO DO describe
 		Optional:    true,
 		Required:    false,
-		Computed:    true,
+		Default:     "use-agent-policy",
 		ValidateFunc: validation.StringInSlice([]string{
 			"force-ipv4",
 			"prefer-ipv6",
@@ -771,7 +770,7 @@ var CommonSchema = map[string]*schema.Schema{
 		Type:        schema.TypeInt,
 		Required:    false,
 		Optional:    true,
-		Computed:    true,
+		Default:     6,
 		Description: "Target time for page load completion, specified in seconds and cannot exceed the `pageLoadTimeLimit`.",
 	},
 	// pageLoadTimeLimit
@@ -779,7 +778,7 @@ var CommonSchema = map[string]*schema.Schema{
 		Type:        schema.TypeInt,
 		Required:    false,
 		Optional:    true,
-		Computed:    true,
+		Default:     10,
 		Description: "Page load time limit. Must be larger than the `httpTimeLimit`.",
 	},
 	// blockDomains
@@ -811,14 +810,14 @@ var CommonSchema = map[string]*schema.Schema{
 		Type:        schema.TypeString,
 		Description: "Set one of the available browser language that you want to use to configure the browser.",
 		Optional:    true,
-		Computed:    true,
+		Default:     "en-US",
 	},
 	// pageLoadingStrategy
 	"page_loading_strategy": {
 		Type:        schema.TypeString,
 		Description: "[normal, eager or none] Defines page loading strategy. Defaults to 'none'.",
 		Optional:    true,
-		Default:     "none",
+		Default:     "normal",
 		ValidateFunc: validation.StringInSlice([]string{
 			"normal",
 			"eager",
@@ -888,7 +887,7 @@ var CommonSchema = map[string]*schema.Schema{
 		Type:        schema.TypeString,
 		Description: "The unique ID of the codec to use.",
 		Optional:    true,
-		Computed:    true,
+		Default:     "0",
 	},
 	// duration
 	"duration": {
