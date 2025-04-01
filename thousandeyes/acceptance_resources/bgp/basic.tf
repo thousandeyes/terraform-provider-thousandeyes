@@ -1,3 +1,7 @@
+data "thousandeyes_alert_rule" "def_alert_rule" {
+  rule_name = "Default BGP Alert Rule"
+}
+
 resource "thousandeyes_alert_rule" "test" {
   rule_name                 = "Custom UAT BGP Alert Rule"
   alert_type                = "bgp"
@@ -12,5 +16,5 @@ resource "thousandeyes_bgp" "test" {
   alerts_enabled = true
   use_public_bgp = true
   prefix         = "192.0.2.0/24"
-  alert_rules    = [thousandeyes_alert_rule.test.id, "921614"]
+  alert_rules    = [thousandeyes_alert_rule.test.id, data.thousandeyes_alert_rule.def_alert_rule.id]
 }
