@@ -283,9 +283,6 @@ func FixReadValues(targetMaps map[string]map[string]interface{}, m interface{}, 
 		var err error
 
 		notifications := m.(map[string]interface{})
-		if len(notifications) == 0 {
-			return nil, nil
-		}
 
 		// this is a special case to handle internal email structure inside the notifications block
 		e, err = FixReadValues(nil, notifications["email"].(map[string]interface{}), getPointer("email"), aid)
@@ -315,10 +312,20 @@ func FixReadValues(targetMaps map[string]map[string]interface{}, m interface{}, 
 			w = nil
 		}
 
+		var cw interface{}
+		if _, ok := notifications["custom_webhook"]; ok {
+			cw, err = FixReadValues(nil, notifications["custom_webhook"].([]interface{}), getPointer("custom_webhook"), aid)
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			cw = nil
+		}
+
 		// update the notifications block if the email block is present and contains recipients, or
 		// the third party notifications are present, or webhook notifications are present.
 		// Otherwise set the whole notifications block to nil
-		if e == nil && tp == nil && w == nil {
+		if e == nil && tp == nil && w == nil && cw == nil {
 			m = nil
 		} else {
 			// Add the third party map and or webhook map to the notifications map if they are present
@@ -329,6 +336,10 @@ func FixReadValues(targetMaps map[string]map[string]interface{}, m interface{}, 
 
 			if w != nil {
 				notifications["webhook"] = w
+			}
+
+			if cw != nil {
+				notifications["custom_webhook"] = cw
 			}
 
 			notifications["email"] = e
@@ -360,6 +371,15 @@ func FixReadValues(targetMaps map[string]map[string]interface{}, m interface{}, 
 		}
 
 	case "webhook":
+		for i, v := range m.([]interface{}) {
+			webhookNotifications := v.(map[string]interface{})
+			m.([]interface{})[i] = map[string]interface{}{
+				"integration_id":   webhookNotifications["integration_id"],
+				"integration_type": webhookNotifications["integration_type"],
+			}
+		}
+
+	case "custom_webhook":
 		for i, v := range m.([]interface{}) {
 			webhookNotifications := v.(map[string]interface{})
 			m.([]interface{})[i] = map[string]interface{}{
