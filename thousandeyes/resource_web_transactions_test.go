@@ -13,20 +13,31 @@ func TestAccThousandEyesWebTransactions(t *testing.T) {
 	var httpResourceName = "thousandeyes_web_transaction.test"
 	var testCases = []struct {
 		name                 string
-		resourceFile         string
+		createResourceFile   string
+		updateResourceFile   string
 		resourceName         string
 		checkDestroyFunction func(*terraform.State) error
-		checkFunc            []resource.TestCheckFunc
+		checkCreateFunc      []resource.TestCheckFunc
+		checkUpdateFunc      []resource.TestCheckFunc
 	}{
 		{
-			name:                 "basic",
-			resourceFile:         "acceptance_resources/web_transactions/basic.tf",
+			name:                 "create_update_delete_web_transactions_test",
+			createResourceFile:   "acceptance_resources/web_transactions/basic.tf",
+			updateResourceFile:   "acceptance_resources/web_transactions/update.tf",
 			resourceName:         httpResourceName,
 			checkDestroyFunction: testAccCheckDefaultWebTransactionsResourceDestroy,
-			checkFunc: []resource.TestCheckFunc{
+			checkCreateFunc: []resource.TestCheckFunc{
 				resource.TestCheckResourceAttr(httpResourceName, "url", "https://www.thousandeyes.com"),
 				resource.TestCheckResourceAttr(httpResourceName, "test_name", "User Acceptance Test - Web Transactions"),
 				resource.TestCheckResourceAttr(httpResourceName, "interval", "120"),
+				resource.TestCheckResourceAttr(httpResourceName, "transaction_script", "  import { By, Key, until } from 'selenium-webdriver'; \n  import { driver, markers, credentials, downloads, transaction, test } from 'thousandeyes'; \n  runScript(); \n  async function runScript() \n  { const settings = test.getSettings();\n  // Load page\n  await driver.get(settings.url);\n  await driver.wait(until.titleIs('Digital Experience Monitoring | ThousandEyes'), 1000);\n  await driver.takeScreenshot();\n};\n"),
+				resource.TestCheckResourceAttr(httpResourceName, "alerts_enabled", "true"),
+				resource.TestCheckResourceAttr(httpResourceName, "alert_rules.#", "2"),
+			},
+			checkUpdateFunc: []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(httpResourceName, "url", "https://www.thousandeyes.com"),
+				resource.TestCheckResourceAttr(httpResourceName, "test_name", "User Acceptance Test - Web Transactions (Updated)"),
+				resource.TestCheckResourceAttr(httpResourceName, "interval", "300"),
 				resource.TestCheckResourceAttr(httpResourceName, "transaction_script", "  import { By, Key, until } from 'selenium-webdriver'; \n  import { driver, markers, credentials, downloads, transaction, test } from 'thousandeyes'; \n  runScript(); \n  async function runScript() \n  { const settings = test.getSettings();\n  // Load page\n  await driver.get(settings.url);\n  await driver.wait(until.titleIs('Digital Experience Monitoring | ThousandEyes'), 1000);\n  await driver.takeScreenshot();\n};\n"),
 				resource.TestCheckResourceAttr(httpResourceName, "alerts_enabled", "true"),
 				resource.TestCheckResourceAttr(httpResourceName, "alert_rules.#", "2"),
@@ -42,8 +53,12 @@ func TestAccThousandEyesWebTransactions(t *testing.T) {
 				CheckDestroy:      tc.checkDestroyFunction,
 				Steps: []resource.TestStep{
 					{
-						Config: testAccThousandEyesWebTransactionsConfig(tc.resourceFile),
-						Check:  resource.ComposeTestCheckFunc(tc.checkFunc...),
+						Config: testAccThousandEyesWebTransactionsConfig(tc.createResourceFile),
+						Check:  resource.ComposeTestCheckFunc(tc.checkCreateFunc...),
+					},
+					{
+						Config: testAccThousandEyesWebTransactionsConfig(tc.updateResourceFile),
+						Check:  resource.ComposeTestCheckFunc(tc.checkUpdateFunc...),
 					},
 				},
 			})

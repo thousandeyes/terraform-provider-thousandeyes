@@ -13,19 +13,28 @@ func TestAccThousandEyesVoice(t *testing.T) {
 	var resourceName = "thousandeyes_voice.test"
 	var testCases = []struct {
 		name                 string
-		resourceFile         string
+		createResourceFile   string
+		updateResourceFile   string
 		resourceName         string
 		checkDestroyFunction func(*terraform.State) error
-		checkFunc            []resource.TestCheckFunc
+		checkCreateFunc      []resource.TestCheckFunc
+		checkUpdateFunc      []resource.TestCheckFunc
 	}{
 		{
-			name:                 "basic",
-			resourceFile:         "acceptance_resources/voice/basic.tf",
+			name:                 "create_update_delete_voice_test",
+			createResourceFile:   "acceptance_resources/voice/basic.tf",
+			updateResourceFile:   "acceptance_resources/voice/update.tf",
 			resourceName:         resourceName,
 			checkDestroyFunction: testAccCheckVoiceResourceDestroy,
-			checkFunc: []resource.TestCheckFunc{
+			checkCreateFunc: []resource.TestCheckFunc{
 				resource.TestCheckResourceAttr(resourceName, "test_name", "User Acceptance Test - Voice"),
 				resource.TestCheckResourceAttr(resourceName, "interval", "120"),
+				resource.TestCheckResourceAttr(resourceName, "alerts_enabled", "true"),
+				resource.TestCheckResourceAttr(resourceName, "alert_rules.#", "2"),
+			},
+			checkUpdateFunc: []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(resourceName, "test_name", "User Acceptance Test - Voice (Updated)"),
+				resource.TestCheckResourceAttr(resourceName, "interval", "300"),
 				resource.TestCheckResourceAttr(resourceName, "alerts_enabled", "true"),
 				resource.TestCheckResourceAttr(resourceName, "alert_rules.#", "2"),
 			},
@@ -40,8 +49,12 @@ func TestAccThousandEyesVoice(t *testing.T) {
 				CheckDestroy:      tc.checkDestroyFunction,
 				Steps: []resource.TestStep{
 					{
-						Config: testAccThousandEyesVoiceConfig(tc.resourceFile),
-						Check:  resource.ComposeTestCheckFunc(tc.checkFunc...),
+						Config: testAccThousandEyesVoiceConfig(tc.createResourceFile),
+						Check:  resource.ComposeTestCheckFunc(tc.checkCreateFunc...),
+					},
+					{
+						Config: testAccThousandEyesVoiceConfig(tc.updateResourceFile),
+						Check:  resource.ComposeTestCheckFunc(tc.checkUpdateFunc...),
 					},
 				},
 			})
