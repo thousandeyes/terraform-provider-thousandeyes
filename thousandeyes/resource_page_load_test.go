@@ -13,21 +13,32 @@ func TestAccThousandEyesPageLoadServer(t *testing.T) {
 	var httpResourceName = "thousandeyes_page_load.test"
 	var testCases = []struct {
 		name                 string
-		resourceFile         string
+		createResourceFile   string
+		updateResourceFile   string
 		resourceName         string
 		checkDestroyFunction func(*terraform.State) error
-		checkFunc            []resource.TestCheckFunc
+		checkCreateFunc      []resource.TestCheckFunc
+		checkUpdateFunc      []resource.TestCheckFunc
 	}{
 		{
-			name:                 "basic",
-			resourceFile:         "acceptance_resources/page_load/basic.tf",
+			name:                 "create_update_delete_page_load_test",
+			createResourceFile:   "acceptance_resources/page_load/basic.tf",
+			updateResourceFile:   "acceptance_resources/page_load/update.tf",
 			resourceName:         httpResourceName,
 			checkDestroyFunction: testAccCheckDefaultPageLoadResourceDestroy,
-			checkFunc: []resource.TestCheckFunc{
+			checkCreateFunc: []resource.TestCheckFunc{
 				resource.TestCheckResourceAttr(httpResourceName, "url", "https://www.thousandeyes.com"),
 				resource.TestCheckResourceAttr(httpResourceName, "test_name", "User Acceptance Test - Page Load"),
 				resource.TestCheckResourceAttr(httpResourceName, "interval", "120"),
 				resource.TestCheckResourceAttr(httpResourceName, "http_interval", "120"),
+				resource.TestCheckResourceAttr(httpResourceName, "alerts_enabled", "true"),
+				resource.TestCheckResourceAttr(httpResourceName, "alert_rules.#", "2"),
+			},
+			checkUpdateFunc: []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(httpResourceName, "url", "https://www.thousandeyes.com"),
+				resource.TestCheckResourceAttr(httpResourceName, "test_name", "User Acceptance Test - Page Load (Updated)"),
+				resource.TestCheckResourceAttr(httpResourceName, "interval", "300"),
+				resource.TestCheckResourceAttr(httpResourceName, "http_interval", "300"),
 				resource.TestCheckResourceAttr(httpResourceName, "alerts_enabled", "true"),
 				resource.TestCheckResourceAttr(httpResourceName, "alert_rules.#", "2"),
 			},
@@ -42,8 +53,12 @@ func TestAccThousandEyesPageLoadServer(t *testing.T) {
 				CheckDestroy:      tc.checkDestroyFunction,
 				Steps: []resource.TestStep{
 					{
-						Config: testAccThousandEyesPageLoadConfig(tc.resourceFile),
-						Check:  resource.ComposeTestCheckFunc(tc.checkFunc...),
+						Config: testAccThousandEyesPageLoadConfig(tc.createResourceFile),
+						Check:  resource.ComposeTestCheckFunc(tc.checkCreateFunc...),
+					},
+					{
+						Config: testAccThousandEyesPageLoadConfig(tc.updateResourceFile),
+						Check:  resource.ComposeTestCheckFunc(tc.checkUpdateFunc...),
 					},
 				},
 			})
