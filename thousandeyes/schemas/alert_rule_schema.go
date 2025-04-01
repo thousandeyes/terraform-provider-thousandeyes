@@ -204,7 +204,6 @@ var AlertRuleSchema = map[string]*schema.Schema{
 		Type:        schema.TypeSet,
 		Description: "The list of notifications for the alert rule.",
 		Optional:    true,
-		Computed:    true,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"email": {
