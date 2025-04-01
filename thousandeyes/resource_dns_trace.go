@@ -42,7 +42,7 @@ func resourceDNSTraceUpdate(d *schema.ResourceData, m interface{}) error {
 	api := (*tests.DNSTraceTestsAPIService)(&apiClient.Common)
 
 	log.Printf("[INFO] Updating ThousandEyes Test %s", d.Id())
-	update := ResourceUpdate(d, &tests.DnsTraceTestRequest{})
+	update := buildDNSTraceStruct(d)
 
 	req := api.UpdateDnsTraceTest(d.Id()).DnsTraceTestRequest(*update).Expand(tests.AllowedExpandTestOptionsEnumValues)
 	req = SetAidFromContext(apiClient.GetConfig().Context, req)

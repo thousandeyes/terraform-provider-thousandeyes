@@ -42,7 +42,7 @@ func resourceWebTransactionUpdate(d *schema.ResourceData, m interface{}) error {
 	api := (*tests.WebTransactionTestsAPIService)(&apiClient.Common)
 
 	log.Printf("[INFO] Updating ThousandEyes Test %s", d.Id())
-	update := ResourceUpdate(d, &tests.WebTransactionTestRequest{})
+	update := buildWebTransactionStruct(d)
 
 	req := api.UpdateWebTransactionsTest(d.Id()).WebTransactionTestRequest(*update).Expand(tests.AllowedExpandTestOptionsEnumValues)
 	req = SetAidFromContext(apiClient.GetConfig().Context, req)

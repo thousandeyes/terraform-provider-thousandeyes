@@ -42,7 +42,7 @@ func resourceDNSServerUpdate(d *schema.ResourceData, m interface{}) error {
 	api := (*tests.DNSServerTestsAPIService)(&apiClient.Common)
 
 	log.Printf("[INFO] Updating ThousandEyes Test %s", d.Id())
-	update := ResourceUpdate(d, &tests.DnsServerTestRequest{})
+	update := buildDNSServerStruct(d)
 
 	req := api.UpdateDnsServerTest(d.Id()).DnsServerTestRequest(*update).Expand(tests.AllowedExpandTestOptionsEnumValues)
 	req = SetAidFromContext(apiClient.GetConfig().Context, req)
