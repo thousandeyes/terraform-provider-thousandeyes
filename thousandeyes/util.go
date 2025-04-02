@@ -72,7 +72,7 @@ func ResourceBuildStruct[T any](d *schema.ResourceData, structPtr *T) *T {
 // GetResource is a generic function for reading resources.
 func GetResource(d *schema.ResourceData, m interface{}, readFunc ResourceReadFunc) error {
 	apiClient := m.(*client.APIClient)
-	aid := apiClient.GetConfig().Context.Value("aid").(string)
+	aid := apiClient.GetConfig().Context.Value(accountGroupIdKey).(string)
 
 	log.Printf("[INFO] Reading Thousandeyes Resource %s", d.Id())
 	remote, err := readFunc(apiClient, d.Id())
@@ -730,11 +730,20 @@ func GetJSONKey(v reflect.StructField) string {
 }
 
 func SetAidFromContext[T RequestWithAid[T]](ctx context.Context, req T) T {
-	aid, ok := ctx.Value("aid").(string)
+	aid, ok := ctx.Value(accountGroupIdKey).(string)
 	if ok && len(aid) > 0 {
 		return req.Aid(aid)
 	}
 	return req
+}
+
+func GetContextWithAid(ctx context.Context) context.Context {
+	aid, ok := ctx.Value(accountGroupIdKey).(string)
+	if ok && len(aid) > 0 {
+		return context.WithValue(context.Background(), accountGroupIdKey, aid)
+	}
+	return context.Background()
+
 }
 
 func getPointer[T any](v T) *T {

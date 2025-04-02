@@ -1,6 +1,7 @@
 package thousandeyes
 
 import (
+	"context"
 	"log"
 
 	"github.com/thousandeyes/terraform-provider-thousandeyes/thousandeyes/schemas"
@@ -9,6 +10,10 @@ import (
 	"github.com/thousandeyes/thousandeyes-sdk-go/v3/client"
 	"github.com/thousandeyes/thousandeyes-sdk-go/v3/tests"
 )
+
+type emulationDeviceIdKeyType string
+
+const emulationDeviceIdKey emulationDeviceIdKeyType = "emulation_device_id"
 
 func resourcePageLoad() *schema.Resource {
 	resource := schema.Resource{
@@ -33,6 +38,12 @@ func resourcePageLoadRead(d *schema.ResourceData, m interface{}) error {
 		req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 		resp, _, err := req.Execute()
+		edID := apiClient.GetConfig().Context.Value(emulationDeviceIdKey)
+		if edID == nil {
+			resp.EmulatedDeviceId = nil
+		} else {
+			apiClient.GetConfig().Context = GetContextWithAid(apiClient.GetConfig().Context)
+		}
 		return resp, err
 	})
 }
@@ -43,6 +54,13 @@ func resourcePageLoadUpdate(d *schema.ResourceData, m interface{}) error {
 
 	log.Printf("[INFO] Updating ThousandEyes Test %s", d.Id())
 	update := buildPageLoadStruct(d)
+	if update.EmulatedDeviceId != nil && len(*update.EmulatedDeviceId) > 0 {
+		apiClient.GetConfig().Context = context.WithValue(
+			apiClient.GetConfig().Context,
+			emulationDeviceIdKey,
+			struct{}{},
+		)
+	}
 
 	req := api.UpdatePageLoadTest(d.Id()).PageLoadTestRequest(*update).Expand(tests.AllowedExpandTestOptionsEnumValues)
 	req = SetAidFromContext(apiClient.GetConfig().Context, req)
@@ -76,6 +94,13 @@ func resourcePageLoadCreate(d *schema.ResourceData, m interface{}) error {
 
 	log.Printf("[INFO] Creating ThousandEyes Test %s", d.Id())
 	local := buildPageLoadStruct(d)
+	if local.EmulatedDeviceId != nil && len(*local.EmulatedDeviceId) > 0 {
+		apiClient.GetConfig().Context = context.WithValue(
+			apiClient.GetConfig().Context,
+			emulationDeviceIdKey,
+			struct{}{},
+		)
+	}
 
 	req := api.CreatePageLoadTest().PageLoadTestRequest(*local).Expand(tests.AllowedExpandTestOptionsEnumValues)
 	req = SetAidFromContext(apiClient.GetConfig().Context, req)
