@@ -38,11 +38,12 @@ func resourcePageLoadRead(d *schema.ResourceData, m interface{}) error {
 		req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 		resp, _, err := req.Execute()
-		edID, ok := apiClient.GetConfig().Context.Value(emulationDeviceIdKey).(*string)
-		if !ok || edID == nil {
+		edID := apiClient.GetConfig().Context.Value(emulationDeviceIdKey)
+		if edID == nil {
 			resp.EmulatedDeviceId = nil
+		} else {
+			apiClient.GetConfig().Context = GetContextWithAid(apiClient.GetConfig().Context)
 		}
-		apiClient.GetConfig().Context = context.WithValue(apiClient.GetConfig().Context, emulationDeviceIdKey, nil)
 		return resp, err
 	})
 }
@@ -57,7 +58,7 @@ func resourcePageLoadUpdate(d *schema.ResourceData, m interface{}) error {
 		apiClient.GetConfig().Context = context.WithValue(
 			apiClient.GetConfig().Context,
 			emulationDeviceIdKey,
-			update.EmulatedDeviceId,
+			struct{}{},
 		)
 	}
 
@@ -97,7 +98,7 @@ func resourcePageLoadCreate(d *schema.ResourceData, m interface{}) error {
 		apiClient.GetConfig().Context = context.WithValue(
 			apiClient.GetConfig().Context,
 			emulationDeviceIdKey,
-			local.EmulatedDeviceId,
+			struct{}{},
 		)
 	}
 

@@ -737,6 +737,15 @@ func SetAidFromContext[T RequestWithAid[T]](ctx context.Context, req T) T {
 	return req
 }
 
+func GetContextWithAid(ctx context.Context) context.Context {
+	aid, ok := ctx.Value(accountGroupIdKey).(string)
+	if ok && len(aid) > 0 {
+		return context.WithValue(context.Background(), accountGroupIdKey, aid)
+	}
+	return context.Background()
+
+}
+
 func getPointer[T any](v T) *T {
 	return &v
 }
