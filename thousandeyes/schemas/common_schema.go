@@ -763,7 +763,6 @@ var CommonSchema = map[string]*schema.Schema{
 		Type:        schema.TypeString,
 		Description: "ID of the emulated device, if one was given when the test was created.",
 		Optional:    true,
-		Computed:    true,
 	},
 	// pageLoadTargetTime
 	"page_load_target_time": {
