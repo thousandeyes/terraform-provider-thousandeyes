@@ -42,7 +42,7 @@ func resourceSIPServerUpdate(d *schema.ResourceData, m interface{}) error {
 	api := (*tests.SIPServerTestsAPIService)(&apiClient.Common)
 
 	log.Printf("[INFO] Updating ThousandEyes Test %s", d.Id())
-	update := ResourceUpdate(d, &tests.SipServerTestRequest{})
+	update := buildSIPServerStruct(d)
 	// While most ThousandEyes updates only require updated fields and specifically
 	// disallow some fields on update, SIP Server tests actually require a few fields
 	// within the targetSipCredentials object to be retained on update.

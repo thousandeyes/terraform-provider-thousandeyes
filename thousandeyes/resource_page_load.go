@@ -13,7 +13,7 @@ import (
 
 type emulationDeviceIdKeyType string
 
-const emulationDeviceIdKey emulationDeviceIdKeyType = "emulation_device_id"
+const pageLoadEmulationDeviceIdKey emulationDeviceIdKeyType = "pl_emulation_device_id"
 
 func resourcePageLoad() *schema.Resource {
 	resource := schema.Resource{
@@ -38,7 +38,7 @@ func resourcePageLoadRead(d *schema.ResourceData, m interface{}) error {
 		req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 		resp, _, err := req.Execute()
-		edID := apiClient.GetConfig().Context.Value(emulationDeviceIdKey)
+		edID := apiClient.GetConfig().Context.Value(pageLoadEmulationDeviceIdKey)
 		if edID == nil {
 			resp.EmulatedDeviceId = nil
 		} else {
@@ -57,7 +57,7 @@ func resourcePageLoadUpdate(d *schema.ResourceData, m interface{}) error {
 	if update.EmulatedDeviceId != nil && len(*update.EmulatedDeviceId) > 0 {
 		apiClient.GetConfig().Context = context.WithValue(
 			apiClient.GetConfig().Context,
-			emulationDeviceIdKey,
+			pageLoadEmulationDeviceIdKey,
 			struct{}{},
 		)
 	}
@@ -97,7 +97,7 @@ func resourcePageLoadCreate(d *schema.ResourceData, m interface{}) error {
 	if local.EmulatedDeviceId != nil && len(*local.EmulatedDeviceId) > 0 {
 		apiClient.GetConfig().Context = context.WithValue(
 			apiClient.GetConfig().Context,
-			emulationDeviceIdKey,
+			pageLoadEmulationDeviceIdKey,
 			struct{}{},
 		)
 	}

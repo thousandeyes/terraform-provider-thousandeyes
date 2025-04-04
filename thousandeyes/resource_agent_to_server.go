@@ -57,7 +57,7 @@ func resourceAgentServerUpdate(d *schema.ResourceData, m interface{}) error {
 	api := (*tests.AgentToServerTestsAPIService)(&apiClient.Common)
 
 	log.Printf("[INFO] Updating ThousandEyes Test %s", d.Id())
-	update := ResourceUpdate(d, &tests.AgentToServerTestRequest{})
+	update := buildAgentServerStruct(d)
 
 	req := api.UpdateAgentToServerTest(d.Id()).AgentToServerTestRequest(*update).Expand(tests.AllowedExpandTestOptionsEnumValues)
 	req = SetAidFromContext(apiClient.GetConfig().Context, req)

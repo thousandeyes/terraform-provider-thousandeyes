@@ -42,12 +42,13 @@ func resourceBGPUpdate(d *schema.ResourceData, m interface{}) error {
 	api := (*tests.BGPTestsAPIService)(&apiClient.Common)
 
 	log.Printf("[INFO] Updating ThousandEyes Test %s", d.Id())
-	update := ResourceUpdate(d, &tests.UpdateBgpTestRequest{})
+	update := buildUpdateBGPStruct(d)
 
 	req := api.UpdateBgpTest(d.Id()).UpdateBgpTestRequest(*update).Expand(tests.AllowedExpandBgpTestOptionsEnumValues)
 	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 	_, _, err := req.Execute()
+
 	if err != nil {
 		return err
 	}
@@ -93,4 +94,8 @@ func resourceBGPCreate(d *schema.ResourceData, m interface{}) error {
 
 func buildBGPStruct(d *schema.ResourceData) *tests.BgpTestRequest {
 	return ResourceBuildStruct(d, &tests.BgpTestRequest{})
+}
+
+func buildUpdateBGPStruct(d *schema.ResourceData) *tests.UpdateBgpTestRequest {
+	return ResourceBuildStruct(d, &tests.UpdateBgpTestRequest{})
 }
