@@ -18,7 +18,6 @@ resource "thousandeyes_agent_to_server" "agent_to_server_test" {
   alerts_enabled   = true
   server           = "api.stg.thousandeyes.com"
   protocol         = "tcp"
-  port             = 443
   enabled          = true
   bgp_measurements = true
   use_public_bgp   = true
