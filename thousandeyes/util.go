@@ -66,7 +66,7 @@ func ResourceBuildStruct[T any](d *schema.ResourceData, structPtr *T) *T {
 			v.Field(i).Set(setVal)
 		}
 	}
-	return resourceFixups[T](d, structPtr)
+	return resourceFixups(d, structPtr)
 }
 
 // GetResource is a generic function for reading resources.
@@ -191,6 +191,10 @@ func FixReadValues(targetMaps map[string]map[string]interface{}, m interface{}, 
 			m.([]interface{})[i] = agent["agent_id"]
 		}
 	//Return only host when host:port pattern obtained
+	case "server":
+		m = strings.Split(m.(string), ":")[0]
+
+	// Return only host when host:port pattern obtained
 	case "server":
 		m = strings.Split(m.(string), ":")[0]
 
@@ -528,7 +532,7 @@ func ResourceUpdate[T any](d *schema.ResourceData, structPtr *T) *T {
 		}
 	}
 	d.Partial(false)
-	return resourceFixups[T](d, structPtr)
+	return resourceFixups(d, structPtr)
 }
 
 // ResourceSchemaBuild creates a map of schemas based on the fields
@@ -641,8 +645,8 @@ func FillValue(source interface{}, target interface{}) interface{} {
 	case reflect.Int:
 		// Values destined to be ints may come to us as strings.
 		if reflect.TypeOf(source).Kind() == reflect.String {
-			i, _ := strconv.Atoi(source.(string))
-			return i
+			i, _ := strconv.ParseInt(source.(string), 10, 32)
+			return int(i)
 		}
 
 		return source

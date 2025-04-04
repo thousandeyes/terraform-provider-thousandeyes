@@ -102,11 +102,3 @@ func resourceAlertRuleCreate(d *schema.ResourceData, m interface{}) error {
 func buildAlertRuleStruct(d *schema.ResourceData) *alerts.RuleDetailUpdate {
 	return ResourceBuildStruct(d, &alerts.RuleDetailUpdate{})
 }
-
-func testIds(tests []alerts.AlertSimpleTest) *[]string {
-	var testIds []string
-	for _, test := range tests {
-		testIds = append(testIds, *test.TestId)
-	}
-	return &testIds
-}

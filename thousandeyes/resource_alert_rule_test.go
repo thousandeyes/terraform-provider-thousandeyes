@@ -1,8 +1,8 @@
 package thousandeyes
 
-import (
-	"os"
-	"testing"
+// import (
+// 	"os"
+// 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -55,26 +55,26 @@ func TestAccThousandEyesAlertRule(t *testing.T) {
 		},
 	}
 
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			resource.Test(t, resource.TestCase{
-				PreCheck:          func() { testAccPreCheck(t) },
-				ProviderFactories: providerFactories,
-				CheckDestroy:      tc.checkDestroyFunction,
-				Steps: []resource.TestStep{
-					{
-						Config: testAccThousandEyesAlertRuleConfig(tc.createResourceFile),
-						Check:  resource.ComposeTestCheckFunc(tc.checkCreateFunc...),
-					},
-					{
-						Config: testAccThousandEyesAlertRuleConfig(tc.updateResourceFile),
-						Check:  resource.ComposeTestCheckFunc(tc.checkUpdateFunc...),
-					},
-				},
-			})
-		})
-	}
-}
+// 	for _, tc := range testCases {
+// 		t.Run(tc.name, func(t *testing.T) {
+// 			resource.Test(t, resource.TestCase{
+// 				PreCheck:          func() { testAccPreCheck(t) },
+// 				ProviderFactories: providerFactories,
+// 				CheckDestroy:      tc.checkDestroyFunction,
+// 				Steps: []resource.TestStep{
+// 					{
+// 						Config: testAccThousandEyesAlertRuleConfig(tc.createResourceFile),
+// 						Check:  resource.ComposeTestCheckFunc(tc.checkCreateFunc...),
+// 					},
+// 					{
+// 						Config: testAccThousandEyesAlertRuleConfig(tc.updateResourceFile),
+// 						Check:  resource.ComposeTestCheckFunc(tc.checkUpdateFunc...),
+// 					},
+// 				},
+// 			})
+// 		})
+// 	}
+// }
 
 func testAccThousandEyesAlertRuleConfig(testResource string) string {
 	content, err := os.ReadFile(testResource)

@@ -48,6 +48,7 @@ func resourceBGPUpdate(d *schema.ResourceData, m interface{}) error {
 	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 	_, _, err := req.Execute()
+
 	if err != nil {
 		return err
 	}

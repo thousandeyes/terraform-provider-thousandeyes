@@ -1,0 +1,77 @@
+name: Security Checks
+
+on:
+  pull_request:
+    branches: ["main", "v3"]
+
+jobs:
+  codeql-analysis:
+    name: CodeQL Analysis
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: go
+          queries: +security-and-quality
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          analyze-incremental: true
+
+  dependency-scan:
+    name: Dependency Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Run Trivy Vulnerability Scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: fs
+          ignore-unfixed: true
+          exit-code: 1
+          severity: CRITICAL,HIGH
+          scanners: vuln,config,secret
+
+  go-lint:
+    name: Go Linter (PR Changes Only)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        
+      - name: Run GolangCI-Lint
+        uses: golangci/golangci-lint-action@v7
+        with:
+          version: v2.0.2
+          only-new-issues: true
+          args: --tests=false
+
+  terraform-security:
+    name: Terraform Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Run tfsec
+        uses: aquasecurity/tfsec-action@v1.0.0
+
+      - name: Run Checkov
+        run: |
+          CHANGED_FILES=$(git diff --name-only origin/main | grep '\.tf$' || true)
+          if [[ -n "$CHANGED_FILES" ]]; then
+            checkov -f $CHANGED_FILES --quiet
+          else
+            echo "No Terraform files changed."
+          fi
