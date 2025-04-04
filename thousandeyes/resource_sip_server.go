@@ -1,16 +1,19 @@
 package thousandeyes
 
 import (
+	"context"
 	"log"
-	"strconv"
+
+	"github.com/thousandeyes/terraform-provider-thousandeyes/thousandeyes/schemas"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/thousandeyes/thousandeyes-sdk-go/v2"
+	"github.com/thousandeyes/thousandeyes-sdk-go/v3/client"
+	"github.com/thousandeyes/thousandeyes-sdk-go/v3/tests"
 )
 
 func resourceSIPServer() *schema.Resource {
 	resource := schema.Resource{
-		Schema: ResourceSchemaBuild(thousandeyes.SIPServer{}, schemas, nil),
+		Schema: ResourceSchemaBuild(tests.SipServerTestRequest{}, schemas.CommonSchema, nil),
 		Create: resourceSIPServerCreate,
 		Read:   resourceSIPServerRead,
 		Update: resourceSIPServerUpdate,
@@ -24,17 +27,23 @@ func resourceSIPServer() *schema.Resource {
 }
 
 func resourceSIPServerRead(d *schema.ResourceData, m interface{}) error {
-	return GetResource(d, m, func(client *thousandeyes.Client, id int64) (interface{}, error) {
-		return client.GetSIPServer(id)
+	return GetResource(context.Background(), d, m, func(apiClient *client.APIClient, id string) (interface{}, error) {
+		api := (*tests.SIPServerTestsAPIService)(&apiClient.Common)
+
+		req := api.GetSipServerTest(id).Expand(tests.AllowedExpandTestOptionsEnumValues)
+		req = SetAidFromContext(apiClient.GetConfig().Context, req)
+
+		resp, _, err := req.Execute()
+		return resp, err
 	})
 }
 
 func resourceSIPServerUpdate(d *schema.ResourceData, m interface{}) error {
-	client := m.(*thousandeyes.Client)
+	apiClient := m.(*client.APIClient)
+	api := (*tests.SIPServerTestsAPIService)(&apiClient.Common)
 
 	log.Printf("[INFO] Updating ThousandEyes Test %s", d.Id())
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	update := ResourceUpdate(d, &thousandeyes.SIPServer{}).(*thousandeyes.SIPServer)
+	update := buildSIPServerStruct(d)
 	// While most ThousandEyes updates only require updated fields and specifically
 	// disallow some fields on update, SIP Server tests actually require a few fields
 	// within the targetSipCredentials object to be retained on update.
@@ -43,20 +52,26 @@ func resourceSIPServerUpdate(d *schema.ResourceData, m interface{}) error {
 	// Unlike other cases, we can send all non-updated values within targetSipCredentials
 	// without being rejected.
 	fullUpdate := buildSIPServerStruct(d)
-	update.TargetSIPCredentials = fullUpdate.TargetSIPCredentials
-	_, err := client.UpdateSIPServer(id, *update)
-	if err != nil {
+	update.TargetSipCredentials = fullUpdate.TargetSipCredentials
+	req := api.UpdateSipServerTest(d.Id()).SipServerTestRequest(*update).Expand(tests.AllowedExpandTestOptionsEnumValues)
+	req = SetAidFromContext(apiClient.GetConfig().Context, req)
+
+	if _, _, err := req.Execute(); err != nil {
 		return err
 	}
 	return resourceSIPServerRead(d, m)
 }
 
 func resourceSIPServerDelete(d *schema.ResourceData, m interface{}) error {
-	client := m.(*thousandeyes.Client)
+	apiClient := m.(*client.APIClient)
+	api := (*tests.SIPServerTestsAPIService)(&apiClient.Common)
 
 	log.Printf("[INFO] Deleting ThousandEyes Test %s", d.Id())
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	if err := client.DeleteSIPServer(id); err != nil {
+
+	req := api.DeleteSipServerTest(d.Id())
+	req = SetAidFromContext(apiClient.GetConfig().Context, req)
+
+	if _, err := req.Execute(); err != nil {
 		return err
 	}
 	d.SetId("")
@@ -64,18 +79,25 @@ func resourceSIPServerDelete(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceSIPServerCreate(d *schema.ResourceData, m interface{}) error {
-	client := m.(*thousandeyes.Client)
+	apiClient := m.(*client.APIClient)
+	api := (*tests.SIPServerTestsAPIService)(&apiClient.Common)
+
 	log.Printf("[INFO] Creating ThousandEyes Test %s", d.Id())
 	local := buildSIPServerStruct(d)
-	remote, err := client.CreateSIPServer(*local)
+
+	req := api.CreateSipServerTest().SipServerTestRequest(*local).Expand(tests.AllowedExpandTestOptionsEnumValues)
+	req = SetAidFromContext(apiClient.GetConfig().Context, req)
+
+	resp, _, err := req.Execute()
 	if err != nil {
 		return err
 	}
-	id := *remote.TestID
-	d.SetId(strconv.FormatInt(id, 10))
+
+	id := *resp.TestId
+	d.SetId(id)
 	return resourceSIPServerRead(d, m)
 }
 
-func buildSIPServerStruct(d *schema.ResourceData) *thousandeyes.SIPServer {
-	return ResourceBuildStruct(d, &thousandeyes.SIPServer{}).(*thousandeyes.SIPServer)
+func buildSIPServerStruct(d *schema.ResourceData) *tests.SipServerTestRequest {
+	return ResourceBuildStruct(d, &tests.SipServerTestRequest{})
 }

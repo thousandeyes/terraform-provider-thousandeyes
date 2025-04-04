@@ -11,7 +11,7 @@ import (
 
 func dataSourceThousandeyesAlertRule() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceThousandeyesAgentRead,
+		Read: dataSourceThousandeyesAlertRuleRead,
 
 		Schema: map[string]*schema.Schema{
 			"rule_name": {

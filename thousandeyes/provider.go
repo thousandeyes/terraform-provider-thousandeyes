@@ -11,6 +11,10 @@ import (
 	"github.com/thousandeyes/thousandeyes-sdk-go/v3/client"
 )
 
+type accountGroupIdKeyType string
+
+const accountGroupIdKey accountGroupIdKeyType = "aid"
+
 func New() func() *schema.Provider {
 	return func() *schema.Provider {
 		return Provider()
@@ -75,7 +79,7 @@ func providerConfigureWithContext(_ context.Context, d *schema.ResourceData) (in
 	log.Println("[INFO] Initializing ThousandEyes client")
 
 	// set AID to context
-	ctx := context.WithValue(context.Background(), "aid", d.Get("account_group_id").(string))
+	ctx := context.WithValue(context.Background(), accountGroupIdKey, d.Get("account_group_id").(string))
 
 	configuration := &client.Configuration{
 		AuthToken:  d.Get("token").(string),

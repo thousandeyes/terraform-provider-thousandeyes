@@ -1,12 +1,15 @@
 package thousandeyes
 
 import (
+	"context"
 	"log"
-	"strconv"
+
+	"github.com/thousandeyes/terraform-provider-thousandeyes/thousandeyes/schemas"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/thousandeyes/thousandeyes-sdk-go/v2"
+	"github.com/thousandeyes/thousandeyes-sdk-go/v3/client"
+	"github.com/thousandeyes/thousandeyes-sdk-go/v3/tests"
 )
 
 func resourceAgentToServer() *schema.Resource {
@@ -25,7 +28,7 @@ func resourceAgentToServer() *schema.Resource {
 	}
 
 	resource := schema.Resource{
-		Schema: ResourceSchemaBuild(thousandeyes.AgentServer{}, schemas, agentToServerSchemasOverride),
+		Schema: ResourceSchemaBuild(tests.AgentToServerTestRequest{}, schemas.CommonSchema, agentToServerSchemasOverride),
 		Create: resourceAgentServerCreate,
 		Read:   resourceAgentServerRead,
 		Update: resourceAgentServerUpdate,
@@ -39,18 +42,28 @@ func resourceAgentToServer() *schema.Resource {
 }
 
 func resourceAgentServerRead(d *schema.ResourceData, m interface{}) error {
-	return GetResource(d, m, func(client *thousandeyes.Client, id int64) (interface{}, error) {
-		return client.GetAgentServer(id)
+	return GetResource(context.Background(), d, m, func(apiClient *client.APIClient, id string) (interface{}, error) {
+		api := (*tests.AgentToServerTestsAPIService)(&apiClient.Common)
+
+		req := api.GetAgentToServerTest(id).Expand(tests.AllowedExpandTestOptionsEnumValues)
+		req = SetAidFromContext(apiClient.GetConfig().Context, req)
+
+		resp, _, err := req.Execute()
+		return resp, err
 	})
 }
 
 func resourceAgentServerUpdate(d *schema.ResourceData, m interface{}) error {
-	client := m.(*thousandeyes.Client)
+	apiClient := m.(*client.APIClient)
+	api := (*tests.AgentToServerTestsAPIService)(&apiClient.Common)
 
 	log.Printf("[INFO] Updating ThousandEyes Test %s", d.Id())
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	update := ResourceUpdate(d, &thousandeyes.AgentServer{}).(*thousandeyes.AgentServer)
-	_, err := client.UpdateAgentServer(id, *update)
+	update := buildAgentServerStruct(d)
+
+	req := api.UpdateAgentToServerTest(d.Id()).AgentToServerTestRequest(*update).Expand(tests.AllowedExpandTestOptionsEnumValues)
+	req = SetAidFromContext(apiClient.GetConfig().Context, req)
+
+	_, _, err := req.Execute()
 	if err != nil {
 		return err
 	}
@@ -58,11 +71,15 @@ func resourceAgentServerUpdate(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceAgentServerDelete(d *schema.ResourceData, m interface{}) error {
-	client := m.(*thousandeyes.Client)
+	apiClient := m.(*client.APIClient)
+	api := (*tests.AgentToServerTestsAPIService)(&apiClient.Common)
 
 	log.Printf("[INFO] Deleting ThousandEyes Test %s", d.Id())
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	if err := client.DeleteAgentServer(id); err != nil {
+
+	req := api.DeleteAgentToServerTest(d.Id())
+	req = SetAidFromContext(apiClient.GetConfig().Context, req)
+
+	if _, err := req.Execute(); err != nil {
 		return err
 	}
 	d.SetId("")
@@ -70,18 +87,25 @@ func resourceAgentServerDelete(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceAgentServerCreate(d *schema.ResourceData, m interface{}) error {
-	client := m.(*thousandeyes.Client)
+	apiClient := m.(*client.APIClient)
+	api := (*tests.AgentToServerTestsAPIService)(&apiClient.Common)
+
 	log.Printf("[INFO] Creating ThousandEyes Test %s", d.Id())
 	local := buildAgentServerStruct(d)
-	remote, err := client.CreateAgentServer(*local)
+
+	req := api.CreateAgentToServerTest().AgentToServerTestRequest(*local).Expand(tests.AllowedExpandTestOptionsEnumValues)
+	req = SetAidFromContext(apiClient.GetConfig().Context, req)
+
+	resp, _, err := req.Execute()
 	if err != nil {
 		return err
 	}
-	id := *remote.TestID
-	d.SetId(strconv.FormatInt(id, 10))
+
+	id := *resp.TestId
+	d.SetId(id)
 	return resourceAgentServerRead(d, m)
 }
 
-func buildAgentServerStruct(d *schema.ResourceData) *thousandeyes.AgentServer {
-	return ResourceBuildStruct(d, &thousandeyes.AgentServer{}).(*thousandeyes.AgentServer)
+func buildAgentServerStruct(d *schema.ResourceData) *tests.AgentToServerTestRequest {
+	return ResourceBuildStruct(d, &tests.AgentToServerTestRequest{})
 }

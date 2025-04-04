@@ -1,20 +1,26 @@
 package thousandeyes
 
 import (
+	"context"
 	"log"
-	"strconv"
 
+	"github.com/thousandeyes/terraform-provider-thousandeyes/thousandeyes/schemas"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/thousandeyes/thousandeyes-sdk-go/v2"
+	"github.com/thousandeyes/thousandeyes-sdk-go/v3/client"
+	"github.com/thousandeyes/thousandeyes-sdk-go/v3/tests"
 )
+
+// const webTrEmulationDeviceIdKey emulationDeviceIdKeyType = "wt_emulation_device_id"
 
 func resourceWebTransaction() *schema.Resource {
 	resource := schema.Resource{
-		Schema: ResourceSchemaBuild(thousandeyes.WebTransaction{}, schemas, nil),
-		Create: resourceWebTransactionCreate,
-		Read:   resourceWebTransactionRead,
-		Update: resourceWebTransactionUpdate,
-		Delete: resourceWebTransactionDelete,
+		Schema:        ResourceSchemaBuild(tests.WebTransactionTestRequest{}, schemas.CommonSchema, nil),
+		CreateContext: resourceWebTransactionCreate,
+		ReadContext:   resourceWebTransactionRead,
+		UpdateContext: resourceWebTransactionUpdate,
+		DeleteContext: resourceWebTransactionDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -23,50 +29,87 @@ func resourceWebTransaction() *schema.Resource {
 	return &resource
 }
 
-func resourceWebTransactionRead(d *schema.ResourceData, m interface{}) error {
-	return GetResource(d, m, func(client *thousandeyes.Client, id int64) (interface{}, error) {
-		return client.GetWebTransaction(id)
-	})
+func resourceWebTransactionRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	return diag.FromErr(
+		GetResource(ctx, d, m, func(apiClient *client.APIClient, id string) (interface{}, error) {
+			api := (*tests.WebTransactionTestsAPIService)(&apiClient.Common)
+
+			req := api.GetWebTransactionsTest(id).Expand(tests.AllowedExpandTestOptionsEnumValues)
+			req = SetAidFromContext(apiClient.GetConfig().Context, req)
+
+			resp, _, err := req.Execute()
+			return resp, err
+		}),
+	)
 }
 
-func resourceWebTransactionUpdate(d *schema.ResourceData, m interface{}) error {
-	client := m.(*thousandeyes.Client)
+func resourceWebTransactionUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	apiClient := m.(*client.APIClient)
+	api := (*tests.WebTransactionTestsAPIService)(&apiClient.Common)
 
 	log.Printf("[INFO] Updating ThousandEyes Test %s", d.Id())
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	update := ResourceUpdate(d, &thousandeyes.WebTransaction{}).(*thousandeyes.WebTransaction)
-	_, err := client.UpdateWebTransaction(id, *update)
-	if err != nil {
-		return err
+	update := buildWebTransactionStruct(d)
+	if update.EmulatedDeviceId != nil && len(*update.EmulatedDeviceId) > 0 {
+		ctx = context.WithValue(
+			ctx,
+			emulationDeviceIdKey,
+			struct{}{},
+		)
 	}
-	return resourceWebTransactionRead(d, m)
+
+	req := api.UpdateWebTransactionsTest(d.Id()).WebTransactionTestRequest(*update).Expand(tests.AllowedExpandTestOptionsEnumValues)
+	req = SetAidFromContext(apiClient.GetConfig().Context, req)
+
+	_, _, err := req.Execute()
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	return resourceWebTransactionRead(ctx, d, m)
 }
 
-func resourceWebTransactionDelete(d *schema.ResourceData, m interface{}) error {
-	client := m.(*thousandeyes.Client)
+func resourceWebTransactionDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	apiClient := m.(*client.APIClient)
+	api := (*tests.WebTransactionTestsAPIService)(&apiClient.Common)
 
 	log.Printf("[INFO] Deleting ThousandEyes Test %s", d.Id())
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	if err := client.DeleteWebTransaction(id); err != nil {
-		return err
+
+	req := api.DeleteWebTransactionsTest(d.Id())
+	req = SetAidFromContext(apiClient.GetConfig().Context, req)
+
+	if _, err := req.Execute(); err != nil {
+		return diag.FromErr(err)
 	}
 	d.SetId("")
 	return nil
 }
 
-func resourceWebTransactionCreate(d *schema.ResourceData, m interface{}) error {
-	client := m.(*thousandeyes.Client)
+func resourceWebTransactionCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	apiClient := m.(*client.APIClient)
+	api := (*tests.WebTransactionTestsAPIService)(&apiClient.Common)
+
 	log.Printf("[INFO] Creating ThousandEyes Test %s", d.Id())
 	local := buildWebTransactionStruct(d)
-	remote, err := client.CreateWebTransaction(*local)
-	if err != nil {
-		return err
+	if local.EmulatedDeviceId != nil && len(*local.EmulatedDeviceId) > 0 {
+		ctx = context.WithValue(
+			ctx,
+			emulationDeviceIdKey,
+			struct{}{},
+		)
 	}
-	id := *remote.TestID
-	d.SetId(strconv.FormatInt(id, 10))
-	return resourceWebTransactionRead(d, m)
+
+	req := api.CreateWebTransactionsTest().WebTransactionTestRequest(*local).Expand(tests.AllowedExpandTestOptionsEnumValues)
+	req = SetAidFromContext(apiClient.GetConfig().Context, req)
+
+	resp, _, err := req.Execute()
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	id := *resp.TestId
+	d.SetId(id)
+	return resourceWebTransactionRead(ctx, d, m)
 }
 
-func buildWebTransactionStruct(d *schema.ResourceData) *thousandeyes.WebTransaction {
-	return ResourceBuildStruct(d, &thousandeyes.WebTransaction{}).(*thousandeyes.WebTransaction)
+func buildWebTransactionStruct(d *schema.ResourceData) *tests.WebTransactionTestRequest {
+	return ResourceBuildStruct(d, &tests.WebTransactionTestRequest{})
 }
