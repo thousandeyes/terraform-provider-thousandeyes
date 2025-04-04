@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/thousandeyes/thousandeyes-sdk-go/v3/alerts"
 )
 
 func TestAccThousandEyesAlertRule(t *testing.T) {
@@ -27,14 +28,14 @@ func TestAccThousandEyesAlertRule(t *testing.T) {
 					{
 						Name:         "Agent To Server Test",
 						ResourceName: "thousandeyes_agent_to_server",
-						GetResource: func(id int64) (interface{}, error) {
-							return testClient.GetAgentServer(id)
+						GetResource: func(id string) (interface{}, error) {
+							return getAgentToServer(id)
 						}},
 					{
 						Name:         "Agent To Server Alert Rule Test",
 						ResourceName: "thousandeyes_alert_rule",
-						GetResource: func(id int64) (interface{}, error) {
-							return testClient.GetAlertRule(id)
+						GetResource: func(id string) (interface{}, error) {
+							return getAlertRule(id)
 						}},
 				}
 				return testAccCheckResourceDestroy(resourceList, state)
@@ -81,4 +82,12 @@ func testAccThousandEyesAlertRuleConfig(testResource string) string {
 		panic(err)
 	}
 	return string(content)
+}
+
+func getAlertRule(id string) (interface{}, error) {
+	api := (*alerts.AlertRulesAPIService)(&testClient.Common)
+	req := api.GetAlertRule(id)
+	req = SetAidFromContext(testClient.GetConfig().Context, req)
+	resp, _, err := req.Execute()
+	return resp, err
 }
