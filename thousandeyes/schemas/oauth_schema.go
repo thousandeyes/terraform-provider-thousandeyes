@@ -48,6 +48,7 @@ var oauth = &schema.Schema{
 				Type:        schema.TypeString,
 				Description: "Request headers used for OAuth.",
 				Optional:    true,
+				Sensitive:   true,
 			},
 			"auth_type": {
 				Type:        schema.TypeString,
@@ -71,6 +72,7 @@ var oauth = &schema.Schema{
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "OAuth password",
+				Sensitive:   true,
 			},
 		},
 	},
