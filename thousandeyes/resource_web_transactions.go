@@ -1,6 +1,7 @@
 package thousandeyes
 
 import (
+	"context"
 	"log"
 
 	"github.com/thousandeyes/terraform-provider-thousandeyes/thousandeyes/schemas"
@@ -9,6 +10,8 @@ import (
 	"github.com/thousandeyes/thousandeyes-sdk-go/v3/client"
 	"github.com/thousandeyes/thousandeyes-sdk-go/v3/tests"
 )
+
+const webTrEmulationDeviceIdKey emulationDeviceIdKeyType = "wt_emulation_device_id"
 
 func resourceWebTransaction() *schema.Resource {
 	resource := schema.Resource{
@@ -33,6 +36,12 @@ func resourceWebTransactionRead(d *schema.ResourceData, m interface{}) error {
 		req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 		resp, _, err := req.Execute()
+		edID := apiClient.GetConfig().Context.Value(webTrEmulationDeviceIdKey)
+		if edID == nil {
+			resp.EmulatedDeviceId = nil
+		} else {
+			apiClient.GetConfig().Context = GetContextWithAid(apiClient.GetConfig().Context)
+		}
 		return resp, err
 	})
 }
@@ -43,6 +52,13 @@ func resourceWebTransactionUpdate(d *schema.ResourceData, m interface{}) error {
 
 	log.Printf("[INFO] Updating ThousandEyes Test %s", d.Id())
 	update := buildWebTransactionStruct(d)
+	if update.EmulatedDeviceId != nil && len(*update.EmulatedDeviceId) > 0 {
+		apiClient.GetConfig().Context = context.WithValue(
+			apiClient.GetConfig().Context,
+			webTrEmulationDeviceIdKey,
+			struct{}{},
+		)
+	}
 
 	req := api.UpdateWebTransactionsTest(d.Id()).WebTransactionTestRequest(*update).Expand(tests.AllowedExpandTestOptionsEnumValues)
 	req = SetAidFromContext(apiClient.GetConfig().Context, req)
@@ -76,6 +92,13 @@ func resourceWebTransactionCreate(d *schema.ResourceData, m interface{}) error {
 
 	log.Printf("[INFO] Creating ThousandEyes Test %s", d.Id())
 	local := buildWebTransactionStruct(d)
+	if local.EmulatedDeviceId != nil && len(*local.EmulatedDeviceId) > 0 {
+		apiClient.GetConfig().Context = context.WithValue(
+			apiClient.GetConfig().Context,
+			webTrEmulationDeviceIdKey,
+			struct{}{},
+		)
+	}
 
 	req := api.CreateWebTransactionsTest().WebTransactionTestRequest(*local).Expand(tests.AllowedExpandTestOptionsEnumValues)
 	req = SetAidFromContext(apiClient.GetConfig().Context, req)
