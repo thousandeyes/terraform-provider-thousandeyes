@@ -190,9 +190,6 @@ func FixReadValues(targetMaps map[string]map[string]interface{}, m interface{}, 
 			agent := v.(map[string]interface{})
 			m.([]interface{})[i] = agent["agent_id"]
 		}
-	//Return only host when host:port pattern obtained
-	case "server":
-		m = strings.Split(m.(string), ":")[0]
 
 	// Return only host when host:port pattern obtained
 	case "server":
