@@ -51,6 +51,7 @@ func resourceFTPServerUpdate(d *schema.ResourceData, m interface{}) error {
 
 	_, _, err := req.Execute()
 	if err != nil {
+		log.Println(err)
 		return err
 	}
 	return resourceFTPServerRead(d, m)
@@ -82,10 +83,10 @@ func resourceFTPServerCreate(d *schema.ResourceData, m interface{}) error {
 	req := api.CreateFtpServerTest().FtpServerTestRequest(*local).Expand(tests.AllowedExpandTestOptionsEnumValues)
 	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
-	resp, _, _ := req.Execute()
-	// if err != nil {
-	// 	return err
-	// }
+	resp, _, err := req.Execute()
+	if err != nil {
+		return err
+	}
 
 	id := *resp.TestId
 	d.SetId(id)
