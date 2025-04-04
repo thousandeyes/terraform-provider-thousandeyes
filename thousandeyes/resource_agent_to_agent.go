@@ -1,6 +1,7 @@
 package thousandeyes
 
 import (
+	"context"
 	"log"
 
 	"github.com/thousandeyes/terraform-provider-thousandeyes/thousandeyes/schemas"
@@ -37,7 +38,7 @@ func resourceAgentToAgent() *schema.Resource {
 }
 
 func resourceAgentAgentRead(d *schema.ResourceData, m interface{}) error {
-	return GetResource(d, m, func(apiClient *client.APIClient, id string) (interface{}, error) {
+	return GetResource(context.Background(), d, m, func(apiClient *client.APIClient, id string) (interface{}, error) {
 		api := (*tests.AgentToAgentTestsAPIService)(&apiClient.Common)
 
 		req := api.GetAgentToAgentTest(id).Expand(tests.AllowedExpandTestOptionsEnumValues)

@@ -1,6 +1,7 @@
 package thousandeyes
 
 import (
+	"context"
 	"log"
 
 	"github.com/thousandeyes/terraform-provider-thousandeyes/thousandeyes/schemas"
@@ -26,7 +27,7 @@ func resourceRTPStream() *schema.Resource {
 }
 
 func resourceRTPStreamRead(d *schema.ResourceData, m interface{}) error {
-	return GetResource(d, m, func(apiClient *client.APIClient, id string) (interface{}, error) {
+	return GetResource(context.Background(), d, m, func(apiClient *client.APIClient, id string) (interface{}, error) {
 		api := (*tests.VoiceTestsAPIService)(&apiClient.Common)
 
 		req := api.GetVoiceTest(id).Expand(tests.AllowedExpandTestOptionsEnumValues)

@@ -15,6 +15,10 @@ import (
 	"github.com/thousandeyes/thousandeyes-sdk-go/v3/tests"
 )
 
+type fieldKeyType string
+
+const emulationDeviceIdKey fieldKeyType = "emulation_device_id"
+
 type ResourceReadFunc func(client *client.APIClient, id string) (interface{}, error)
 
 type RequestWithAid[T any] interface {
@@ -70,9 +74,11 @@ func ResourceBuildStruct[T any](d *schema.ResourceData, structPtr *T) *T {
 }
 
 // GetResource is a generic function for reading resources.
-func GetResource(d *schema.ResourceData, m interface{}, readFunc ResourceReadFunc) error {
+func GetResource(ctx context.Context, d *schema.ResourceData, m interface{}, readFunc ResourceReadFunc) error {
 	apiClient := m.(*client.APIClient)
-	aid := apiClient.GetConfig().Context.Value(accountGroupIdKey).(string)
+	if aid, ok := apiClient.GetConfig().Context.Value(accountGroupIdKey).(string); ok {
+		ctx = context.WithValue(ctx, accountGroupIdKey, aid)
+	}
 
 	log.Printf("[INFO] Reading Thousandeyes Resource %s", d.Id())
 	remote, err := readFunc(apiClient, d.Id())
@@ -87,7 +93,7 @@ func GetResource(d *schema.ResourceData, m interface{}, readFunc ResourceReadFun
 	}
 
 	// Continue with updating the state
-	err = ResourceRead(d, remote, aid)
+	err = ResourceRead(ctx, d, remote)
 	if err != nil {
 		return err
 	}
@@ -97,7 +103,7 @@ func GetResource(d *schema.ResourceData, m interface{}, readFunc ResourceReadFun
 
 // ResourceRead sets values for a schema.ResourceData object by names derived
 // from the fields of the struct at the provided pointer.
-func ResourceRead(d *schema.ResourceData, structPtr interface{}, aid string) error {
+func ResourceRead(ctx context.Context, d *schema.ResourceData, structPtr interface{}) error {
 	v := reflect.ValueOf(structPtr).Elem()
 	t := reflect.TypeOf(v.Interface())
 
@@ -114,7 +120,7 @@ func ResourceRead(d *schema.ResourceData, structPtr interface{}, aid string) err
 		if err != nil {
 			return err
 		}
-		val, err = FixReadValues(targetMaps, val, &tfName, aid)
+		val, err = FixReadValues(ctx, targetMaps, val, &tfName)
 		if err != nil {
 			return err
 		}
@@ -172,7 +178,9 @@ func getTargetFieldsMaps(structPtr interface{}) map[string]map[string]interface{
 // and transforms certain values to match the expected schema.
 // We need to account for this data on so that it does not get saved to state and
 // cause conflict with configuration.
-func FixReadValues(targetMaps map[string]map[string]interface{}, m interface{}, name *string, aid string) (interface{}, error) {
+func FixReadValues(ctx context.Context, targetMaps map[string]map[string]interface{}, m interface{}, name *string) (interface{}, error) {
+	aid, _ := ctx.Value(accountGroupIdKey).(string)
+
 	// Set fields into map to match schema
 	for targetField := range targetMaps {
 		if _, ok := targetMaps[targetField][*name]; ok {
@@ -188,6 +196,14 @@ func FixReadValues(targetMaps map[string]map[string]interface{}, m interface{}, 
 		for i, v := range m.([]interface{}) {
 			agent := v.(map[string]interface{})
 			m.([]interface{})[i] = agent["agent_id"]
+		}
+
+	// Ignore emulated device ID if it wasn't set
+	case "emulated_device_id":
+		edID := ctx.Value(emulationDeviceIdKey)
+		if edID == nil {
+			*name = ""
+			return nil, nil
 		}
 
 	// Return only host when host:port pattern obtained
@@ -285,7 +301,7 @@ func FixReadValues(targetMaps map[string]map[string]interface{}, m interface{}, 
 		notifications := m.(map[string]interface{})
 
 		// this is a special case to handle internal email structure inside the notifications block
-		e, err = FixReadValues(nil, notifications["email"].(map[string]interface{}), getPointer("email"), aid)
+		e, err = FixReadValues(ctx, nil, notifications["email"].(map[string]interface{}), getPointer("email"))
 		if err != nil {
 			return nil, err
 		}
@@ -293,7 +309,7 @@ func FixReadValues(targetMaps map[string]map[string]interface{}, m interface{}, 
 		// third party notifications
 		var tp interface{}
 		if _, ok := notifications["third_party"]; ok {
-			tp, err = FixReadValues(nil, notifications["third_party"].([]interface{}), getPointer("third_party"), aid)
+			tp, err = FixReadValues(ctx, nil, notifications["third_party"].([]interface{}), getPointer("third_party"))
 			if err != nil {
 				return nil, err
 			}
@@ -304,7 +320,7 @@ func FixReadValues(targetMaps map[string]map[string]interface{}, m interface{}, 
 		// webhook notifications
 		var w interface{}
 		if _, ok := notifications["webhook"]; ok {
-			w, err = FixReadValues(nil, notifications["webhook"].([]interface{}), getPointer("webhook"), aid)
+			w, err = FixReadValues(ctx, nil, notifications["webhook"].([]interface{}), getPointer("webhook"))
 			if err != nil {
 				return nil, err
 			}
@@ -315,7 +331,7 @@ func FixReadValues(targetMaps map[string]map[string]interface{}, m interface{}, 
 		// custom webhook notifications
 		var cw interface{}
 		if _, ok := notifications["custom_webhook"]; ok {
-			cw, err = FixReadValues(nil, notifications["custom_webhook"].([]interface{}), getPointer("custom_webhook"), aid)
+			cw, err = FixReadValues(ctx, nil, notifications["custom_webhook"].([]interface{}), getPointer("custom_webhook"))
 			if err != nil {
 				return nil, err
 			}
@@ -735,15 +751,6 @@ func SetAidFromContext[T RequestWithAid[T]](ctx context.Context, req T) T {
 		return req.Aid(aid)
 	}
 	return req
-}
-
-func GetContextWithAid(ctx context.Context) context.Context {
-	aid, ok := ctx.Value(accountGroupIdKey).(string)
-	if ok && len(aid) > 0 {
-		return context.WithValue(context.Background(), accountGroupIdKey, aid)
-	}
-	return context.Background()
-
 }
 
 func getPointer[T any](v T) *T {

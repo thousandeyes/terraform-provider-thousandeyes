@@ -6,22 +6,19 @@ import (
 
 	"github.com/thousandeyes/terraform-provider-thousandeyes/thousandeyes/schemas"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/thousandeyes/thousandeyes-sdk-go/v3/client"
 	"github.com/thousandeyes/thousandeyes-sdk-go/v3/tests"
 )
 
-type emulationDeviceIdKeyType string
-
-const pageLoadEmulationDeviceIdKey emulationDeviceIdKeyType = "pl_emulation_device_id"
-
 func resourcePageLoad() *schema.Resource {
 	resource := schema.Resource{
-		Schema: ResourceSchemaBuild(tests.PageLoadTestRequest{}, schemas.CommonSchema, nil),
-		Create: resourcePageLoadCreate,
-		Read:   resourcePageLoadRead,
-		Update: resourcePageLoadUpdate,
-		Delete: resourcePageLoadDelete,
+		Schema:        ResourceSchemaBuild(tests.PageLoadTestRequest{}, schemas.CommonSchema, nil),
+		CreateContext: resourcePageLoadCreate,
+		ReadContext:   resourcePageLoadRead,
+		UpdateContext: resourcePageLoadUpdate,
+		DeleteContext: resourcePageLoadDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -30,34 +27,30 @@ func resourcePageLoad() *schema.Resource {
 	return &resource
 }
 
-func resourcePageLoadRead(d *schema.ResourceData, m interface{}) error {
-	return GetResource(d, m, func(apiClient *client.APIClient, id string) (interface{}, error) {
-		api := (*tests.PageLoadTestsAPIService)(&apiClient.Common)
+func resourcePageLoadRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	return diag.FromErr(
+		GetResource(context.Background(), d, m, func(apiClient *client.APIClient, id string) (interface{}, error) {
+			api := (*tests.PageLoadTestsAPIService)(&apiClient.Common)
 
-		req := api.GetPageLoadTest(id).Expand(tests.AllowedExpandTestOptionsEnumValues)
-		req = SetAidFromContext(apiClient.GetConfig().Context, req)
+			req := api.GetPageLoadTest(id).Expand(tests.AllowedExpandTestOptionsEnumValues)
+			req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
-		resp, _, err := req.Execute()
-		edID := apiClient.GetConfig().Context.Value(pageLoadEmulationDeviceIdKey)
-		if edID == nil {
-			resp.EmulatedDeviceId = nil
-		} else {
-			apiClient.GetConfig().Context = GetContextWithAid(apiClient.GetConfig().Context)
-		}
-		return resp, err
-	})
+			resp, _, err := req.Execute()
+			return resp, err
+		}),
+	)
 }
 
-func resourcePageLoadUpdate(d *schema.ResourceData, m interface{}) error {
+func resourcePageLoadUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	apiClient := m.(*client.APIClient)
 	api := (*tests.PageLoadTestsAPIService)(&apiClient.Common)
 
 	log.Printf("[INFO] Updating ThousandEyes Test %s", d.Id())
 	update := buildPageLoadStruct(d)
 	if update.EmulatedDeviceId != nil && len(*update.EmulatedDeviceId) > 0 {
-		apiClient.GetConfig().Context = context.WithValue(
-			apiClient.GetConfig().Context,
-			pageLoadEmulationDeviceIdKey,
+		ctx = context.WithValue(
+			ctx,
+			emulationDeviceIdKey,
 			struct{}{},
 		)
 	}
@@ -67,12 +60,12 @@ func resourcePageLoadUpdate(d *schema.ResourceData, m interface{}) error {
 
 	_, _, err := req.Execute()
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	return resourcePageLoadRead(d, m)
+	return resourcePageLoadRead(ctx, d, m)
 }
 
-func resourcePageLoadDelete(d *schema.ResourceData, m interface{}) error {
+func resourcePageLoadDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	apiClient := m.(*client.APIClient)
 	api := (*tests.PageLoadTestsAPIService)(&apiClient.Common)
 
@@ -82,22 +75,22 @@ func resourcePageLoadDelete(d *schema.ResourceData, m interface{}) error {
 	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 	if _, err := req.Execute(); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	d.SetId("")
 	return nil
 }
 
-func resourcePageLoadCreate(d *schema.ResourceData, m interface{}) error {
+func resourcePageLoadCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	apiClient := m.(*client.APIClient)
 	api := (*tests.PageLoadTestsAPIService)(&apiClient.Common)
 
 	log.Printf("[INFO] Creating ThousandEyes Test %s", d.Id())
 	local := buildPageLoadStruct(d)
 	if local.EmulatedDeviceId != nil && len(*local.EmulatedDeviceId) > 0 {
-		apiClient.GetConfig().Context = context.WithValue(
-			apiClient.GetConfig().Context,
-			pageLoadEmulationDeviceIdKey,
+		ctx = context.WithValue(
+			ctx,
+			emulationDeviceIdKey,
 			struct{}{},
 		)
 	}
@@ -107,12 +100,12 @@ func resourcePageLoadCreate(d *schema.ResourceData, m interface{}) error {
 
 	resp, _, err := req.Execute()
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	id := *resp.TestId
 	d.SetId(id)
-	return resourcePageLoadRead(d, m)
+	return resourcePageLoadRead(ctx, d, m)
 }
 
 func buildPageLoadStruct(d *schema.ResourceData) *tests.PageLoadTestRequest {
