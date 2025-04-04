@@ -44,7 +44,7 @@ func resourceFTPServerUpdate(d *schema.ResourceData, m interface{}) error {
 	api := (*tests.FTPServerTestsAPIService)(&apiClient.Common)
 
 	log.Printf("[INFO] Updating ThousandEyes Test %s", d.Id())
-	update := ResourceUpdate(d, &tests.FtpServerTestRequest{})
+	update := buildFTPServerStruct(d)
 
 	req := api.UpdateFtpServerTest(d.Id()).FtpServerTestRequest(*update).Expand(tests.AllowedExpandTestOptionsEnumValues)
 	req = SetAidFromContext(apiClient.GetConfig().Context, req)
