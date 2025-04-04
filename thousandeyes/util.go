@@ -7,10 +7,12 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"time"
 	"unicode"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/thousandeyes/thousandeyes-sdk-go/v3/client"
+	"github.com/thousandeyes/thousandeyes-sdk-go/v3/tests"
 )
 
 type ResourceReadFunc func(client *client.APIClient, id string) (interface{}, error)
@@ -27,6 +29,24 @@ func IsNotFoundError(err error) bool {
 		}
 	}
 	return false
+}
+
+func expandAgents(v interface{}) []tests.TestAgentRequest {
+	agents := make([]tests.TestAgentRequest, 0)
+	var agentsIDs []interface{}
+	if rawAgents, ok := v.(*schema.Set); ok {
+		agentsIDs = rawAgents.List()
+	}
+	for _, item := range agentsIDs {
+		id := item.(string)
+		if len(id) == 0 {
+			continue
+		}
+		agents = append(agents, tests.TestAgentRequest{
+			AgentId: id,
+		})
+	}
+	return agents
 }
 
 // ResourceBuildStruct fills the struct at a given address by querying a
@@ -46,13 +66,13 @@ func ResourceBuildStruct[T any](d *schema.ResourceData, structPtr *T) *T {
 			v.Field(i).Set(setVal)
 		}
 	}
-	return resourceFixups[T](d, structPtr)
+	return resourceFixups(d, structPtr)
 }
 
 // GetResource is a generic function for reading resources.
 func GetResource(d *schema.ResourceData, m interface{}, readFunc ResourceReadFunc) error {
 	apiClient := m.(*client.APIClient)
-	aid := apiClient.GetConfig().Context.Value("aid").(string)
+	aid := apiClient.GetConfig().Context.Value(accountGroupIdKey).(string)
 
 	log.Printf("[INFO] Reading Thousandeyes Resource %s", d.Id())
 	remote, err := readFunc(apiClient, d.Id())
@@ -81,6 +101,8 @@ func ResourceRead(d *schema.ResourceData, structPtr interface{}, aid string) err
 	v := reflect.ValueOf(structPtr).Elem()
 	t := reflect.TypeOf(v.Interface())
 
+	targetMaps := getTargetFieldsMaps(structPtr)
+
 	for i := 0; i < v.NumField(); i++ {
 		if v.Field(i).Kind() == reflect.Ptr && v.Field(i).IsNil() {
 			continue
@@ -92,15 +114,54 @@ func ResourceRead(d *schema.ResourceData, structPtr interface{}, aid string) err
 		if err != nil {
 			return err
 		}
-		val, err = FixReadValues(val, tfName, aid)
+		val, err = FixReadValues(targetMaps, val, &tfName, aid)
 		if err != nil {
 			return err
+		}
+		if len(tfName) == 0 {
+			continue
 		}
 		err = d.Set(tfName, val)
 		if err != nil {
 			return err
 		}
 	}
+
+	for k, v := range targetMaps {
+		if err := d.Set(k, []interface{}{v}); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// getTargetFieldsMaps gets a map of target fields for a specific resource when multiple fields need to be set in a single target map.
+func getTargetFieldsMaps(structPtr interface{}) map[string]map[string]interface{} {
+	switch structPtr.(type) {
+	// Example:
+	// case (tests.Example):
+	// 	res := make(map[string]map[string]interface{})
+	// 	res["TARGET_FIELD"] = map[string]interface{}{
+	// 		"SOURCE_FIELD_1":     nil,
+	// 		"SOURCE_FIELD_2":     nil,
+	// 		"SOURCE_FIELD_3":     nil,
+	// 		...
+	// 	}
+	// 	return res
+	case (*tests.SipServerTestResponse):
+		res := make(map[string]map[string]interface{})
+		res["target_sip_credentials"] = map[string]interface{}{
+			"auth_user":     nil,
+			"password":      nil,
+			"port":          nil,
+			"protocol":      nil,
+			"sip_registrar": nil,
+			"user":          nil,
+		}
+		return res
+	}
+
 	return nil
 }
 
@@ -111,25 +172,34 @@ func ResourceRead(d *schema.ResourceData, structPtr interface{}, aid string) err
 // and transforms certain values to match the expected schema.
 // We need to account for this data on so that it does not get saved to state and
 // cause conflict with configuration.
-func FixReadValues(m interface{}, name string, aid string) (interface{}, error) {
-	switch name {
+func FixReadValues(targetMaps map[string]map[string]interface{}, m interface{}, name *string, aid string) (interface{}, error) {
+	// Set fields into map to match schema
+	for targetField := range targetMaps {
+		if _, ok := targetMaps[targetField][*name]; ok {
+			targetMaps[targetField][*name] = m
+			*name = ""
+			return nil, nil
+		}
+	}
+
+	switch *name {
 	// Remove all fields from agent definitions except for agent ID.
 	case "agents":
 		for i, v := range m.([]interface{}) {
 			agent := v.(map[string]interface{})
-			m.([]interface{})[i] = map[string]interface{}{
-				"agent_id": agent["agent_id"],
-			}
+			m.([]interface{})[i] = agent["agent_id"]
 		}
+
+	// Return only host when host:port pattern obtained
+	case "server":
+		m = strings.Split(m.(string), ":")[0]
 
 	// Remove all alert rule fields except for rule ID. Ignore default rules.
 	// Remove all alert rule fields except for rule ID.
 	case "alert_rules":
 		for i, v := range m.([]interface{}) {
 			rule := v.(map[string]interface{})
-			m.([]interface{})[i] = map[string]interface{}{
-				"rule_id": rule["rule_id"],
-			}
+			m.([]interface{})[i] = rule["rule_id"]
 		}
 
 	// Remove all public BGP monitors. (ThousandEyes does not allow
@@ -141,13 +211,11 @@ func FixReadValues(m interface{}, name string, aid string) (interface{}, error) 
 		i := 0
 		for i < len(monitors) {
 			monitor := monitors[i].(map[string]interface{})
-			if *monitor["monitor_type"].(*string) == "public" {
+			if *monitor["monitor_type"].(*tests.MonitorType) == tests.MONITORTYPE_PUBLIC {
 				// Remove this item from the slice
 				monitors = append(monitors[:i], monitors[i+1:]...)
 			} else {
-				monitors[i] = map[string]interface{}{
-					"monitor_id": monitor["monitor_id"],
-				}
+				monitors[i] = monitor["monitor_id"]
 				i = i + 1
 			}
 		}
@@ -157,9 +225,7 @@ func FixReadValues(m interface{}, name string, aid string) (interface{}, error) 
 	case "dns_servers":
 		for i, v := range m.([]interface{}) {
 			servers := v.(map[string]interface{})
-			m.([]interface{})[i] = map[string]interface{}{
-				"server_name": servers["server_name"],
-			}
+			m.([]interface{})[i] = servers["server_name"]
 		}
 
 	// custom_headers is currently unsupported due to complications with Terraform
@@ -212,28 +278,22 @@ func FixReadValues(m interface{}, name string, aid string) (interface{}, error) 
 		}
 		m = accounts
 
-	// target_sip_credentials is presented as a map by ThousandEyes, but
-	// limitations in Terraform's type system require us to declare its schema
-	// as a single-item list in order to represent the map with values of
-	// mixed types.
-	case "target_sip_credentials":
-		m = []interface{}{
-			m.(map[string]interface{}),
-		}
-
 	case "notifications":
 		var e interface{}
 		var err error
+
+		notifications := m.(map[string]interface{})
+
 		// this is a special case to handle internal email structure inside the notifications block
-		e, err = FixReadValues(m.(map[string]interface{})["email"].(map[string]interface{}), "email", aid)
+		e, err = FixReadValues(nil, notifications["email"].(map[string]interface{}), getPointer("email"), aid)
 		if err != nil {
 			return nil, err
 		}
 
 		// third party notifications
 		var tp interface{}
-		if _, ok := m.(map[string]interface{})["third_party"]; ok {
-			tp, err = FixReadValues(m.(map[string]interface{})["third_party"].([]interface{}), "third_party", aid)
+		if _, ok := notifications["third_party"]; ok {
+			tp, err = FixReadValues(nil, notifications["third_party"].([]interface{}), getPointer("third_party"), aid)
 			if err != nil {
 				return nil, err
 			}
@@ -243,8 +303,8 @@ func FixReadValues(m interface{}, name string, aid string) (interface{}, error) 
 
 		// webhook notifications
 		var w interface{}
-		if _, ok := m.(map[string]interface{})["webhook"]; ok {
-			w, err = FixReadValues(m.(map[string]interface{})["webhook"].([]interface{}), "webhook", aid)
+		if _, ok := notifications["webhook"]; ok {
+			w, err = FixReadValues(nil, notifications["webhook"].([]interface{}), getPointer("webhook"), aid)
 			if err != nil {
 				return nil, err
 			}
@@ -252,30 +312,49 @@ func FixReadValues(m interface{}, name string, aid string) (interface{}, error) 
 			w = nil
 		}
 
+		// custom webhook notifications
+		var cw interface{}
+		if _, ok := notifications["custom_webhook"]; ok {
+			cw, err = FixReadValues(nil, notifications["custom_webhook"].([]interface{}), getPointer("custom_webhook"), aid)
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			cw = nil
+		}
+
 		// update the notifications block if the email block is present and contains recipients, or
 		// the third party notifications are present, or webhook notifications are present.
 		// Otherwise set the whole notifications block to nil
-		if e == nil && tp == nil && w == nil {
+		if (e == nil || len(e.(map[string]interface{})) == 0) &&
+			(tp == nil || len(tp.([]interface{})) == 0) &&
+			(w == nil || len(w.([]interface{})) == 0) &&
+			(cw == nil || len(cw.([]interface{})) == 0) {
+			// *name = ""
 			m = nil
 		} else {
 			// Add the third party map and or webhook map to the notifications map if they are present
 			// if they're not configured, then the API doesn't return them at all
 			if tp != nil {
-				m.(map[string]interface{})["third_party"] = tp
+				notifications["third_party"] = tp
 			}
 
 			if w != nil {
-				m.(map[string]interface{})["webhook"] = w
+				notifications["webhook"] = w
 			}
 
-			m.(map[string]interface{})["email"] = e
+			if cw != nil {
+				notifications["custom_webhook"] = cw
+			}
+
+			notifications["email"] = e
 			m = []interface{}{
-				m.(map[string]interface{}),
+				notifications,
 			}
 		}
 
 	case "email":
-		if len(m.(map[string]interface{})["recipient"].([]interface{})) == 0 {
+		if len(m.(map[string]interface{})["recipients"].([]interface{})) == 0 {
 			m = nil
 		} else {
 			m = []interface{}{
@@ -305,12 +384,36 @@ func FixReadValues(m interface{}, name string, aid string) (interface{}, error) 
 			}
 		}
 
+	case "custom_webhook":
+		for i, v := range m.([]interface{}) {
+			webhookNotifications := v.(map[string]interface{})
+			m.([]interface{})[i] = map[string]interface{}{
+				"integration_id":   webhookNotifications["integration_id"],
+				"integration_type": webhookNotifications["integration_type"],
+			}
+		}
+
 	case "tests":
+		*name = "test_ids"
 		for i, v := range m.([]interface{}) {
 			test := v.(map[string]interface{})
-			m.([]interface{})[i] = map[string]interface{}{
-				"test_id": test["test_id"],
-			}
+			m.([]interface{})[i] = test["test_id"]
+		}
+
+	case "_links":
+		*name = "link"
+		if self, ok := m.(map[string]interface{})["self"].(map[string]interface{}); ok {
+			m = self["href"]
+		}
+
+	case "created_date":
+		{
+			m = m.(*time.Time).Format(time.RFC3339)
+		}
+
+	case "modified_date":
+		{
+			m = m.(*time.Time).Format(time.RFC3339)
 		}
 	}
 
@@ -325,10 +428,14 @@ func ReadValue(structPtr interface{}) (interface{}, error) {
 	var err error
 	v := reflect.Indirect(reflect.ValueOf(structPtr))
 	t := reflect.TypeOf(v.Interface())
+	eltype := v.Type()
 	switch t.Kind() {
 	case reflect.Struct:
 		// For structs, return a map with key names set to be translations of
 		// the JSON key names.
+		if (eltype == reflect.TypeOf(time.Time{})) {
+			return structPtr, nil
+		}
 		newMap := make(map[string]interface{})
 		for i := 0; i < v.NumField(); i++ {
 			if v.Field(i).Kind() == reflect.Ptr && v.Field(i).IsNil() {
@@ -395,6 +502,12 @@ func resourceFixups[T any](d *schema.ResourceData, structPtr *T) *T {
 		}
 	}
 
+	_, hasAgents := t.FieldByName("Agents")
+	if hasAgents {
+		scrappedAgents := expandAgents(d.Get("agents"))
+		v.FieldByName("Agents").Set(reflect.ValueOf(scrappedAgents))
+	}
+
 	return structPtr
 }
 
@@ -415,7 +528,7 @@ func ResourceUpdate[T any](d *schema.ResourceData, structPtr *T) *T {
 		}
 	}
 	d.Partial(false)
-	return resourceFixups[T](d, structPtr)
+	return resourceFixups(d, structPtr)
 }
 
 // ResourceSchemaBuild creates a map of schemas based on the fields
@@ -442,6 +555,10 @@ func ResourceSchemaBuild(referenceStruct interface{}, schemas map[string]*schema
 			}
 		}
 	}
+
+	// instead of "_links"
+	newSchema["link"] = schemas["link"]
+
 	return newSchema
 }
 
@@ -451,6 +568,8 @@ func FillValue(source interface{}, target interface{}) interface{} {
 	// We determine how to interpret the supplied value based on
 	// the type of the target argument.
 	vt := reflect.ValueOf(target)
+	sourceType := reflect.TypeOf(source)
+	sourceValue := reflect.ValueOf(source)
 	switch vt.Kind() {
 	case reflect.Ptr:
 		p := reflect.New(reflect.TypeOf(target).Elem())
@@ -505,7 +624,10 @@ func FillValue(source interface{}, target interface{}) interface{} {
 		newStruct := reflect.New(t).Interface()
 		setStruct := reflect.ValueOf(newStruct).Elem()
 		if source != nil {
-			m := structSource.(map[string]interface{})
+			m, ok := structSource.(map[string]interface{})
+			if !ok {
+				return setStruct.Interface()
+			}
 			for i := 0; i < vt.NumField(); i++ {
 				tag := GetJSONKey(t.Field(i))
 				tfName := CamelCaseToUnderscore(tag)
@@ -519,14 +641,17 @@ func FillValue(source interface{}, target interface{}) interface{} {
 	case reflect.Int:
 		// Values destined to be ints may come to us as strings.
 		if reflect.TypeOf(source).Kind() == reflect.String {
-			i, _ := strconv.Atoi(source.(string))
-			return i
+			i, _ := strconv.ParseInt(source.(string), 10, 32)
+			return int(i)
 		}
 
 		return source
 
 	case reflect.Int64:
 		// Values destined to be int64 may come to us as strings.
+		if sourceType.ConvertibleTo(vt.Type()) {
+			return sourceValue.Convert(vt.Type()).Interface()
+		}
 		if reflect.TypeOf(source).Kind() == reflect.String {
 			i, _ := strconv.ParseInt(source.(string), 10, 64)
 			return i
@@ -534,9 +659,24 @@ func FillValue(source interface{}, target interface{}) interface{} {
 
 		return int64(source.(int))
 
+	case reflect.Int32:
+		// Values destined to be int32 may come to us as strings.
+		if sourceType.ConvertibleTo(vt.Type()) {
+			return sourceValue.Convert(vt.Type()).Interface()
+		}
+		if reflect.TypeOf(source).Kind() == reflect.String {
+			i, _ := strconv.ParseInt(source.(string), 10, 32)
+			return i
+		}
+
+		return int32(source.(int))
+
 	default:
 		// If we haven't matched one of the above cases, then there
 		// is likely no reason to translate.
+		if sourceType.ConvertibleTo(vt.Type()) {
+			return sourceValue.Convert(vt.Type()).Interface()
+		}
 		return source
 	}
 }
@@ -590,11 +730,20 @@ func GetJSONKey(v reflect.StructField) string {
 }
 
 func SetAidFromContext[T RequestWithAid[T]](ctx context.Context, req T) T {
-	aid, ok := ctx.Value("aid").(string)
+	aid, ok := ctx.Value(accountGroupIdKey).(string)
 	if ok && len(aid) > 0 {
 		return req.Aid(aid)
 	}
 	return req
+}
+
+func GetContextWithAid(ctx context.Context) context.Context {
+	aid, ok := ctx.Value(accountGroupIdKey).(string)
+	if ok && len(aid) > 0 {
+		return context.WithValue(context.Background(), accountGroupIdKey, aid)
+	}
+	return context.Background()
+
 }
 
 func getPointer[T any](v T) *T {

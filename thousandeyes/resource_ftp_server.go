@@ -2,15 +2,17 @@ package thousandeyes
 
 import (
 	"log"
-	"strconv"
+
+	"github.com/thousandeyes/terraform-provider-thousandeyes/thousandeyes/schemas"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/thousandeyes/thousandeyes-sdk-go/v2"
+	"github.com/thousandeyes/thousandeyes-sdk-go/v3/client"
+	"github.com/thousandeyes/thousandeyes-sdk-go/v3/tests"
 )
 
 func resourceFTPServer() *schema.Resource {
 	resource := schema.Resource{
-		Schema: ResourceSchemaBuild(thousandeyes.FTPServer{}, schemas, nil),
+		Schema: ResourceSchemaBuild(tests.FtpServerTestRequest{}, schemas.CommonSchema, nil),
 		Create: resourceFTPServerCreate,
 		Read:   resourceFTPServerRead,
 		Update: resourceFTPServerUpdate,
@@ -20,24 +22,34 @@ func resourceFTPServer() *schema.Resource {
 		},
 		Description: "This resource allows you to create an FTP server test. This test type verifies the availability and performance of FTP servers. For more information, see [FTP Server Tests](https://docs.thousandeyes.com/product-documentation/internet-and-wan-monitoring/tests#ftp-server-test).",
 	}
-	resource.Schema["password"] = schemas["password-ftp"]
-	resource.Schema["username"] = schemas["username-ftp"]
+	resource.Schema["password"] = schemas.CommonSchema["password-ftp"]
+	resource.Schema["username"] = schemas.CommonSchema["username-ftp"]
 	return &resource
 }
 
 func resourceFTPServerRead(d *schema.ResourceData, m interface{}) error {
-	return GetResource(d, m, func(client *thousandeyes.Client, id int64) (interface{}, error) {
-		return client.GetFTPServer(id)
+	return GetResource(d, m, func(apiClient *client.APIClient, id string) (interface{}, error) {
+		api := (*tests.FTPServerTestsAPIService)(&apiClient.Common)
+
+		req := api.GetFtpServerTest(id).Expand(tests.AllowedExpandTestOptionsEnumValues)
+		req = SetAidFromContext(apiClient.GetConfig().Context, req)
+
+		resp, _, err := req.Execute()
+		return resp, err
 	})
 }
 
 func resourceFTPServerUpdate(d *schema.ResourceData, m interface{}) error {
-	client := m.(*thousandeyes.Client)
+	apiClient := m.(*client.APIClient)
+	api := (*tests.FTPServerTestsAPIService)(&apiClient.Common)
 
 	log.Printf("[INFO] Updating ThousandEyes Test %s", d.Id())
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	update := ResourceUpdate(d, &thousandeyes.FTPServer{}).(*thousandeyes.FTPServer)
-	_, err := client.UpdateFTPServer(id, *update)
+	update := buildFTPServerStruct(d)
+
+	req := api.UpdateFtpServerTest(d.Id()).FtpServerTestRequest(*update).Expand(tests.AllowedExpandTestOptionsEnumValues)
+	req = SetAidFromContext(apiClient.GetConfig().Context, req)
+
+	_, _, err := req.Execute()
 	if err != nil {
 		return err
 	}
@@ -45,11 +57,15 @@ func resourceFTPServerUpdate(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceFTPServerDelete(d *schema.ResourceData, m interface{}) error {
-	client := m.(*thousandeyes.Client)
+	apiClient := m.(*client.APIClient)
+	api := (*tests.FTPServerTestsAPIService)(&apiClient.Common)
 
 	log.Printf("[INFO] Deleting ThousandEyes Test %s", d.Id())
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	if err := client.DeleteFTPServer(id); err != nil {
+
+	req := api.DeleteFtpServerTest(d.Id())
+	req = SetAidFromContext(apiClient.GetConfig().Context, req)
+
+	if _, err := req.Execute(); err != nil {
 		return err
 	}
 	d.SetId("")
@@ -57,18 +73,25 @@ func resourceFTPServerDelete(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceFTPServerCreate(d *schema.ResourceData, m interface{}) error {
-	client := m.(*thousandeyes.Client)
+	apiClient := m.(*client.APIClient)
+	api := (*tests.FTPServerTestsAPIService)(&apiClient.Common)
+
 	log.Printf("[INFO] Creating ThousandEyes Test %s", d.Id())
 	local := buildFTPServerStruct(d)
-	remote, err := client.CreateFTPServer(*local)
+
+	req := api.CreateFtpServerTest().FtpServerTestRequest(*local).Expand(tests.AllowedExpandTestOptionsEnumValues)
+	req = SetAidFromContext(apiClient.GetConfig().Context, req)
+
+	resp, _, err := req.Execute()
 	if err != nil {
 		return err
 	}
-	id := *remote.TestID
-	d.SetId(strconv.FormatInt(id, 10))
+
+	id := *resp.TestId
+	d.SetId(id)
 	return resourceFTPServerRead(d, m)
 }
 
-func buildFTPServerStruct(d *schema.ResourceData) *thousandeyes.FTPServer {
-	return ResourceBuildStruct(d, &thousandeyes.FTPServer{}).(*thousandeyes.FTPServer)
+func buildFTPServerStruct(d *schema.ResourceData) *tests.FtpServerTestRequest {
+	return ResourceBuildStruct(d, &tests.FtpServerTestRequest{})
 }
