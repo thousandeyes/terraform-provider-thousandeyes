@@ -1,6 +1,7 @@
 package thousandeyes
 
 import (
+	"context"
 	"reflect"
 	"testing"
 
@@ -49,7 +50,7 @@ func TestResourceRead(t *testing.T) {
 	remoteResource := tests.BgpTestResponse{
 		Prefix: prefix,
 	}
-	err := ResourceRead(d, &remoteResource, "aid")
+	err := ResourceRead(context.TODO(), d, &remoteResource)
 	if err != nil {
 		t.Errorf("Setting resource data returned error: %+v", err.Error())
 	}
@@ -123,7 +124,7 @@ func TestFixReadValues(t *testing.T) {
 	// non-map, non-list
 	normalInput := 4
 	normalTarget := 4
-	output, err = FixReadValues(nil, normalInput, getPointer("normal"), "")
+	output, err = FixReadValues(context.TODO(), nil, normalInput, getPointer("normal"))
 	if err != nil {
 		t.Errorf("normal input returned error: %s", err.Error())
 	}
@@ -145,7 +146,7 @@ func TestFixReadValues(t *testing.T) {
 	agentsTarget := []interface{}{
 		"1", "2",
 	}
-	output, err = FixReadValues(nil, agentsInput, getPointer("agents"), "")
+	output, err = FixReadValues(context.TODO(), nil, agentsInput, getPointer("agents"))
 	if err != nil {
 		t.Errorf("agents input returned error: %s", err.Error())
 	}
@@ -167,7 +168,7 @@ func TestFixReadValues(t *testing.T) {
 	dnsServersTarget := []interface{}{
 		"foo.com", "bar.com",
 	}
-	output, err = FixReadValues(nil, dnsServersInput, getPointer("dns_servers"), "")
+	output, err = FixReadValues(context.TODO(), nil, dnsServersInput, getPointer("dns_servers"))
 	if err != nil {
 		t.Errorf("dns_servers input returned error: %s", err.Error())
 	}
@@ -183,7 +184,7 @@ func TestFixReadValues(t *testing.T) {
 		},
 	}
 	linksTarget := "foo.com"
-	output, err = FixReadValues(nil, linksInput, fieldName, "")
+	output, err = FixReadValues(context.TODO(), nil, linksInput, fieldName)
 	if err != nil {
 		t.Errorf("links input returned error: %s", err.Error())
 	}
@@ -215,7 +216,7 @@ func TestFixReadValues(t *testing.T) {
 	alertRulesTarget := []interface{}{
 		getPointer("1"), getPointer("2"), getPointer("3"),
 	}
-	output, err = FixReadValues(nil, alertRulesInput, getPointer("alert_rules"), "")
+	output, err = FixReadValues(context.TODO(), nil, alertRulesInput, getPointer("alert_rules"))
 	if err != nil {
 		t.Errorf("alert_rules input returned error: %s", err.Error())
 	}
@@ -239,7 +240,7 @@ func TestFixReadValues(t *testing.T) {
 	monitorsTarget := []interface{}{
 		getPointer("2"),
 	}
-	output, err = FixReadValues(nil, monitorsInput, getPointer("monitors"), "")
+	output, err = FixReadValues(context.TODO(), nil, monitorsInput, getPointer("monitors"))
 	if err != nil {
 		t.Errorf("bgp_monitors input returned error: %s", err.Error())
 	}
@@ -263,7 +264,8 @@ func TestFixReadValues(t *testing.T) {
 			"aid": getPointer("1"),
 		},
 	}
-	output, err = FixReadValues(nil, accountsInput, getPointer("shared_with_accounts"), "2")
+
+	output, err = FixReadValues(context.WithValue(context.TODO(), accountGroupIdKey, "2"), nil, accountsInput, getPointer("shared_with_accounts"))
 	if err != nil {
 		t.Errorf("shared_with_accounts input returned error: %s", err.Error())
 	}
@@ -271,7 +273,7 @@ func TestFixReadValues(t *testing.T) {
 		t.Errorf("Values not stripped correctly from shared_with_accounts input: Received %#v Expected %#v", output, accountsTarget)
 	}
 	//  We should fail if account_group_id isn't set and the list of account groups is > 1
-	output, err = FixReadValues(nil, accountsInput, getPointer("shared_with_accounts"), "")
+	output, err = FixReadValues(context.TODO(), nil, accountsInput, getPointer("shared_with_accounts"))
 	if err == nil {
 		t.Errorf("Error was not returned when shared_with_accounts length was > 1 and account_group_id  was not set")
 	}
@@ -282,7 +284,7 @@ func TestFixReadValues(t *testing.T) {
 			"aid":  "2",
 		},
 	}
-	output, err = FixReadValues(nil, accountsInput, getPointer("shared_with_accounts"), "")
+	output, err = FixReadValues(context.TODO(), nil, accountsInput, getPointer("shared_with_accounts"))
 	if err != nil {
 		t.Errorf("shared_with_accounts input returned error when shared_with_accounts wasn't set despite list of account groups being < 2: %s", err.Error())
 	}
@@ -306,9 +308,9 @@ func TestFixReadValues(t *testing.T) {
 		},
 	}
 	nameSource1 := getPointer("source_1")
-	FixReadValues(targetMapInput, 1, nameSource1, "")
-	FixReadValues(targetMapInput, 2, getPointer("source_2"), "")
-	FixReadValues(targetMapInput, 3, getPointer("source_3"), "")
+	FixReadValues(context.TODO(), targetMapInput, 1, nameSource1)
+	FixReadValues(context.TODO(), targetMapInput, 2, getPointer("source_2"))
+	FixReadValues(context.TODO(), targetMapInput, 3, getPointer("source_3"))
 	if len(*nameSource1) != 0 {
 		t.Errorf("Name wasn't cleared when target map was set")
 	}
@@ -331,7 +333,7 @@ func TestFixReadValues(t *testing.T) {
 		"1", "2",
 	}
 	fieldName = getPointer("tests")
-	output, err = FixReadValues(nil, testsInput, fieldName, "")
+	output, err = FixReadValues(context.TODO(), nil, testsInput, fieldName)
 	if err != nil {
 		t.Errorf("tests input returned error: %s", err.Error())
 	}
@@ -369,7 +371,7 @@ func TestFixReadValues(t *testing.T) {
 		},
 	}
 
-	output, err = FixReadValues(nil, thirdPartyNotificationsInput, getPointer("third_party"), "")
+	output, err = FixReadValues(context.TODO(), nil, thirdPartyNotificationsInput, getPointer("third_party"))
 	if err != nil {
 		t.Errorf("third party notifications input returned error: %s", err.Error())
 	}
@@ -393,12 +395,33 @@ func TestFixReadValues(t *testing.T) {
 		},
 	}
 
-	output, err = FixReadValues(nil, webhookNotificationsInput, getPointer("webhook"), "")
+	output, err = FixReadValues(context.TODO(), nil, webhookNotificationsInput, getPointer("webhook"))
 	if err != nil {
 		t.Errorf("webhook notifications input returned error: %s", err.Error())
 	}
 	if reflect.DeepEqual(output, webhookNotificationsTarget) != true {
 		t.Errorf("Values not stripped correctly from webhook notifications input: Received %#v Expected %#v", output, webhookNotificationsTarget)
+	}
+
+	// emulated device id
+	ctx := context.WithValue(context.Background(), emulationDeviceIdKey, struct{}{})
+	targetEdId := "3000"
+	output, err = FixReadValues(ctx, nil, getPointer("3000"), getPointer("emulated_device_id"))
+	if err != nil {
+		t.Errorf("emulated device id input returned error: %s", err.Error())
+	}
+	if output == nil {
+		t.Errorf("emulated device id was set incorrectly: Received nil Expected %s", targetEdId)
+	}
+	if str := output.(*string); *str != targetEdId {
+		t.Errorf("emulated device id was set incorrectly: Received %s Expected %s", *str, targetEdId)
+	}
+	output, err = FixReadValues(context.Background(), nil, getPointer("3000"), getPointer("emulated_device_id"))
+	if err != nil {
+		t.Errorf("emulated device id input returned error: %s", err.Error())
+	}
+	if output != nil {
+		t.Errorf("emulated device id was set incorrectly: Received %s Expected nil", *output.(*string))
 	}
 }
 

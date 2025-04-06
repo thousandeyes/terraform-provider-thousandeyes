@@ -1,6 +1,7 @@
 package thousandeyes
 
 import (
+	"context"
 	"log"
 
 	"github.com/thousandeyes/terraform-provider-thousandeyes/thousandeyes/schemas"
@@ -26,7 +27,7 @@ func resourceBGP() *schema.Resource {
 }
 
 func resourceBGPRead(d *schema.ResourceData, m interface{}) error {
-	return GetResource(d, m, func(apiClient *client.APIClient, id string) (interface{}, error) {
+	return GetResource(context.Background(), d, m, func(apiClient *client.APIClient, id string) (interface{}, error) {
 		api := (*tests.BGPTestsAPIService)(&apiClient.Common)
 
 		req := api.GetBgpTest(id).Expand(tests.AllowedExpandBgpTestOptionsEnumValues)

@@ -1,6 +1,7 @@
 package thousandeyes
 
 import (
+	"context"
 	"log"
 
 	"github.com/thousandeyes/terraform-provider-thousandeyes/thousandeyes/schemas"
@@ -27,7 +28,7 @@ func resourceAlertRule() *schema.Resource {
 }
 
 func resourceAlertRuleRead(d *schema.ResourceData, m interface{}) error {
-	return GetResource(d, m, func(apiClient *client.APIClient, id string) (interface{}, error) {
+	return GetResource(context.Background(), d, m, func(apiClient *client.APIClient, id string) (interface{}, error) {
 		api := (*alerts.AlertRulesAPIService)(&apiClient.Common)
 
 		req := api.GetAlertRule(id)
