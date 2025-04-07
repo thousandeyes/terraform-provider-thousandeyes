@@ -52,7 +52,6 @@ func resourceFTPServerUpdate(d *schema.ResourceData, m interface{}) error {
 
 	_, _, err := req.Execute()
 	if err != nil {
-		log.Println(err)
 		return err
 	}
 	return resourceFTPServerRead(d, m)

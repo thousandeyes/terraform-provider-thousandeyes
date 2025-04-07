@@ -117,7 +117,6 @@ func ResourceRead(ctx context.Context, d *schema.ResourceData, structPtr interfa
 		tag := GetJSONKey(t.Field(i))
 		tfName := CamelCaseToUnderscore(tag)
 		val, err := ReadValue(v.Field(i).Interface())
-		log.Printf("[INFO] Value %v of field %v has been read", val, tag)
 		if err != nil {
 			return err
 		}
