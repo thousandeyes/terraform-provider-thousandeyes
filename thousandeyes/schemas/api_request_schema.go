@@ -10,7 +10,7 @@ var _ = tests.ApiRequest{}
 
 var apiRequest = &schema.Schema{
 	Type:        schema.TypeSet,
-	Description: "Use this only if you want to use OAuth as the authentication mechanism.",
+	Description: "List of API requests",
 	Optional:    true,
 	Elem: &schema.Resource{
 		Schema: map[string]*schema.Schema{
