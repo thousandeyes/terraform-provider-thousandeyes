@@ -19,9 +19,9 @@ func resourceAPI() *schema.Resource {
 		Update: resourceAPIUpdate,
 		Delete: resourceAPIDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Description: "This resource provides users with the ability to create a DNS trace test. This test type verifies the delegation of DNS records and ensures the DNS hierarchy is as expected. For more information, see [DNS Trace Tests](https://docs.thousandeyes.com/product-documentation/internet-and-wan-monitoring/tests#dns-trace-test).",
+		Description: "This resource provides visibility into the performance of critical web API endpoints within your application ecosystem. For more information, see [API Tests](https://docs.thousandeyes.com/product-documentation/api-test).",
 	}
 	resource.Schema["time_limit"] = schemas.CommonSchema["time_limit_api"]
 	return &resource
