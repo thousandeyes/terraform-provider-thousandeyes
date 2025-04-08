@@ -7,21 +7,22 @@ data "thousandeyes_alert_rule" "def_alert_rule" {
 }
 
 resource "thousandeyes_alert_rule" "test" {
-  rule_name                 = "Custom UAT Web Transactions Alert Rule"
+  rule_name                 = "Custom UAT Web Transactions Alert Rule (Updated)"
   alert_type                = "web-transactions"
   expression                = "((webPages((webTxResponseTime >= 100 ms) && (webTxPageLoadError != \"\") && (webTxOnLoadTime >= 200 ms))))"
-  rounds_violating_out_of   = 1
-  rounds_violating_required = 1
+  rounds_violating_out_of   = 3
+  rounds_violating_required = 3
   minimum_sources           = 1
 }
 
 resource "thousandeyes_web_transaction" "test" {
-  test_name          = "User Acceptance Test - Web Transactions"
-  interval           = 120
+  test_name          = "User Acceptance Test - Web Transactions (Updated)"
+  interval           = 300
   alerts_enabled     = true
   url                = "https://www.thousandeyes.com"
   use_public_bgp     = true
   emulated_device_id = "1"
+  target_time        = 60
   transaction_script = <<EOF
   import { By, Key, until } from 'selenium-webdriver'; 
   import { driver, markers, credentials, downloads, transaction, test } from 'thousandeyes'; 

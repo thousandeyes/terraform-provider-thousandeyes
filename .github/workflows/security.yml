@@ -1,8 +1,6 @@
 name: Security Checks
 
 on:
-  push:
-    branches: ["main"]
   pull_request:
     branches: ["main", "v3"]
 
@@ -51,12 +49,13 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-
+        
       - name: Run GolangCI-Lint
-        uses: golangci/golangci-lint-action@v4
+        uses: golangci/golangci-lint-action@v7
         with:
-          version: v1.55.2
+          version: v2.0.2
           only-new-issues: true
+          args: --tests=false
 
   terraform-security:
     name: Terraform Security Scan

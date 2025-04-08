@@ -1,12 +1,16 @@
 package thousandeyes
 
 import (
+	"context"
 	"reflect"
 	"testing"
 
+	"github.com/thousandeyes/terraform-provider-thousandeyes/thousandeyes/schemas"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"github.com/thousandeyes/thousandeyes-sdk-go/v2"
+	"github.com/thousandeyes/thousandeyes-sdk-go/v3/administrative"
+	"github.com/thousandeyes/thousandeyes-sdk-go/v3/tests"
 )
 
 func getReferenceData(schemaData map[string]*schema.Schema, attrs map[string]string) *schema.ResourceData {
@@ -23,17 +27,17 @@ func getReferenceData(schemaData map[string]*schema.Schema, attrs map[string]str
 
 func TestResourceBuildStruct(t *testing.T) {
 	prefix := "8.19.2.2/19"
-	cmpStruct := thousandeyes.BGP{
-		Prefix: thousandeyes.String(prefix),
+	cmpStruct := tests.BgpTestRequest{
+		Prefix: prefix,
 	}
-	newStruct := thousandeyes.BGP{}
+	newStruct := tests.BgpTestRequest{}
 	attrs := map[string]string{
 		"prefix": "8.19.2.2/19",
 	}
-	d := getReferenceData(schemas, attrs)
+	d := getReferenceData(schemas.CommonSchema, attrs)
 	ResourceBuildStruct(d, &newStruct)
 
-	if *newStruct.Prefix != *cmpStruct.Prefix {
+	if newStruct.Prefix != cmpStruct.Prefix {
 		t.Error("Building resource did not assign struct field correctly.")
 	}
 
@@ -42,53 +46,51 @@ func TestResourceBuildStruct(t *testing.T) {
 func TestResourceRead(t *testing.T) {
 	prefix := "8.19.2.2/19"
 	attrs := map[string]string{}
-	d := getReferenceData(schemas, attrs)
-	remoteResource := thousandeyes.BGP{
-		Prefix: thousandeyes.String(prefix),
+	d := getReferenceData(schemas.CommonSchema, attrs)
+	remoteResource := tests.BgpTestResponse{
+		Prefix: prefix,
 	}
-	err := ResourceRead(d, &remoteResource)
+	err := ResourceRead(context.TODO(), d, &remoteResource)
 	if err != nil {
 		t.Errorf("Setting resource data returned error: %+v", err.Error())
 	}
-	if d.Get("prefix") != *remoteResource.Prefix {
+	if d.Get("prefix") != remoteResource.Prefix {
 		t.Errorf("Reading resource did not assign resource data correctly.\nStruct is %+v\nResource is %+v", remoteResource, d.State().Attributes)
 	}
 }
 
 func TestResourceReadValue(t *testing.T) {
-	testStruct := thousandeyes.AccountGroupRole{
-		RoleName:                 thousandeyes.String("TestRole"),
-		RoleID:                   thousandeyes.Int64(1),
-		HasManagementPermissions: thousandeyes.Bool(true),
-		Builtin:                  thousandeyes.Bool(false),
-		Permissions: &[]thousandeyes.Permission{
+	testStruct := administrative.RoleDetail{
+		Name:      getPointer("TestRole"),
+		RoleId:    getPointer("1"),
+		IsBuiltin: getPointer(false),
+		Permissions: []administrative.Permission{
 			{
-				IsManagementPermission: thousandeyes.Bool(false),
-				Label:                  thousandeyes.String("foo"),
-				PermissionID:           thousandeyes.Int64(27),
+				IsManagementPermission: getPointer(false),
+				Label:                  getPointer("foo"),
+				PermissionId:           getPointer("27"),
 			},
 			{
-				IsManagementPermission: thousandeyes.Bool(true),
-				Label:                  thousandeyes.String("bar"),
-				PermissionID:           thousandeyes.Int64(28),
+				IsManagementPermission: getPointer(true),
+				Label:                  getPointer("bar"),
+				PermissionId:           getPointer("28"),
 			},
 		},
 	}
 	resultMap := map[string]interface{}{
-		"role_name":                  thousandeyes.String("TestRole"),
-		"role_id":                    thousandeyes.Int64(1),
-		"has_management_permissions": thousandeyes.Bool(true),
-		"builtin":                    thousandeyes.Bool(false),
+		"name":       getPointer("TestRole"),
+		"role_id":    getPointer("1"),
+		"is_builtin": getPointer(false),
 		"permissions": []map[string]interface{}{
 			{
-				"is_management_permission": thousandeyes.Bool(false),
-				"label":                    thousandeyes.String("foo"),
-				"permission_id":            thousandeyes.Int64(27),
+				"is_management_permission": getPointer(false),
+				"label":                    getPointer("foo"),
+				"permission_id":            getPointer("27"),
 			},
 			{
-				"is_management_permission": thousandeyes.Bool(true),
-				"label":                    thousandeyes.String("bar"),
-				"permission_id":            thousandeyes.Int64(28),
+				"is_management_permission": getPointer(true),
+				"label":                    getPointer("bar"),
+				"permission_id":            getPointer("28"),
 			},
 		},
 	}
@@ -122,7 +124,7 @@ func TestFixReadValues(t *testing.T) {
 	// non-map, non-list
 	normalInput := 4
 	normalTarget := 4
-	output, err = FixReadValues(normalInput, "normal")
+	output, err = FixReadValues(context.TODO(), nil, normalInput, getPointer("normal"))
 	if err != nil {
 		t.Errorf("normal input returned error: %s", err.Error())
 	}
@@ -134,22 +136,17 @@ func TestFixReadValues(t *testing.T) {
 	agentsInput := []interface{}{
 		map[string]interface{}{
 			"agent_name": "foo",
-			"agent_id":   1,
+			"agent_id":   "1",
 		},
 		map[string]interface{}{
 			"agent_name": "bar",
-			"agent_id":   2,
+			"agent_id":   "2",
 		},
 	}
 	agentsTarget := []interface{}{
-		map[string]interface{}{
-			"agent_id": 1,
-		},
-		map[string]interface{}{
-			"agent_id": 2,
-		},
+		"1", "2",
 	}
-	output, err = FixReadValues(agentsInput, "agents")
+	output, err = FixReadValues(context.TODO(), nil, agentsInput, getPointer("agents"))
 	if err != nil {
 		t.Errorf("agents input returned error: %s", err.Error())
 	}
@@ -157,36 +154,69 @@ func TestFixReadValues(t *testing.T) {
 		t.Errorf("Values not stripped correctly from agents input: Received %#v Expected %#v", output, agentsTarget)
 	}
 
+	// dns_servers
+	dnsServersInput := []interface{}{
+		map[string]interface{}{
+			"server_name": "foo.com",
+			"server_id":   "1",
+		},
+		map[string]interface{}{
+			"server_name": "bar.com",
+			"server_id":   "2",
+		},
+	}
+	dnsServersTarget := []interface{}{
+		"foo.com", "bar.com",
+	}
+	output, err = FixReadValues(context.TODO(), nil, dnsServersInput, getPointer("dns_servers"))
+	if err != nil {
+		t.Errorf("dns_servers input returned error: %s", err.Error())
+	}
+	if reflect.DeepEqual(output, dnsServersTarget) != true {
+		t.Errorf("Values not stripped correctly from dns_servers input: Received %#v Expected %#v", output, agentsTarget)
+	}
+
+	// _links
+	fieldName := getPointer("_links")
+	linksInput := map[string]interface{}{
+		"self": map[string]interface{}{
+			"href": "foo.com",
+		},
+	}
+	linksTarget := "foo.com"
+	output, err = FixReadValues(context.TODO(), nil, linksInput, fieldName)
+	if err != nil {
+		t.Errorf("links input returned error: %s", err.Error())
+	}
+	if *fieldName != "link" {
+		t.Errorf("link name returned error: %s", err.Error())
+	}
+	if reflect.DeepEqual(output, linksTarget) != true {
+		t.Errorf("Values not stripped correctly from links input: Received %#v Expected %#v", output, agentsTarget)
+	}
+
 	// alert_rules
 	alertRulesInput := []interface{}{
 		map[string]interface{}{
-			"rule_name": thousandeyes.String("foo"),
-			"rule_id":   thousandeyes.Int(1),
-			"default":   thousandeyes.Bool(false),
+			"rule_name": getPointer("foo"),
+			"rule_id":   getPointer("1"),
+			"default":   getPointer(false),
 		},
 		map[string]interface{}{
-			"rule_name": thousandeyes.String("bar"),
-			"rule_id":   thousandeyes.Int(2),
-			"default":   thousandeyes.Bool(false),
+			"rule_name": getPointer("bar"),
+			"rule_id":   getPointer("2"),
+			"default":   getPointer(false),
 		},
 		map[string]interface{}{
-			"rule_name": thousandeyes.String("bar"),
-			"rule_id":   thousandeyes.Int(3),
-			"default":   thousandeyes.Bool(true),
+			"rule_name": getPointer("bar"),
+			"rule_id":   getPointer("3"),
+			"default":   getPointer(true),
 		},
 	}
 	alertRulesTarget := []interface{}{
-		map[string]interface{}{
-			"rule_id": thousandeyes.Int(1),
-		},
-		map[string]interface{}{
-			"rule_id": thousandeyes.Int(2),
-		},
-		map[string]interface{}{
-			"rule_id": thousandeyes.Int(3),
-		},
+		getPointer("1"), getPointer("2"), getPointer("3"),
 	}
-	output, err = FixReadValues(alertRulesInput, "alert_rules")
+	output, err = FixReadValues(context.TODO(), nil, alertRulesInput, getPointer("alert_rules"))
 	if err != nil {
 		t.Errorf("alert_rules input returned error: %s", err.Error())
 	}
@@ -197,22 +227,20 @@ func TestFixReadValues(t *testing.T) {
 	// bgp_monitors
 	monitorsInput := []interface{}{
 		map[string]interface{}{
-			"monitor_name": thousandeyes.String("foo"),
-			"monitor_id":   thousandeyes.Int(1),
-			"monitor_type": thousandeyes.String("Public"),
+			"monitor_name": getPointer("foo"),
+			"monitor_id":   getPointer("1"),
+			"monitor_type": getPointer(tests.MonitorType("public")),
 		},
 		map[string]interface{}{
-			"monitor_name": thousandeyes.String("bar"),
-			"monitor_id":   thousandeyes.Int(2),
-			"monitor_type": thousandeyes.String("Private"),
+			"monitor_name": getPointer("bar"),
+			"monitor_id":   getPointer("2"),
+			"monitor_type": getPointer(tests.MonitorType("private")),
 		},
 	}
 	monitorsTarget := []interface{}{
-		map[string]interface{}{
-			"monitor_id": thousandeyes.Int(2),
-		},
+		getPointer("2"),
 	}
-	output, err = FixReadValues(monitorsInput, "bgp_monitors")
+	output, err = FixReadValues(context.TODO(), nil, monitorsInput, getPointer("monitors"))
 	if err != nil {
 		t.Errorf("bgp_monitors input returned error: %s", err.Error())
 	}
@@ -220,51 +248,24 @@ func TestFixReadValues(t *testing.T) {
 		t.Errorf("Values not stripped correctly from bgp_monitors input: Received %#v Expected %#v", output, monitorsTarget)
 	}
 
-	// groups
-	groupsInput := []interface{}{
-		map[string]interface{}{
-			"group_name": "foo",
-			"group_id":   1,
-		},
-		map[string]interface{}{
-			"group_name": "bar",
-			"group_id":   2,
-		},
-	}
-	groupsTarget := []interface{}{
-		map[string]interface{}{
-			"group_id": 1,
-		},
-		map[string]interface{}{
-			"group_id": 2,
-		},
-	}
-	output, err = FixReadValues(groupsInput, "groups")
-	if err != nil {
-		t.Errorf("groups input returned error: %s", err.Error())
-	}
-	if reflect.DeepEqual(output, groupsTarget) != true {
-		t.Errorf("Values not stripped correctly from groups input: Received %#v Expected %#v", output, groupsTarget)
-	}
-
 	//	shared_with_accounts
-	accountGroupId = 2
 	accountsInput := []interface{}{
 		map[string]interface{}{
-			"name": thousandeyes.String("foo"),
-			"aid":  thousandeyes.Int64(1),
+			"name": getPointer("foo"),
+			"aid":  getPointer("1"),
 		},
 		map[string]interface{}{
-			"name": thousandeyes.String("bar"),
-			"aid":  thousandeyes.Int64(2),
+			"name": getPointer("bar"),
+			"aid":  getPointer("2"),
 		},
 	}
 	accountsTarget := []interface{}{
 		map[string]interface{}{
-			"aid": thousandeyes.Int64(1),
+			"aid": getPointer("1"),
 		},
 	}
-	output, err = FixReadValues(accountsInput, "shared_with_accounts")
+
+	output, err = FixReadValues(context.WithValue(context.TODO(), accountGroupIdKey, "2"), nil, accountsInput, getPointer("shared_with_accounts"))
 	if err != nil {
 		t.Errorf("shared_with_accounts input returned error: %s", err.Error())
 	}
@@ -272,8 +273,7 @@ func TestFixReadValues(t *testing.T) {
 		t.Errorf("Values not stripped correctly from shared_with_accounts input: Received %#v Expected %#v", output, accountsTarget)
 	}
 	//  We should fail if account_group_id isn't set and the list of account groups is > 1
-	accountGroupId = 0
-	output, err = FixReadValues(accountsInput, "shared_with_accounts")
+	output, err = FixReadValues(context.TODO(), nil, accountsInput, getPointer("shared_with_accounts"))
 	if err == nil {
 		t.Errorf("Error was not returned when shared_with_accounts length was > 1 and account_group_id  was not set")
 	}
@@ -281,10 +281,10 @@ func TestFixReadValues(t *testing.T) {
 	accountsInput = []interface{}{
 		map[string]interface{}{
 			"name": "bar",
-			"aid":  2,
+			"aid":  "2",
 		},
 	}
-	output, err = FixReadValues(accountsInput, "shared_with_accounts")
+	output, err = FixReadValues(context.TODO(), nil, accountsInput, getPointer("shared_with_accounts"))
 	if err != nil {
 		t.Errorf("shared_with_accounts input returned error when shared_with_accounts wasn't set despite list of account groups being < 2: %s", err.Error())
 	}
@@ -292,21 +292,30 @@ func TestFixReadValues(t *testing.T) {
 		t.Errorf("Values not stripped correctly from shared_with_accounts input: Received %#v Expected %#v", output, accountsTarget)
 	}
 
-	// target_sip_credentials
-	sipCredsInput := map[string]interface{}{
-		"sip_proxy": "foo.com",
-	}
-	sipCredsTarget := []interface{}{
-		map[string]interface{}{
-			"sip_proxy": "foo.com",
+	// use target map
+	targetMapInput := map[string]map[string]interface{}{
+		"target": {
+			"source_1": nil,
+			"source_2": nil,
+			"source_3": nil,
 		},
 	}
-	output, err = FixReadValues(sipCredsInput, "target_sip_credentials")
-	if err != nil {
-		t.Errorf("target_sip_credentials input returned error: %s", err.Error())
+	targetMapOutput := map[string]map[string]interface{}{
+		"target": {
+			"source_1": 1,
+			"source_2": 2,
+			"source_3": 3,
+		},
 	}
-	if reflect.DeepEqual(output, sipCredsTarget) != true {
-		t.Errorf("Values not stripped correctly from target_sip_credentials input: Received %#v Expected %#v", output, accountsTarget)
+	nameSource1 := getPointer("source_1")
+	FixReadValues(context.TODO(), targetMapInput, 1, nameSource1)
+	FixReadValues(context.TODO(), targetMapInput, 2, getPointer("source_2"))
+	FixReadValues(context.TODO(), targetMapInput, 3, getPointer("source_3"))
+	if len(*nameSource1) != 0 {
+		t.Errorf("Name wasn't cleared when target map was set")
+	}
+	if reflect.DeepEqual(targetMapOutput, targetMapInput) != true {
+		t.Errorf("Target Map didn't set correctly: Received %#v Expected %#v", targetMapInput, targetMapOutput)
 	}
 
 	//	tests
@@ -321,16 +330,15 @@ func TestFixReadValues(t *testing.T) {
 		},
 	}
 	testsTarget := []interface{}{
-		map[string]interface{}{
-			"test_id": "1",
-		},
-		map[string]interface{}{
-			"test_id": "2",
-		},
+		"1", "2",
 	}
-	output, err = FixReadValues(testsInput, "tests")
+	fieldName = getPointer("tests")
+	output, err = FixReadValues(context.TODO(), nil, testsInput, fieldName)
 	if err != nil {
 		t.Errorf("tests input returned error: %s", err.Error())
+	}
+	if *fieldName != "test_ids" {
+		t.Errorf("tests name returned error: %s", err.Error())
 	}
 	if reflect.DeepEqual(output, testsTarget) != true {
 		t.Errorf("Values not stripped correctly from tests input: Received %#v Expected %#v", output, nil)
@@ -363,7 +371,7 @@ func TestFixReadValues(t *testing.T) {
 		},
 	}
 
-	output, err = FixReadValues(thirdPartyNotificationsInput, "third_party")
+	output, err = FixReadValues(context.TODO(), nil, thirdPartyNotificationsInput, getPointer("third_party"))
 	if err != nil {
 		t.Errorf("third party notifications input returned error: %s", err.Error())
 	}
@@ -386,13 +394,34 @@ func TestFixReadValues(t *testing.T) {
 			"integration_type": "WEBHOOK",
 		},
 	}
-	
-	output, err = FixReadValues(webhookNotificationsInput, "webhook")
+
+	output, err = FixReadValues(context.TODO(), nil, webhookNotificationsInput, getPointer("webhook"))
 	if err != nil {
 		t.Errorf("webhook notifications input returned error: %s", err.Error())
 	}
 	if reflect.DeepEqual(output, webhookNotificationsTarget) != true {
 		t.Errorf("Values not stripped correctly from webhook notifications input: Received %#v Expected %#v", output, webhookNotificationsTarget)
+	}
+
+	// emulated device id
+	ctx := context.WithValue(context.Background(), emulationDeviceIdKey, struct{}{})
+	targetEdId := "3000"
+	output, err = FixReadValues(ctx, nil, getPointer("3000"), getPointer("emulated_device_id"))
+	if err != nil {
+		t.Errorf("emulated device id input returned error: %s", err.Error())
+	}
+	if output == nil {
+		t.Errorf("emulated device id was set incorrectly: Received nil Expected %s", targetEdId)
+	}
+	if str := output.(*string); *str != targetEdId {
+		t.Errorf("emulated device id was set incorrectly: Received %s Expected %s", *str, targetEdId)
+	}
+	output, err = FixReadValues(context.Background(), nil, getPointer("3000"), getPointer("emulated_device_id"))
+	if err != nil {
+		t.Errorf("emulated device id input returned error: %s", err.Error())
+	}
+	if output != nil {
+		t.Errorf("emulated device id was set incorrectly: Received %s Expected nil", *output.(*string))
 	}
 }
 

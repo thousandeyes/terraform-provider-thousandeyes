@@ -3,21 +3,21 @@ data "thousandeyes_agent" "amsterdam" {
 }
 
 data "thousandeyes_alert_rule" "def_alert_rule" {
-  rule_name = "Default DNS Trace Alert Rule 2.0"
+  rule_name = "Default DNSSEC Alert Rule 2.0"
 }
 
 resource "thousandeyes_alert_rule" "test" {
-  rule_name                 = "Custom UAT DNS Trace Alert Rule"
-  alert_type                = "dns-trace"
+  rule_name                 = "Custom UAT DNSSEC Alert Rule (Updated)"
+  alert_type                = "dnssec"
   expression                = "((probDetail != \"\"))"
   minimum_sources           = 1
-  rounds_violating_required = 1
-  rounds_violating_out_of   = 1
+  rounds_violating_required = 3
+  rounds_violating_out_of   = 3
 }
 
-resource "thousandeyes_dns_trace" "test" {
-  test_name      = "User Acceptance Test - DNS Trace"
-  interval       = 120
+resource "thousandeyes_dnssec" "test" {
+  test_name      = "User Acceptance Test - DNSSEC (Updated)"
+  interval       = 300
   alerts_enabled = true
   domain         = "thousandeyes.com A"
   agents         = [data.thousandeyes_agent.amsterdam.agent_id]
