@@ -3,7 +3,6 @@ package thousandeyes
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -15,7 +14,7 @@ import (
 type ResourceType struct {
 	Name         string
 	ResourceName string
-	GetResource  func(id int64) (interface{}, error)
+	GetResource  func(id string) (interface{}, error)
 }
 
 var testClient *client.APIClient
@@ -48,10 +47,8 @@ func testAccCheckResourceDestroy(resources []ResourceType, s *terraform.State) e
 	for _, resource := range resources {
 		for _, rs := range s.RootModule().Resources {
 			if rs.Type == resource.ResourceName {
-				id, err := strconv.ParseInt(rs.Primary.ID, 10, 64)
-				if err != nil {
-					return err
-				}
+				var err error
+				id := rs.Primary.ID
 				_, err = resource.GetResource(id)
 				if err == nil {
 					return fmt.Errorf("%s with id %s still exists", resource.ResourceName, rs.Primary.ID)

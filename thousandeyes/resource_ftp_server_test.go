@@ -1,103 +1,105 @@
 package thousandeyes
 
-// import (
-// 	"os"
-// 	"testing"
+import (
+	"os"
+	"testing"
 
-// 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-// 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-// )
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/thousandeyes/thousandeyes-sdk-go/v3/tests"
+)
 
-// func TestAccThousandEyesFTPServer(t *testing.T) {
-// 	var ftpResourceName = "thousandeyes_ftp_server.test"
-// 	testCases := []struct {
-// 		name                 string
-// 		resourceFile         string
-// 		resourceName         string
-// 		checkDestroyFunction func(*terraform.State) error
-// 		checkFunc            []resource.TestCheckFunc
-// 	}{
-// 		{
-// 			name:                 "basic",
-// 			resourceFile:         "acceptance_resources/ftp_server/basic.tf",
-// 			resourceName:         ftpResourceName,
-// 			checkDestroyFunction: testAccCheckDefaultResourceDestroy,
-// 			checkFunc: []resource.TestCheckFunc{
-// 				resource.TestCheckResourceAttr(ftpResourceName, "alerts_enabled", "false"),
-// 				resource.TestCheckResourceAttr(ftpResourceName, "alert_rules.#", "0"),
-// 			},
-// 		},
-// 		{
-// 			name:                 "alerts_enabled",
-// 			resourceFile:         "acceptance_resources/ftp_server/alerts_enabled.tf",
-// 			resourceName:         ftpResourceName,
-// 			checkDestroyFunction: testAccCheckDefaultResourceDestroy,
-// 			checkFunc: []resource.TestCheckFunc{
-// 				resource.TestCheckResourceAttr(ftpResourceName, "alerts_enabled", "true"),
-// 				resource.TestCheckResourceAttr(ftpResourceName, "alert_rules.#", "1"),
-// 			},
-// 		},
-// 		{
-// 			name:         "alerts_enabled_multiple_alert_rules",
-// 			resourceFile: "acceptance_resources/ftp_server/alerts_enabled_multiple_alert_rules.tf",
-// 			resourceName: ftpResourceName,
-// 			checkDestroyFunction: func(state *terraform.State) error {
-// 				resourceList := []ResourceType{
-// 					{
-// 						Name:         "FTP Server Test",
-// 						ResourceName: "thousandeyes_ftp_server",
-// 						GetResource: func(id int64) (interface{}, error) {
-// 							return testClient.GetFTPServer(id)
-// 						}},
-// 					{
-// 						Name:         "Alert Rule",
-// 						ResourceName: "thousandeyes_alert_rule",
-// 						GetResource: func(id int64) (interface{}, error) {
-// 							return testClient.GetAlertRule(id)
-// 						}},
-// 				}
-// 				return testAccCheckResourceDestroy(resourceList, state)
-// 			},
-// 			checkFunc: []resource.TestCheckFunc{
-// 				resource.TestCheckResourceAttr(ftpResourceName, "alerts_enabled", "true"),
-// 				resource.TestCheckResourceAttr(ftpResourceName, "alert_rules.#", "2"),
-// 			},
-// 		},
-// 	}
+func TestAccThousandEyesFTPServer(t *testing.T) {
+	var ftpResourceName = "thousandeyes_ftp_server.test"
+	testCases := []struct {
+		name                 string
+		createResourceFile   string
+		updateResourceFile   string
+		resourceName         string
+		checkDestroyFunction func(*terraform.State) error
+		checkCreateFunc      []resource.TestCheckFunc
+		checkUpdateFunc      []resource.TestCheckFunc
+	}{
+		{
+			name:                 "basic",
+			createResourceFile:   "acceptance_resources/ftp_server/basic.tf",
+			updateResourceFile:   "acceptance_resources/ftp_server/update.tf",
+			resourceName:         ftpResourceName,
+			checkDestroyFunction: testAccCheckDefaultResourceDestroy,
+			checkCreateFunc: []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(ftpResourceName, "url", "ftp://speedtest.tele2.net/"),
+				resource.TestCheckResourceAttr(ftpResourceName, "test_name", "User Acceptance Test - FTP Server"),
+				resource.TestCheckResourceAttr(ftpResourceName, "interval", "120"),
+				resource.TestCheckResourceAttr(ftpResourceName, "password", "test_password"),
+				resource.TestCheckResourceAttr(ftpResourceName, "username", "test_username"),
+				resource.TestCheckResourceAttr(ftpResourceName, "description", "description"),
+				resource.TestCheckResourceAttr(ftpResourceName, "request_type", "download"),
+				resource.TestCheckResourceAttr(ftpResourceName, "ftp_time_limit", "10"),
+				resource.TestCheckResourceAttr(ftpResourceName, "ftp_target_time", "1000"),
+				resource.TestCheckResourceAttr(ftpResourceName, "alerts_enabled", "true"),
+				resource.TestCheckResourceAttr(ftpResourceName, "alert_rules.#", "2"),
+			},
+			checkUpdateFunc: []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(ftpResourceName, "url", "ftp://speedtest.tele2.net/"),
+				resource.TestCheckResourceAttr(ftpResourceName, "test_name", "User Acceptance Test - FTP Server (Updated)"),
+				resource.TestCheckResourceAttr(ftpResourceName, "interval", "300"),
+				resource.TestCheckResourceAttr(ftpResourceName, "password", "test_password"),
+				resource.TestCheckResourceAttr(ftpResourceName, "username", "test_username"),
+				resource.TestCheckResourceAttr(ftpResourceName, "description", "description"),
+				resource.TestCheckResourceAttr(ftpResourceName, "request_type", "download"),
+				resource.TestCheckResourceAttr(ftpResourceName, "ftp_time_limit", "10"),
+				resource.TestCheckResourceAttr(ftpResourceName, "ftp_target_time", "1000"),
+				resource.TestCheckResourceAttr(ftpResourceName, "alerts_enabled", "true"),
+				resource.TestCheckResourceAttr(ftpResourceName, "alert_rules.#", "2"),
+			},
+		},
+	}
 
-// 	for _, tc := range testCases {
-// 		t.Run(tc.name, func(t *testing.T) {
-// 			resource.Test(t, resource.TestCase{
-// 				PreCheck:          func() { testAccPreCheck(t) },
-// 				ProviderFactories: providerFactories,
-// 				CheckDestroy:      tc.checkDestroyFunction,
-// 				Steps: []resource.TestStep{
-// 					{
-// 						Config: testAccThousandEyesFTPServerConfig(tc.resourceFile),
-// 						Check:  resource.ComposeTestCheckFunc(tc.checkFunc...),
-// 					},
-// 				},
-// 			})
-// 		})
-// 	}
-// }
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			resource.Test(t, resource.TestCase{
+				PreCheck:          func() { testAccPreCheck(t) },
+				ProviderFactories: providerFactories,
+				CheckDestroy:      tc.checkDestroyFunction,
+				Steps: []resource.TestStep{
+					{
+						Config: testAccThousandEyesFTPServerConfig(tc.createResourceFile),
+						Check:  resource.ComposeTestCheckFunc(tc.checkCreateFunc...),
+					},
+					{
+						Config: testAccThousandEyesFTPServerConfig(tc.updateResourceFile),
+						Check:  resource.ComposeTestCheckFunc(tc.checkUpdateFunc...),
+					},
+				},
+			})
+		})
+	}
+}
 
-// func testAccCheckDefaultResourceDestroy(s *terraform.State) error {
-// 	resourceList := []ResourceType{
-// 		{
-// 			Name:         "FTP Server Test",
-// 			ResourceName: "thousandeyes_ftp_server",
-// 			GetResource: func(id int64) (interface{}, error) {
-// 				return testClient.GetFTPServer(id)
-// 			}},
-// 	}
-// 	return testAccCheckResourceDestroy(resourceList, s)
-// }
+func testAccCheckDefaultResourceDestroy(s *terraform.State) error {
+	resourceList := []ResourceType{
+		{
+			Name:         "FTP Server Test",
+			ResourceName: "thousandeyes_ftp_server",
+			GetResource: func(id string) (interface{}, error) {
+				return getFTPServer(id)
+			}},
+	}
+	return testAccCheckResourceDestroy(resourceList, s)
+}
 
-// func testAccThousandEyesFTPServerConfig(testResource string) string {
-// 	content, err := os.ReadFile(testResource)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 	return string(content)
-// }
+func testAccThousandEyesFTPServerConfig(testResource string) string {
+	content, err := os.ReadFile(testResource)
+	if err != nil {
+		panic(err)
+	}
+	return string(content)
+}
+
+func getFTPServer(id string) (interface{}, error) {
+	api := (*tests.FTPServerTestsAPIService)(&testClient.Common)
+	req := api.GetFtpServerTest(id).Expand(tests.AllowedExpandTestOptionsEnumValues)
+	req = SetAidFromContext(testClient.GetConfig().Context, req)
+	resp, _, err := req.Execute()
+	return resp, err
+}
