@@ -47,7 +47,8 @@ var (
 	_ = tests.WebTransactionTestRequest{}
 	_ = tests.WebTransactionTestResponse{}
 
-	_ = tests.TestSelfLink{}
+	_ = tests.ApiTestRequest{}
+	_ = tests.ApiTestResponse{}
 )
 
 var CommonSchema = map[string]*schema.Schema{
@@ -936,5 +937,36 @@ var CommonSchema = map[string]*schema.Schema{
 		Elem: &schema.Schema{
 			Type: schema.TypeString,
 		},
+	},
+
+	// API
+
+	// predefinedVariables
+	"predefined_variables": {
+		Type:        schema.TypeSet,
+		Description: "The array of predefined variables",
+		Optional:    true,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"name": {
+					Type:        schema.TypeString,
+					Description: "Variable name. Must be unique.",
+					Optional:    true,
+				},
+				"value": {
+					Type:        schema.TypeString,
+					Description: "Variable value, will be treated as string.",
+					Optional:    true,
+				},
+			},
+		},
+	},
+	// requests
+	"requests": apiRequest,
+	// timeLimit
+	"time_limit_api": {
+		Type:        schema.TypeInt,
+		Description: "Time limit for transaction in seconds. Exceeding this limit will result in a Timeout error.",
+		Optional:    true,
 	},
 }
