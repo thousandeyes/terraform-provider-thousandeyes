@@ -1,7 +1,3 @@
-provider "thousandeyes" {
-  api_endpoint = "https://api.stg.thousandeyes.com/v7"
-}
-
 data "thousandeyes_agent" "arg_amsterdam" {
   agent_name = "Amsterdam, Netherlands"
 }
