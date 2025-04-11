@@ -110,9 +110,9 @@ Optional:
 
 Optional:
 
-- `all` (Map of String) Use these HTTP headers for all domains.
-- `domains` (Map of String) Use these HTTP headers for the specified domains.
-- `root` (Map of String) Use these HTTP headers for root server request.
+- `all` (Map of String, Sensitive) Use these HTTP headers for all domains.
+- `domains` (Map of String, Sensitive) Use these HTTP headers for the specified domains.
+- `root` (Map of String, Sensitive) Use these HTTP headers for root server request.
 
 
 <a id="nestedblock--oauth"></a>
