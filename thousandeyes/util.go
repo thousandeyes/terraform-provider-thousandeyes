@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log"
 	"reflect"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -18,6 +19,8 @@ import (
 type fieldKeyType string
 
 const emulationDeviceIdKey fieldKeyType = "emulation_device_id"
+
+var sensitiveFields = []string{"password", "custom_headers", "headers", "bearer_token", "client_id", "client_secret"}
 
 type ResourceReadFunc func(client *client.APIClient, id string) (interface{}, error)
 
@@ -110,12 +113,20 @@ func ResourceRead(ctx context.Context, d *schema.ResourceData, structPtr interfa
 	targetMaps := getTargetFieldsMaps(structPtr)
 
 	for i := 0; i < v.NumField(); i++ {
+		tag := GetJSONKey(t.Field(i))
+		tfName := CamelCaseToUnderscore(tag)
+
+		if slices.Contains(sensitiveFields, tfName) {
+			if _, ok := d.GetOk(tfName); ok {
+				d.Set(tfName, nil)
+			}
+			continue
+		}
+
 		if v.Field(i).Kind() == reflect.Ptr && v.Field(i).IsNil() {
 			continue
 		}
 
-		tag := GetJSONKey(t.Field(i))
-		tfName := CamelCaseToUnderscore(tag)
 		val, err := ReadValue(v.Field(i).Interface())
 		if err != nil {
 			return err
@@ -158,8 +169,8 @@ func getTargetFieldsMaps(structPtr interface{}) map[string]map[string]interface{
 	case (*tests.SipServerTestResponse):
 		res := make(map[string]map[string]interface{})
 		res["target_sip_credentials"] = map[string]interface{}{
-			"auth_user":     nil,
-			"password":      nil,
+			"auth_user": nil,
+			// "password":      nil, sensitive
 			"port":          nil,
 			"protocol":      nil,
 			"sip_registrar": nil,
@@ -454,11 +465,17 @@ func ReadValue(structPtr interface{}) (interface{}, error) {
 		}
 		newMap := make(map[string]interface{})
 		for i := 0; i < v.NumField(); i++ {
+			tag := GetJSONKey(t.Field(i))
+			tfName := CamelCaseToUnderscore(tag)
+
+			if slices.Contains(sensitiveFields, tfName) {
+				newMap[tfName] = nil
+				continue
+			}
 			if v.Field(i).Kind() == reflect.Ptr && v.Field(i).IsNil() {
 				continue
 			}
-			tag := GetJSONKey(t.Field(i))
-			tfName := CamelCaseToUnderscore(tag)
+
 			newMap[tfName], err = ReadValue(v.Field(i).Interface())
 		}
 		if err != nil {

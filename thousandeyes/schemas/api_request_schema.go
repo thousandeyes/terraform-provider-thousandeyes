@@ -9,7 +9,7 @@ import (
 var _ = tests.ApiRequest{}
 
 var apiRequest = &schema.Schema{
-	Type:        schema.TypeSet,
+	Type:        schema.TypeList,
 	Description: "List of API requests",
 	Optional:    true,
 	Elem: &schema.Resource{
