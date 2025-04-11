@@ -588,7 +588,6 @@ var CommonSchema = map[string]*schema.Schema{
 	"custom_headers": {
 		Description: "The custom headers.",
 		Optional:    true,
-		Sensitive:   true,
 		Type:        schema.TypeSet,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
@@ -596,16 +595,19 @@ var CommonSchema = map[string]*schema.Schema{
 					Type:        schema.TypeMap,
 					Description: "Use these HTTP headers for root server request.",
 					Optional:    true,
+					Sensitive:   true,
 				},
 				"domains": {
 					Type:        schema.TypeMap,
 					Description: "Use these HTTP headers for the specified domains.",
 					Optional:    true,
+					Sensitive:   true,
 				},
 				"all": {
 					Type:        schema.TypeMap,
 					Description: "Use these HTTP headers for all domains.",
 					Optional:    true,
+					Sensitive:   true,
 				},
 			},
 		},

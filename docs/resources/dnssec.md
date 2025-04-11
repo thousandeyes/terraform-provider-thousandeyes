@@ -15,95 +15,33 @@ This resource allows you to create a DNSSEC test. This test type verifies the di
 
 ### Required
 
-- `agents` (Block Set, Min: 1) The list of ThousandEyes agents to use. (see [below for nested schema](#nestedblock--agents))
+- `agents` (Set of String) The list of ThousandEyes agent IDs to use.
 - `domain` (String) See notes	target record for test, suffixed by record type (ie, www.thousandeyes.com CNAME). If no record type is specified, the test will default to an ANY record.
 - `interval` (Number) The interval to run the test on, in seconds.
 - `test_name` (String) The name of the test.
 
 ### Optional
 
-- `alert_rules` (Block Set) Gets the ruleId from the /alert-rules endpoint. If alertsEnabled is set to 'true' and alertRules is not included in a creation/update query, the applicable defaults will be used. (see [below for nested schema](#nestedblock--alert_rules))
+- `alert_rules` (Set of String) List of alert rules IDs to apply to the test (get `ruleId` from `/alerts/rules` endpoint. If `alertsEnabled` is set to `true` and `alertRules` is not included on test creation or update, applicable user default alert rules will be used)
 - `alerts_enabled` (Boolean) Set to 'true' to enable alerts, or 'false' to disable alerts. The default value is 'true'.
 - `description` (String) A description of the alert rule. Defaults to an empty string.
+- `dns_query_class` (String) Domain class used by this test. 'in' stands for Internet, while 'ch' stands for Chaos.
 - `enabled` (Boolean) Enables or disables the test.
-- `shared_with_accounts` (Block List) [“serverName”: “fqdn of server”] The array of DNS Server objects. (see [below for nested schema](#nestedblock--shared_with_accounts))
+- `labels` (Set of String) ["1", "2", "uuid"] The array of label or tag ids.
+- `randomized_start_time` (Boolean) Indicates whether agents should randomize the start time in each test round.
+- `shared_with_accounts` (Set of String) List of accounts
 
 ### Read-Only
 
-- `api_links` (List of Object) Self links to the endpoint to pull test metadata, and data links to the endpoint for test data. Read-only, and shows rel and href elements. (see [below for nested schema](#nestedatt--api_links))
 - `created_by` (String) Created by user.
 - `created_date` (String) The date of creation.
-- `groups` (Set of Object) The array of label objects. (see [below for nested schema](#nestedatt--groups))
 - `id` (String) The ID of this resource.
+- `link` (String) Its value is either a URI [RFC3986] or a URI template [RFC6570].
 - `live_share` (Boolean) Set to 'true' for a test shared with your account group, or to 'false' for a normal test.
 - `modified_by` (String) Last modified by this user.
 - `modified_date` (String) The date the test was last modified. Shown in UTC.
 - `saved_event` (Boolean) Set to 'true' for a saved event, or to 'false' for a normal test.
-- `test_id` (Number) The unique ID of the test.
+- `test_id` (String) The unique ID of the test.
 - `type` (String) The type of test.
-
-<a id="nestedblock--agents"></a>
-### Nested Schema for `agents`
-
-Required:
-
-- `agent_id` (Number) The unique ID for the ThousandEyes agent.
-
-
-<a id="nestedblock--alert_rules"></a>
-### Nested Schema for `alert_rules`
-
-Optional:
-
-- `rule_id` (Number) The unique ID of the alert rule.
-
-
-<a id="nestedblock--shared_with_accounts"></a>
-### Nested Schema for `shared_with_accounts`
-
-Required:
-
-- `aid` (Number) The account group ID.
-
-Read-Only:
-
-- `name` (String) Account name.
-
-
-<a id="nestedatt--api_links"></a>
-### Nested Schema for `api_links`
-
-Read-Only:
-
-- `href` (String)
-- `rel` (String)
-
-
-<a id="nestedatt--groups"></a>
-### Nested Schema for `groups`
-
-Read-Only:
-
-- `agents` (List of Object) (see [below for nested schema](#nestedobjatt--groups--agents))
-- `builtin` (Boolean)
-- `group_id` (Number)
-- `name` (String)
-- `tests` (List of Object) (see [below for nested schema](#nestedobjatt--groups--tests))
-- `type` (String)
-
-<a id="nestedobjatt--groups--agents"></a>
-### Nested Schema for `groups.agents`
-
-Read-Only:
-
-- `agent_id` (Number)
-
-
-<a id="nestedobjatt--groups--tests"></a>
-### Nested Schema for `groups.tests`
-
-Read-Only:
-
-- `test_id` (Number)
 
 
