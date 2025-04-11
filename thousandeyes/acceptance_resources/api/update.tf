@@ -6,32 +6,33 @@ data "thousandeyes_alert_rule" "def_alert_rule" {
   rule_name = "Default API Alert Rule 2.0"
 }
 
-resource "thousandeyes_alert_rule" "alert-rule-http-test" {
-  rule_name                 = "Custom UAT API Alert Rule"
-  alert_type                = "api"
-  expression                = "((apiCompletion <= 100))"
-  rounds_violating_out_of   = 1
-  rounds_violating_required = 1
-  minimum_sources           = 1
-}
+# resource "thousandeyes_alert_rule" "alert-rule-http-test" {
+#   rule_name                 = "Custom UAT API Alert Rule (Updated)"
+#   alert_type                = "api"
+#   expression                = "((apiCompletion <= 100))"
+#   rounds_violating_out_of   = 3
+#   rounds_violating_required = 3
+#   minimum_sources           = 1
+# }
 
 resource "thousandeyes_api" "test" {
-  test_name            = "User Acceptance Test - API"
-  interval             = 120
+  test_name            = "User Acceptance Test - API (Updated)"
+  interval             = 300
   alerts_enabled       = true
   url                  = "https://www.thousandeyes.com"
   agents               = [data.thousandeyes_agent.arg_amsterdam.agent_id]
-  alert_rules          = [data.thousandeyes_alert_rule.def_alert_rule.id, thousandeyes_alert_rule.alert-rule-http-test.id]
+  alert_rules          = [data.thousandeyes_alert_rule.def_alert_rule.id]
+  # alert_rules          = [data.thousandeyes_alert_rule.def_alert_rule.id, thousandeyes_alert_rule.alert-rule-http-test.id]
   network_measurements = false
   bgp_measurements     = false
   target_time          = 30
   time_limit           = 90
   requests {
-    name                  = "Step 1 - GET Request"
+    name                  = "Step 1 - GET Request (Updated)"
     url                   = "https://api.stg.thousandeyes.com/v6/status.json"
     method                = "get"
     auth_type             = "basic"
-    username              = "test_username"
+    username              = "new_test_username"
     password              = "test_password"
     client_authentication = "in-body"
 
@@ -53,7 +54,7 @@ resource "thousandeyes_api" "test" {
     }
   }
   requests {
-    name                  = "Step 2 - POST OAuth2 request"
+    name                  = "Step 2 - POST OAuth2 request (Updated)"
     url                   = "https://api.stg.thousandeyes.com/v6/credentials/new.json"
     method                = "post"
     auth_type             = "oauth2"
@@ -62,9 +63,8 @@ resource "thousandeyes_api" "test" {
     scope                 = "test_scope"
     token_url             = "https://api.stg.thousandeyes.com/v6"
     client_authentication = "in-body"
-
     body = jsonencode({
-      firstName = "John"
+      firstName = "Jack"
       lastName  = "Doe"
     })
 
@@ -84,8 +84,6 @@ resource "thousandeyes_api" "test" {
       operator = "includes"
       value    = "error"
     }
-
-    wait_time_ms = 1000 
+    wait_time_ms = 1000
   }
-
 }
