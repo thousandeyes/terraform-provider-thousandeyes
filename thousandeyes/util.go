@@ -118,7 +118,9 @@ func ResourceRead(ctx context.Context, d *schema.ResourceData, structPtr interfa
 
 		if slices.Contains(sensitiveFields, tfName) {
 			if _, ok := d.GetOk(tfName); ok {
-				d.Set(tfName, nil)
+				if err := d.Set(tfName, nil); err != nil {
+					return err
+				}
 			}
 			continue
 		}
