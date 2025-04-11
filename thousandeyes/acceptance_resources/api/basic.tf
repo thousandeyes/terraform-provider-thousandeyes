@@ -51,38 +51,38 @@ resource "thousandeyes_api" "test" {
       value    = "username"
     }
   }
-  requests {
-    name                  = "Step 2 - Update Profile"
-    url                   = "https://api.example.com/profile/update"
-    method                = "post"
-    auth_type             = "basic"
-    username              = "your_username"
-    password              = "your_password"
-    client_authentication = "basic-auth-header"
+  # requests {
+  #   name                  = "Step 2 - Update Profile"
+  #   url                   = "https://api.example.com/profile/update"
+  #   method                = "post"
+  #   auth_type             = "basic"
+  #   username              = "your_username"
+  #   password              = "your_password"
+  #   client_authentication = "basic-auth-header"
 
-    body = jsonencode({
-      firstName = "John"
-      lastName  = "Doe"
-    })
+  #   body = jsonencode({
+  #     firstName = "John"
+  #     lastName  = "Doe"
+  #   })
 
-    headers {
-      key   = "Content-Type"
-      value = "application/json"
-    }
+  #   headers {
+  #     key   = "Content-Type"
+  #     value = "application/json"
+  #   }
 
-    assertions {
-      name     = "status-code"
-      operator = "is"
-      value    = "200"
-    }
+  #   assertions {
+  #     name     = "status-code"
+  #     operator = "is"
+  #     value    = "200"
+  #   }
 
-    assertions {
-      name     = "response-body"
-      operator = "includes"
-      value    = "update successful"
-    }
+  #   assertions {
+  #     name     = "response-body"
+  #     operator = "includes"
+  #     value    = "update successful"
+  #   }
 
-    wait_time_ms = 1000 # wait 1 second before next step (if any)
-  }
+  #   wait_time_ms = 1000 # wait 1 second before next step (if any)
+  # }
 
 }

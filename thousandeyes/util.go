@@ -110,12 +110,16 @@ func ResourceRead(ctx context.Context, d *schema.ResourceData, structPtr interfa
 	targetMaps := getTargetFieldsMaps(structPtr)
 
 	for i := 0; i < v.NumField(); i++ {
+		tag := GetJSONKey(t.Field(i))
+		tfName := CamelCaseToUnderscore(tag)
 		if v.Field(i).Kind() == reflect.Ptr && v.Field(i).IsNil() {
+			err := d.Set(tfName, nil)
+			if err != nil {
+				return err
+			}
 			continue
 		}
 
-		tag := GetJSONKey(t.Field(i))
-		tfName := CamelCaseToUnderscore(tag)
 		val, err := ReadValue(v.Field(i).Interface())
 		if err != nil {
 			return err
