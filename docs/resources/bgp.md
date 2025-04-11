@@ -30,98 +30,27 @@ resource "thousandeyes_bgp" "example_bgp_test" {
 
 ### Optional
 
-- `alert_rules` (Block Set) Gets the ruleId from the /alert-rules endpoint. If alertsEnabled is set to 'true' and alertRules is not included in a creation/update query, the applicable defaults will be used. (see [below for nested schema](#nestedblock--alert_rules))
+- `alert_rules` (Set of String) List of alert rules IDs to apply to the test (get `ruleId` from `/alerts/rules` endpoint. If `alertsEnabled` is set to `true` and `alertRules` is not included on test creation or update, applicable user default alert rules will be used)
 - `alerts_enabled` (Boolean) Set to 'true' to enable alerts, or 'false' to disable alerts. The default value is 'true'.
-- `bgp_monitors` (Block List) The array of BGP monitor object IDs. The monitorIDs can be sourced from the /bgp-monitors endpoint. (see [below for nested schema](#nestedblock--bgp_monitors))
 - `description` (String) A description of the alert rule. Defaults to an empty string.
 - `enabled` (Boolean) Enables or disables the test.
 - `include_covered_prefixes` (Boolean) Include queries for subprefixes detected under this prefix.
-- `shared_with_accounts` (Block List) [“serverName”: “fqdn of server”] The array of DNS Server objects. (see [below for nested schema](#nestedblock--shared_with_accounts))
+- `labels` (Set of String) ["1", "2", "uuid"] The array of label or tag ids.
+- `monitors` (Set of String) Contains list of BGP monitor IDs (get `monitorId` from `/monitors` endpoint)
+- `shared_with_accounts` (Set of String) List of accounts
 - `use_public_bgp` (Boolean) Enable to automatically add all available Public BGP Monitors to the test.
 
 ### Read-Only
 
-- `api_links` (List of Object) Self links to the endpoint to pull test metadata, and data links to the endpoint for test data. Read-only, and shows rel and href elements. (see [below for nested schema](#nestedatt--api_links))
 - `created_by` (String) Created by user.
 - `created_date` (String) The date of creation.
-- `groups` (Set of Object) The array of label objects. (see [below for nested schema](#nestedatt--groups))
 - `id` (String) The ID of this resource.
+- `link` (String) Its value is either a URI [RFC3986] or a URI template [RFC6570].
 - `live_share` (Boolean) Set to 'true' for a test shared with your account group, or to 'false' for a normal test.
 - `modified_by` (String) Last modified by this user.
 - `modified_date` (String) The date the test was last modified. Shown in UTC.
 - `saved_event` (Boolean) Set to 'true' for a saved event, or to 'false' for a normal test.
-- `test_id` (Number) The unique ID of the test.
+- `test_id` (String) The unique ID of the test.
 - `type` (String) The type of test.
-
-<a id="nestedblock--alert_rules"></a>
-### Nested Schema for `alert_rules`
-
-Optional:
-
-- `rule_id` (Number) The unique ID of the alert rule.
-
-
-<a id="nestedblock--bgp_monitors"></a>
-### Nested Schema for `bgp_monitors`
-
-Required:
-
-- `monitor_id` (Number) The unique ID of the BGP monitor.
-
-Optional:
-
-- `ip_address` (String) The IP address of the BGP monitor.
-- `monitor_name` (String) The name of the BGP monitor.
-- `monitor_type` (String) [Public or Private] Shows the type of BGP monitor.
-- `network` (String) The name of the autonomous system in which the BGP monitor is found.
-
-
-<a id="nestedblock--shared_with_accounts"></a>
-### Nested Schema for `shared_with_accounts`
-
-Required:
-
-- `aid` (Number) The account group ID.
-
-Read-Only:
-
-- `name` (String) Account name.
-
-
-<a id="nestedatt--api_links"></a>
-### Nested Schema for `api_links`
-
-Read-Only:
-
-- `href` (String)
-- `rel` (String)
-
-
-<a id="nestedatt--groups"></a>
-### Nested Schema for `groups`
-
-Read-Only:
-
-- `agents` (List of Object) (see [below for nested schema](#nestedobjatt--groups--agents))
-- `builtin` (Boolean)
-- `group_id` (Number)
-- `name` (String)
-- `tests` (List of Object) (see [below for nested schema](#nestedobjatt--groups--tests))
-- `type` (String)
-
-<a id="nestedobjatt--groups--agents"></a>
-### Nested Schema for `groups.agents`
-
-Read-Only:
-
-- `agent_id` (Number)
-
-
-<a id="nestedobjatt--groups--tests"></a>
-### Nested Schema for `groups.tests`
-
-Read-Only:
-
-- `test_id` (Number)
 
 
