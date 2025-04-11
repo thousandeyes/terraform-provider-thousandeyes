@@ -92,5 +92,21 @@ func resourceTagCreate(d *schema.ResourceData, m interface{}) error {
 }
 
 func buildTagStruct(d *schema.ResourceData) *tags.TagInfo {
-	return ResourceBuildStruct(d, &tags.TagInfo{})
+	tag := ResourceBuildStruct(d, &tags.TagInfo{})
+	if v, ok := d.Get("icon").(string); ok {
+		tag.Icon.Set(
+			getPointer(v),
+		)
+	}
+	if v, ok := d.Get("description").(string); ok {
+		tag.Description.Set(
+			getPointer(v),
+		)
+	}
+	if v, ok := d.Get("legacy_id").(int); ok {
+		tag.LegacyId.Set(
+			getPointer(float32(v)),
+		)
+	}
+	return tag
 }
