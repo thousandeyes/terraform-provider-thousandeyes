@@ -15,110 +15,52 @@ This resource allows you to create an FTP server test. This test type verifies t
 
 ### Required
 
-- `agents` (Block Set, Min: 1) The list of ThousandEyes agents to use. (see [below for nested schema](#nestedblock--agents))
+- `agents` (Set of String) The list of ThousandEyes agent IDs to use.
 - `interval` (Number) The interval to run the test on, in seconds.
-- `password` (String) The password to be used to authenticate with the destination server (required for FTP).
-- `request_type` (String) [Download, Upload, or List] Sets the type of activity for the test.
+- `password` (String, Sensitive) The password to be used to authenticate with the destination server (required for FTP).
+- `request_type` (String) [download, upload, or list] Sets the type of activity for the test.
 - `test_name` (String) The name of the test.
 - `url` (String) The target URL for the test.
 - `username` (String) The username to be used to authenticate with the destination server.
 
 ### Optional
 
-- `alert_rules` (Block Set) Gets the ruleId from the /alert-rules endpoint. If alertsEnabled is set to 'true' and alertRules is not included in a creation/update query, the applicable defaults will be used. (see [below for nested schema](#nestedblock--alert_rules))
+- `alert_rules` (Set of String) List of alert rules IDs to apply to the test (get `ruleId` from `/alerts/rules` endpoint. If `alertsEnabled` is set to `true` and `alertRules` is not included on test creation or update, applicable user default alert rules will be used)
 - `alerts_enabled` (Boolean) Set to 'true' to enable alerts, or 'false' to disable alerts. The default value is 'true'.
+- `bandwidth_measurements` (Boolean) Set to 1 to measure bandwidth. This only applies to Enterprise Agents assigned to the test, and requires that networkMeasurements is set. Defaults to 'false'.
 - `bgp_measurements` (Boolean) Enable BGP measurements. Set to true for enabled, false for disabled.
 - `description` (String) A description of the alert rule. Defaults to an empty string.
 - `download_limit` (Number) Specify the maximum number of bytes to download from the target object.
 - `enabled` (Boolean) Enables or disables the test.
+- `fixed_packet_rate` (Number) Sets packets rate sent to measure the network in packets per second.
 - `ftp_target_time` (Number) The target time for operation completion. Specified in milliseconds.
 - `ftp_time_limit` (Number) Set the time limit for the test (in seconds). FTP tests default to 10s.
+- `ipv6_policy` (String) [force-ipv4, prefer-ipv6, force-ipv6, or use-agent-policy]
+- `labels` (Set of String) ["1", "2", "uuid"] The array of label or tag ids.
+- `monitors` (Set of String) Contains list of BGP monitor IDs (get `monitorId` from `/monitors` endpoint)
 - `mtu_measurements` (Boolean) Measure MTU sizes on the network from agents to the target.
 - `network_measurements` (Boolean) Set to 'true' to enable network measurements.
 - `num_path_traces` (Number) The number of path traces.
-- `path_trace_mode` (String) [classic or inSession] Choose 'inSession' to perform the path trace within a TCP session. Default value is 'classic'.
-- `probe_mode` (String) [AUTO, SACk, or SYN] The probe mode used by end-to-end network tests. This is only valid if the protocol is set to TCP. The default value is AUTO.
-- `protocol` (String) The protocol used by dependent network tests (end-to-end, path trace, PMTUD). Default value is TCP.
-- `shared_with_accounts` (Block List) [“serverName”: “fqdn of server”] The array of DNS Server objects. (see [below for nested schema](#nestedblock--shared_with_accounts))
-- `use_active_ftp` (Number) Enables active FTP. If not set, tests default to use passive FTP.
-- `use_explicit_ftps` (Number) Enables explicit FTPS (FTP over SSL). By default, tests will autodetect when it is appropriate to use FTPS.
+- `path_trace_mode` (String) [classic or in-session] Choose 'inSession' to perform the path trace within a TCP session. Default value is 'classic'.
+- `probe_mode` (String) [auto, sack, or syn] The probe mode used by end-to-end network tests. This is only valid if the protocol is set to TCP. The default value is AUTO.
+- `protocol` (String) The protocol used by dependent network tests (end-to-end, path trace, PMTUD). Default value is tcp.
+- `randomized_start_time` (Boolean) Indicates whether agents should randomize the start time in each test round.
+- `shared_with_accounts` (Set of String) List of accounts
+- `use_active_ftp` (Boolean) Enables active FTP. If not set, tests default to use passive FTP.
+- `use_explicit_ftps` (Boolean) Enables explicit FTPS (FTP over SSL). By default, tests will autodetect when it is appropriate to use FTPS.
+- `use_public_bgp` (Boolean) Enable to automatically add all available Public BGP Monitors to the test.
 
 ### Read-Only
 
-- `api_links` (List of Object) Self links to the endpoint to pull test metadata, and data links to the endpoint for test data. Read-only, and shows rel and href elements. (see [below for nested schema](#nestedatt--api_links))
 - `created_by` (String) Created by user.
 - `created_date` (String) The date of creation.
-- `groups` (Set of Object) The array of label objects. (see [below for nested schema](#nestedatt--groups))
 - `id` (String) The ID of this resource.
+- `link` (String) Its value is either a URI [RFC3986] or a URI template [RFC6570].
 - `live_share` (Boolean) Set to 'true' for a test shared with your account group, or to 'false' for a normal test.
 - `modified_by` (String) Last modified by this user.
 - `modified_date` (String) The date the test was last modified. Shown in UTC.
 - `saved_event` (Boolean) Set to 'true' for a saved event, or to 'false' for a normal test.
-- `test_id` (Number) The unique ID of the test.
+- `test_id` (String) The unique ID of the test.
 - `type` (String) The type of test.
-
-<a id="nestedblock--agents"></a>
-### Nested Schema for `agents`
-
-Required:
-
-- `agent_id` (Number) The unique ID for the ThousandEyes agent.
-
-
-<a id="nestedblock--alert_rules"></a>
-### Nested Schema for `alert_rules`
-
-Optional:
-
-- `rule_id` (Number) The unique ID of the alert rule.
-
-
-<a id="nestedblock--shared_with_accounts"></a>
-### Nested Schema for `shared_with_accounts`
-
-Required:
-
-- `aid` (Number) The account group ID.
-
-Read-Only:
-
-- `name` (String) Account name.
-
-
-<a id="nestedatt--api_links"></a>
-### Nested Schema for `api_links`
-
-Read-Only:
-
-- `href` (String)
-- `rel` (String)
-
-
-<a id="nestedatt--groups"></a>
-### Nested Schema for `groups`
-
-Read-Only:
-
-- `agents` (List of Object) (see [below for nested schema](#nestedobjatt--groups--agents))
-- `builtin` (Boolean)
-- `group_id` (Number)
-- `name` (String)
-- `tests` (List of Object) (see [below for nested schema](#nestedobjatt--groups--tests))
-- `type` (String)
-
-<a id="nestedobjatt--groups--agents"></a>
-### Nested Schema for `groups.agents`
-
-Read-Only:
-
-- `agent_id` (Number)
-
-
-<a id="nestedobjatt--groups--tests"></a>
-### Nested Schema for `groups.tests`
-
-Read-Only:
-
-- `test_id` (Number)
 
 

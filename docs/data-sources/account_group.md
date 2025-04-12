@@ -41,7 +41,7 @@ resource "thousandeyes_http_server" "thousandeyes_http_test" {
 
 ### Read-Only
 
-- `aid` (Number) The unique ID for the account group.
+- `aid` (String) The unique ID for the account group.
 - `id` (String) The ID of this resource.
 
 
