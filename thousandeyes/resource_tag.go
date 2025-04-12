@@ -27,13 +27,27 @@ func resourceTag() *schema.Resource {
 }
 
 func resourceTagRead(d *schema.ResourceData, m interface{}) error {
-	return GetResource(context.Background(), d, m, func(apiClient *client.APIClient, id string) (interface{}, error) {
+	ctx := context.WithValue(context.Background(), tagsKey, struct{}{})
+
+	return GetResource(ctx, d, m, func(apiClient *client.APIClient, id string) (interface{}, error) {
 		api := (*tags.TagsAPIService)(&apiClient.Common)
 
 		req := api.GetTag(id).Expand(tags.AllowedExpandTagsOptionsEnumValues)
 		req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 		resp, _, err := req.Execute()
+
+		// set nullable fields
+		if resp.Icon.IsSet() {
+			d.Set("icon", resp.Icon.Get())
+		}
+		if resp.Description.IsSet() {
+			d.Set("description", resp.Description.Get())
+		}
+		if resp.LegacyId.IsSet() {
+			d.Set("legacy_id", resp.LegacyId.Get())
+		}
+
 		return resp, err
 	})
 }
@@ -93,6 +107,7 @@ func resourceTagCreate(d *schema.ResourceData, m interface{}) error {
 
 func buildTagStruct(d *schema.ResourceData) *tags.TagInfo {
 	tag := ResourceBuildStruct(d, &tags.TagInfo{})
+	// set nullable fields
 	if v, ok := d.Get("icon").(string); ok {
 		tag.Icon.Set(
 			getPointer(v),

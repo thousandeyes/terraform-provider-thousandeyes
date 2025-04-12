@@ -16,8 +16,10 @@ import (
 )
 
 type fieldKeyType string
+type resourceKeyType string
 
 const emulationDeviceIdKey fieldKeyType = "emulation_device_id"
+const tagsKey resourceKeyType = "tags"
 
 type ResourceReadFunc func(client *client.APIClient, id string) (interface{}, error)
 
@@ -422,14 +424,17 @@ func FixReadValues(ctx context.Context, targetMaps map[string]map[string]interfa
 			m = self["href"]
 		}
 
-	case "created_date":
+	case "created_date", "modified_date":
 		{
 			m = m.(*time.Time).Format(time.RFC3339)
 		}
 
-	case "modified_date":
-		{
-			m = m.(*time.Time).Format(time.RFC3339)
+	// Ignore nullable fields (already set)
+	case "icon", "description", "legacy_id":
+		isTags := ctx.Value(tagsKey)
+		if isTags != nil {
+			*name = ""
+			return nil, nil
 		}
 	}
 
