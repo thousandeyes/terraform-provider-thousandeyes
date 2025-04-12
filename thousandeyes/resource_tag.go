@@ -36,16 +36,25 @@ func resourceTagRead(d *schema.ResourceData, m interface{}) error {
 		req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 		resp, _, err := req.Execute()
+		if err != nil {
+			return resp, err
+		}
 
 		// set nullable fields
 		if resp.Icon.IsSet() {
-			d.Set("icon", resp.Icon.Get())
+			if err := d.Set("icon", resp.Icon.Get()); err != nil {
+				return resp, err
+			}
 		}
 		if resp.Description.IsSet() {
-			d.Set("description", resp.Description.Get())
+			if err := d.Set("description", resp.Description.Get()); err != nil {
+				return resp, err
+			}
 		}
 		if resp.LegacyId.IsSet() {
-			d.Set("legacy_id", resp.LegacyId.Get())
+			if err := d.Set("legacy_id", resp.LegacyId.Get()); err != nil {
+				return resp, err
+			}
 		}
 
 		return resp, err
