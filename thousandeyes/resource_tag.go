@@ -19,7 +19,7 @@ func resourceTag() *schema.Resource {
 		Update: resourceTagUpdate,
 		Delete: resourceTagDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Description: "This resource provides a tagging system with key/value pairs. It allows you to tag assets within the ThousandEyes platform (such as agents, tests, or alert rules) with meaningful metadata.",
 	}
