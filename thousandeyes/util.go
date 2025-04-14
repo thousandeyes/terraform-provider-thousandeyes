@@ -578,7 +578,9 @@ func ResourceSchemaBuild(referenceStruct interface{}, schemas map[string]*schema
 	}
 
 	// instead of "_links"
-	newSchema["link"] = schemas["link"]
+	if _, ok := schemas["link"]; ok {
+		newSchema["link"] = schemas["link"]
+	}
 
 	return newSchema
 }
