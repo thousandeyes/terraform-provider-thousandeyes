@@ -15,6 +15,7 @@ func resourceTagAssignment() *schema.Resource {
 	resource := schema.Resource{
 		Schema: ResourceSchemaBuild(tags.BulkTagAssignment{}, schemas.TagAssignmentSchema, nil),
 		Create: resourceTagAssignmentCreate,
+		Read:   resourceTagAssignmentRead,
 		Delete: resourceTagAssignmentDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -24,8 +25,20 @@ func resourceTagAssignment() *schema.Resource {
 	return &resource
 }
 
-func resourceTagAssignmentRead(d *schema.ResourceData, resp *tags.BulkTagAssignment) error {
-	return ResourceRead(context.Background(), d, resp)
+func resourceTagAssignmentRead(d *schema.ResourceData, m interface{}) error {
+	return GetResource(context.Background(), d, m, func(apiClient *client.APIClient, id string) (interface{}, error) {
+		api := (*tags.TagsAPIService)(&apiClient.Common)
+
+		req := api.GetTag(id).Expand(tags.AllowedExpandTagsOptionsEnumValues)
+		req = SetAidFromContext(apiClient.GetConfig().Context, req)
+
+		resp, _, err := req.Execute()
+		if err != nil {
+			return resp, err
+		}
+
+		return mapTagToBulkTagAssignment(resp), err
+	})
 }
 
 func resourceTagAssignmentDelete(d *schema.ResourceData, m interface{}) error {
@@ -61,10 +74,17 @@ func resourceTagAssignmentCreate(d *schema.ResourceData, m interface{}) error {
 	}
 
 	d.SetId(*resp.TagId)
-	return resourceTagAssignmentRead(d, resp)
+	return resourceTagAssignmentRead(d, m)
 }
 
 func buildTagAssignmentStruct(d *schema.ResourceData) (*string, *tags.TagAssignment) {
 	bulkTagAssignment := ResourceBuildStruct(d, &tags.BulkTagAssignment{})
 	return bulkTagAssignment.TagId, &tags.TagAssignment{Assignments: bulkTagAssignment.Assignments}
+}
+
+func mapTagToBulkTagAssignment(in *tags.Tag) *tags.BulkTagAssignment {
+	return &tags.BulkTagAssignment{
+		TagId:       in.Id,
+		Assignments: in.Assignments,
+	}
 }
