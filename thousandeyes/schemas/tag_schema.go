@@ -11,33 +11,6 @@ var _ = tags.Tag{}
 var _ = tags.TagInfo{}
 
 var TagSchema = map[string]*schema.Schema{
-	// assignments
-	"assignments": {
-		Description: "",
-		Optional:    true,
-		Required:    false,
-		Type:        schema.TypeSet,
-		Elem: &schema.Resource{
-			Schema: map[string]*schema.Schema{
-				"id": {
-					Type:        schema.TypeString,
-					Description: "Object Id.",
-					Optional:    true,
-				},
-				"type": {
-					Type:        schema.TypeString,
-					Description: "[test, v-agent, endpoint-test, dashboard] Type of assignment.",
-					Optional:    true,
-					ValidateFunc: validation.StringInSlice([]string{
-						"test",
-						"v-agent",
-						"endpoint-test",
-						"dashboard",
-					}, false),
-				},
-			},
-		},
-	},
 	// accessType
 	"access_type": {
 		Type:        schema.TypeString,
