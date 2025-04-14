@@ -33,10 +33,6 @@ func resourceTagAssignmentRead(d *schema.ResourceData, m interface{}) error {
 		req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 		resp, _, err := req.Execute()
-		if err != nil {
-			return resp, err
-		}
-
 		return mapTagToBulkTagAssignment(resp), err
 	})
 }
@@ -83,6 +79,9 @@ func buildTagAssignmentStruct(d *schema.ResourceData) (*string, *tags.TagAssignm
 }
 
 func mapTagToBulkTagAssignment(in *tags.Tag) *tags.BulkTagAssignment {
+	if in == nil {
+		return nil
+	}
 	return &tags.BulkTagAssignment{
 		TagId:       in.Id,
 		Assignments: in.Assignments,

@@ -32,7 +32,7 @@ func resourceTagRead(d *schema.ResourceData, m interface{}) error {
 	return GetResource(ctx, d, m, func(apiClient *client.APIClient, id string) (interface{}, error) {
 		api := (*tags.TagsAPIService)(&apiClient.Common)
 
-		req := api.GetTag(id).Expand(tags.AllowedExpandTagsOptionsEnumValues)
+		req := api.GetTag(id)
 		req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 		resp, _, err := req.Execute()
