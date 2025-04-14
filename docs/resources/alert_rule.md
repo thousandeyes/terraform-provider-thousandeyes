@@ -27,7 +27,7 @@ resource "thousandeyes_alert_rule" "example_alert_rule" {
 
 ### Required
 
-- `alert_type` (String) [Page Load, HTTP Server, End-to-End (Server), End-to-End (Agent), DNS Server, DNS Trace, DNSSEC, Transactions, Web Transactions, BGP, Path Trace, FTP, SIP Server] The type of alert rule. Acceptable values include the verbose names of supported tests.
+- `alert_type` (String) The type of alert rule.
 - `expression` (String) The alert rule evaluation expression.
 - `rounds_violating_out_of` (Number) Specifies the divisor (Y value) of the “X of Y times” condition in an alert rule.  Minimum value is 1, maximum value is 10.
 - `rounds_violating_required` (Number) Specifies the numerator (X value) of the “X of Y times” condition in an alert rule.  Minimum value is 1, maximum value is 10. Must be less than or equal to 'roundsViolatingOutOf'.
@@ -35,32 +35,48 @@ resource "thousandeyes_alert_rule" "example_alert_rule" {
 
 ### Optional
 
-- `default` (Boolean) Alert rules allow up to 1 alert rule to be selected as a default for each type. By marking an alert rule as default, the rule will be automatically included in subsequently created tests that test a metric used in the alert rule.
-- `direction` (String) [TO_TARGET, FROM_TARGET, BIDIRECTIONAL] The direction of the test (affects how results are shown).
+- `alert_group_type` (String) The type of alert group.
+- `direction` (String) [to-target, from-target, bidirectional] The direction of the test (affects how results are shown).
+- `endpoint_agent_ids` (Set of String) An array of endpoint agent IDs associated with the rule (get `id` from `/endpoint/agents` API). This is applicable when `alertGroupType` is `browser-session`.
+- `endpoint_label_ids` (Set of String) An array of label IDs used to assign specific Endpoint Agents to the test (get `id` from `/endpoint/labels`). This is applicable when `alertGroupType` is `browser-session`.
 - `include_covered_prefixes` (Boolean) Include queries for subprefixes detected under this prefix.
+- `is_default` (Boolean) If set to `true`, this alert rule becomes the default for its test type and is automatically applied to newly created tests with relevant metrics. Only one default alert rule is allowed per test type.
 - `minimum_sources` (Number) The minimum number of agents or monitors that must meet the specified criteria in order to trigger an alert. This option is mutually exclusive with 'minimum_sources_pct'.
 - `minimum_sources_pct` (Number) The minimum percentage of agents or monitors that must meet the specified criteria in order to trigger an alert. This option is mutually exclusive with 'minimum_sources'.
 - `notifications` (Block Set) The list of notifications for the alert rule. (see [below for nested schema](#nestedblock--notifications))
 - `notify_on_clear` (Boolean) Set to 'true' to trigger the notification when the alert clears.
-- `rounds_violating_mode` (String) [ANY or EXACT] Defines whether the same agent(s) must meet the EXACT same threshold in consecutive rounds or not. The default value is ANY.
-- `severity` (String) [INFO, MINOR, MAJOR or CRITICAL] The severity level of the alert rule. The default value is INFO.
-- `tests` (Block List) The list of included tests. (see [below for nested schema](#nestedblock--tests))
+- `rounds_violating_mode` (String) [any, auto or exact] Defines whether the same agent(s) must meet the 'exact' same threshold in consecutive rounds or not. The default value is 'any'.
+- `sensitivity_level` (String) [high, medium or low] Defines sensitivity level.
+- `severity` (String) [info, minor, major, critical or unknown] The severity level of the alert rule. The default value is 'info'.
+- `visited_sites_filter` (Set of String) A list of website domains visited during the session. This is applicable when `alertGroupType` is `browser-session`.
 
 ### Read-Only
 
-- `alert_rule_id` (Number) The unique ID of the alert rule.
 - `id` (String) The ID of this resource.
-- `rule_id` (Number) The unique ID of the alert rule.
-- `test_ids` (List of Number) The valid test IDs.
+- `link` (String) Its value is either a URI [RFC3986] or a URI template [RFC6570].
+- `rule_id` (String) The unique ID of the alert rule.
+- `test_ids` (Set of String) The valid test IDs.
 
 <a id="nestedblock--notifications"></a>
 ### Nested Schema for `notifications`
 
 Optional:
 
+- `custom_webhook` (Block Set) Webhook notification. (see [below for nested schema](#nestedblock--notifications--custom_webhook))
 - `email` (Block Set) The email notification. (see [below for nested schema](#nestedblock--notifications--email))
 - `third_party` (Block Set) Third party notification. (see [below for nested schema](#nestedblock--notifications--third_party))
 - `webhook` (Block Set) Webhook notification. (see [below for nested schema](#nestedblock--notifications--webhook))
+
+<a id="nestedblock--notifications--custom_webhook"></a>
+### Nested Schema for `notifications.custom_webhook`
+
+Required:
+
+- `integration_id` (String) The integration ID, as a string.
+- `integration_name` (String) Name of the integration, configured by the user.
+- `integration_type` (String) The integration type, as a string.
+- `target` (String) Webhook target URL.
+
 
 <a id="nestedblock--notifications--email"></a>
 ### Nested Schema for `notifications.email`
@@ -68,7 +84,7 @@ Optional:
 Optional:
 
 - `message` (String) The contents of the email, as a string.
-- `recipient` (Set of String) The email addresses to send the notification to.
+- `recipients` (Set of String) The email addresses to send the notification to.
 
 
 <a id="nestedblock--notifications--third_party"></a>
@@ -86,15 +102,8 @@ Required:
 Required:
 
 - `integration_id` (String) The integration ID, as a string.
+- `integration_name` (String) Name of the integration, configured by the user.
 - `integration_type` (String) The integration type, as a string.
-
-
-
-<a id="nestedblock--tests"></a>
-### Nested Schema for `tests`
-
-Optional:
-
-- `test_id` (Number) The list of unique test IDs.
+- `target` (String) Webhook target URL.
 
 

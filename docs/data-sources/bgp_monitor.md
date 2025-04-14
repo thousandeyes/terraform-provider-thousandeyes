@@ -32,7 +32,7 @@ resource "thousandeyes_bgp" "example_bgp_test" {
 
 ### Optional
 
-- `monitor_id` (Number) The unique ID of BGP monitor.
+- `monitor_id` (String) The unique ID of BGP monitor.
 - `monitor_name` (String) The display name of the BGP monitor.
 
 ### Read-Only

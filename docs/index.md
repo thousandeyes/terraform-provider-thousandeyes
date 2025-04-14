@@ -53,7 +53,7 @@ resource "thousandeyes_http_server" "www_thousandeyes_http_test" {
 ### Optional
 
 - `account_group_id` (String) The ThousandEyes account group's unique ID.
-- `api_endpoint` (String) The ThousandEyes API Endpoint's URL. E.g. https://api.thousandeyes.com/v6
+- `api_endpoint` (String) The ThousandEyes API Endpoint's URL. E.g. https://api.thousandeyes.com/v7
 - `timeout` (Number) The timeout value.
 
 Account group IDs can be retrieved from the API by querying the `/v6/account-groups` endpoint. For more information, check the
