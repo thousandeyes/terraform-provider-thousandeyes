@@ -126,10 +126,6 @@ func ResourceRead(ctx context.Context, d *schema.ResourceData, structPtr interfa
 		}
 
 		if v.Field(i).Kind() == reflect.Ptr && v.Field(i).IsNil() {
-			err := d.Set(tfName, nil)
-			if err != nil {
-				return err
-			}
 			continue
 		}
 

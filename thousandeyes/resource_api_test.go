@@ -75,7 +75,7 @@ func TestAccThousandEyesAPI(t *testing.T) {
 				resource.TestCheckResourceAttr(resourceName, "test_name", "User Acceptance Test - API (Updated)"),
 				resource.TestCheckResourceAttr(resourceName, "interval", "300"),
 				resource.TestCheckResourceAttr(resourceName, "alerts_enabled", "true"),
-				resource.TestCheckResourceAttr(resourceName, "alert_rules.#", "1"),
+				resource.TestCheckResourceAttr(resourceName, "alert_rules.#", "2"),
 				resource.TestCheckResourceAttr(resourceName, "requests.0.name", "Step 1 - GET Request (Updated)"),
 				resource.TestCheckResourceAttr(resourceName, "requests.0.url", "https://api.stg.thousandeyes.com/v6/status.json"),
 				resource.TestCheckResourceAttr(resourceName, "requests.0.client_authentication", ""),
