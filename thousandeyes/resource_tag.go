@@ -127,10 +127,5 @@ func buildTagStruct(d *schema.ResourceData) *tags.TagInfo {
 			getPointer(v),
 		)
 	}
-	if v := d.Get("legacy_id").(int); v != 0 {
-		tag.LegacyId.Set(
-			getPointer(float32(v)),
-		)
-	}
 	return tag
 }
