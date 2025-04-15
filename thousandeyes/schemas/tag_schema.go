@@ -28,7 +28,7 @@ var TagSchema = map[string]*schema.Schema{
 	"aid": {
 		Type:        schema.TypeString, // integer in model
 		Description: "The account group ID.",
-		Optional:    true,
+		Computed:    true,
 	},
 	// color
 	"color": {
@@ -70,7 +70,7 @@ var TagSchema = map[string]*schema.Schema{
 	"legacy_id": {
 		Type:        schema.TypeInt, // float in model
 		Description: "Legacy Id.",
-		Optional:    true,
+		Computed:    true,
 	},
 	// objectType
 	"object_type": {

@@ -18,16 +18,17 @@ This resource provides a tagging system with key/value pairs. It allows you to t
 ### Optional
 
 - `access_type` (String) [all, partner, system] The access level of the tag. The access level impacts the visibility of the label in UI and the permissions to modify the label.
-- `aid` (String) The account group ID.
 - `color` (String) Tag color.
 - `description` (String) The tag's description.
 - `icon` (String) Tag icon.
 - `key` (String) The tags's key.
-- `legacy_id` (Number) Legacy Id.
 - `object_type` (String) [test, dashboard, endpoint-test, v-agent] The object type associated with the tag.
 - `value` (String) The tag's value.
 
 ### Read-Only
 
+- `aid` (String) The account group ID.
+- `create_date` (String) Tag creation date.
 - `id` (String) The tag ID.
+- `legacy_id` (Number) Legacy Id.
 - `link` (String) Its value is either a URI [RFC3986] or a URI template [RFC6570].
