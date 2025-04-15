@@ -453,7 +453,13 @@ func FixReadValues(ctx context.Context, targetMaps map[string]map[string]interfa
 	case "aid":
 		isTags := ctx.Value(tagsKey)
 		if isTags != nil {
-			m = fmt.Sprintf("%v", m)
+			tmp, _ := m.(*int32)
+			if tmp != nil {
+				m = fmt.Sprintf("%v", *tmp)
+			} else {
+				*name = ""
+				return nil, nil
+			}
 		}
 
 	}
@@ -717,7 +723,7 @@ func FillValue(source interface{}, target interface{}) interface{} {
 		}
 		if reflect.TypeOf(source).Kind() == reflect.String {
 			i, _ := strconv.ParseInt(source.(string), 10, 32)
-			return i
+			return int32(i)
 		}
 
 		return int32(source.(int))
