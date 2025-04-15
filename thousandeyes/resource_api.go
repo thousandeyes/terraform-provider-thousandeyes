@@ -23,7 +23,6 @@ func resourceAPI() *schema.Resource {
 		},
 		Description: "This resource provides visibility into the performance of critical web API endpoints within your application ecosystem. For more information, see [API Tests](https://docs.thousandeyes.com/product-documentation/api-test).",
 	}
-	resource.Schema["time_limit"] = schemas.CommonSchema["time_limit_api"]
 	return &resource
 }
 

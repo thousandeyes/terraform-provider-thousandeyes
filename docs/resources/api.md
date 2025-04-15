@@ -19,7 +19,7 @@ This resource provides visibility into the performance of critical web API endpo
 
 - `agents` (Set of String) The list of ThousandEyes agent IDs to use.
 - `interval` (Number) The interval to run the test on, in seconds.
-- `test_name` (String) The name of the test.
+- `requests` (Block List, Min: 1) List of API requests (see [below for nested schema](#nestedblock--requests))
 - `url` (String) The target URL for the test.
 
 ### Optional
@@ -44,11 +44,11 @@ This resource provides visibility into the performance of critical web API endpo
 - `probe_mode` (String) [auto, sack, or syn] The probe mode used by end-to-end network tests. This is only valid if the protocol is set to TCP. The default value is AUTO.
 - `protocol` (String) The protocol used by dependent network tests (end-to-end, path trace, PMTUD). Default value is tcp.
 - `randomized_start_time` (Boolean) Indicates whether agents should randomize the start time in each test round.
-- `requests` (Block List) List of API requests (see [below for nested schema](#nestedblock--requests))
 - `shared_with_accounts` (Set of String) List of accounts
 - `ssl_version_id` (String) Defines the SSL version. 0 for auto, 3 for SSLv3, 4 for TLS v1.0, 5 for TLS v1.1, 6 for TLS v1.2.
 - `target_time` (Number) The target time for completion. The default value is 50 percent of the time limit, specified in seconds.
-- `time_limit` (Number) Time limit for transaction in seconds. Exceeding this limit will result in a Timeout error.
+- `test_name` (String) The name of the test.
+- `time_limit` (Number) The time limit for the transaction. The default value is 30s.
 - `use_public_bgp` (Boolean) Enable to automatically add all available Public BGP Monitors to the test.
 
 ### Read-Only
@@ -64,21 +64,13 @@ This resource provides visibility into the performance of critical web API endpo
 - `test_id` (String) The unique ID of the test.
 - `type` (String) The type of test.
 
-<a id="nestedblock--predefined_variables"></a>
-### Nested Schema for `predefined_variables`
-
-Optional:
-
-- `name` (String) Variable name. Must be unique.
-- `value` (String) Variable value, will be treated as string.
-
-
 <a id="nestedblock--requests"></a>
 ### Nested Schema for `requests`
 
 Required:
 
 - `name` (String) API step name, must be unique.
+- `url` (String) Request url. Supports variables in the format `{{variableName}}`.
 
 Optional:
 
@@ -95,7 +87,6 @@ Optional:
 - `password` (String, Sensitive) The password if `authType = basic`.
 - `scope` (String) Application-specific scope values for the access token when `authType` is "oauth2".
 - `token_url` (String) The endpoint used to request the access token when `authType` is "oauth2".
-- `url` (String) Request url. Supports variables in the format `{{variableName}}`.
 - `username` (String) The username if `authType = basic`.
 - `variables` (Block Set) Array of API post request variable objects. (see [below for nested schema](#nestedblock--requests--variables))
 - `wait_time_ms` (Number) Post request delay before executing the next API requests, in milliseconds.
@@ -126,3 +117,13 @@ Optional:
 
 - `name` (String) Variable name.
 - `value` (String) The JSON path of data within the Response Body to assign to this variable.
+
+
+
+<a id="nestedblock--predefined_variables"></a>
+### Nested Schema for `predefined_variables`
+
+Optional:
+
+- `name` (String) Variable name. Must be unique.
+- `value` (String) Variable value, will be treated as string.

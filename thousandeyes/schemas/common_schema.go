@@ -134,7 +134,7 @@ var CommonSchema = map[string]*schema.Schema{
 	"test_name": {
 		Type:        schema.TypeString,
 		Description: "The name of the test.",
-		Required:    true,
+		Optional:    true,
 	},
 	// type
 	"type": {
@@ -965,10 +965,4 @@ var CommonSchema = map[string]*schema.Schema{
 	},
 	// requests
 	"requests": apiRequest,
-	// timeLimit
-	"time_limit_api": {
-		Type:        schema.TypeInt,
-		Description: "Time limit for transaction in seconds. Exceeding this limit will result in a Timeout error.",
-		Optional:    true,
-	},
 }

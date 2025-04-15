@@ -35,7 +35,6 @@ resource "thousandeyes_voice" "example_voice_test" {
 - `agents` (Set of String) The list of ThousandEyes agent IDs to use.
 - `interval` (Number) The interval to run the test on, in seconds.
 - `target_agent_id` (String) The target agent's unique ID. Pulled from the /agents endpoint. Both the 'agents': [] and the targetAgentID cannot be Cloud Agents. Can be Enterprise Agent -> Cloud, Cloud -> Enterprise Agent, or Enterprise Agent -> Enterprise Agent.
-- `test_name` (String) The name of the test.
 
 ### Optional
 
@@ -53,6 +52,7 @@ resource "thousandeyes_voice" "example_voice_test" {
 - `num_path_traces` (Number) The number of path traces.
 - `randomized_start_time` (Boolean) Indicates whether agents should randomize the start time in each test round.
 - `shared_with_accounts` (Set of String) List of accounts
+- `test_name` (String) The name of the test.
 - `use_public_bgp` (Boolean) Enable to automatically add all available Public BGP Monitors to the test.
 
 ### Read-Only

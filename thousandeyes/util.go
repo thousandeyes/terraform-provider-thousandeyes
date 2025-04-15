@@ -171,8 +171,7 @@ func getTargetFieldsMaps(structPtr interface{}) map[string]map[string]interface{
 	case (*tests.SipServerTestResponse):
 		res := make(map[string]map[string]interface{})
 		res["target_sip_credentials"] = map[string]interface{}{
-			"auth_user": nil,
-			// "password":      nil, sensitive
+			"auth_user":     nil,
 			"port":          nil,
 			"protocol":      nil,
 			"sip_registrar": nil,

@@ -17,7 +17,6 @@ This resource allows users to create a transaction test. This test type is a scr
 
 - `agents` (Set of String) The list of ThousandEyes agent IDs to use.
 - `interval` (Number) The interval to run the test on, in seconds.
-- `test_name` (String) The name of the test.
 - `transaction_script` (String) The full selenium transaction script.
 - `url` (String) The target URL for the test.
 
@@ -69,6 +68,7 @@ This resource allows users to create a transaction test. This test type is a scr
 - `ssl_version_id` (String) Defines the SSL version. 0 for auto, 3 for SSLv3, 4 for TLS v1.0, 5 for TLS v1.1, 6 for TLS v1.2.
 - `subinterval` (Number) The subinterval for round-robin testing (in seconds). The value must be less than or equal to 'interval'.
 - `target_time` (Number) The target time for completion. The default value is 50 percent of the time limit, specified in seconds.
+- `test_name` (String) The name of the test.
 - `time_limit` (Number) The time limit for the transaction. The default value is 30s.
 - `use_ntlm` (Boolean) Enable to use basic authentication. Only include this field if you are using authentication. Requires the username and password to be set if enabled.
 - `use_public_bgp` (Boolean) Enable to automatically add all available Public BGP Monitors to the test.

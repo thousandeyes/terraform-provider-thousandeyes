@@ -11,7 +11,7 @@ var _ = tests.ApiRequest{}
 var apiRequest = &schema.Schema{
 	Type:        schema.TypeList,
 	Description: "List of API requests",
-	Optional:    true,
+	Required:    true,
 	Elem: &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			// assertions
@@ -167,7 +167,7 @@ var apiRequest = &schema.Schema{
 			// url
 			"url": {
 				Type:        schema.TypeString,
-				Optional:    true,
+				Required:    true,
 				Description: "Request url. Supports variables in the format `{{variableName}}`.",
 			},
 			// username
