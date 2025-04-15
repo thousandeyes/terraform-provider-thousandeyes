@@ -35,7 +35,6 @@ resource "thousandeyes_agent_to_agent" "example_agent_to_agent_test" {
 - `direction` (String) [to-target, from-target, bidirectional] The direction of the test (affects how results are shown).
 - `interval` (Number) The interval to run the test on, in seconds.
 - `target_agent_id` (String) The target agent's unique ID. Pulled from the /agents endpoint. Both the 'agents': [] and the targetAgentID cannot be Cloud Agents. Can be Enterprise Agent -> Cloud, Cloud -> Enterprise Agent, or Enterprise Agent -> Enterprise Agent.
-- `test_name` (String) The name of the test.
 
 ### Optional
 
@@ -55,6 +54,7 @@ resource "thousandeyes_agent_to_agent" "example_agent_to_agent_test" {
 - `protocol` (String) [tcp or udp] The protocol for agent to agent tests. Defaults to 'tcp'.
 - `randomized_start_time` (Boolean) Indicates whether agents should randomize the start time in each test round.
 - `shared_with_accounts` (Set of String) List of accounts
+- `test_name` (String) The name of the test.
 - `throughput_duration` (Number) The throughput duration in milliseconds. The default value is 10000.
 - `throughput_measurements` (Boolean) Enables or disables throughput measurements. This is not allowed when the source or target of the test is a Cloud Agent. Defaults to disabled.
 - `throughput_rate` (Number) Defines the throughput rate. Fo UDP tests only.

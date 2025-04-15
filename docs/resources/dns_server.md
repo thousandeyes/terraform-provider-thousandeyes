@@ -37,7 +37,6 @@ resource "thousandeyes_dns_server" "example_dns_server_test" {
 - `dns_servers` (Set of String) The array of DNS Server objects (“serverName”: “fqdn of server”).
 - `domain` (String) See notes	target record for test, suffixed by record type (ie, www.thousandeyes.com CNAME). If no record type is specified, the test will default to an ANY record.
 - `interval` (Number) The interval to run the test on, in seconds.
-- `test_name` (String) The name of the test.
 
 ### Optional
 
@@ -62,6 +61,7 @@ resource "thousandeyes_dns_server" "example_dns_server_test" {
 - `randomized_start_time` (Boolean) Indicates whether agents should randomize the start time in each test round.
 - `recursive_queries` (Boolean) Defines whether to run the query with the recursion desired (RD) flag enabled.
 - `shared_with_accounts` (Set of String) List of accounts
+- `test_name` (String) The name of the test.
 - `use_public_bgp` (Boolean) Enable to automatically add all available Public BGP Monitors to the test.
 
 ### Read-Only
