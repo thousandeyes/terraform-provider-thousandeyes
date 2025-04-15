@@ -19,7 +19,6 @@ This resource allows you to create an FTP server test. This test type verifies t
 - `interval` (Number) The interval to run the test on, in seconds.
 - `password` (String, Sensitive) The password to be used to authenticate with the destination server (required for FTP).
 - `request_type` (String) [download, upload, or list] Sets the type of activity for the test.
-- `test_name` (String) The name of the test.
 - `url` (String) The target URL for the test.
 - `username` (String) The username to be used to authenticate with the destination server.
 
@@ -46,6 +45,7 @@ This resource allows you to create an FTP server test. This test type verifies t
 - `protocol` (String) The protocol used by dependent network tests (end-to-end, path trace, PMTUD). Default value is tcp.
 - `randomized_start_time` (Boolean) Indicates whether agents should randomize the start time in each test round.
 - `shared_with_accounts` (Set of String) List of accounts
+- `test_name` (String) The name of the test.
 - `use_active_ftp` (Boolean) Enables active FTP. If not set, tests default to use passive FTP.
 - `use_explicit_ftps` (Boolean) Enables explicit FTPS (FTP over SSL). By default, tests will autodetect when it is appropriate to use FTPS.
 - `use_public_bgp` (Boolean) Enable to automatically add all available Public BGP Monitors to the test.

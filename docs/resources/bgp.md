@@ -26,7 +26,6 @@ resource "thousandeyes_bgp" "example_bgp_test" {
 ### Required
 
 - `prefix` (String) The BGP network address prefix.
-- `test_name` (String) The name of the test.
 
 ### Optional
 
@@ -38,6 +37,7 @@ resource "thousandeyes_bgp" "example_bgp_test" {
 - `labels` (Set of String) ["1", "2", "uuid"] The array of label or tag ids.
 - `monitors` (Set of String) Contains list of BGP monitor IDs (get `monitorId` from `/monitors` endpoint)
 - `shared_with_accounts` (Set of String) List of accounts
+- `test_name` (String) The name of the test.
 - `use_public_bgp` (Boolean) Enable to automatically add all available Public BGP Monitors to the test.
 
 ### Read-Only
