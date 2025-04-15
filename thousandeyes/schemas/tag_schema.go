@@ -36,8 +36,8 @@ var TagSchema = map[string]*schema.Schema{
 		Description: "Tag color.",
 		Optional:    true,
 	},
-	// createDate // createdDate in common schema
-	"createDate": {
+	// createDate
+	"create_date": {
 		Type:        schema.TypeString,
 		Description: "Tag creation date.",
 		Computed:    true,

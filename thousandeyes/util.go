@@ -3,6 +3,7 @@ package thousandeyes
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"reflect"
 	"slices"
@@ -441,13 +442,20 @@ func FixReadValues(ctx context.Context, targetMaps map[string]map[string]interfa
 			m = m.(*time.Time).Format(time.RFC3339)
 		}
 
-	// Ignore nullable fields (already set)
-	case "icon", "description", "legacy_id":
+	// Ignore nullable fields (already set);  skip assignments for Tags (used in Tags Assignments)
+	case "icon", "description", "legacy_id", "assignments":
 		isTags := ctx.Value(tagsKey)
 		if isTags != nil {
 			*name = ""
 			return nil, nil
 		}
+
+	case "aid":
+		isTags := ctx.Value(tagsKey)
+		if isTags != nil {
+			m = fmt.Sprintf("%v", m)
+		}
+
 	}
 
 	return m, nil
@@ -481,8 +489,10 @@ func ReadValue(structPtr interface{}) (interface{}, error) {
 			if v.Field(i).Kind() == reflect.Ptr && v.Field(i).IsNil() {
 				continue
 			}
-
-			newMap[tfName], err = ReadValue(v.Field(i).Interface())
+			// check for unexported fields
+			if v.Field(i).CanInterface() {
+				newMap[tfName], err = ReadValue(v.Field(i).Interface())
+			}
 		}
 		if err != nil {
 			return nil, err

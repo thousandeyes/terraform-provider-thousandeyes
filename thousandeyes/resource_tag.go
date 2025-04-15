@@ -117,17 +117,17 @@ func resourceTagCreate(d *schema.ResourceData, m interface{}) error {
 func buildTagStruct(d *schema.ResourceData) *tags.TagInfo {
 	tag := ResourceBuildStruct(d, &tags.TagInfo{})
 	// set nullable fields
-	if v, ok := d.Get("icon").(string); ok {
+	if v := d.Get("icon").(string); len(v) != 0 {
 		tag.Icon.Set(
 			getPointer(v),
 		)
 	}
-	if v, ok := d.Get("description").(string); ok {
+	if v := d.Get("description").(string); len(v) != 0 {
 		tag.Description.Set(
 			getPointer(v),
 		)
 	}
-	if v, ok := d.Get("legacy_id").(int); ok {
+	if v := d.Get("legacy_id").(int); v != 0 {
 		tag.LegacyId.Set(
 			getPointer(float32(v)),
 		)
