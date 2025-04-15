@@ -77,14 +77,12 @@ func TestAccThousandEyesTag(t *testing.T) {
 				CheckDestroy:      tc.checkDestroyFunction,
 				Steps: []resource.TestStep{
 					{
-						Config:             testAccThousandEyesTagConfig(tc.createResourceFile),
-						Check:              resource.ComposeTestCheckFunc(tc.checkCreateFunc...),
-						ExpectNonEmptyPlan: true,
+						Config: testAccThousandEyesTagConfig(tc.createResourceFile),
+						Check:  resource.ComposeTestCheckFunc(tc.checkCreateFunc...),
 					},
 					{
-						Config:             testAccThousandEyesTagConfig(tc.updateResourceFile),
-						Check:              resource.ComposeTestCheckFunc(tc.checkUpdateFunc...),
-						ExpectNonEmptyPlan: true,
+						Config: testAccThousandEyesTagConfig(tc.updateResourceFile),
+						Check:  resource.ComposeTestCheckFunc(tc.checkUpdateFunc...),
 					},
 				},
 			})
