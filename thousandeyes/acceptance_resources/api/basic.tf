@@ -28,7 +28,7 @@ resource "thousandeyes_api" "test" {
   time_limit           = 90
   requests {
     name                  = "Step 1 - GET Request"
-    url                   = "https://api.stg.thousandeyes.com/v6/status.json"
+    url                   = "https://www.thousandeyes.com"
     method                = "get"
     auth_type             = "basic"
     username              = "test_username"
@@ -54,13 +54,13 @@ resource "thousandeyes_api" "test" {
   }
   requests {
     name                  = "Step 2 - POST OAuth2 request"
-    url                   = "https://api.stg.thousandeyes.com/v6/credentials/new.json"
+    url                   = "https://www.thousandeyes.com"
     method                = "post"
     auth_type             = "oauth2"
     client_id             = "test_client"
     client_secret         = "test_client_secret"
     scope                 = "test_scope"
-    token_url             = "https://api.stg.thousandeyes.com/v6"
+    token_url             = "https://www.thousandeyes.com"
     client_authentication = "in-body"
 
     body = jsonencode({
