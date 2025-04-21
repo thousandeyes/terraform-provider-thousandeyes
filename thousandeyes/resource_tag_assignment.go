@@ -41,7 +41,7 @@ func resourceTagAssignmentDelete(d *schema.ResourceData, m interface{}) error {
 	apiClient := m.(*client.APIClient)
 	api := (*tags.TagAssignmentAPIService)(&apiClient.Common)
 
-	log.Printf("[INFO] Deleting ThousandEyes Test %s", d.Id())
+	log.Printf("[INFO] Deleting ThousandEyes Tag assignment %s", d.Id())
 	id, local := buildTagAssignmentStruct(d)
 
 	req := api.UnassignTag(*id).TagAssignment(*local)
@@ -58,7 +58,7 @@ func resourceTagAssignmentCreate(d *schema.ResourceData, m interface{}) error {
 	apiClient := m.(*client.APIClient)
 	api := (*tags.TagAssignmentAPIService)(&apiClient.Common)
 
-	log.Printf("[INFO] Creating ThousandEyes Test %s", d.Id())
+	log.Printf("[INFO] Creating ThousandEyes Tag assignment %s", d.Id())
 	id, local := buildTagAssignmentStruct(d)
 
 	req := api.AssignTag(*id).TagAssignment(*local)

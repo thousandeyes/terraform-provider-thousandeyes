@@ -65,7 +65,7 @@ func resourceTagUpdate(d *schema.ResourceData, m interface{}) error {
 	apiClient := m.(*client.APIClient)
 	api := (*tags.TagsAPIService)(&apiClient.Common)
 
-	log.Printf("[INFO] Updating ThousandEyes Test %s", d.Id())
+	log.Printf("[INFO] Updating ThousandEyes Tag %s", d.Id())
 	update := buildTagStruct(d)
 
 	req := api.UpdateTag(d.Id()).TagInfo(*update)
@@ -82,7 +82,7 @@ func resourceTagDelete(d *schema.ResourceData, m interface{}) error {
 	apiClient := m.(*client.APIClient)
 	api := (*tags.TagsAPIService)(&apiClient.Common)
 
-	log.Printf("[INFO] Deleting ThousandEyes Test %s", d.Id())
+	log.Printf("[INFO] Deleting ThousandEyes Tag %s", d.Id())
 
 	req := api.DeleteTag(d.Id())
 	req = SetAidFromContext(apiClient.GetConfig().Context, req)
@@ -98,7 +98,7 @@ func resourceTagCreate(d *schema.ResourceData, m interface{}) error {
 	apiClient := m.(*client.APIClient)
 	api := (*tags.TagsAPIService)(&apiClient.Common)
 
-	log.Printf("[INFO] Creating ThousandEyes Test %s", d.Id())
+	log.Printf("[INFO] Creating ThousandEyes Tag %s", d.Id())
 	local := buildTagStruct(d)
 
 	req := api.CreateTag().TagInfo(*local)
