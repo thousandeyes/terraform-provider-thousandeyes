@@ -3,6 +3,7 @@ package thousandeyes
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"reflect"
 	"slices"
@@ -17,8 +18,10 @@ import (
 )
 
 type fieldKeyType string
+type resourceKeyType string
 
 const emulationDeviceIdKey fieldKeyType = "emulation_device_id"
+const tagsKey resourceKeyType = "tags"
 
 var sensitiveFields = []string{"password", "custom_headers", "headers", "bearer_token", "client_id", "client_secret"}
 
@@ -434,15 +437,31 @@ func FixReadValues(ctx context.Context, targetMaps map[string]map[string]interfa
 			m = self["href"]
 		}
 
-	case "created_date":
+	case "created_date", "modified_date":
 		{
 			m = m.(*time.Time).Format(time.RFC3339)
 		}
 
-	case "modified_date":
-		{
-			m = m.(*time.Time).Format(time.RFC3339)
+	// Ignore nullable fields (already set);  skip assignments for Tags (used in Tags Assignments)
+	case "icon", "description", "legacy_id", "assignments":
+		isTags := ctx.Value(tagsKey)
+		if isTags != nil {
+			*name = ""
+			return nil, nil
 		}
+
+	case "aid":
+		isTags := ctx.Value(tagsKey)
+		if isTags != nil {
+			tmp, _ := m.(*int32)
+			if tmp != nil {
+				m = fmt.Sprintf("%v", *tmp)
+			} else {
+				*name = ""
+				return nil, nil
+			}
+		}
+
 	}
 
 	return m, nil
@@ -476,8 +495,10 @@ func ReadValue(structPtr interface{}) (interface{}, error) {
 			if v.Field(i).Kind() == reflect.Ptr && v.Field(i).IsNil() {
 				continue
 			}
-
-			newMap[tfName], err = ReadValue(v.Field(i).Interface())
+			// check for unexported fields
+			if v.Field(i).CanInterface() {
+				newMap[tfName], err = ReadValue(v.Field(i).Interface())
+			}
 		}
 		if err != nil {
 			return nil, err
@@ -591,7 +612,9 @@ func ResourceSchemaBuild(referenceStruct interface{}, schemas map[string]*schema
 	}
 
 	// instead of "_links"
-	newSchema["link"] = schemas["link"]
+	if _, ok := schemas["link"]; ok {
+		newSchema["link"] = schemas["link"]
+	}
 
 	return newSchema
 }
@@ -700,7 +723,7 @@ func FillValue(source interface{}, target interface{}) interface{} {
 		}
 		if reflect.TypeOf(source).Kind() == reflect.String {
 			i, _ := strconv.ParseInt(source.(string), 10, 32)
-			return i
+			return int32(i)
 		}
 
 		return int32(source.(int))
