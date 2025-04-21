@@ -18,7 +18,6 @@ This resource allows you to create a DNSSEC test. This test type verifies the di
 - `agents` (Set of String) The list of ThousandEyes agent IDs to use.
 - `domain` (String) See notes	target record for test, suffixed by record type (ie, www.thousandeyes.com CNAME). If no record type is specified, the test will default to an ANY record.
 - `interval` (Number) The interval to run the test on, in seconds.
-- `test_name` (String) The name of the test.
 
 ### Optional
 
@@ -30,6 +29,7 @@ This resource allows you to create a DNSSEC test. This test type verifies the di
 - `labels` (Set of String) ["1", "2", "uuid"] The array of label or tag ids.
 - `randomized_start_time` (Boolean) Indicates whether agents should randomize the start time in each test round.
 - `shared_with_accounts` (Set of String) List of accounts
+- `test_name` (String) The name of the test.
 
 ### Read-Only
 
