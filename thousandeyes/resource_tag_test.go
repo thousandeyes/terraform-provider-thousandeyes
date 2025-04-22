@@ -1,6 +1,7 @@
 package thousandeyes
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
@@ -10,9 +11,20 @@ import (
 )
 
 func TestAccThousandEyesTag(t *testing.T) {
+	var httpTestResourceName = "thousandeyes_http_server.test"
+	var agentToServerTestResourceName = "thousandeyes_agent_to_server.test"
 	var tag1ResourceName = "thousandeyes_tag.tag1"
 	var tag2ResourceName = "thousandeyes_tag.tag2"
 	var tag3ResourceName = "thousandeyes_tag.tag3"
+	var assign1ResourceName = "thousandeyes_tag_assignment.assign1"
+	var assign2ResourceName = "thousandeyes_tag_assignment.assign2"
+	var assign3ResourceName = "thousandeyes_tag_assignment.assign3"
+	var httpTestId string
+	var agentToServerTestId string
+	var tag1Id string
+	var tag2Id string
+	var tag3Id string
+
 	var testCases = []struct {
 		name                 string
 		createResourceFile   string
@@ -27,44 +39,76 @@ func TestAccThousandEyesTag(t *testing.T) {
 			updateResourceFile:   "acceptance_resources/tags/update.tf",
 			checkDestroyFunction: testAccCheckDefaultTagsDestroy,
 			checkCreateFunc: []resource.TestCheckFunc{
+				testAccCheckResourceExistsAndStoreID(httpTestResourceName, &httpTestId),
+				testAccCheckResourceExistsAndStoreID(agentToServerTestResourceName, &agentToServerTestId),
+				testAccCheckResourceExistsAndStoreID(tag1ResourceName, &tag1Id),
 				resource.TestCheckResourceAttr(tag1ResourceName, "key", "UAT Tag1 Key"),
 				resource.TestCheckResourceAttr(tag1ResourceName, "value", "UAT Tag1 Value"),
 				resource.TestCheckResourceAttr(tag1ResourceName, "color", "#b3de69"),
 				resource.TestCheckResourceAttr(tag1ResourceName, "object_type", "test"),
 				resource.TestCheckResourceAttr(tag1ResourceName, "access_type", "all"),
 				resource.TestCheckResourceAttr(tag1ResourceName, "icon", "LABEL"),
+				testAccCheckResourceExistsAndStoreID(tag2ResourceName, &tag2Id),
 				resource.TestCheckResourceAttr(tag2ResourceName, "key", "UAT Tag2 Key"),
 				resource.TestCheckResourceAttr(tag2ResourceName, "value", "UAT Tag2 Value"),
 				resource.TestCheckResourceAttr(tag2ResourceName, "color", "#fdb462"),
 				resource.TestCheckResourceAttr(tag2ResourceName, "object_type", "test"),
 				resource.TestCheckResourceAttr(tag2ResourceName, "access_type", "all"),
 				resource.TestCheckResourceAttr(tag2ResourceName, "icon", "LABEL"),
+				testAccCheckResourceExistsAndStoreID(tag3ResourceName, &tag3Id),
 				resource.TestCheckResourceAttr(tag3ResourceName, "key", "UAT Tag3 Key"),
 				resource.TestCheckResourceAttr(tag3ResourceName, "value", "UAT Tag3 Value"),
 				resource.TestCheckResourceAttr(tag3ResourceName, "color", "#8dd3c7"),
 				resource.TestCheckResourceAttr(tag3ResourceName, "object_type", "test"),
 				resource.TestCheckResourceAttr(tag3ResourceName, "access_type", "all"),
 				resource.TestCheckResourceAttr(tag3ResourceName, "icon", "LABEL"),
+				testAccCheckDependentResourceHasCorrectID(assign1ResourceName, "tag_id", &tag1Id),
+				testAccCheckDependentResourceHasCorrectID(assign1ResourceName, "assignments.0.id", &httpTestId),
+				resource.TestCheckResourceAttr(assign1ResourceName, "assignments.0.type", "test"),
+				testAccCheckDependentResourceHasCorrectID(assign2ResourceName, "tag_id", &tag2Id),
+				testAccCheckDependentResourceHasCorrectID(assign2ResourceName, "assignments.0.id", &agentToServerTestId),
+				resource.TestCheckResourceAttr(assign2ResourceName, "assignments.0.type", "test"),
+				testAccCheckDependentResourceHasCorrectID(assign3ResourceName, "tag_id", &tag3Id),
+				testAccCheckDependentResourceHasCorrectID(assign3ResourceName, "assignments.0.id", &agentToServerTestId),
+				resource.TestCheckResourceAttr(assign3ResourceName, "assignments.0.type", "test"),
+				testAccCheckDependentResourceHasCorrectID(assign3ResourceName, "assignments.1.id", &httpTestId),
+				resource.TestCheckResourceAttr(assign3ResourceName, "assignments.1.type", "test"),
 			},
 			checkUpdateFunc: []resource.TestCheckFunc{
+				testAccCheckResourceExistsAndStoreID(httpTestResourceName, &httpTestId),
+				testAccCheckResourceExistsAndStoreID(agentToServerTestResourceName, &agentToServerTestId),
+				testAccCheckResourceExistsAndStoreID(tag1ResourceName, &tag1Id),
 				resource.TestCheckResourceAttr(tag1ResourceName, "key", "UAT Tag1 Key (Updated)"),
 				resource.TestCheckResourceAttr(tag1ResourceName, "value", "UAT Tag1 Value (Updated)"),
 				resource.TestCheckResourceAttr(tag1ResourceName, "color", "#fdb462"),
 				resource.TestCheckResourceAttr(tag1ResourceName, "object_type", "test"),
 				resource.TestCheckResourceAttr(tag1ResourceName, "access_type", "all"),
 				resource.TestCheckResourceAttr(tag1ResourceName, "icon", "LABEL"),
+				testAccCheckResourceExistsAndStoreID(tag2ResourceName, &tag2Id),
 				resource.TestCheckResourceAttr(tag2ResourceName, "key", "UAT Tag2 Key (Updated)"),
 				resource.TestCheckResourceAttr(tag2ResourceName, "value", "UAT Tag2 Value (Updated)"),
 				resource.TestCheckResourceAttr(tag2ResourceName, "color", "#8dd3c7"),
 				resource.TestCheckResourceAttr(tag2ResourceName, "object_type", "test"),
 				resource.TestCheckResourceAttr(tag2ResourceName, "access_type", "all"),
 				resource.TestCheckResourceAttr(tag2ResourceName, "icon", "LABEL"),
+				testAccCheckResourceExistsAndStoreID(tag3ResourceName, &tag3Id),
 				resource.TestCheckResourceAttr(tag3ResourceName, "key", "UAT Tag3 Key (Updated)"),
 				resource.TestCheckResourceAttr(tag3ResourceName, "value", "UAT Tag3 Value (Updated)"),
 				resource.TestCheckResourceAttr(tag3ResourceName, "color", "#b3de69"),
 				resource.TestCheckResourceAttr(tag3ResourceName, "object_type", "test"),
 				resource.TestCheckResourceAttr(tag3ResourceName, "access_type", "all"),
 				resource.TestCheckResourceAttr(tag3ResourceName, "icon", "LABEL"),
+				testAccCheckDependentResourceHasCorrectID(assign1ResourceName, "tag_id", &tag2Id),
+				testAccCheckDependentResourceHasCorrectID(assign1ResourceName, "assignments.0.id", &httpTestId),
+				resource.TestCheckResourceAttr(assign1ResourceName, "assignments.0.type", "test"),
+				testAccCheckDependentResourceHasCorrectID(assign2ResourceName, "tag_id", &tag1Id),
+				testAccCheckDependentResourceHasCorrectID(assign2ResourceName, "assignments.0.id", &agentToServerTestId),
+				resource.TestCheckResourceAttr(assign2ResourceName, "assignments.0.type", "test"),
+				testAccCheckDependentResourceHasCorrectID(assign3ResourceName, "tag_id", &tag3Id),
+				testAccCheckDependentResourceHasCorrectID(assign3ResourceName, "assignments.0.id", &agentToServerTestId),
+				resource.TestCheckResourceAttr(assign3ResourceName, "assignments.0.type", "test"),
+				testAccCheckDependentResourceHasCorrectID(assign3ResourceName, "assignments.1.id", &httpTestId),
+				resource.TestCheckResourceAttr(assign3ResourceName, "assignments.1.type", "test"),
 			},
 		},
 	}
@@ -125,4 +169,32 @@ func getTag(id string) (interface{}, error) {
 	req = SetAidFromContext(testClient.GetConfig().Context, req)
 	resp, _, err := req.Execute()
 	return resp, err
+}
+
+func testAccCheckResourceExistsAndStoreID(resourceName string, id *string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return fmt.Errorf("Resource not found: %s", resourceName)
+		}
+		if rs.Primary.ID == "" {
+			return fmt.Errorf("Resource ID is not set")
+		}
+		*id = rs.Primary.ID
+		return nil
+	}
+}
+
+func testAccCheckDependentResourceHasCorrectID(resourceName string, attributeName string, expectedID *string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return fmt.Errorf("Resource not found: %s", resourceName)
+		}
+		actualParentID := rs.Primary.Attributes[attributeName]
+		if actualParentID != *expectedID {
+			return fmt.Errorf("Expected %s is %s, got %s", attributeName, *expectedID, actualParentID)
+		}
+		return nil
+	}
 }
