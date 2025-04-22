@@ -105,10 +105,9 @@ func TestAccThousandEyesTag(t *testing.T) {
 				testAccCheckDependentResourceHasCorrectID(assign2ResourceName, "assignments.0.id", &agentToServerTestId),
 				resource.TestCheckResourceAttr(assign2ResourceName, "assignments.0.type", "test"),
 				testAccCheckDependentResourceHasCorrectID(assign3ResourceName, "tag_id", &tag3Id),
+				resource.TestCheckResourceAttr(assign3ResourceName, "assignments.#", "1"),
 				testAccCheckDependentResourceHasCorrectID(assign3ResourceName, "assignments.0.id", &agentToServerTestId),
 				resource.TestCheckResourceAttr(assign3ResourceName, "assignments.0.type", "test"),
-				testAccCheckDependentResourceHasCorrectID(assign3ResourceName, "assignments.1.id", &httpTestId),
-				resource.TestCheckResourceAttr(assign3ResourceName, "assignments.1.type", "test"),
 			},
 		},
 	}
