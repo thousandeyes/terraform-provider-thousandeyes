@@ -164,7 +164,7 @@ func testAccThousandEyesTagConfig(testResource string) string {
 	return string(content)
 }
 
-func getTag(id string) (interface{}, error) {
+func getTag(id string) (*tags.Tag, error) {
 	api := (*tags.TagsAPIService)(&testClient.Common)
 	req := api.GetTag(id).Expand(tags.AllowedExpandTagsOptionsEnumValues)
 	req = SetAidFromContext(testClient.GetConfig().Context, req)
@@ -206,7 +206,7 @@ func testAccCheckAsignmentsCountInTagsResponse(expectedTagID *string, count int)
 		if err != nil {
 			return fmt.Errorf("Unable to get Tag with Id %s", *expectedTagID)
 		}
-		actualCount := len((tag.(*tags.Tag)).Assignments)
+		actualCount := len(tag.Assignments)
 		if actualCount != count {
 			return fmt.Errorf("Expected asignments count is %d, got %d", count, actualCount)
 		}
