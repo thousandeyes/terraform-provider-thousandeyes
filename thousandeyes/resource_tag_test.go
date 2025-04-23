@@ -65,14 +65,17 @@ func TestAccThousandEyesTag(t *testing.T) {
 				testAccCheckDependentResourceHasCorrectID(assign1ResourceName, "tag_id", &tag1Id),
 				testAccCheckDependentResourceHasCorrectID(assign1ResourceName, "assignments.0.id", &httpTestId),
 				resource.TestCheckResourceAttr(assign1ResourceName, "assignments.0.type", "test"),
+				testAccCheckAsignmentsCountInTagsResponse(&tag1Id, 1),
 				testAccCheckDependentResourceHasCorrectID(assign2ResourceName, "tag_id", &tag2Id),
 				testAccCheckDependentResourceHasCorrectID(assign2ResourceName, "assignments.0.id", &agentToServerTestId),
 				resource.TestCheckResourceAttr(assign2ResourceName, "assignments.0.type", "test"),
+				testAccCheckAsignmentsCountInTagsResponse(&tag2Id, 1),
 				testAccCheckDependentResourceHasCorrectID(assign3ResourceName, "tag_id", &tag3Id),
 				testAccCheckDependentResourceHasCorrectID(assign3ResourceName, "assignments.0.id", &agentToServerTestId),
 				resource.TestCheckResourceAttr(assign3ResourceName, "assignments.0.type", "test"),
 				testAccCheckDependentResourceHasCorrectID(assign3ResourceName, "assignments.1.id", &httpTestId),
 				resource.TestCheckResourceAttr(assign3ResourceName, "assignments.1.type", "test"),
+				testAccCheckAsignmentsCountInTagsResponse(&tag3Id, 2),
 			},
 			checkUpdateFunc: []resource.TestCheckFunc{
 				testAccCheckResourceExistsAndStoreID(httpTestResourceName, &httpTestId),
@@ -101,13 +104,12 @@ func TestAccThousandEyesTag(t *testing.T) {
 				testAccCheckDependentResourceHasCorrectID(assign1ResourceName, "tag_id", &tag2Id),
 				testAccCheckDependentResourceHasCorrectID(assign1ResourceName, "assignments.0.id", &httpTestId),
 				resource.TestCheckResourceAttr(assign1ResourceName, "assignments.0.type", "test"),
+				testAccCheckAsignmentsCountInTagsResponse(&tag2Id, 1),
 				testAccCheckDependentResourceHasCorrectID(assign2ResourceName, "tag_id", &tag1Id),
 				testAccCheckDependentResourceHasCorrectID(assign2ResourceName, "assignments.0.id", &agentToServerTestId),
 				resource.TestCheckResourceAttr(assign2ResourceName, "assignments.0.type", "test"),
-				testAccCheckDependentResourceHasCorrectID(assign3ResourceName, "tag_id", &tag3Id),
-				resource.TestCheckResourceAttr(assign3ResourceName, "assignments.#", "1"),
-				testAccCheckDependentResourceHasCorrectID(assign3ResourceName, "assignments.0.id", &agentToServerTestId),
-				resource.TestCheckResourceAttr(assign3ResourceName, "assignments.0.type", "test"),
+				testAccCheckAsignmentsCountInTagsResponse(&tag1Id, 1),
+				testAccCheckAsignmentsCountInTagsResponse(&tag3Id, 0),
 			},
 		},
 	}
@@ -193,6 +195,20 @@ func testAccCheckDependentResourceHasCorrectID(resourceName string, attributeNam
 		actualParentID := rs.Primary.Attributes[attributeName]
 		if actualParentID != *expectedID {
 			return fmt.Errorf("Expected %s is %s, got %s", attributeName, *expectedID, actualParentID)
+		}
+		return nil
+	}
+}
+
+func testAccCheckAsignmentsCountInTagsResponse(expectedTagID *string, count int) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		tag, err := getTag(*expectedTagID)
+		if err != nil {
+			return fmt.Errorf("Unable to get Tag with Id %s", *expectedTagID)
+		}
+		actualCount := len((tag.(*tags.Tag)).Assignments)
+		if actualCount != count {
+			return fmt.Errorf("Expected asignments count is %d, got %d", count, actualCount)
 		}
 		return nil
 	}

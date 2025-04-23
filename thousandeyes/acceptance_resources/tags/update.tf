@@ -72,12 +72,3 @@ resource "thousandeyes_tag_assignment" "assign2" {
     type = "test"
   }
 }
-
-resource "thousandeyes_tag_assignment" "assign3" {
-  tag_id = thousandeyes_tag.tag3.id
-  assignments {
-    id   = thousandeyes_agent_to_server.test.id
-    type = "test"
-  }
-}
-
