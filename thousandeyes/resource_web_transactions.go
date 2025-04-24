@@ -49,13 +49,6 @@ func resourceWebTransactionUpdate(ctx context.Context, d *schema.ResourceData, m
 
 	log.Printf("[INFO] Updating ThousandEyes Test %s", d.Id())
 	update := buildWebTransactionStruct(d)
-	if update.EmulatedDeviceId != nil && len(*update.EmulatedDeviceId) > 0 {
-		ctx = context.WithValue(
-			ctx,
-			emulationDeviceIdKey,
-			struct{}{},
-		)
-	}
 
 	req := api.UpdateWebTransactionsTest(d.Id()).WebTransactionTestRequest(*update).Expand(tests.AllowedExpandTestOptionsEnumValues)
 	req = SetAidFromContext(apiClient.GetConfig().Context, req)
@@ -89,13 +82,6 @@ func resourceWebTransactionCreate(ctx context.Context, d *schema.ResourceData, m
 
 	log.Printf("[INFO] Creating ThousandEyes Test %s", d.Id())
 	local := buildWebTransactionStruct(d)
-	if local.EmulatedDeviceId != nil && len(*local.EmulatedDeviceId) > 0 {
-		ctx = context.WithValue(
-			ctx,
-			emulationDeviceIdKey,
-			struct{}{},
-		)
-	}
 
 	req := api.CreateWebTransactionsTest().WebTransactionTestRequest(*local).Expand(tests.AllowedExpandTestOptionsEnumValues)
 	req = SetAidFromContext(apiClient.GetConfig().Context, req)

@@ -1,7 +1,7 @@
 package schemas
 
 import (
-	"regexp"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -441,10 +441,17 @@ var CommonSchema = map[string]*schema.Schema{
 		Description: "See notes	target record for test, suffixed by record type (ie, www.thousandeyes.com CNAME). If no record type is specified, the test will default to an ANY record.",
 		Optional:    false,
 		Required:    true,
-		ValidateFunc: validation.StringMatch(
-			regexp.MustCompile(`^.* (A|ANY|NS|CNAME|MX|SOA|AAAA|PTR|TXT|NULL|DS|RRSIG|DNSKEY|NSEC)$`),
-			"must suffix with record type; check ThousandEyes Developer Reference for more information",
-		),
+		DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+			// Ignore adding ANY
+			splitOld := strings.SplitN(old, " ", 2)
+			splitNew := strings.SplitN(new, " ", 2)
+			if len(splitNew) == 1 && // from config (thousandeyes.com)
+				len(splitOld) == 2 && // from state (thousandeyes.com ANY)
+				splitOld[1] == "ANY" {
+				return splitOld[0] == splitNew[0]
+			}
+			return old == new
+		},
 	},
 	// protocol
 	"protocol": {

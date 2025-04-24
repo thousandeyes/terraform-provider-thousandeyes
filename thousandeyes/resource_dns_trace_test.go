@@ -35,7 +35,7 @@ func TestAccThousandEyesDNSTrace(t *testing.T) {
 			},
 			checkUpdateFunc: []resource.TestCheckFunc{
 				resource.TestCheckResourceAttr(resourceName, "test_name", "User Acceptance Test - DNS Trace (Updated)"),
-				resource.TestCheckResourceAttr(resourceName, "domain", "thousandeyes.com A"),
+				resource.TestCheckResourceAttr(resourceName, "domain", "thousandeyes.com ANY"),
 				resource.TestCheckResourceAttr(resourceName, "interval", "300"),
 				resource.TestCheckResourceAttr(resourceName, "alerts_enabled", "true"),
 				resource.TestCheckResourceAttr(resourceName, "alert_rules.#", "2"),
@@ -57,6 +57,7 @@ func TestAccThousandEyesDNSTrace(t *testing.T) {
 					{
 						Config: testAccThousandEyesDNSTraceConfig(tc.updateResourceFile),
 						Check:  resource.ComposeTestCheckFunc(tc.checkUpdateFunc...),
+						//ExpectNonEmptyPlan: true,
 					},
 				},
 			})
