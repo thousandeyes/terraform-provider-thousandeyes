@@ -48,7 +48,7 @@ resource "thousandeyes_http_server" "www_thousandeyes_http_test" {
 
 ### Required
 
-`token` (String) The ThousandEyes organization's authentication token.
+- `token` (String) The ThousandEyes organization's authentication token.
 
 ### Optional
 
