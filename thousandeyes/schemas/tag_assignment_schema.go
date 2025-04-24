@@ -22,8 +22,7 @@ var TagAssignmentSchema = map[string]*schema.Schema{
 	// assignments
 	"assignments": {
 		Description: "",
-		Optional:    true,
-		Required:    false,
+		Required:    true,
 		ForceNew:    true,
 		Type:        schema.TypeSet,
 		Elem: &schema.Resource{
@@ -31,12 +30,12 @@ var TagAssignmentSchema = map[string]*schema.Schema{
 				"id": {
 					Type:        schema.TypeString,
 					Description: "Object Id.",
-					Optional:    true,
+					Required:    true,
 				},
 				"type": {
 					Type:        schema.TypeString,
 					Description: "[test, v-agent, endpoint-test, dashboard] Type of assignment.",
-					Optional:    true,
+					Required:    true,
 					ValidateFunc: validation.StringInSlice([]string{
 						"test",
 						"v-agent",
