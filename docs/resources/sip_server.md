@@ -36,7 +36,6 @@ resource "thousandeyes_sip_server" "example_sip_server_test" {
 
 - `agents` (Set of String) The list of ThousandEyes agent IDs to use.
 - `interval` (Number) The interval to run the test on, in seconds.
-- `test_name` (String) The name of the test.
 
 ### Optional
 
@@ -61,6 +60,7 @@ resource "thousandeyes_sip_server" "example_sip_server_test" {
 - `sip_target_time` (Number) The target time for test completion, specified in milliseconds.
 - `sip_time_limit` (Number) The test time limit. Can be between 5 and 10 seconds, and defaults to 5 seconds.
 - `target_sip_credentials` (Block Set) Target SIP credentials (see [below for nested schema](#nestedblock--target_sip_credentials))
+- `test_name` (String) The name of the test.
 - `use_public_bgp` (Boolean) Enable to automatically add all available Public BGP Monitors to the test.
 
 ### Read-Only

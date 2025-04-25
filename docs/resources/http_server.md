@@ -31,7 +31,6 @@ resource "thousandeyes_http_server" "example_http_server_test" {
 
 - `agents` (Set of String) The list of ThousandEyes agent IDs to use.
 - `interval` (Number) The interval to run the test on, in seconds.
-- `test_name` (String) The name of the test.
 - `url` (String) The target URL for the test.
 
 ### Optional
@@ -76,6 +75,7 @@ resource "thousandeyes_http_server" "example_http_server_test" {
 - `randomized_start_time` (Boolean) Indicates whether agents should randomize the start time in each test round.
 - `shared_with_accounts` (Set of String) List of accounts
 - `ssl_version_id` (String) Defines the SSL version. 0 for auto, 3 for SSLv3, 4 for TLS v1.0, 5 for TLS v1.1, 6 for TLS v1.2.
+- `test_name` (String) The name of the test.
 - `use_ntlm` (Boolean) Enable to use basic authentication. Only include this field if you are using authentication. Requires the username and password to be set if enabled.
 - `use_public_bgp` (Boolean) Enable to automatically add all available Public BGP Monitors to the test.
 - `user_agent` (String) The user-agent string to be provided during the test.
