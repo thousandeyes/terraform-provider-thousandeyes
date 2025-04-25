@@ -30,7 +30,7 @@ func TestAccThousandEyesFTPServer(t *testing.T) {
 				resource.TestCheckResourceAttr(ftpResourceName, "url", "ftp://speedtest.tele2.net/"),
 				resource.TestCheckResourceAttr(ftpResourceName, "test_name", "User Acceptance Test - FTP Server"),
 				resource.TestCheckResourceAttr(ftpResourceName, "interval", "120"),
-				resource.TestCheckResourceAttr(ftpResourceName, "password", "test_password"),
+				resource.TestCheckResourceAttr(ftpResourceName, "password", ""),
 				resource.TestCheckResourceAttr(ftpResourceName, "username", "test_username"),
 				resource.TestCheckResourceAttr(ftpResourceName, "description", "description"),
 				resource.TestCheckResourceAttr(ftpResourceName, "request_type", "download"),
@@ -43,7 +43,7 @@ func TestAccThousandEyesFTPServer(t *testing.T) {
 				resource.TestCheckResourceAttr(ftpResourceName, "url", "ftp://speedtest.tele2.net/"),
 				resource.TestCheckResourceAttr(ftpResourceName, "test_name", "User Acceptance Test - FTP Server (Updated)"),
 				resource.TestCheckResourceAttr(ftpResourceName, "interval", "300"),
-				resource.TestCheckResourceAttr(ftpResourceName, "password", "test_password"),
+				resource.TestCheckResourceAttr(ftpResourceName, "password", ""),
 				resource.TestCheckResourceAttr(ftpResourceName, "username", "test_username"),
 				resource.TestCheckResourceAttr(ftpResourceName, "description", "description"),
 				resource.TestCheckResourceAttr(ftpResourceName, "request_type", "download"),
@@ -63,12 +63,14 @@ func TestAccThousandEyesFTPServer(t *testing.T) {
 				CheckDestroy:      tc.checkDestroyFunction,
 				Steps: []resource.TestStep{
 					{
-						Config: testAccThousandEyesFTPServerConfig(tc.createResourceFile),
-						Check:  resource.ComposeTestCheckFunc(tc.checkCreateFunc...),
+						Config:             testAccThousandEyesFTPServerConfig(tc.createResourceFile),
+						Check:              resource.ComposeTestCheckFunc(tc.checkCreateFunc...),
+						ExpectNonEmptyPlan: true,
 					},
 					{
-						Config: testAccThousandEyesFTPServerConfig(tc.updateResourceFile),
-						Check:  resource.ComposeTestCheckFunc(tc.checkUpdateFunc...),
+						Config:             testAccThousandEyesFTPServerConfig(tc.updateResourceFile),
+						Check:              resource.ComposeTestCheckFunc(tc.checkUpdateFunc...),
+						ExpectNonEmptyPlan: true,
 					},
 				},
 			})
