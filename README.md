@@ -69,6 +69,7 @@ resource "thousandeyes_http_server" "example_http_server_test" {
 - [X] api
 
 ### Supported additional resources
+- [X] alert rules
 - [X] tags
 - [X] tag assignments
 
