@@ -1,10 +1,8 @@
 resource "thousandeyes_web_transaction" "example_web_transaction_test" {
-  test_name      = "Example Web Transaction test set from Terraform provider"
-  interval      = 120
-  alerts_enabled = false
-
-  url            = "https://www.thousandeyes.com"
-
+  test_name          = "Example Web Transaction test set from Terraform provider"
+  interval           = 120
+  alerts_enabled     = false
+  url                = "https://www.thousandeyes.com"
   transaction_script = <<EOF
   import { By, Key, until } from 'selenium-webdriver'; 
   import { driver, markers, credentials, downloads, transaction, test } from 'thousandeyes'; 
@@ -17,8 +15,5 @@ resource "thousandeyes_web_transaction" "example_web_transaction_test" {
   await driver.takeScreenshot();
 };
 EOF
-
-  agents {
-    agent_id = 3 # Singapore
-  }
+  agents             = ["3"] # Singapore
 } 

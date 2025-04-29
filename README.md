@@ -5,7 +5,7 @@ The Terraform provider for ThousandEyes allows you to manage resources in [Thous
 ## Requirements
 
 - [Terraform](https://www.terraform.io/downloads.html) 0.12.x
-- [Go](https://golang.org/doc/install) 1.17 (to build the provider plugin)
+- [Go](https://golang.org/doc/install) 1.24 (to build the provider plugin)
 
 ## Usage
 The provider is on the Terraform registry. To use it, add the following code and run `terraform init`:
@@ -44,16 +44,12 @@ data "thousandeyes_agent" "arg_cordoba" {
   agent_name = "Cordoba, Argentina"
 }
 
-resource "thousandeyes_http_server" "www_thousandeyes_http_test" {
+resource "thousandeyes_http_server" "example_http_server_test" {
   test_name      = "Example HTTP test set from Terraform provider"
   interval       = 120
   alerts_enabled = false
-
-  url = "https://www.thousandeyes.com"
-
-  agents {
-    agent_id = data.thousandeyes_agent.arg_cordoba.agent_id
-  }
+  url            = "https://www.thousandeyes.com"
+  agents         = [data.thousandeyes_agent.arg_cordoba.id]
 }
 ```
 
@@ -70,6 +66,12 @@ resource "thousandeyes_http_server" "www_thousandeyes_http_test" {
 - [X] sip-server
 - [X] voice (RTP stream)
 - [X] web-transactions
+- [X] api
+
+### Supported additional resources
+- [X] alert rules
+- [X] tags
+- [X] tag assignments
 
 ## Building The Provider
 Clone repository to: `$GOPATH/src/github.com/thousandeyes/terraform-provider-thousandeyes`
