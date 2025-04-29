@@ -21,6 +21,7 @@ resource "thousandeyes_http_server" "www_thousandeyes_http_test" {
   interval       = 120
   url            = "https://www.thousandeyes.com"
   alerts_enabled = true
+  agents         = ["3"] # Singapore
   alert_rules    = [data.thousandeyes_alert_rule.example_alert_rule.id]
 }
 ```
