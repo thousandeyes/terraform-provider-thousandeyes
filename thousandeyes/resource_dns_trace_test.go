@@ -57,7 +57,6 @@ func TestAccThousandEyesDNSTrace(t *testing.T) {
 					{
 						Config: testAccThousandEyesDNSTraceConfig(tc.updateResourceFile),
 						Check:  resource.ComposeTestCheckFunc(tc.checkUpdateFunc...),
-						//ExpectNonEmptyPlan: true,
 					},
 				},
 			})
