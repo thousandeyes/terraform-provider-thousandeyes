@@ -816,6 +816,6 @@ func getPointer[T any](v T) *T {
 }
 
 func checkDomainRecordTypeExists(domain string) bool {
-	matched, _ := regexp.MatchString(`^.* (A|ANY|NS|CNAME|MX|SOA|AAAA|PTR|TXT|NULL|DS|RRSIG|DNSKEY|NSEC)$`, domain)
+	matched, _ := regexp.MatchString(`^.+ ([A-Z]+)$`, domain)
 	return matched
 }
