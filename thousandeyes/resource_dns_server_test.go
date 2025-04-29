@@ -28,7 +28,7 @@ func TestAccThousandEyesDNSServer(t *testing.T) {
 			checkDestroyFunction: testAccCheckDNSServerResourceDestroy,
 			checkCreateFunc: []resource.TestCheckFunc{
 				resource.TestCheckResourceAttr(resourceName, "test_name", "User Acceptance Test - DNS Server"),
-				resource.TestCheckResourceAttr(resourceName, "domain", "thousandeyes.com A"),
+				resource.TestCheckResourceAttr(resourceName, "domain", "thousandeyes.com ANY"),
 				resource.TestCheckResourceAttr(resourceName, "interval", "120"),
 				resource.TestCheckResourceAttr(resourceName, "alerts_enabled", "true"),
 				resource.TestCheckResourceAttr(resourceName, "alert_rules.#", "2"),

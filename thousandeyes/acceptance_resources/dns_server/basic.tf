@@ -19,7 +19,7 @@ resource "thousandeyes_dns_server" "test" {
   test_name      = "User Acceptance Test - DNS Server"
   interval       = 120
   alerts_enabled = true
-  domain         = "thousandeyes.com A"
+  domain         = "thousandeyes.com"
   agents         = [data.thousandeyes_agent.amsterdam.agent_id]
   alert_rules    = [data.thousandeyes_alert_rule.def_alert_rule.id, thousandeyes_alert_rule.test.id]
   dns_servers    = ["ns-cloud-d1.googledomains.com", "ns-1458.awsdns-54.org", "ns-597.awsdns-10.net"]

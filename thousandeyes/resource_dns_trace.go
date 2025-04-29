@@ -2,6 +2,7 @@ package thousandeyes
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/thousandeyes/terraform-provider-thousandeyes/thousandeyes/schemas"
@@ -44,6 +45,10 @@ func resourceDNSTraceUpdate(d *schema.ResourceData, m interface{}) error {
 
 	log.Printf("[INFO] Updating ThousandEyes Test %s", d.Id())
 	update := buildDNSTraceStruct(d)
+	// it will keep previous record type if isn't set
+	if !checkDomainRecordTypeExists(update.Domain) {
+		update.Domain = fmt.Sprintf("%s ANY", update.Domain)
+	}
 
 	req := api.UpdateDnsTraceTest(d.Id()).DnsTraceTestRequest(*update).Expand(tests.AllowedExpandTestOptionsEnumValues)
 	req = SetAidFromContext(apiClient.GetConfig().Context, req)
