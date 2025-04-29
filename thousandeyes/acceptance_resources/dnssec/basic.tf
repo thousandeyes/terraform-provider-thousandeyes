@@ -19,7 +19,7 @@ resource "thousandeyes_dnssec" "test" {
   test_name      = "User Acceptance Test - DNSSEC"
   interval       = 120
   alerts_enabled = true
-  domain         = "thousandeyes.com A"
+  domain         = "thousandeyes.com"
   agents         = [data.thousandeyes_agent.amsterdam.agent_id]
   alert_rules    = [thousandeyes_alert_rule.test.id, data.thousandeyes_alert_rule.def_alert_rule.id]
 }

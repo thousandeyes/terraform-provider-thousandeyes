@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"reflect"
+	"regexp"
 	"slices"
 	"strconv"
 	"strings"
@@ -17,11 +18,11 @@ import (
 	"github.com/thousandeyes/thousandeyes-sdk-go/v3/tests"
 )
 
-type fieldKeyType string
 type resourceKeyType string
+type setInConfigKeyType string
 
-const emulationDeviceIdKey fieldKeyType = "emulation_device_id"
 const tagsKey resourceKeyType = "tags"
+const setInConfigKey setInConfigKeyType = "is_set"
 
 var sensitiveFields = []string{"password", "custom_headers", "headers", "bearer_token", "client_id", "client_secret"}
 
@@ -118,9 +119,10 @@ func ResourceRead(ctx context.Context, d *schema.ResourceData, structPtr interfa
 	for i := 0; i < v.NumField(); i++ {
 		tag := GetJSONKey(t.Field(i))
 		tfName := CamelCaseToUnderscore(tag)
+		_, ok := d.GetOk(tfName)
 
 		if slices.Contains(sensitiveFields, tfName) {
-			if _, ok := d.GetOk(tfName); ok {
+			if ok {
 				if err := d.Set(tfName, nil); err != nil {
 					return err
 				}
@@ -136,6 +138,8 @@ func ResourceRead(ctx context.Context, d *schema.ResourceData, structPtr interfa
 		if err != nil {
 			return err
 		}
+
+		ctx = context.WithValue(ctx, setInConfigKey, ok)
 		val, err = FixReadValues(ctx, targetMaps, val, &tfName)
 		if err != nil {
 			return err
@@ -143,6 +147,7 @@ func ResourceRead(ctx context.Context, d *schema.ResourceData, structPtr interfa
 		if len(tfName) == 0 {
 			continue
 		}
+
 		err = d.Set(tfName, val)
 		if err != nil {
 			return err
@@ -215,8 +220,7 @@ func FixReadValues(ctx context.Context, targetMaps map[string]map[string]interfa
 
 	// Ignore emulated device ID if it wasn't set
 	case "emulated_device_id":
-		edID := ctx.Value(emulationDeviceIdKey)
-		if edID == nil {
+		if isSet, _ := ctx.Value(setInConfigKey).(bool); !isSet {
 			*name = ""
 			return nil, nil
 		}
@@ -462,6 +466,9 @@ func FixReadValues(ctx context.Context, targetMaps map[string]map[string]interfa
 			}
 		}
 
+	case "o_auth":
+		*name = "oauth"
+
 	}
 
 	return m, nil
@@ -561,6 +568,16 @@ func resourceFixups[T any](d *schema.ResourceData, structPtr *T) *T {
 	if hasAgents {
 		scrappedAgents := expandAgents(d.Get("agents"))
 		v.FieldByName("Agents").Set(reflect.ValueOf(scrappedAgents))
+	}
+
+	_, hasOAuth := t.FieldByName("OAuth")
+	if hasOAuth {
+		val, ok := d.GetOk("oauth")
+		if ok {
+			newVal := FillValue(val, v.FieldByName("OAuth").Interface())
+			setVal := reflect.ValueOf(newVal)
+			v.FieldByName("OAuth").Set(setVal)
+		}
 	}
 
 	return structPtr
@@ -796,4 +813,9 @@ func SetAidFromContext[T RequestWithAid[T]](ctx context.Context, req T) T {
 
 func getPointer[T any](v T) *T {
 	return &v
+}
+
+func checkDomainRecordTypeExists(domain string) bool {
+	matched, _ := regexp.MatchString(`^.+ ([A-Z]+)$`, domain)
+	return matched
 }

@@ -404,7 +404,7 @@ func TestFixReadValues(t *testing.T) {
 	}
 
 	// emulated device id
-	ctx := context.WithValue(context.Background(), emulationDeviceIdKey, struct{}{})
+	ctx := context.WithValue(context.Background(), setInConfigKey, true)
 	targetEdId := "3000"
 	output, err = FixReadValues(ctx, nil, getPointer("3000"), getPointer("emulated_device_id"))
 	if err != nil {

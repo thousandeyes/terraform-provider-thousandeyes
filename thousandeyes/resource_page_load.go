@@ -47,13 +47,6 @@ func resourcePageLoadUpdate(ctx context.Context, d *schema.ResourceData, m inter
 
 	log.Printf("[INFO] Updating ThousandEyes Test %s", d.Id())
 	update := buildPageLoadStruct(d)
-	if update.EmulatedDeviceId != nil && len(*update.EmulatedDeviceId) > 0 {
-		ctx = context.WithValue(
-			ctx,
-			emulationDeviceIdKey,
-			struct{}{},
-		)
-	}
 
 	req := api.UpdatePageLoadTest(d.Id()).PageLoadTestRequest(*update).Expand(tests.AllowedExpandTestOptionsEnumValues)
 	req = SetAidFromContext(apiClient.GetConfig().Context, req)
@@ -87,13 +80,6 @@ func resourcePageLoadCreate(ctx context.Context, d *schema.ResourceData, m inter
 
 	log.Printf("[INFO] Creating ThousandEyes Test %s", d.Id())
 	local := buildPageLoadStruct(d)
-	if local.EmulatedDeviceId != nil && len(*local.EmulatedDeviceId) > 0 {
-		ctx = context.WithValue(
-			ctx,
-			emulationDeviceIdKey,
-			struct{}{},
-		)
-	}
 
 	req := api.CreatePageLoadTest().PageLoadTestRequest(*local).Expand(tests.AllowedExpandTestOptionsEnumValues)
 	req = SetAidFromContext(apiClient.GetConfig().Context, req)
