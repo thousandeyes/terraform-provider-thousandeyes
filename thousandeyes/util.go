@@ -466,6 +466,9 @@ func FixReadValues(ctx context.Context, targetMaps map[string]map[string]interfa
 			}
 		}
 
+	case "o_auth":
+		*name = "oauth"
+
 	}
 
 	return m, nil
@@ -565,6 +568,16 @@ func resourceFixups[T any](d *schema.ResourceData, structPtr *T) *T {
 	if hasAgents {
 		scrappedAgents := expandAgents(d.Get("agents"))
 		v.FieldByName("Agents").Set(reflect.ValueOf(scrappedAgents))
+	}
+
+	_, hasOAuth := t.FieldByName("OAuth")
+	if hasOAuth {
+		val, ok := d.GetOk("oauth")
+		if ok {
+			newVal := FillValue(val, v.FieldByName("OAuth").Interface())
+			setVal := reflect.ValueOf(newVal)
+			v.FieldByName("OAuth").Set(setVal)
+		}
 	}
 
 	return structPtr
