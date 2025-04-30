@@ -7,6 +7,7 @@ import (
 
 var _ = administrative.AccountGroupRequest{}
 var _ = administrative.AccountGroupDetail{}
+var _ = administrative.CreatedAccountGroup{}
 
 var AccountGroupSchema = map[string]*schema.Schema{
 	// aid

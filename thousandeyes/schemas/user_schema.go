@@ -19,7 +19,7 @@ var UserSchema = map[string]*schema.Schema{
 	"name": {
 		Type:        schema.TypeString,
 		Description: "The name of the user.",
-		Required:    true,
+		Optional:    true,
 	},
 	// email
 	"email": {

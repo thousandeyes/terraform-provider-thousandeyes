@@ -19,7 +19,7 @@ var RoleSchema = map[string]*schema.Schema{
 	"name": {
 		Type:        schema.TypeString,
 		Description: "The name of the role.",
-		Required:    true,
+		Optional:    true,
 	},
 	// permissions
 	"permissions": {

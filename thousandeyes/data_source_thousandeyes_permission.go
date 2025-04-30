@@ -33,7 +33,7 @@ func dataSourceThousandeyesPermissionRead(d *schema.ResourceData, meta interface
 	apiClient := meta.(*client.APIClient)
 	api := (*administrative.PermissionsAPIService)(&apiClient.Common)
 
-	log.Printf("[INFO] Reading Thousandeyes account group")
+	log.Printf("[INFO] Reading Thousandeyes permission")
 
 	searchName := d.Get("permission_name").(string)
 

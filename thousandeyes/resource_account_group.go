@@ -21,7 +21,7 @@ func resourceAccountGroup() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Description: "This resource allows you to create and configure an agent-to-agent test. This test type evaluates the performance of the underlying network between two physical sites. For more information about agent-to-agent tests, see [Agent-to-Agent Tests](https://docs.thousandeyes.com/product-documentation/internet-and-wan-monitoring/tests#agent-to-agent-test).",
+		Description: "",
 	}
 	return &resource
 }
@@ -85,9 +85,31 @@ func resourceAccountGroupCreate(d *schema.ResourceData, m interface{}) error {
 
 	id := *resp.Aid
 	d.SetId(id)
-	return resourceAccountGroupRead(d, m)
+
+	// Using a response because account group isn't available right after creation
+	return ResourceRead(context.Background(), d, buildAccountGroupReadStruct(resp, local.Agents))
 }
 
 func buildAccountGroupStruct(d *schema.ResourceData) *administrative.AccountGroupRequest {
 	return ResourceBuildStruct(d, &administrative.AccountGroupRequest{})
+}
+
+// POST response object do not have agents, but GET response does
+func buildAccountGroupReadStruct(in *administrative.CreatedAccountGroup, agents []string) *administrative.AccountGroupDetail {
+	agentsArr := make([]administrative.EnterpriseAgent, 0, len(agents))
+	for _, v := range agents {
+		agentsArr = append(agentsArr, administrative.EnterpriseAgent{AgentId: getPointer(v)})
+	}
+	out := &administrative.AccountGroupDetail{
+		Aid:                   in.Aid,
+		AccountGroupName:      in.AccountGroupName,
+		IsCurrentAccountGroup: in.IsCurrentAccountGroup,
+		IsDefaultAccountGroup: in.IsDefaultAccountGroup,
+		OrganizationName:      in.OrganizationName,
+		OrgId:                 in.OrgId,
+		Users:                 in.Users,
+		Links:                 in.Links,
+		Agents:                agentsArr,
+	}
+	return out
 }
