@@ -8,5 +8,5 @@ data "thousandeyes_permission" "emails_update" {
 
 resource "thousandeyes_role" "test" {
   name        = "User Acceptance Test - Role (Updated)"
-  permissions           = [data.thousandeyes_permission.reports_read.permission_id, data.thousandeyes_permission.emails_update.permission_id]
+  permissions = [data.thousandeyes_permission.reports_read.permission_id, data.thousandeyes_permission.emails_update.permission_id]
 }

@@ -7,6 +7,6 @@ data "thousandeyes_agent" "arg_frankfurt" {
 }
 
 resource "thousandeyes_account_group" "test" {
-  account_group_name        = "User Acceptance Test - Account Group"
-  agents           = [data.thousandeyes_agent.arg_amsterdam.agent_id, data.thousandeyes_agent.arg_frankfurt.agent_id]
+  account_group_name = "User Acceptance Test - Account Group"
+  agents             = [data.thousandeyes_agent.arg_amsterdam.agent_id, data.thousandeyes_agent.arg_frankfurt.agent_id]
 }

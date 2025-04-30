@@ -20,8 +20,8 @@ data "thousandeyes_agent" "arg_frankfurt" {
 }
 
 resource "thousandeyes_account_group" "example_account_group" {
-  account_group_name        = "Example Account Group"
-  agents           = [data.thousandeyes_agent.arg_amsterdam.agent_id, data.thousandeyes_agent.arg_frankfurt.agent_id]
+  account_group_name = "Example Account Group"
+  agents             = [data.thousandeyes_agent.arg_amsterdam.agent_id, data.thousandeyes_agent.arg_frankfurt.agent_id]
 }
 ```
 

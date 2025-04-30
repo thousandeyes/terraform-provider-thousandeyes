@@ -4,5 +4,5 @@ data "thousandeyes_permission" "reports_read" {
 
 resource "thousandeyes_role" "test" {
   name        = "User Acceptance Test - Role"
-  permissions           = [data.thousandeyes_permission.reports_read.permission_id]
+  permissions = [data.thousandeyes_permission.reports_read.permission_id]
 }

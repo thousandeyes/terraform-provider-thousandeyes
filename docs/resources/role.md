@@ -17,7 +17,7 @@ data "thousandeyes_permission" "example_permission" {
 
 resource "thousandeyes_role" "example_role" {
   name        = "Example Role"
-  permissions           = [data.thousandeyes_permission.example_permission.permission_id]
+  permissions = [data.thousandeyes_permission.example_permission.permission_id]
 }
 ```
 
