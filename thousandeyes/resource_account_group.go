@@ -96,10 +96,6 @@ func buildAccountGroupStruct(d *schema.ResourceData) *administrative.AccountGrou
 
 // POST response object do not have agents, but GET response does
 func buildAccountGroupReadStruct(in *administrative.CreatedAccountGroup, agents []string) *administrative.AccountGroupDetail {
-	agentsArr := make([]administrative.EnterpriseAgent, 0, len(agents))
-	for _, v := range agents {
-		agentsArr = append(agentsArr, administrative.EnterpriseAgent{AgentId: getPointer(v)})
-	}
 	out := &administrative.AccountGroupDetail{
 		Aid:                   in.Aid,
 		AccountGroupName:      in.AccountGroupName,
@@ -109,7 +105,13 @@ func buildAccountGroupReadStruct(in *administrative.CreatedAccountGroup, agents 
 		OrgId:                 in.OrgId,
 		Users:                 in.Users,
 		Links:                 in.Links,
-		Agents:                agentsArr,
+	}
+	if len(agents) > 0 {
+		agentsArr := make([]administrative.EnterpriseAgent, 0, len(agents))
+		for _, v := range agents {
+			agentsArr = append(agentsArr, administrative.EnterpriseAgent{AgentId: getPointer(v)})
+		}
+		out.Agents = agentsArr
 	}
 	return out
 }
