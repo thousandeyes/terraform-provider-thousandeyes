@@ -34,6 +34,7 @@ func TestAccThousandEyesAgentToServer(t *testing.T) {
 				resource.TestCheckResourceAttr(resourceName, "probe_mode", "sack"),
 				resource.TestCheckResourceAttr(resourceName, "alerts_enabled", "true"),
 				resource.TestCheckResourceAttr(resourceName, "alert_rules.#", "2"),
+				resource.TestCheckResourceAttr(resourceName, "port", "81"),
 			},
 			checkUpdateFunc: []resource.TestCheckFunc{
 				resource.TestCheckResourceAttr(resourceName, "test_name", "User Acceptance Test - Agent To Server (Updated)"),
@@ -43,6 +44,7 @@ func TestAccThousandEyesAgentToServer(t *testing.T) {
 				resource.TestCheckResourceAttr(resourceName, "probe_mode", "sack"),
 				resource.TestCheckResourceAttr(resourceName, "alerts_enabled", "true"),
 				resource.TestCheckResourceAttr(resourceName, "alert_rules.#", "2"),
+				resource.TestCheckResourceAttr(resourceName, "port", "82"),
 			},
 		},
 	}
