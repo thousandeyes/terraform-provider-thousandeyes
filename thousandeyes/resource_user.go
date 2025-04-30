@@ -21,7 +21,7 @@ func resourceUser() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Description: "",
+		Description: "Create, retrieve, update and delete users within an organization. For more information, see [Users](https://developer.cisco.com/docs/thousandeyes/list-users/).",
 	}
 	return &resource
 }

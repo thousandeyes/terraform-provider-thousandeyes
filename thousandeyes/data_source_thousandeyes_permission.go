@@ -25,7 +25,7 @@ func dataSourceThousandeyesPermission() *schema.Resource {
 				Description: "Unique ID representing the permission.",
 			},
 		},
-		Description: "",
+		Description: "Retrieve all assignable permissions. Used in the context of modifying roles. For more information, see [Permissions](https://developer.cisco.com/docs/thousandeyes/list-assignable-permissions/).",
 	}
 }
 

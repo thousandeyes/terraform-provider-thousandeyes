@@ -6,7 +6,7 @@ description: |-
 
 # thousandeyes_account_group (Resource)
 
-
+Account groups are used to divide an organization into different sections. These operations can be used to create, retrieve, update and delete account groups. For more information, see [Account Groups](https://developer.cisco.com/docs/thousandeyes/list-account-groups/).
 
 ## Example Usage
 

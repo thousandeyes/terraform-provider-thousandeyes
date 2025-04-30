@@ -6,7 +6,7 @@ description: |-
 
 # thousandeyes_permission (Data Source)
 
-
+Retrieve all assignable permissions. Used in the context of modifying roles. For more information, see [Permissions](https://developer.cisco.com/docs/thousandeyes/list-assignable-permissions/).
 
 ## Example Usage
 

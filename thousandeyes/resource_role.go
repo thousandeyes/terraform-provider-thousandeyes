@@ -21,7 +21,7 @@ func resourceRole() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Description: "",
+		Description: "Create, retrieve and update roles for the current user. For more information, see [Roles](https://developer.cisco.com/docs/thousandeyes/list-roles/).",
 	}
 	return &resource
 }

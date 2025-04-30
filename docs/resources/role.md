@@ -6,7 +6,7 @@ description: |-
 
 # thousandeyes_role (Resource)
 
-
+Create, retrieve and update roles for the current user. For more information, see [Roles](https://developer.cisco.com/docs/thousandeyes/list-roles/).
 
 ## Example Usage
 
