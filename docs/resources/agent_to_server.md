@@ -49,6 +49,7 @@ resource "thousandeyes_agent_to_server" "example_agent_to_server_test" {
 - `num_path_traces` (Number) The number of path traces.
 - `path_trace_mode` (String) [classic or in-session] Choose 'inSession' to perform the path trace within a TCP session. Default value is 'classic'.
 - `ping_payload_size` (Number) Payload size (not total packet size) for the end-to-end metric's probes, ping payload size allows values from 0 to 1400 bytes. When set to null, payload sizes are 0 bytes for ICMP-based tests and 1 byte for TCP-based tests.
+- `port` (Number) The target port.
 - `probe_mode` (String) [auto, sack, or syn] The probe mode used by end-to-end network tests. This is only valid if the protocol is set to TCP. The default value is AUTO.
 - `protocol` (String) The protocol used by dependent network tests (end-to-end, path trace, PMTUD). Default value is tcp.
 - `randomized_start_time` (Boolean) Indicates whether agents should randomize the start time in each test round.

@@ -21,6 +21,7 @@ resource "thousandeyes_agent_to_server" "test" {
   alerts_enabled = true
   server         = "api.stg.thousandeyes.com"
   protocol       = "tcp"
+  port           = 82
   probe_mode     = "sack"
   agents         = [data.thousandeyes_agent.amsterdam.agent_id]
   alert_rules    = [thousandeyes_alert_rule.test.id, data.thousandeyes_alert_rule.def_alert_rule.id]

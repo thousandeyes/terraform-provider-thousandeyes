@@ -211,6 +211,54 @@ func FixReadValues(ctx context.Context, targetMaps map[string]map[string]interfa
 	}
 
 	switch *name {
+	// Remove all fields from user definitions except for user ID.
+	case "users":
+		for i, v := range m.([]interface{}) {
+			user := v.(map[string]interface{})
+			m.([]interface{})[i] = user["uid"]
+		}
+
+	// Remove all fields from permission definitions except for permission ID.
+	case "permissions":
+		for i, v := range m.([]interface{}) {
+			perm := v.(map[string]interface{})
+			m.([]interface{})[i] = perm["permission_id"]
+		}
+
+	// Get login account group ID
+	case "login_account_group":
+		*name = "login_account_group_id"
+		if lag, ok := m.(map[string]interface{}); ok {
+			m = lag["aid"]
+		}
+
+	// Remove all fields from all account group roles definitions except for ID.
+	case "all_account_group_roles":
+		*name = "all_account_group_role_ids"
+		for i, v := range m.([]interface{}) {
+			role := v.(map[string]interface{})
+			m.([]interface{})[i] = role["role_id"]
+		}
+
+	// Parse account group roles to schema.
+	case "account_group_roles":
+		for i, v := range m.([]interface{}) {
+			agr := v.(map[string]interface{})
+			roles := agr["roles"].([]interface{})
+			ag := agr["account_group"].(map[string]interface{})
+
+			roleIds := make([]string, 0, len(roles))
+			for _, r := range roles {
+				role := r.(map[string]interface{})
+				roleIds = append(roleIds, *role["role_id"].(*string))
+			}
+
+			m.([]interface{})[i] = map[string]interface{}{
+				"account_group_id": ag["aid"],
+				"role_ids":         roleIds,
+			}
+		}
+
 	// Remove all fields from agent definitions except for agent ID.
 	case "agents":
 		for i, v := range m.([]interface{}) {
@@ -389,11 +437,13 @@ func FixReadValues(ctx context.Context, targetMaps map[string]map[string]interfa
 		}
 
 	case "email":
-		if len(m.(map[string]interface{})["recipients"].([]interface{})) == 0 {
-			m = nil
-		} else {
-			m = []interface{}{
-				m.(map[string]interface{}),
+		if _, ok := m.(*string); !ok {
+			if len(m.(map[string]interface{})["recipients"].([]interface{})) == 0 {
+				m = nil
+			} else {
+				m = []interface{}{
+					m.(map[string]interface{}),
+				}
 			}
 		}
 
@@ -441,7 +491,7 @@ func FixReadValues(ctx context.Context, targetMaps map[string]map[string]interfa
 			m = self["href"]
 		}
 
-	case "created_date", "modified_date":
+	case "created_date", "modified_date", "date_registered", "last_login":
 		{
 			m = m.(*time.Time).Format(time.RFC3339)
 		}
@@ -565,7 +615,7 @@ func resourceFixups[T any](d *schema.ResourceData, structPtr *T) *T {
 	}
 
 	_, hasAgents := t.FieldByName("Agents")
-	if hasAgents {
+	if hasAgents && t.Name() != "AccountGroupRequest" {
 		scrappedAgents := expandAgents(d.Get("agents"))
 		v.FieldByName("Agents").Set(reflect.ValueOf(scrappedAgents))
 	}
