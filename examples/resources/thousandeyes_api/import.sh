@@ -1,0 +1,1 @@
+terraform import thousandeyes_api.api_test_example resource_id

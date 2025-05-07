@@ -42,4 +42,16 @@ resource "thousandeyes_tag" "example_tag" {
 - `legacy_id` (Number) Legacy Id.
 - `link` (String) Its value is either a URI [RFC3986] or a URI template [RFC6570].
 
+## Import
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) providing `resource_id`.
+```terraform
+import {
+  to = thousandeyes_tag.example_tag
+  id = "resource_id"
+}
+```
 
+Using `terraform import` command.
+```shell
+terraform import thousandeyes_tag.example_tag resource_id
+```

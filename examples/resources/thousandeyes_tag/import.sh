@@ -1,0 +1,1 @@
+terraform import thousandeyes_tag.example_tag resource_id

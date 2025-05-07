@@ -1,0 +1,1 @@
+terraform import thousandeyes_dns_trace.example_dns_trace_test resource_id

@@ -36,4 +36,16 @@ resource "thousandeyes_role" "example_role" {
 - `link` (String) Its value is either a URI [RFC3986] or a URI template [RFC6570].
 - `role_id` (String) The unique ID of the role.
 
+## Import
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) providing `resource_id`.
+```terraform
+import {
+  to = thousandeyes_role.example_role
+  id = "resource_id"
+}
+```
 
+Using `terraform import` command.
+```shell
+terraform import thousandeyes_role.example_role resource_id
+```
