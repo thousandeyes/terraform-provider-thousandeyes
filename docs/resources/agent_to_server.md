@@ -71,4 +71,16 @@ resource "thousandeyes_agent_to_server" "example_agent_to_server_test" {
 - `test_id` (String) The unique ID of the test.
 - `type` (String) The type of test.
 
+## Import
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) providing `resource_id`.
+```terraform
+import {
+  to = thousandeyes_agent_to_server.example_agent_to_server_test
+  id = "resource_id"
+}
+```
 
+Using `terraform import` command.
+```shell
+terraform import thousandeyes_agent_to_server.example_agent_to_server_test resource_id
+```

@@ -10,12 +10,12 @@ description: |-
 
 ## Example Usage
 
-{{ tffile "examples/resources/thousandeyes_tag_assignment/resource.tf" }}
+{{ tffile .ExampleFile }}
 
 {{ .SchemaMarkdown | trimspace }}
 
 {{ if .HasImport -}}
 ## Import
-Import is supported using the following syntax:
-{{ printf "{{codefile \"shell\" %q}}" .ImportFile }}
+Using `terraform import` command.
+{{ codefile "shell" .ImportFile }}
 {{- end }}

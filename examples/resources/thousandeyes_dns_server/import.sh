@@ -1,0 +1,1 @@
+terraform import thousandeyes_dns_server.example_dns_server_test resource_id

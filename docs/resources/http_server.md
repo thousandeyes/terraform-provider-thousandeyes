@@ -128,4 +128,16 @@ Optional:
 - `request_method` (String) [get, post, put, delete, patch, options, trace] Request method.
 - `username` (String) OAuth username
 
+## Import
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) providing `resource_id`.
+```terraform
+import {
+  to = thousandeyes_http_server.example_http_server_test
+  id = "resource_id"
+}
+```
 
+Using `terraform import` command.
+```shell
+terraform import thousandeyes_http_server.example_http_server_test resource_id
+```

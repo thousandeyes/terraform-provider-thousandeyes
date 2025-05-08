@@ -11,7 +11,7 @@ This resource allows you to create a page load test. This test type obtains in-b
 ## Example Usage
 
 ```terraform
-resource "thousandeyes_page_load" "test" {
+resource "thousandeyes_page_load" "example_page_load_test" {
   test_name      = "Example Page Load test set from Terraform provider"
   alerts_enabled = false
   url            = "https://www.thousandeyes.com"
@@ -118,4 +118,16 @@ Optional:
 - `domains` (Map of String, Sensitive) Use these HTTP headers for the specified domains.
 - `root` (Map of String, Sensitive) Use these HTTP headers for root server request.
 
+## Import
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) providing `resource_id`.
+```terraform
+import {
+  to = thousandeyes_page_load.example_page_load_test
+  id = "resource_id"
+}
+```
 
+Using `terraform import` command.
+```shell
+terraform import thousandeyes_page_load.example_page_load_test resource_id
+```

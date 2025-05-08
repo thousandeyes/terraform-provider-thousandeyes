@@ -48,4 +48,16 @@ resource "thousandeyes_account_group" "example_account_group" {
 - `organization_name` (String) The name of the organization associated with the account group.
 - `users` (Set of String)
 
+## Import
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) providing `resource_id`.
+```terraform
+import {
+  to = thousandeyes_account_group.example_account_group
+  id = "resource_id"
+}
+```
 
+Using `terraform import` command.
+```shell
+terraform import thousandeyes_account_group.example_account_group resource_id
+```

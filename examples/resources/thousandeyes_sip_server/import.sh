@@ -1,0 +1,1 @@
+terraform import thousandeyes_sip_server.example_sip_server_test resource_id

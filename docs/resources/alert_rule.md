@@ -104,4 +104,16 @@ Required:
 - `integration_type` (String) The integration type, as a string.
 - `target` (String) Webhook target URL.
 
+## Import
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) providing `resource_id`.
+```terraform
+import {
+  to = thousandeyes_alert_rule.example_alert_rule
+  id = "resource_id"
+}
+```
 
+Using `terraform import` command.
+```shell
+terraform import thousandeyes_alert_rule.example_alert_rule resource_id
+```

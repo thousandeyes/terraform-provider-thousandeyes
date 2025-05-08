@@ -130,4 +130,16 @@ Optional:
 - `domains` (Map of String, Sensitive) Use these HTTP headers for the specified domains.
 - `root` (Map of String, Sensitive) Use these HTTP headers for root server request.
 
+## Import
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) providing `resource_id`.
+```terraform
+import {
+  to = thousandeyes_web_transaction.example_web_transaction_test
+  id = "resource_id"
+}
+```
 
+Using `terraform import` command.
+```shell
+terraform import thousandeyes_web_transaction.example_web_transaction_test resource_id
+```

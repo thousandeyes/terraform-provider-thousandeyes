@@ -53,4 +53,16 @@ Optional:
 
 - `role_ids` (Set of String) Unique role IDs.
 
+## Import
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) providing `resource_id`.
+```terraform
+import {
+  to = thousandeyes_user.example_user
+  id = "resource_id"
+}
+```
 
+Using `terraform import` command.
+```shell
+terraform import thousandeyes_user.example_user resource_id
+```

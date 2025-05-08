@@ -87,4 +87,16 @@ Optional:
 - `port` (Number) The target port.
 - `user` (String) The username for SIP registration. This should be unique within a ThousandEyes account group.
 
+## Import
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) providing `resource_id`.
+```terraform
+import {
+  to = thousandeyes_sip_server.example_sip_server_test
+  id = "resource_id"
+}
+```
 
+Using `terraform import` command.
+```shell
+terraform import thousandeyes_sip_server.example_sip_server_test resource_id
+```

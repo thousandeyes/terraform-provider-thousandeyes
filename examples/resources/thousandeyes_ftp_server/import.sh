@@ -1,0 +1,1 @@
+terraform import thousandeyes_ftp_server.example_ftp_server_test resource_id

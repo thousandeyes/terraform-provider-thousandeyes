@@ -202,4 +202,16 @@ Optional:
 - `name` (String) Variable name. Must be unique.
 - `value` (String) Variable value, will be treated as string.
 
+## Import
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) providing `resource_id`.
+```terraform
+import {
+  to = thousandeyes_api.api_test_example
+  id = "resource_id"
+}
+```
 
+Using `terraform import` command.
+```shell
+terraform import thousandeyes_api.api_test_example resource_id
+```
