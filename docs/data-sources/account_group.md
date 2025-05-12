@@ -16,19 +16,12 @@ data "thousandeyes_account_group" "sre" {
 }
 
 resource "thousandeyes_http_server" "thousandeyes_http_test" {
-  test_name      = "Example HTTP test with account group sharing set from Terraform provider"
-  interval       = 120
-  alerts_enabled = true
-
-  url = "https://www.thousandeyes.com"
-
-  shared_with_accounts  {
-    aid = data.thousandeyes_account_group.sre.aid
-  }
-
-  agents {
-    agent_id = 3 # Singapore
-  }
+  test_name            = "Example HTTP test with account group sharing set from Terraform provider"
+  interval             = 120
+  alerts_enabled       = true
+  url                  = "https://www.thousandeyes.com"
+  shared_with_accounts = [data.thousandeyes_account_group.sre.aid]
+  agents               = ["3"] # Singapore
 }
 ```
 
@@ -41,7 +34,7 @@ resource "thousandeyes_http_server" "thousandeyes_http_test" {
 
 ### Read-Only
 
-- `aid` (Number) The unique ID for the account group.
+- `aid` (String) The unique ID for the account group.
 - `id` (String) The ID of this resource.
 
 

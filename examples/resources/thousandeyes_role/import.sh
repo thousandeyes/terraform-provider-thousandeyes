@@ -1,0 +1,1 @@
+terraform import thousandeyes_role.example_role resource_id

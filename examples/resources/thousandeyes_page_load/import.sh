@@ -1,0 +1,1 @@
+terraform import thousandeyes_page_load.example_page_load_test resource_id

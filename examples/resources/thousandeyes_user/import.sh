@@ -1,0 +1,1 @@
+terraform import thousandeyes_user.example_user resource_id

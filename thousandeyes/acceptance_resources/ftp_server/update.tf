@@ -1,0 +1,32 @@
+data "thousandeyes_agent" "test" {
+  agent_name = "Amsterdam, Netherlands"
+}
+
+data "thousandeyes_alert_rule" "def_alert_rule" {
+  rule_name = "Default FTP Alert Rule 2.0"
+}
+
+resource "thousandeyes_alert_rule" "test" {
+  rule_name                 = "ftp server test (Updated)"
+  alert_type                = "ftp"
+  expression                = "((ftpErrorType != \"None\"))"
+  rounds_violating_out_of   = 3
+  rounds_violating_required = 3
+  minimum_sources_pct       = 80
+}
+
+resource "thousandeyes_ftp_server" "test" {
+  password             = "test_password"
+  username             = "test_username"
+  test_name            = "User Acceptance Test - FTP Server (Updated)"
+  description          = "description"
+  request_type         = "download"
+  ftp_time_limit       = 10
+  ftp_target_time      = 1000
+  interval             = 300
+  alerts_enabled       = true
+  network_measurements = false
+  url                  = "ftp://speedtest.tele2.net/"
+  agents               = [data.thousandeyes_agent.test.agent_id]
+  alert_rules          = [thousandeyes_alert_rule.test.id, data.thousandeyes_alert_rule.def_alert_rule.id]
+}

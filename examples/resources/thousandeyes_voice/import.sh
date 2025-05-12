@@ -1,0 +1,1 @@
+terraform import thousandeyes_voice.example_voice_test resource_id

@@ -18,12 +18,8 @@ data "thousandeyes_bgp_monitor" "example_bgp_monitor" {
 resource "thousandeyes_bgp" "example_bgp_test" {
   test_name      = "Example BGP test set from Terraform provider."
   alerts_enabled = false
-
-  bgp_monitors {
-    monitor_id = data.thousandeyes_bgp_monitor.example_bgp_monitor.monitor_id
-  }
-
-  prefix = "163.10.0.0/16"
+  bgp_monitors   = [data.thousandeyes_bgp_monitor.example_bgp_monitor.monitor_id]
+  prefix         = "163.10.0.0/16"
 }
 ```
 
@@ -32,7 +28,7 @@ resource "thousandeyes_bgp" "example_bgp_test" {
 
 ### Optional
 
-- `monitor_id` (Number) The unique ID of BGP monitor.
+- `monitor_id` (String) The unique ID of BGP monitor.
 - `monitor_name` (String) The display name of the BGP monitor.
 
 ### Read-Only

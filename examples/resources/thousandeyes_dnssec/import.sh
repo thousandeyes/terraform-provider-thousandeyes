@@ -1,0 +1,1 @@
+terraform import thousandeyes_dnssec.example_dnssec_test resource_id

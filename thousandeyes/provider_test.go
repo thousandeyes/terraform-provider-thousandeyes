@@ -3,21 +3,21 @@ package thousandeyes
 import (
 	"context"
 	"fmt"
+	"testing"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/stretchr/testify/require"
-	"github.com/thousandeyes/thousandeyes-sdk-go/v2"
-	"strconv"
-	"testing"
+	"github.com/thousandeyes/thousandeyes-sdk-go/v3/client"
 )
 
 type ResourceType struct {
 	Name         string
 	ResourceName string
-	GetResource  func(id int64) (interface{}, error)
+	GetResource  func(id string) (interface{}, error)
 }
 
-var testClient *thousandeyes.Client
+var testClient *client.APIClient
 
 var providerFactories = map[string]func() (*schema.Provider, error){
 	"thousandeyes": func() (*schema.Provider, error) {
@@ -39,7 +39,7 @@ func testAccPreCheck(t *testing.T) {
 
 	require.False(t, diags != nil && diags.HasError(), "Error configuring client: %v", diags)
 
-	testClient = testClientRaw.(*thousandeyes.Client)
+	testClient = testClientRaw.(*client.APIClient)
 	require.NotNil(t, testClient, "Error converting client: unexpected type")
 }
 
@@ -47,10 +47,8 @@ func testAccCheckResourceDestroy(resources []ResourceType, s *terraform.State) e
 	for _, resource := range resources {
 		for _, rs := range s.RootModule().Resources {
 			if rs.Type == resource.ResourceName {
-				id, err := strconv.ParseInt(rs.Primary.ID, 10, 64)
-				if err != nil {
-					return err
-				}
+				var err error
+				id := rs.Primary.ID
 				_, err = resource.GetResource(id)
 				if err == nil {
 					return fmt.Errorf("%s with id %s still exists", resource.ResourceName, rs.Primary.ID)

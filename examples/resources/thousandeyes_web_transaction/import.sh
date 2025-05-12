@@ -1,0 +1,1 @@
+terraform import thousandeyes_web_transaction.example_web_transaction_test resource_id

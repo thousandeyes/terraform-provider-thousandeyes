@@ -15,8 +15,8 @@ Use the left navigation bar to read about the available resources.
 terraform {
   required_providers {
     thousandeyes = {
-      source = "thousandeyes/thousandeyes"
-      version = ">= 1.3.1"
+      source  = "thousandeyes/thousandeyes"
+      version = ">= 3.0.0"
     }
   }
 }
@@ -34,12 +34,8 @@ resource "thousandeyes_http_server" "www_thousandeyes_http_test" {
   test_name      = "Example HTTP test set from Terraform provider"
   interval       = 120
   alerts_enabled = false
-
-  url = "https://www.thousandeyes.com"
-
-  agents {
-    agent_id = data.thousandeyes_agent.arg_cordoba.agent_id
-  }
+  url            = "https://www.thousandeyes.com"
+  agents         = [data.thousandeyes_agent.arg_cordoba.agent_id]
 }
 ```
 
@@ -53,8 +49,8 @@ resource "thousandeyes_http_server" "www_thousandeyes_http_test" {
 ### Optional
 
 - `account_group_id` (String) The ThousandEyes account group's unique ID.
-- `api_endpoint` (String) The ThousandEyes API Endpoint's URL. E.g. https://api.thousandeyes.com/v6
+- `api_endpoint` (String) The ThousandEyes API Endpoint's URL. E.g. https://api.thousandeyes.com/v7
 - `timeout` (Number) The timeout value.
 
-Account group IDs can be retrieved from the API by querying the `/v6/account-groups` endpoint. For more information, check the
-[Developer Reference](https://developer.thousandeyes.com/v6/admin/#/accountgroup_list).
+Account group IDs can be retrieved from the API by querying the `/v7/account-groups` endpoint. For more information, check the
+[Developer Reference](https://developer.cisco.com/docs/thousandeyes/list-account-groups/).

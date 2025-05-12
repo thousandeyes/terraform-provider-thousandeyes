@@ -2,18 +2,18 @@ package thousandeyes
 
 import (
 	"context"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"log"
-	"strconv"
+	"net/http"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/thousandeyes/thousandeyes-sdk-go/v2"
+	"github.com/thousandeyes/thousandeyes-sdk-go/v3/client"
 )
 
-// Global variable for account group ID, as we must be aware of it in
-// functions that will not have access to it otherwise.
-var accountGroupId int64
+type accountGroupIdKeyType string
+
+const accountGroupIdKey accountGroupIdKeyType = "aid"
 
 func New() func() *schema.Provider {
 	return func() *schema.Provider {
@@ -46,8 +46,8 @@ func Provider() *schema.Provider {
 			"api_endpoint": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("TE_API_ENDPOINT", "https://api.thousandeyes.com/v6"),
-				Description: "The ThousandEyes API Endpoint's URL. E.g. https://api.thousandeyes.com/v6",
+				DefaultFunc: schema.EnvDefaultFunc("TE_API_ENDPOINT", "https://api.thousandeyes.com/v7"),
+				Description: "The ThousandEyes API Endpoint's URL. E.g. https://api.thousandeyes.com/v7",
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
@@ -64,13 +64,19 @@ func Provider() *schema.Provider {
 			"thousandeyes_ftp_server":      resourceFTPServer(),
 			"thousandeyes_sip_server":      resourceSIPServer(),
 			"thousandeyes_voice":           resourceRTPStream(),
-			"thousandeyes_label":           resourceGroupLabel(),
+			"thousandeyes_api":             resourceAPI(),
+			"thousandeyes_tag":             resourceTag(),
+			"thousandeyes_tag_assignment":  resourceTagAssignment(),
+			"thousandeyes_account_group":   resourceAccountGroup(),
+			"thousandeyes_user":            resourceUser(),
+			"thousandeyes_role":            resourceRole(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"thousandeyes_account_group": dataSourceThousandeyesAccountGroup(),
 			"thousandeyes_agent":         dataSourceThousandeyesAgent(),
 			"thousandeyes_bgp_monitor":   dataSourceThousandeyesBGPMonitor(),
-			"thousandeyes_integration":   dataSourceThousandeyesIntegration(),
+			"thousandeyes_alert_rule":    dataSourceThousandeyesAlertRule(),
+			"thousandeyes_permission":    dataSourceThousandeyesPermission(),
 		},
 		ConfigureContextFunc: providerConfigureWithContext,
 	}
@@ -78,20 +84,18 @@ func Provider() *schema.Provider {
 
 func providerConfigureWithContext(_ context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
 	log.Println("[INFO] Initializing ThousandEyes client")
-	opts := thousandeyes.ClientOptions{
-		AuthToken:   d.Get("token").(string),
-		AccountID:   d.Get("account_group_id").(string),
-		Timeout:     time.Second * time.Duration(d.Get("timeout").(int)),
-		UserAgent:   "ThousandEyes Terraform Provider",
-		APIEndpoint: d.Get("api_endpoint").(string),
-	}
-	var err error
-	if opts.AccountID != "" {
-		accountGroupId, err = strconv.ParseInt(opts.AccountID, 10, 64)
-		if err != nil {
-			return nil, diag.FromErr(err)
-		}
+
+	// set AID to context
+	ctx := context.WithValue(context.Background(), accountGroupIdKey, d.Get("account_group_id").(string))
+
+	configuration := &client.Configuration{
+		AuthToken:  d.Get("token").(string),
+		UserAgent:  "ThousandEyes Terraform Provider",
+		ServerURL:  d.Get("api_endpoint").(string),
+		HTTPClient: &http.Client{Timeout: time.Second * time.Duration(d.Get("timeout").(int))},
+		Context:    ctx,
 	}
 
-	return thousandeyes.NewClient(&opts), nil
+	apiClient := client.NewAPIClient(configuration)
+	return apiClient, nil
 }

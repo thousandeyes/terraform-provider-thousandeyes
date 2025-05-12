@@ -42,7 +42,7 @@ jobs:
         env:
           TE_TOKEN: ${{ secrets.TE_TOKEN }}
           TE_AID: ${{ secrets.TE_AID }}
-          TE_API_ENDPOINT: 'https://api.stg.thousandeyes.com/v6'
+          TE_API_ENDPOINT: 'https://api.stg.thousandeyes.com/v7'
           TF_ACC: '1'
   unit:
     name: Unit Tests

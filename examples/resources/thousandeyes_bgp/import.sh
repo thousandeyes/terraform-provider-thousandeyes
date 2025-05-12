@@ -1,0 +1,1 @@
+terraform import thousandeyes_bgp.example_bgp_test resource_id

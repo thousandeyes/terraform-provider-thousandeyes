@@ -6,29 +6,43 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/thousandeyes/thousandeyes-sdk-go/v3/tests"
 )
 
 func TestAccThousandEyesSIPServer(t *testing.T) {
 	var resourceName = "thousandeyes_sip_server.test"
 	var testCases = []struct {
 		name                 string
-		resourceFile         string
+		createResourceFile   string
+		updateResourceFile   string
 		resourceName         string
 		checkDestroyFunction func(*terraform.State) error
-		checkFunc            []resource.TestCheckFunc
+		checkCreateFunc      []resource.TestCheckFunc
+		checkUpdateFunc      []resource.TestCheckFunc
 	}{
 		{
-			name:                 "basic",
-			resourceFile:         "acceptance_resources/sip_server/basic.tf",
+			name:                 "create_update_delete_sip_server_test",
+			createResourceFile:   "acceptance_resources/sip_server/basic.tf",
+			updateResourceFile:   "acceptance_resources/sip_server/update.tf",
 			resourceName:         resourceName,
 			checkDestroyFunction: testAccCheckSIPServerResourceDestroy,
-			checkFunc: []resource.TestCheckFunc{
+			checkCreateFunc: []resource.TestCheckFunc{
 				resource.TestCheckResourceAttr(resourceName, "test_name", "User Acceptance Test - SIP Server"),
 				resource.TestCheckResourceAttr(resourceName, "target_sip_credentials.0.sip_registrar", "thousandeyes.com"),
-				resource.TestCheckResourceAttr(resourceName, "target_sip_credentials.0.protocol", "TCP"),
+				resource.TestCheckResourceAttr(resourceName, "target_sip_credentials.0.protocol", "tcp"),
 				resource.TestCheckResourceAttr(resourceName, "target_sip_credentials.0.port", "5060"),
 				resource.TestCheckResourceAttr(resourceName, "interval", "120"),
-				resource.TestCheckResourceAttr(resourceName, "probe_mode", "SACK"),
+				resource.TestCheckResourceAttr(resourceName, "probe_mode", "sack"),
+				resource.TestCheckResourceAttr(resourceName, "alerts_enabled", "true"),
+				resource.TestCheckResourceAttr(resourceName, "alert_rules.#", "2"),
+			},
+			checkUpdateFunc: []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(resourceName, "test_name", "User Acceptance Test - SIP Server (Updated)"),
+				resource.TestCheckResourceAttr(resourceName, "target_sip_credentials.0.sip_registrar", "thousandeyes.com"),
+				resource.TestCheckResourceAttr(resourceName, "target_sip_credentials.0.protocol", "tcp"),
+				resource.TestCheckResourceAttr(resourceName, "target_sip_credentials.0.port", "5065"),
+				resource.TestCheckResourceAttr(resourceName, "interval", "300"),
+				resource.TestCheckResourceAttr(resourceName, "probe_mode", "sack"),
 				resource.TestCheckResourceAttr(resourceName, "alerts_enabled", "true"),
 				resource.TestCheckResourceAttr(resourceName, "alert_rules.#", "2"),
 			},
@@ -43,8 +57,12 @@ func TestAccThousandEyesSIPServer(t *testing.T) {
 				CheckDestroy:      tc.checkDestroyFunction,
 				Steps: []resource.TestStep{
 					{
-						Config: testAccThousandEyesSIPServerConfig(tc.resourceFile),
-						Check:  resource.ComposeTestCheckFunc(tc.checkFunc...),
+						Config: testAccThousandEyesSIPServerConfig(tc.createResourceFile),
+						Check:  resource.ComposeTestCheckFunc(tc.checkCreateFunc...),
+					},
+					{
+						Config: testAccThousandEyesSIPServerConfig(tc.updateResourceFile),
+						Check:  resource.ComposeTestCheckFunc(tc.checkUpdateFunc...),
 					},
 				},
 			})
@@ -56,8 +74,8 @@ func testAccCheckSIPServerResourceDestroy(s *terraform.State) error {
 	resourceList := []ResourceType{
 		{
 			ResourceName: "thousandeyes_sip_server",
-			GetResource: func(id int64) (interface{}, error) {
-				return testClient.GetSIPServer(id)
+			GetResource: func(id string) (interface{}, error) {
+				return getSIPServer(id)
 			}},
 	}
 	return testAccCheckResourceDestroy(resourceList, s)
@@ -69,4 +87,12 @@ func testAccThousandEyesSIPServerConfig(testResource string) string {
 		panic(err)
 	}
 	return string(content)
+}
+
+func getSIPServer(id string) (interface{}, error) {
+	api := (*tests.SIPServerTestsAPIService)(&testClient.Common)
+	req := api.GetSipServerTest(id).Expand(tests.AllowedExpandTestOptionsEnumValues)
+	req = SetAidFromContext(testClient.GetConfig().Context, req)
+	resp, _, err := req.Execute()
+	return resp, err
 }

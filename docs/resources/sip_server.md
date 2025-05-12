@@ -15,17 +15,13 @@ resource "thousandeyes_sip_server" "example_sip_server_test" {
   test_name      = "Example SIP server test set from Terraform provider"
   interval       = 120
   alerts_enabled = false
-
   target_sip_credentials {
     auth_user     = ""
-    protocol      = "TCP"
+    protocol      = "tcp"
     port          = 5060
     sip_registrar = "example.org"
   }
-
-  agents {
-    agent_id = 3 # Singapore
-  }
+  agents = ["3"] # Singapore
 }
 ```
 
@@ -34,52 +30,47 @@ resource "thousandeyes_sip_server" "example_sip_server_test" {
 
 ### Required
 
-- `agents` (Block Set, Min: 1) The list of ThousandEyes agents to use. (see [below for nested schema](#nestedblock--agents))
+- `agents` (Set of String) The list of ThousandEyes agent IDs to use.
 - `interval` (Number) The interval to run the test on, in seconds.
-- `target_sip_credentials` (Block List, Min: 1, Max: 1) The Target SIP server credentials. (see [below for nested schema](#nestedblock--target_sip_credentials))
-- `test_name` (String) The name of the test.
 
 ### Optional
 
-- `alert_rules` (Block Set) Gets the ruleId from the /alert-rules endpoint. If alertsEnabled is set to 'true' and alertRules is not included in a creation/update query, the applicable defaults will be used. (see [below for nested schema](#nestedblock--alert_rules))
+- `alert_rules` (Set of String) List of alert rules IDs to apply to the test (get `ruleId` from `/alerts/rules` endpoint. If `alertsEnabled` is set to `true` and `alertRules` is not included on test creation or update, applicable user default alert rules will be used)
 - `alerts_enabled` (Boolean) Set to 'true' to enable alerts, or 'false' to disable alerts. The default value is 'true'.
-- `bandwidth_measurements` (Boolean) Set to 1 to measure bandwidth. This only applies to Enterprise Agents assigned to the test, and requires that networkMeasurements is set. Defaults to 'false'.
 - `bgp_measurements` (Boolean) Enable BGP measurements. Set to true for enabled, false for disabled.
 - `description` (String) A description of the alert rule. Defaults to an empty string.
 - `enabled` (Boolean) Enables or disables the test.
+- `fixed_packet_rate` (Number) Sets packets rate sent to measure the network in packets per second.
+- `ipv6_policy` (String) [force-ipv4, prefer-ipv6, force-ipv6, or use-agent-policy]
+- `labels` (Set of String) ["1", "2", "uuid"] The array of label or tag ids.
+- `monitors` (Set of String) Contains list of BGP monitor IDs (get `monitorId` from `/monitors` endpoint)
 - `mtu_measurements` (Boolean) Measure MTU sizes on the network from agents to the target.
 - `network_measurements` (Boolean) Set to 'true' to enable network measurements.
 - `num_path_traces` (Number) The number of path traces.
 - `options_regex` (String) A regex string of options. This field does not require escaping.
-- `path_trace_mode` (String) [classic or inSession] Choose 'inSession' to perform the path trace within a TCP session. Default value is 'classic'.
-- `probe_mode` (String) [AUTO, SACk, or SYN] The probe mode used by end-to-end network tests. This is only valid if the protocol is set to TCP. The default value is AUTO.
+- `path_trace_mode` (String) [classic or in-session] Choose 'inSession' to perform the path trace within a TCP session. Default value is 'classic'.
+- `probe_mode` (String) [auto, sack, or syn] The probe mode used by end-to-end network tests. This is only valid if the protocol is set to TCP. The default value is AUTO.
+- `randomized_start_time` (Boolean) Indicates whether agents should randomize the start time in each test round.
 - `register_enabled` (Boolean) Configure whether to perform SIP registration on the test target with the SIP REGISTER command. Default value is 'false'.
-- `shared_with_accounts` (Block List) [“serverName”: “fqdn of server”] The array of DNS Server objects. (see [below for nested schema](#nestedblock--shared_with_accounts))
+- `shared_with_accounts` (Set of String) List of accounts
 - `sip_target_time` (Number) The target time for test completion, specified in milliseconds.
 - `sip_time_limit` (Number) The test time limit. Can be between 5 and 10 seconds, and defaults to 5 seconds.
+- `target_sip_credentials` (Block Set) Target SIP credentials (see [below for nested schema](#nestedblock--target_sip_credentials))
+- `test_name` (String) The name of the test.
 - `use_public_bgp` (Boolean) Enable to automatically add all available Public BGP Monitors to the test.
 
 ### Read-Only
 
-- `api_links` (List of Object) Self links to the endpoint to pull test metadata, and data links to the endpoint for test data. Read-only, and shows rel and href elements. (see [below for nested schema](#nestedatt--api_links))
 - `created_by` (String) Created by user.
 - `created_date` (String) The date of creation.
-- `groups` (Set of Object) The array of label objects. (see [below for nested schema](#nestedatt--groups))
 - `id` (String) The ID of this resource.
+- `link` (String) Its value is either a URI [RFC3986] or a URI template [RFC6570].
 - `live_share` (Boolean) Set to 'true' for a test shared with your account group, or to 'false' for a normal test.
 - `modified_by` (String) Last modified by this user.
 - `modified_date` (String) The date the test was last modified. Shown in UTC.
 - `saved_event` (Boolean) Set to 'true' for a saved event, or to 'false' for a normal test.
-- `test_id` (Number) The unique ID of the test.
+- `test_id` (String) The unique ID of the test.
 - `type` (String) The type of test.
-
-<a id="nestedblock--agents"></a>
-### Nested Schema for `agents`
-
-Required:
-
-- `agent_id` (Number) The unique ID for the ThousandEyes agent.
-
 
 <a id="nestedblock--target_sip_credentials"></a>
 ### Nested Schema for `target_sip_credentials`
@@ -87,71 +78,25 @@ Required:
 Required:
 
 - `auth_user` (String) The username for authentication with the SIP server.
-- `protocol` (String) [TCP, TLS, or UDP] The transport layer for SIP communication. Can be either TCP, TLS (TLS over TCP), or UDP, and defaults to TCP.
+- `protocol` (String) [tcp, tls, or udp] The transport layer for SIP communication. Can be either TCP, TLS (TLS over TCP), or UDP, and defaults to tcp.
 - `sip_registrar` (String) The SIP server to be tested, specified by domain name or IP address.
 
 Optional:
 
-- `password` (String) The password to be used to authenticate with the destination server.
+- `password` (String, Sensitive) Password for Basic/NTLM authentication.
 - `port` (Number) The target port.
-- `sip_proxy` (String) The SIP proxy. This is distinct from the SIP server, and is specified as a domain name or IP address.
 - `user` (String) The username for SIP registration. This should be unique within a ThousandEyes account group.
 
+## Import
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) providing `resource_id`.
+```terraform
+import {
+  to = thousandeyes_sip_server.example_sip_server_test
+  id = "resource_id"
+}
+```
 
-<a id="nestedblock--alert_rules"></a>
-### Nested Schema for `alert_rules`
-
-Optional:
-
-- `rule_id` (Number) The unique ID of the alert rule.
-
-
-<a id="nestedblock--shared_with_accounts"></a>
-### Nested Schema for `shared_with_accounts`
-
-Required:
-
-- `aid` (Number) The account group ID.
-
-Read-Only:
-
-- `name` (String) Account name.
-
-
-<a id="nestedatt--api_links"></a>
-### Nested Schema for `api_links`
-
-Read-Only:
-
-- `href` (String)
-- `rel` (String)
-
-
-<a id="nestedatt--groups"></a>
-### Nested Schema for `groups`
-
-Read-Only:
-
-- `agents` (List of Object) (see [below for nested schema](#nestedobjatt--groups--agents))
-- `builtin` (Boolean)
-- `group_id` (Number)
-- `name` (String)
-- `tests` (List of Object) (see [below for nested schema](#nestedobjatt--groups--tests))
-- `type` (String)
-
-<a id="nestedobjatt--groups--agents"></a>
-### Nested Schema for `groups.agents`
-
-Read-Only:
-
-- `agent_id` (Number)
-
-
-<a id="nestedobjatt--groups--tests"></a>
-### Nested Schema for `groups.tests`
-
-Read-Only:
-
-- `test_id` (Number)
-
-
+Using `terraform import` command.
+```shell
+terraform import thousandeyes_sip_server.example_sip_server_test resource_id
+```
