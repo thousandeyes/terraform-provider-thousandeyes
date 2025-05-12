@@ -2,7 +2,7 @@ terraform {
   required_providers {
     thousandeyes = {
       source  = "thousandeyes/thousandeyes"
-      version = ">= 1.3.1"
+      version = ">= 3.0.0"
     }
   }
 }
