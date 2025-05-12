@@ -7,23 +7,23 @@ data "thousandeyes_alert_rule" "def_alert_rule" {
 }
 
 resource "thousandeyes_alert_rule" "test" {
-  rule_name                 = "Custom UAT SIP Server Alert Rule"
+  rule_name                 = "Custom UAT SIP Server Alert Rule (Updated)"
   alert_type                = "sip-server"
   expression                = "((sipErrorType != \"None\") && (Auto(connectTime >= Medium sensitivity)) && (Auto(sipResponseTime >= Medium sensitivity)))"
   minimum_sources           = 1
-  rounds_violating_required = 1
-  rounds_violating_out_of   = 1
+  rounds_violating_required = 3
+  rounds_violating_out_of   = 3
 }
 
 resource "thousandeyes_sip_server" "test" {
-  test_name      = "User Acceptance Test - SIP Server"
-  interval       = 120
+  test_name      = "User Acceptance Test - SIP Server (Updated)"
+  interval       = 300
   alerts_enabled = true
   probe_mode     = "sack"
   target_sip_credentials {
     auth_user     = ""
     protocol      = "tcp"
-    port          = 5060
+    port          = 5065
     sip_registrar = "thousandeyes.com"
   }
   agents     = [data.thousandeyes_agent.amsterdam.agent_id]

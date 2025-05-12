@@ -7,17 +7,17 @@ data "thousandeyes_alert_rule" "def_alert_rule" {
 }
 
 resource "thousandeyes_alert_rule" "test" {
-  rule_name                 = "Custom UAT Agent To Server Alert Rule"
+  rule_name                 = "Custom UAT Agent To Server Alert Rule (Updated)"
   alert_type                = "end-to-end-server"
   expression                = "((loss >= 10%) || (probDetail != \"\"))"
   minimum_sources           = 1
-  rounds_violating_required = 1
-  rounds_violating_out_of   = 1
+  rounds_violating_required = 3
+  rounds_violating_out_of   = 3
 }
 
 resource "thousandeyes_agent_to_server" "test" {
-  test_name      = "User Acceptance Test - Agent To Server"
-  interval       = 120
+  test_name      = "User Acceptance Test - Agent To Server (Updated)"
+  interval       = 300
   alerts_enabled = true
   server         = "api.stg.thousandeyes.com"
   protocol       = "tcp"
