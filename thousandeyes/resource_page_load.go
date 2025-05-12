@@ -1,20 +1,24 @@
 package thousandeyes
 
 import (
+	"context"
 	"log"
-	"strconv"
 
+	"github.com/thousandeyes/terraform-provider-thousandeyes/thousandeyes/schemas"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/thousandeyes/thousandeyes-sdk-go/v2"
+	"github.com/thousandeyes/thousandeyes-sdk-go/v3/client"
+	"github.com/thousandeyes/thousandeyes-sdk-go/v3/tests"
 )
 
 func resourcePageLoad() *schema.Resource {
 	resource := schema.Resource{
-		Schema: ResourceSchemaBuild(thousandeyes.PageLoad{}, schemas, nil),
-		Create: resourcePageLoadCreate,
-		Read:   resourcePageLoadRead,
-		Update: resourcePageLoadUpdate,
-		Delete: resourcePageLoadDelete,
+		Schema:        ResourceSchemaBuild(tests.PageLoadTestRequest{}, schemas.CommonSchema, nil),
+		CreateContext: resourcePageLoadCreate,
+		ReadContext:   resourcePageLoadRead,
+		UpdateContext: resourcePageLoadUpdate,
+		DeleteContext: resourcePageLoadDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -23,50 +27,87 @@ func resourcePageLoad() *schema.Resource {
 	return &resource
 }
 
-func resourcePageLoadRead(d *schema.ResourceData, m interface{}) error {
-	return GetResource(d, m, func(client *thousandeyes.Client, id int64) (interface{}, error) {
-		return client.GetPageLoad(id)
-	})
+func resourcePageLoadRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	return diag.FromErr(
+		GetResource(context.Background(), d, m, func(apiClient *client.APIClient, id string) (interface{}, error) {
+			api := (*tests.PageLoadTestsAPIService)(&apiClient.Common)
+
+			req := api.GetPageLoadTest(id).Expand(tests.AllowedExpandTestOptionsEnumValues)
+			req = SetAidFromContext(apiClient.GetConfig().Context, req)
+
+			resp, _, err := req.Execute()
+			return resp, err
+		}),
+	)
 }
 
-func resourcePageLoadUpdate(d *schema.ResourceData, m interface{}) error {
-	client := m.(*thousandeyes.Client)
+func resourcePageLoadUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	apiClient := m.(*client.APIClient)
+	api := (*tests.PageLoadTestsAPIService)(&apiClient.Common)
 
 	log.Printf("[INFO] Updating ThousandEyes Test %s", d.Id())
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	update := ResourceUpdate(d, &thousandeyes.PageLoad{}).(*thousandeyes.PageLoad)
-	_, err := client.UpdatePageLoad(id, *update)
-	if err != nil {
-		return err
+	update := buildPageLoadStruct(d)
+	if update.EmulatedDeviceId != nil && len(*update.EmulatedDeviceId) > 0 {
+		ctx = context.WithValue(
+			ctx,
+			emulationDeviceIdKey,
+			struct{}{},
+		)
 	}
-	return resourcePageLoadRead(d, m)
+
+	req := api.UpdatePageLoadTest(d.Id()).PageLoadTestRequest(*update).Expand(tests.AllowedExpandTestOptionsEnumValues)
+	req = SetAidFromContext(apiClient.GetConfig().Context, req)
+
+	_, _, err := req.Execute()
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	return resourcePageLoadRead(ctx, d, m)
 }
 
-func resourcePageLoadDelete(d *schema.ResourceData, m interface{}) error {
-	client := m.(*thousandeyes.Client)
+func resourcePageLoadDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	apiClient := m.(*client.APIClient)
+	api := (*tests.PageLoadTestsAPIService)(&apiClient.Common)
 
 	log.Printf("[INFO] Deleting ThousandEyes Test %s", d.Id())
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	if err := client.DeletePageLoad(id); err != nil {
-		return err
+
+	req := api.DeletePageLoadTest(d.Id())
+	req = SetAidFromContext(apiClient.GetConfig().Context, req)
+
+	if _, err := req.Execute(); err != nil {
+		return diag.FromErr(err)
 	}
 	d.SetId("")
 	return nil
 }
 
-func resourcePageLoadCreate(d *schema.ResourceData, m interface{}) error {
-	client := m.(*thousandeyes.Client)
+func resourcePageLoadCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	apiClient := m.(*client.APIClient)
+	api := (*tests.PageLoadTestsAPIService)(&apiClient.Common)
+
 	log.Printf("[INFO] Creating ThousandEyes Test %s", d.Id())
 	local := buildPageLoadStruct(d)
-	remote, err := client.CreatePageLoad(*local)
-	if err != nil {
-		return err
+	if local.EmulatedDeviceId != nil && len(*local.EmulatedDeviceId) > 0 {
+		ctx = context.WithValue(
+			ctx,
+			emulationDeviceIdKey,
+			struct{}{},
+		)
 	}
-	id := *remote.TestID
-	d.SetId(strconv.FormatInt(id, 10))
-	return resourcePageLoadRead(d, m)
+
+	req := api.CreatePageLoadTest().PageLoadTestRequest(*local).Expand(tests.AllowedExpandTestOptionsEnumValues)
+	req = SetAidFromContext(apiClient.GetConfig().Context, req)
+
+	resp, _, err := req.Execute()
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	id := *resp.TestId
+	d.SetId(id)
+	return resourcePageLoadRead(ctx, d, m)
 }
 
-func buildPageLoadStruct(d *schema.ResourceData) *thousandeyes.PageLoad {
-	return ResourceBuildStruct(d, &thousandeyes.PageLoad{}).(*thousandeyes.PageLoad)
+func buildPageLoadStruct(d *schema.ResourceData) *tests.PageLoadTestRequest {
+	return ResourceBuildStruct(d, &tests.PageLoadTestRequest{})
 }

@@ -1,16 +1,19 @@
 package thousandeyes
 
 import (
+	"context"
 	"log"
-	"strconv"
+
+	"github.com/thousandeyes/terraform-provider-thousandeyes/thousandeyes/schemas"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/thousandeyes/thousandeyes-sdk-go/v2"
+	"github.com/thousandeyes/thousandeyes-sdk-go/v3/client"
+	"github.com/thousandeyes/thousandeyes-sdk-go/v3/tests"
 )
 
 func resourceRTPStream() *schema.Resource {
 	resource := schema.Resource{
-		Schema: ResourceSchemaBuild(thousandeyes.RTPStream{}, schemas, nil),
+		Schema: ResourceSchemaBuild(tests.VoiceTestRequest{}, schemas.CommonSchema, nil),
 		Create: resourceRTPStreamCreate,
 		Read:   resourceRTPStreamRead,
 		Update: resourceRTPStreamUpdate,
@@ -24,18 +27,28 @@ func resourceRTPStream() *schema.Resource {
 }
 
 func resourceRTPStreamRead(d *schema.ResourceData, m interface{}) error {
-	return GetResource(d, m, func(client *thousandeyes.Client, id int64) (interface{}, error) {
-		return client.GetRTPStream(id)
+	return GetResource(context.Background(), d, m, func(apiClient *client.APIClient, id string) (interface{}, error) {
+		api := (*tests.VoiceTestsAPIService)(&apiClient.Common)
+
+		req := api.GetVoiceTest(id).Expand(tests.AllowedExpandTestOptionsEnumValues)
+		req = SetAidFromContext(apiClient.GetConfig().Context, req)
+
+		resp, _, err := req.Execute()
+		return resp, err
 	})
 }
 
 func resourceRTPStreamUpdate(d *schema.ResourceData, m interface{}) error {
-	client := m.(*thousandeyes.Client)
+	apiClient := m.(*client.APIClient)
+	api := (*tests.VoiceTestsAPIService)(&apiClient.Common)
 
 	log.Printf("[INFO] Updating ThousandEyes Test %s", d.Id())
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	update := ResourceUpdate(d, &thousandeyes.RTPStream{}).(*thousandeyes.RTPStream)
-	_, err := client.UpdateRTPStream(id, *update)
+	update := buildRTPStreamStruct(d)
+
+	req := api.UpdateVoiceTest(d.Id()).VoiceTestRequest(*update).Expand(tests.AllowedExpandTestOptionsEnumValues)
+	req = SetAidFromContext(apiClient.GetConfig().Context, req)
+
+	_, _, err := req.Execute()
 	if err != nil {
 		return err
 	}
@@ -43,11 +56,15 @@ func resourceRTPStreamUpdate(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceRTPStreamDelete(d *schema.ResourceData, m interface{}) error {
-	client := m.(*thousandeyes.Client)
+	apiClient := m.(*client.APIClient)
+	api := (*tests.VoiceTestsAPIService)(&apiClient.Common)
 
 	log.Printf("[INFO] Deleting ThousandEyes Test %s", d.Id())
-	id, _ := strconv.ParseInt(d.Id(), 10, 64)
-	if err := client.DeleteRTPStream(id); err != nil {
+
+	req := api.DeleteVoiceTest(d.Id())
+	req = SetAidFromContext(apiClient.GetConfig().Context, req)
+
+	if _, err := req.Execute(); err != nil {
 		return err
 	}
 	d.SetId("")
@@ -55,18 +72,25 @@ func resourceRTPStreamDelete(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceRTPStreamCreate(d *schema.ResourceData, m interface{}) error {
-	client := m.(*thousandeyes.Client)
+	apiClient := m.(*client.APIClient)
+	api := (*tests.VoiceTestsAPIService)(&apiClient.Common)
+
 	log.Printf("[INFO] Creating ThousandEyes Test %s", d.Id())
 	local := buildRTPStreamStruct(d)
-	remote, err := client.CreateRTPStream(*local)
+
+	req := api.CreateVoiceTest().VoiceTestRequest(*local).Expand(tests.AllowedExpandTestOptionsEnumValues)
+	req = SetAidFromContext(apiClient.GetConfig().Context, req)
+
+	resp, _, err := req.Execute()
 	if err != nil {
 		return err
 	}
-	id := *remote.TestID
-	d.SetId(strconv.FormatInt(id, 10))
+
+	id := *resp.TestId
+	d.SetId(id)
 	return resourceRTPStreamRead(d, m)
 }
 
-func buildRTPStreamStruct(d *schema.ResourceData) *thousandeyes.RTPStream {
-	return ResourceBuildStruct(d, &thousandeyes.RTPStream{}).(*thousandeyes.RTPStream)
+func buildRTPStreamStruct(d *schema.ResourceData) *tests.VoiceTestRequest {
+	return ResourceBuildStruct(d, &tests.VoiceTestRequest{})
 }
