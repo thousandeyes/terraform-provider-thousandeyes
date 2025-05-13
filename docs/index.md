@@ -7,7 +7,14 @@ description: |-
 
 The [ThousandEyes](https://www.thousandeyes.com/) provider is used to interact with the resources supported by ThousandEyes.
 
+This provider version is only compatible with the [ThousandEyes API v7](https://developer.cisco.com/docs/thousandeyes/introduction/).
+
+The same breaking changes are applied to the provider as they are to the API.
+
 Use the left navigation bar to read about the available resources.
+
+### Deprecation notice
+Labels and Integrations resources were deprecated in ThousandEyes API v7 and are no longer supported in this provider version.
 
 ## Example Usage
 
@@ -49,7 +56,7 @@ resource "thousandeyes_http_server" "www_thousandeyes_http_test" {
 ### Optional
 
 - `account_group_id` (String) The ThousandEyes account group's unique ID.
-- `api_endpoint` (String) The ThousandEyes API Endpoint's URL. E.g. https://api.thousandeyes.com/v7
+- `api_endpoint` (String) The ThousandEyes API Endpoint's URL. Defaults to: https://api.thousandeyes.com/v7 . This is the only API version supported by this provider.
 - `timeout` (Number) The timeout value.
 
 Account group IDs can be retrieved from the API by querying the `/v7/account-groups` endpoint. For more information, check the

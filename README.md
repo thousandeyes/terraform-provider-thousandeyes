@@ -2,6 +2,10 @@
 
 The Terraform provider for ThousandEyes allows you to manage resources in [ThousandEyes](https://www.thousandeyes.com/).
 
+This provider version is only compatible with the [ThousandEyes API v7](https://developer.cisco.com/docs/thousandeyes/introduction/).
+
+The same breaking changes are applied to the provider as they are to the API.
+
 ## Requirements
 
 - [Terraform](https://www.terraform.io/downloads.html) 0.12.x
