@@ -256,6 +256,7 @@ var CommonSchema = map[string]*schema.Schema{
 		Description: "Enable BGP measurements. Set to true for enabled, false for disabled.",
 		Optional:    true,
 		Required:    false,
+		Default:     true,
 	},
 
 	// AGENT TO AGENT
