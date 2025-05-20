@@ -12,7 +12,24 @@ body:
     attributes:
       label: What versions are you using?
       description: Please share the provider and terraform versions, and any other version that is relevant to troubleshoot the issue
-      placeholder: Terraform version 1.5.2, Provider version 2.0.1
+      placeholder: Terraform version 1.12.0, Provider version 3.0.1
+    validations:
+      required: true
+  - type: textarea
+    id: code
+    attributes:
+      label: Terraform code to reproduce the bug
+      description: Provide the minimal Terraform code snippet required to reproduce the bug. If possible, include only the relevant resources or modules. If you are unsure which resource caused the issue, include the full configuration that triggers the bug.
+      placeholder: <code>
+      render: hcl
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce the bug
+      description: Please provide the steps to reproduce the issue
+      placeholder: Step 1...
     validations:
       required: true
   - type: textarea
@@ -27,17 +44,8 @@ body:
     id: actual
     attributes:
       label: What actually happened?
-      description: Please provide a detailed description of what actually happened
+      description: Provide a detailed explanation of the actual outcome, including any errors or unexpected behavior. If any files such as crash logs were generated, please attach them to this bug report.
       placeholder: Provider produced inconsistent final plan
-    validations:
-      required: true
-  - type: textarea
-    id: code
-    attributes:
-      label: Terraform code to reproduce the bug
-      description: Please provide the minimum required amount of code to reproduce the bug. If the code is not sufficient to reproduce the issue, then we might discard the bug
-      placeholder: <code>
-      render: hcl
     validations:
       required: true
   - type: textarea
@@ -48,11 +56,3 @@ body:
       placeholder: Comment or <code>
     validations:
       required: false
-  - type: textarea
-    id: reproduce
-    attributes:
-      label: Steps to reproduce the bug
-      description: Please provide the steps to reproduce the issue
-      placeholder: Step 1...
-    validations:
-      required: true
