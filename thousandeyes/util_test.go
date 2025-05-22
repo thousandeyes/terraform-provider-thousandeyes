@@ -260,9 +260,7 @@ func TestFixReadValues(t *testing.T) {
 		},
 	}
 	accountsTarget := []interface{}{
-		map[string]interface{}{
-			"aid": getPointer("1"),
-		},
+		getPointer("1"),
 	}
 
 	output, err = FixReadValues(context.WithValue(context.TODO(), accountGroupIdKey, "2"), nil, accountsInput, getPointer("shared_with_accounts"))
