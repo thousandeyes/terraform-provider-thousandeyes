@@ -13,6 +13,12 @@ resource "thousandeyes_alert_rule" "alert-rule-http-test" {
   rounds_violating_out_of   = 1
   rounds_violating_required = 1
   minimum_sources           = 1
+  notifications {
+    email {
+      message    = "Alert triggered for HTTP test"
+      recipients = ["test@test.com"]
+    }
+  }
 }
 
 resource "thousandeyes_http_server" "test" {

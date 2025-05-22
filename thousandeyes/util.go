@@ -409,7 +409,7 @@ func FixReadValues(ctx context.Context, targetMaps map[string]map[string]interfa
 		// update the notifications block if the email block is present and contains recipients, or
 		// the third party notifications are present, or webhook notifications are present.
 		// Otherwise set the whole notifications block to nil
-		if (e == nil || len(e.(map[string]interface{})) == 0) &&
+		if (e == nil || len(e.([]interface{})) == 0) &&
 			(tp == nil || len(tp.([]interface{})) == 0) &&
 			(w == nil || len(w.([]interface{})) == 0) &&
 			(cw == nil || len(cw.([]interface{})) == 0) {
