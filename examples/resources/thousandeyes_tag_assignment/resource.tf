@@ -1,4 +1,4 @@
-resource "thousandeyes_tag_assignment" "examle_assignment" {
+resource "thousandeyes_tag_assignment" "example_assignment" {
   tag_id = "example_tag_resource_id"
   assignments {
     id   = "123456" #Id of existing entity (Test, Dashboard, etc.)

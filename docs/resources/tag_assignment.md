@@ -11,7 +11,7 @@ This resource provides a tagging system with key/value pairs. It allows you to t
 ## Example Usage
 
 ```terraform
-resource "thousandeyes_tag_assignment" "examle_assignment" {
+resource "thousandeyes_tag_assignment" "example_assignment" {
   tag_id = "example_tag_resource_id"
   assignments {
     id   = "123456" #Id of existing entity (Test, Dashboard, etc.)

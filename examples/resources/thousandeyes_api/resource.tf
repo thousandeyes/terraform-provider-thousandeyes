@@ -1,4 +1,4 @@
-resource "thousandeyes_api" "api_test_example" {
+resource "thousandeyes_api" "example_api_test" {
   test_name            = "Example for API Test Resource set from Terraform provider"
   interval             = 120
   alerts_enabled       = false
