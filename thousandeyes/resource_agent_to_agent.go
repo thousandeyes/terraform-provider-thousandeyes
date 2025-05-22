@@ -32,6 +32,14 @@ func resourceAgentToAgent() *schema.Resource {
 			State: schema.ImportStatePassthrough,
 		},
 		Description: "This resource allows you to create and configure an agent-to-agent test. This test type evaluates the performance of the underlying network between two physical sites. For more information about agent-to-agent tests, see [Agent-to-Agent Tests](https://docs.thousandeyes.com/product-documentation/internet-and-wan-monitoring/tests#agent-to-agent-test).",
+		StateUpgraders: []schema.StateUpgrader{
+			{
+				Type:    schemas.LegacyTestSchema().CoreConfigSchema().ImpliedType(),
+				Upgrade: schemas.LegacyTestStateUpgrade,
+				Version: 0,
+			},
+		},
+		SchemaVersion: 1,
 	}
 	resource.Schema["protocol"] = schemas.CommonSchema["protocol-a2a"]
 	return &resource
