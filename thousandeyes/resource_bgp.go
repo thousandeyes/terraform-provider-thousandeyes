@@ -22,6 +22,14 @@ func resourceBGP() *schema.Resource {
 			State: schema.ImportStatePassthrough,
 		},
 		Description: "This resource allows you to create a ThousandEyes BGP test. This test type collects BGP routing related information and presents a visualization of the route and relevants events on the timeline. For more information, see [BGP Tests](https://docs.thousandeyes.com/product-documentation/internet-and-wan-monitoring/tests#bgp-test).",
+		StateUpgraders: []schema.StateUpgrader{
+			{
+				Type:    schemas.LegacyTestSchema().CoreConfigSchema().ImpliedType(),
+				Upgrade: schemas.LegacyTestStateUpgrade,
+				Version: 0,
+			},
+		},
+		SchemaVersion: 1,
 	}
 	return &resource
 }

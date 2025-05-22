@@ -311,6 +311,16 @@ func FixReadValues(ctx context.Context, targetMaps map[string]map[string]interfa
 			m.([]interface{})[i] = servers["server_name"]
 		}
 
+	// Remove all label fields except for the label ID.
+	// This is required because some customers are still using the old provider v1
+	// In v1 it was possible to assign labels to tests by ID, but in v2+ it is not.
+	// Eventually this can be removed
+	case "labels":
+		for i, v := range m.([]interface{}) {
+			label := v.(map[string]interface{})
+			m.([]interface{})[i] = label["label_id"]
+		}
+
 	// custom_headers is currently unsupported due to complications with Terraform
 	// and the object schema.  It will presently be removed from state, and when
 	// a solution is found it will be transformed here according to the specification
@@ -353,9 +363,7 @@ func FixReadValues(ctx context.Context, targetMaps map[string]map[string]interfa
 				// Remove this item from the slice
 				accounts = append(accounts[:i], accounts[i+1:]...)
 			} else {
-				accounts[i] = map[string]interface{}{
-					"aid": shared_aid,
-				}
+				accounts[i] = shared_aid
 				i = i + 1
 			}
 		}

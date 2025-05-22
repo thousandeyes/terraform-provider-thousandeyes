@@ -41,8 +41,7 @@ resource "thousandeyes_sip_server" "example_sip_server_test" {
 - `description` (String) A description of the alert rule. Defaults to an empty string.
 - `enabled` (Boolean) Enables or disables the test.
 - `fixed_packet_rate` (Number) Sets packets rate sent to measure the network in packets per second.
-- `ipv6_policy` (String) [force-ipv4, prefer-ipv6, force-ipv6, or use-agent-policy]
-- `labels` (Set of String) ["1", "2", "uuid"] The array of label or tag ids.
+- `ipv6_policy` (String) [force-ipv4, prefer-ipv6, force-ipv6, or use-agent-policy] IP version policy. Overrides the IPv6 policy configured at the agent level.
 - `monitors` (Set of String) Contains list of BGP monitor IDs (get `monitorId` from `/monitors` endpoint)
 - `mtu_measurements` (Boolean) Measure MTU sizes on the network from agents to the target.
 - `network_measurements` (Boolean) Set to 'true' to enable network measurements.
@@ -64,6 +63,7 @@ resource "thousandeyes_sip_server" "example_sip_server_test" {
 - `created_by` (String) Created by user.
 - `created_date` (String) The date of creation.
 - `id` (String) The ID of this resource.
+- `labels` (Set of String, Deprecated) ["1", "2"] The array of labels.
 - `link` (String) Its value is either a URI [RFC3986] or a URI template [RFC6570].
 - `live_share` (Boolean) Set to 'true' for a test shared with your account group, or to 'false' for a normal test.
 - `modified_by` (String) Last modified by this user.

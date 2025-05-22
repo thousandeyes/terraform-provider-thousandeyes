@@ -23,6 +23,14 @@ func resourceDNSSec() *schema.Resource {
 			State: schema.ImportStatePassthrough,
 		},
 		Description: "This resource allows you to create a DNSSEC test. This test type verifies the digital signature of DNS resource records and validates the authenticity of those records. For more information, see [DNSSEC Test](https://docs.thousandeyes.com/product-documentation/internet-and-wan-monitoring/tests#dnssec-test).",
+		StateUpgraders: []schema.StateUpgrader{
+			{
+				Type:    schemas.LegacyTestSchema().CoreConfigSchema().ImpliedType(),
+				Upgrade: schemas.LegacyTestStateUpgrade,
+				Version: 0,
+			},
+		},
+		SchemaVersion: 1,
 	}
 	return &resource
 }

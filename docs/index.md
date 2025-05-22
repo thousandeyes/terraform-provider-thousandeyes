@@ -57,6 +57,7 @@ resource "thousandeyes_http_server" "www_thousandeyes_http_test" {
 
 - `account_group_id` (String) The ThousandEyes account group's unique ID.
 - `api_endpoint` (String) The ThousandEyes API Endpoint's URL. Defaults to: https://api.thousandeyes.com/v7 . This is the only API version supported by this provider.
+- `enable_api_sdk_logs` (Boolean) Enable the API SDK logs.
 - `timeout` (Number) The timeout value.
 
 Account group IDs can be retrieved from the API by querying the `/v7/account-groups` endpoint. For more information, check the

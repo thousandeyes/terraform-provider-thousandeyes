@@ -22,6 +22,14 @@ func resourceRole() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Description: "Create, retrieve and update roles for the current user. For more information, see [Roles](https://developer.cisco.com/docs/thousandeyes/list-roles/).",
+		StateUpgraders: []schema.StateUpgrader{
+			{
+				Type:    schemas.LegacyTestSchema().CoreConfigSchema().ImpliedType(),
+				Upgrade: schemas.LegacyTestStateUpgrade,
+				Version: 0,
+			},
+		},
+		SchemaVersion: 1,
 	}
 	return &resource
 }

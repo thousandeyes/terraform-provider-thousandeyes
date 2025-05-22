@@ -51,7 +51,7 @@ EOF
 - `allow_mic_and_camera` (Boolean) Set true allow the use of a fake mic and camera in the browser.
 - `allow_unsafe_legacy_renegotiation` (Boolean) Allows TLS renegotiation with servers not supporting RFC 5746. Default Set to true to allow unsafe legacy renegotiation.
 - `auth_type` (String) [none, basic, ntlm, kerberos, oauth] The HTTP authentication type. Defaults to 'none'.
-- `bandwidth_measurements` (Boolean) Set to 1 to measure bandwidth. This only applies to Enterprise Agents assigned to the test, and requires that networkMeasurements is set. Defaults to 'false'.
+- `bandwidth_measurements` (Boolean) Set to `true` to measure bandwidth. This only applies to Enterprise Agents assigned to the test, and requires that networkMeasurements is set. Defaults to 'false'.
 - `bgp_measurements` (Boolean) Enable BGP measurements. Set to true for enabled, false for disabled.
 - `block_domains` (String) Domains or full object URLs to be excluded from metrics and waterfall data for transaction tests.
 - `browser_language` (String) Set one of the available browser language that you want to use to configure the browser.
@@ -73,7 +73,6 @@ EOF
 - `http_time_limit` (Number) The target time for HTTP server limits, specified in seconds.
 - `http_version` (Number) Set to 2 for the default HTTP version (prefer HTTP/2), or 1 for HTTP/1.1 only.
 - `include_headers` (Boolean) Set to 'true' to capture response headers for objects loaded by the test.
-- `labels` (Set of String) ["1", "2", "uuid"] The array of label or tag ids.
 - `monitors` (Set of String) Contains list of BGP monitor IDs (get `monitorId` from `/monitors` endpoint)
 - `mtu_measurements` (Boolean) Measure MTU sizes on the network from agents to the target.
 - `network_measurements` (Boolean) Set to 'true' to enable network measurements.
@@ -103,6 +102,7 @@ EOF
 - `created_by` (String) Created by user.
 - `created_date` (String) The date of creation.
 - `id` (String) The ID of this resource.
+- `labels` (Set of String, Deprecated) ["1", "2"] The array of labels.
 - `link` (String) Its value is either a URI [RFC3986] or a URI template [RFC6570].
 - `live_share` (Boolean) Set to 'true' for a test shared with your account group, or to 'false' for a normal test.
 - `modified_by` (String) Last modified by this user.

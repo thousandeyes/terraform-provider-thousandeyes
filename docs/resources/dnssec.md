@@ -36,7 +36,6 @@ resource "thousandeyes_dnssec" "example_dnssec_test" {
 - `description` (String) A description of the alert rule. Defaults to an empty string.
 - `dns_query_class` (String) Domain class used by this test. 'in' stands for Internet, while 'ch' stands for Chaos.
 - `enabled` (Boolean) Enables or disables the test.
-- `labels` (Set of String) ["1", "2", "uuid"] The array of label or tag ids.
 - `randomized_start_time` (Boolean) Indicates whether agents should randomize the start time in each test round.
 - `shared_with_accounts` (Set of String) List of accounts
 - `test_name` (String) The name of the test.
@@ -46,6 +45,7 @@ resource "thousandeyes_dnssec" "example_dnssec_test" {
 - `created_by` (String) Created by user.
 - `created_date` (String) The date of creation.
 - `id` (String) The ID of this resource.
+- `labels` (Set of String, Deprecated) ["1", "2"] The array of labels.
 - `link` (String) Its value is either a URI [RFC3986] or a URI template [RFC6570].
 - `live_share` (Boolean) Set to 'true' for a test shared with your account group, or to 'false' for a normal test.
 - `modified_by` (String) Last modified by this user.
