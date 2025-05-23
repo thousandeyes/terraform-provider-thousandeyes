@@ -34,7 +34,6 @@ resource "thousandeyes_bgp" "example_bgp_test" {
 - `description` (String) A description of the alert rule. Defaults to an empty string.
 - `enabled` (Boolean) Enables or disables the test.
 - `include_covered_prefixes` (Boolean) Include queries for subprefixes detected under this prefix.
-- `labels` (Set of String) ["1", "2", "uuid"] The array of label or tag ids.
 - `monitors` (Set of String) Contains list of BGP monitor IDs (get `monitorId` from `/monitors` endpoint)
 - `shared_with_accounts` (Set of String) List of accounts
 - `test_name` (String) The name of the test.
@@ -45,6 +44,7 @@ resource "thousandeyes_bgp" "example_bgp_test" {
 - `created_by` (String) Created by user.
 - `created_date` (String) The date of creation.
 - `id` (String) The ID of this resource.
+- `labels` (Set of String, Deprecated) ["1", "2"] The array of labels.
 - `link` (String) Its value is either a URI [RFC3986] or a URI template [RFC6570].
 - `live_share` (Boolean) Set to 'true' for a test shared with your account group, or to 'false' for a normal test.
 - `modified_by` (String) Last modified by this user.

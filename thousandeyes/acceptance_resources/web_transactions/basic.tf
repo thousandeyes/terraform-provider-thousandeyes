@@ -20,6 +20,7 @@ resource "thousandeyes_web_transaction" "test" {
   interval           = 120
   alerts_enabled     = true
   url                = "https://www.thousandeyes.com"
+  bgp_measurements   = false
   use_public_bgp     = true
   emulated_device_id = "1"
   transaction_script = <<EOF
@@ -35,6 +36,6 @@ resource "thousandeyes_web_transaction" "test" {
 };
 EOF
 
-  agents      = [data.thousandeyes_agent.arg_amsterdam.agent_id]
+  agents = [data.thousandeyes_agent.arg_amsterdam.agent_id]
   alert_rules = [thousandeyes_alert_rule.test.id, data.thousandeyes_alert_rule.def_alert_rule.id]
 }

@@ -151,11 +151,12 @@ var CommonSchema = map[string]*schema.Schema{
 	// labels
 	"labels": {
 		Type:        schema.TypeSet,
-		Description: "[\"1\", \"2\", \"uuid\"] The array of label or tag ids.",
+		Deprecated:  "Labels has been deprecated. Use the `thousandeyes_tag` and `thousandeyes_tag_assignment` resources instead.",
+		Description: "[\"1\", \"2\"] The array of labels.",
 		Elem: &schema.Schema{
 			Type: schema.TypeString,
 		},
-		Optional: true,
+		Computed: true,
 	},
 	// sharedWithAccounts
 	"shared_with_accounts": {
@@ -171,12 +172,12 @@ var CommonSchema = map[string]*schema.Schema{
 		Type:        schema.TypeBool,
 		Description: "Enable to automatically add all available Public BGP Monitors to the test.",
 		Optional:    true,
-		Default:     false,
+		Default:     true,
 	},
 	// monitors (ex. bgp_monitors)
 	"monitors": {
 		Type:        schema.TypeSet,
-		Description: " Contains list of BGP monitor IDs (get `monitorId` from `/monitors` endpoint)",
+		Description: "Contains list of BGP monitor IDs (get `monitorId` from `/monitors` endpoint)",
 		Optional:    true,
 		Elem: &schema.Schema{
 			Type: schema.TypeString,
@@ -187,6 +188,7 @@ var CommonSchema = map[string]*schema.Schema{
 		Type:        schema.TypeSet,
 		Description: "The list of ThousandEyes agent IDs to use.",
 		Required:    true,
+		MinItems:    1,
 		Elem: &schema.Schema{
 			Type: schema.TypeString,
 		},
@@ -256,6 +258,7 @@ var CommonSchema = map[string]*schema.Schema{
 		Description: "Enable BGP measurements. Set to true for enabled, false for disabled.",
 		Optional:    true,
 		Required:    false,
+		Default:     true,
 	},
 
 	// AGENT TO AGENT
@@ -323,7 +326,7 @@ var CommonSchema = map[string]*schema.Schema{
 	// bandwidthMeasurements
 	"bandwidth_measurements": {
 		Type:        schema.TypeBool,
-		Description: "Set to 1 to measure bandwidth. This only applies to Enterprise Agents assigned to the test, and requires that networkMeasurements is set. Defaults to 'false'.",
+		Description: "Set to `true` to measure bandwidth. This only applies to Enterprise Agents assigned to the test, and requires that networkMeasurements is set. Defaults to 'false'.",
 		Optional:    true,
 		Required:    false,
 		Default:     false,
@@ -331,7 +334,7 @@ var CommonSchema = map[string]*schema.Schema{
 	// continuousMode
 	"continuous_mode": {
 		Type:        schema.TypeBool,
-		Description: "To enable continuous monitoring, set this parameter to `true` to.  When continuous monitoring is enabled, the following actions occur: * `fixedPacketRate` is enforced * `bandwidthMeasurements` are disabled * If the `protocol` is set to `tcp`, `probeMode` is set to `syn`.",
+		Description: "To enable continuous monitoring, set this parameter to `true`.  When continuous monitoring is enabled, the following actions occur: * `fixedPacketRate` is enforced * `bandwidthMeasurements` are disabled * If the `protocol` is set to `tcp`, `probeMode` is set to `syn`.",
 		Optional:    true,
 		Required:    false,
 		Default:     false,
@@ -367,7 +370,7 @@ var CommonSchema = map[string]*schema.Schema{
 	// ipv6Policy
 	"ipv6_policy": {
 		Type:        schema.TypeString,
-		Description: "[force-ipv4, prefer-ipv6, force-ipv6, or use-agent-policy]", // TO DO describe
+		Description: "[force-ipv4, prefer-ipv6, force-ipv6, or use-agent-policy] IP version policy. Overrides the IPv6 policy configured at the agent level.",
 		Optional:    true,
 		Required:    false,
 		Default:     "use-agent-policy",
@@ -381,7 +384,7 @@ var CommonSchema = map[string]*schema.Schema{
 	// pingPayloadSize
 	"ping_payload_size": {
 		Type:         schema.TypeInt,
-		Description:  "Payload size (not total packet size) for the end-to-end metric's probes, ping payload size allows values from 0 to 1400 bytes. When set to null, payload sizes are 0 bytes for ICMP-based tests and 1 byte for TCP-based tests.",
+		Description:  "Payload size (not total packet size) for the end-to-end metrics probes, ping payload size allows values from 0 to 1400 bytes. When set to null, payload sizes are 0 bytes for ICMP-based tests and 1 byte for TCP-based tests.",
 		Optional:     true,
 		ValidateFunc: validation.IntBetween(1, 1400),
 	},

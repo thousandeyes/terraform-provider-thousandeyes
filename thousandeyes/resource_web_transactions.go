@@ -25,6 +25,14 @@ func resourceWebTransaction() *schema.Resource {
 			State: schema.ImportStatePassthrough,
 		},
 		Description: "This resource allows users to create a transaction test. This test type is a scripted synthetic browser interaction that can traverse multiple pages and user actions. For more information, see [Transaction Tests](https://docs.thousandeyes.com/product-documentation/browser-synthetics/transaction-tests).",
+		StateUpgraders: []schema.StateUpgrader{
+			{
+				Type:    schemas.LegacyTestSchema().CoreConfigSchema().ImpliedType(),
+				Upgrade: schemas.LegacyTestStateUpgrade,
+				Version: 0,
+			},
+		},
+		SchemaVersion: 1,
 	}
 	return &resource
 }

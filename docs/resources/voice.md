@@ -42,7 +42,6 @@ resource "thousandeyes_voice" "example_voice_test" {
 - `duration` (Number) The duration of the test, in seconds (5 to 30).
 - `enabled` (Boolean) Enables or disables the test.
 - `jitter_buffer` (Number) The de-jitter buffer size, in seconds (0 to 150).
-- `labels` (Set of String) ["1", "2", "uuid"] The array of label or tag ids.
 - `monitors` (Set of String) Contains list of BGP monitor IDs (get `monitorId` from `/monitors` endpoint)
 - `num_path_traces` (Number) The number of path traces.
 - `randomized_start_time` (Boolean) Indicates whether agents should randomize the start time in each test round.
@@ -57,6 +56,7 @@ resource "thousandeyes_voice" "example_voice_test" {
 - `created_date` (String) The date of creation.
 - `dscp` (String) The Differentiated Services Code Point (DSCP) label.
 - `id` (String) The ID of this resource.
+- `labels` (Set of String, Deprecated) ["1", "2"] The array of labels.
 - `link` (String) Its value is either a URI [RFC3986] or a URI template [RFC6570].
 - `live_share` (Boolean) Set to 'true' for a test shared with your account group, or to 'false' for a normal test.
 - `modified_by` (String) Last modified by this user.

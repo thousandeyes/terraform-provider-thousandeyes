@@ -22,6 +22,14 @@ func resourceRTPStream() *schema.Resource {
 			State: schema.ImportStatePassthrough,
 		},
 		Description: "This resource allows you to create a RTP Stream test. This test type measures the quality of real-time protocol (RTP) voice streams between ThousandEyes agents that act as VoIP user agents. For more information, see [RTP Stream Tests](https://docs.thousandeyes.com/product-documentation/internet-and-wan-monitoring/tests#rtp-stream-test).",
+		StateUpgraders: []schema.StateUpgrader{
+			{
+				Type:    schemas.LegacyTestSchema().CoreConfigSchema().ImpliedType(),
+				Upgrade: schemas.LegacyTestStateUpgrade,
+				Version: 0,
+			},
+		},
+		SchemaVersion: 1,
 	}
 	return &resource
 }

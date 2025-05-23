@@ -22,6 +22,14 @@ func resourceHTTPServer() *schema.Resource {
 			State: schema.ImportStatePassthrough,
 		},
 		Description: "This resource allows you to create an HTTP server test. This test type measures the availability and performance of an HTTP service. For more information, see [HTTP Server Tests](https://docs.thousandeyes.com/product-documentation/internet-and-wan-monitoring/tests#http-server-test).",
+		StateUpgraders: []schema.StateUpgrader{
+			{
+				Type:    schemas.LegacyTestSchema().CoreConfigSchema().ImpliedType(),
+				Upgrade: schemas.LegacyTestStateUpgrade,
+				Version: 0,
+			},
+		},
+		SchemaVersion: 1,
 	}
 	resource.Schema["oauth"] = schemas.CommonSchema["oauth"]
 	return &resource

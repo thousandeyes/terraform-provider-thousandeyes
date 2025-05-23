@@ -11,7 +11,7 @@ This resource provides visibility into the performance of critical web API endpo
 ## Example Usage
 
 ```terraform
-resource "thousandeyes_api" "api_test_example" {
+resource "thousandeyes_api" "example_api_test" {
   test_name            = "Example for API Test Resource set from Terraform provider"
   interval             = 120
   alerts_enabled       = false
@@ -106,7 +106,6 @@ resource "thousandeyes_api" "api_test_example" {
 - `description` (String) A description of the alert rule. Defaults to an empty string.
 - `enabled` (Boolean) Enables or disables the test.
 - `follow_redirects` (Boolean) Follow HTTP/301 or HTTP/302 redirect directives. Defaults to 'true'.
-- `labels` (Set of String) ["1", "2", "uuid"] The array of label or tag ids.
 - `monitors` (Set of String) Contains list of BGP monitor IDs (get `monitorId` from `/monitors` endpoint)
 - `mtu_measurements` (Boolean) Measure MTU sizes on the network from agents to the target.
 - `network_measurements` (Boolean) Set to 'true' to enable network measurements.
@@ -130,6 +129,7 @@ resource "thousandeyes_api" "api_test_example" {
 - `created_by` (String) Created by user.
 - `created_date` (String) The date of creation.
 - `id` (String) The ID of this resource.
+- `labels` (Set of String, Deprecated) ["1", "2"] The array of labels.
 - `link` (String) Its value is either a URI [RFC3986] or a URI template [RFC6570].
 - `live_share` (Boolean) Set to 'true' for a test shared with your account group, or to 'false' for a normal test.
 - `modified_by` (String) Last modified by this user.

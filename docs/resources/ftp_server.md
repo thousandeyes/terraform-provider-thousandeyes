@@ -40,7 +40,7 @@ resource "thousandeyes_ftp_server" "example_ftp_server_test" {
 
 - `alert_rules` (Set of String) List of alert rules IDs to apply to the test (get `ruleId` from `/alerts/rules` endpoint. If `alertsEnabled` is set to `true` and `alertRules` is not included on test creation or update, applicable user default alert rules will be used)
 - `alerts_enabled` (Boolean) Set to 'true' to enable alerts, or 'false' to disable alerts. The default value is 'true'.
-- `bandwidth_measurements` (Boolean) Set to 1 to measure bandwidth. This only applies to Enterprise Agents assigned to the test, and requires that networkMeasurements is set. Defaults to 'false'.
+- `bandwidth_measurements` (Boolean) Set to `true` to measure bandwidth. This only applies to Enterprise Agents assigned to the test, and requires that networkMeasurements is set. Defaults to 'false'.
 - `bgp_measurements` (Boolean) Enable BGP measurements. Set to true for enabled, false for disabled.
 - `description` (String) A description of the alert rule. Defaults to an empty string.
 - `download_limit` (Number) Specify the maximum number of bytes to download from the target object.
@@ -48,8 +48,7 @@ resource "thousandeyes_ftp_server" "example_ftp_server_test" {
 - `fixed_packet_rate` (Number) Sets packets rate sent to measure the network in packets per second.
 - `ftp_target_time` (Number) The target time for operation completion. Specified in milliseconds.
 - `ftp_time_limit` (Number) Set the time limit for the test (in seconds). FTP tests default to 10s.
-- `ipv6_policy` (String) [force-ipv4, prefer-ipv6, force-ipv6, or use-agent-policy]
-- `labels` (Set of String) ["1", "2", "uuid"] The array of label or tag ids.
+- `ipv6_policy` (String) [force-ipv4, prefer-ipv6, force-ipv6, or use-agent-policy] IP version policy. Overrides the IPv6 policy configured at the agent level.
 - `monitors` (Set of String) Contains list of BGP monitor IDs (get `monitorId` from `/monitors` endpoint)
 - `mtu_measurements` (Boolean) Measure MTU sizes on the network from agents to the target.
 - `network_measurements` (Boolean) Set to 'true' to enable network measurements.
@@ -69,6 +68,7 @@ resource "thousandeyes_ftp_server" "example_ftp_server_test" {
 - `created_by` (String) Created by user.
 - `created_date` (String) The date of creation.
 - `id` (String) The ID of this resource.
+- `labels` (Set of String, Deprecated) ["1", "2"] The array of labels.
 - `link` (String) Its value is either a URI [RFC3986] or a URI template [RFC6570].
 - `live_share` (Boolean) Set to 'true' for a test shared with your account group, or to 'false' for a normal test.
 - `modified_by` (String) Last modified by this user.

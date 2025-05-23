@@ -49,6 +49,12 @@ func Provider() *schema.Provider {
 				DefaultFunc: schema.EnvDefaultFunc("TE_API_ENDPOINT", "https://api.thousandeyes.com/v7"),
 				Description: "The ThousandEyes API Endpoint's URL. Defaults to: https://api.thousandeyes.com/v7 . This is the only API version supported by this provider.",
 			},
+			"api_sdk_logs_enabled": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("TE_API_SDK_LOGS", false),
+				Description: "Enable the API SDK logs.",
+			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"thousandeyes_alert_rule":      resourceAlertRule(),
@@ -90,6 +96,7 @@ func providerConfigureWithContext(_ context.Context, d *schema.ResourceData) (in
 
 	configuration := &client.Configuration{
 		AuthToken:  d.Get("token").(string),
+		Debug:      d.Get("api_sdk_logs_enabled").(bool),
 		UserAgent:  "ThousandEyes Terraform Provider",
 		ServerURL:  d.Get("api_endpoint").(string),
 		HTTPClient: &http.Client{Timeout: time.Second * time.Duration(d.Get("timeout").(int))},

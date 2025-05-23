@@ -20,6 +20,7 @@ resource "thousandeyes_web_transaction" "test" {
   interval           = 300
   alerts_enabled     = true
   url                = "https://www.thousandeyes.com"
+  bgp_measurements   = false
   use_public_bgp     = true
   emulated_device_id = "1"
   target_time        = 60

@@ -41,7 +41,6 @@ resource "thousandeyes_agent_to_agent" "example_agent_to_agent_test" {
 - `dscp_id` (String) The DSCP ID.
 - `enabled` (Boolean) Enables or disables the test.
 - `fixed_packet_rate` (Number) Sets packets rate sent to measure the network in packets per second.
-- `labels` (Set of String) ["1", "2", "uuid"] The array of label or tag ids.
 - `monitors` (Set of String) Contains list of BGP monitor IDs (get `monitorId` from `/monitors` endpoint)
 - `mss` (Number) The maximum segment size, in bytes. Value can be from 30 to 1400.
 - `num_path_traces` (Number) The number of path traces.
@@ -62,6 +61,7 @@ resource "thousandeyes_agent_to_agent" "example_agent_to_agent_test" {
 - `created_date` (String) The date of creation.
 - `dscp` (String) The Differentiated Services Code Point (DSCP) label.
 - `id` (String) The ID of this resource.
+- `labels` (Set of String, Deprecated) ["1", "2"] The array of labels.
 - `link` (String) Its value is either a URI [RFC3986] or a URI template [RFC6570].
 - `live_share` (Boolean) Set to 'true' for a test shared with your account group, or to 'false' for a normal test.
 - `modified_by` (String) Last modified by this user.
