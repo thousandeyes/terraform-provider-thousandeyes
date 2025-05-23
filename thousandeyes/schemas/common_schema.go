@@ -151,7 +151,7 @@ var CommonSchema = map[string]*schema.Schema{
 	// labels
 	"labels": {
 		Type:        schema.TypeSet,
-		Deprecated:  "Labels has been deprecated. Use the `thousandeyes_tag` and `thousandeyes_tag_assignment` instead.",
+		Deprecated:  "Labels has been deprecated. Use the `thousandeyes_tag` and `thousandeyes_tag_assignment` resources instead.",
 		Description: "[\"1\", \"2\"] The array of labels.",
 		Elem: &schema.Schema{
 			Type: schema.TypeString,
