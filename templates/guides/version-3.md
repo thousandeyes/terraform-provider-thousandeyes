@@ -94,6 +94,7 @@ The following attributes in test resources have been updated for consistency and
 - **`bgp_monitors` → `monitors`**: The attribute has been renamed to `monitors` and is now a set of strings representing BGP monitor IDs, instead of a block set with objects containing a `monitor_id` field.
 - **`shared_with_accounts`**: Now a set of strings representing account IDs. Previously, this was a block list with objects containing an `aid` field.
 - **`dns_servers`**: Now a set of strings representing DNS server names. Previously, this was a block set with objects containing a `server_name` and optionally a `server_id`.
+- **`use_public_bgp`**: The default value for this attribute is no longer set in the resource schema. Instead, the provider now relies on the default behavior defined by the ThousandEyes API.
 - **`api_links` → `link`**: The attribute has been renamed to `link`.
 - **`target_agent_id`**: Now a string value instead of a numeric value.
 - **`dscp_id`**: Now a string value instead of a numeric value.
