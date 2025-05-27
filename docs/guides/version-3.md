@@ -83,7 +83,43 @@ resource "thousandeyes_tag_assignment" "example_assignment" {
 
 ## Integrations Data source
 
+## Integrations Data source
+
 With the retirement of the Integrations API, the `thousandeyes_integration` data source has been removed. You can still reference existing integrations by their ID.
+
+**Before (using `thousandeyes_integration`):**
+
+```hcl
+data "thousandeyes_integration" "example_integration" {
+  integration_name = "test-pd-service"
+}
+
+resource "thousandeyes_alert_rule" "example_alert_rule" {
+  # ... other configuration ...
+
+  notifications {
+    third_party {
+      integration_id = data.thousandeyes_integration.example_integration.id
+      integration_type = data.thousandeyes_integration.example_integration.integration_type
+    }
+  }
+}
+```
+
+**After:**
+
+```hcl
+resource "thousandeyes_alert_rule" "example_alert_rule" {
+  # ... other configuration ...
+
+  notifications {
+    third_party {
+      integration_id = "integration-id" # Replace with the actual integration ID
+      integration_type = "integration_type" # Replace with the actual integration type
+    }
+  }
+}
+```
 
 ## Test schema changes
 
