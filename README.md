@@ -39,6 +39,8 @@ The provider also supports the following optional settings:
 
 - `account_group_id` may be set to distinguish between affected account groups, if your ThousandEyes account supports more than one.  This may instead be set by the environment variable `TE_AID`.
 - `timeout` may be set to specify the number of seconds to wait for responses from the ThousandEyes endpoints.  This may instead be set by the environment variable `TE_TIMEOUT`.  If this is unset or set to `0`, then the thousandeyes-sdk-go library will use its default settings.
+- `api_sdk_logs_enabled` can be enabled to assist with troubleshooting by providing detailed logs from the ThousandEyes SDK. The default value is `false`.
+
 
 ### Examples
 Example of an HTTP test:
