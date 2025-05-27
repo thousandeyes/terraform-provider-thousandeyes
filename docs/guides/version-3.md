@@ -83,8 +83,6 @@ resource "thousandeyes_tag_assignment" "example_assignment" {
 
 ## Integrations Data source
 
-## Integrations Data source
-
 With the retirement of the Integrations API, the `thousandeyes_integration` data source has been removed. You can still reference existing integrations by their ID.
 
 **Before (using `thousandeyes_integration`):**
