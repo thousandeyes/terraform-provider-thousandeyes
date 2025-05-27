@@ -172,7 +172,6 @@ var CommonSchema = map[string]*schema.Schema{
 		Type:        schema.TypeBool,
 		Description: "Enable to automatically add all available Public BGP Monitors to the test.",
 		Optional:    true,
-		Default:     true,
 	},
 	// monitors (ex. bgp_monitors)
 	"monitors": {
@@ -258,7 +257,6 @@ var CommonSchema = map[string]*schema.Schema{
 		Description: "Enable BGP measurements. Set to true for enabled, false for disabled.",
 		Optional:    true,
 		Required:    false,
-		Default:     true,
 	},
 
 	// AGENT TO AGENT

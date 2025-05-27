@@ -77,50 +77,58 @@ func LegacyTestSchema() *schema.Resource {
 }
 
 func LegacyTestStateUpgrade(ctx context.Context, rawState map[string]any, meta any) (map[string]any, error) {
+	// This conditional is required because the schema version was introduced on `v3.0.2`.
+	// That means the provider will try to upgrade the state for all versions before that, `v3.0.0|v3.0.1` included.
+	// However, all v3 schemas comply with v7 API, so there is no need to upgrade the state for those versions.
+	// The `link` field was introduced in `v3.0.0` and is present in all test schemas.
+	if _, ok := rawState["link"].(string); !ok {
 
-	for i, v := range rawState["agents"].([]interface{}) {
-		agent := v.(map[string]interface{})
-		rawState["agents"].([]interface{})[i] = agent["agent_id"]
-	}
-
-	if _, ok := rawState["alert_rules"].([]interface{}); ok {
-		for i, v := range rawState["alert_rules"].([]interface{}) {
-			alertRule := v.(map[string]interface{})
-			rawState["alert_rules"].([]interface{})[i] = alertRule["rule_id"]
+		if agents, ok := rawState["agents"].([]interface{}); ok {
+			for i, v := range agents {
+				agent := v.(map[string]interface{})
+				agents[i] = agent["agent_id"]
+			}
 		}
-	}
 
-	if bgpMonitors, ok := rawState["bgp_monitors"].([]interface{}); ok {
-		for i, v := range rawState["bgp_monitors"].([]interface{}) {
-			monitor := v.(map[string]interface{})
-			bgpMonitors[i] = monitor["monitor_id"]
+		if alertRules, ok := rawState["alert_rules"].([]interface{}); ok {
+			for i, v := range alertRules {
+				alertRule := v.(map[string]interface{})
+				alertRules[i] = alertRule["rule_id"]
+			}
 		}
-		rawState["monitors"] = bgpMonitors
-		rawState["bgp_monitors"] = nil
-	}
 
-	// Only to maintain the backward compatibility
-	if groups, ok := rawState["groups"].([]interface{}); ok {
-		rawState["labels"] = make([]interface{}, len(groups))
-		for i, v := range rawState["groups"].([]interface{}) {
-			group := v.(map[string]interface{})
-			groups[i] = group["group_id"]
+		if bgpMonitors, ok := rawState["bgp_monitors"].([]interface{}); ok {
+			for i, v := range bgpMonitors {
+				monitor := v.(map[string]interface{})
+				bgpMonitors[i] = monitor["monitor_id"]
+			}
+			rawState["monitors"] = bgpMonitors
+			rawState["bgp_monitors"] = nil
 		}
-		rawState["labels"] = groups
-		rawState["groups"] = nil
-	}
 
-	if sharedWithAccounts, ok := rawState["shared_with_accounts"].([]interface{}); ok {
-		for i, v := range rawState["shared_with_accounts"].([]interface{}) {
-			account := v.(map[string]interface{})
-			sharedWithAccounts[i] = account["aid"]
+		// Only to maintain the backward compatibility
+		if groups, ok := rawState["groups"].([]interface{}); ok {
+			rawState["labels"] = make([]interface{}, len(groups))
+			for i, v := range groups {
+				group := v.(map[string]interface{})
+				groups[i] = group["group_id"]
+			}
+			rawState["labels"] = groups
+			rawState["groups"] = nil
 		}
-	}
 
-	if dnsSevers, ok := rawState["dns_servers"].([]interface{}); ok {
-		for i, v := range rawState["dns_servers"].([]interface{}) {
-			dnsServer := v.(map[string]interface{})
-			dnsSevers[i] = dnsServer["server_name"]
+		if sharedWithAccounts, ok := rawState["shared_with_accounts"].([]interface{}); ok {
+			for i, v := range sharedWithAccounts {
+				account := v.(map[string]interface{})
+				sharedWithAccounts[i] = account["aid"]
+			}
+		}
+
+		if dnsSevers, ok := rawState["dns_servers"].([]interface{}); ok {
+			for i, v := range dnsSevers {
+				dnsServer := v.(map[string]interface{})
+				dnsSevers[i] = dnsServer["server_name"]
+			}
 		}
 	}
 
