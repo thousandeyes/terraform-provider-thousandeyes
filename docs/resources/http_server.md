@@ -44,6 +44,7 @@ resource "thousandeyes_http_server" "example_http_server_test" {
 - `custom_headers` (Block Set) The custom headers. (see [below for nested schema](#nestedblock--custom_headers))
 - `description` (String) A description of the alert rule. Defaults to an empty string.
 - `desired_status_code` (String) The valid HTTP response code you’re interested in retrieving.
+- `distributed_tracing` (Boolean) Adds distributed tracing headers to API requests using B3 and W3C standards.
 - `dns_override` (String) The IP address to use for DNS override.
 - `download_limit` (Number) Specify the maximum number of bytes to download from the target object.
 - `enabled` (Boolean) Enables or disables the test.

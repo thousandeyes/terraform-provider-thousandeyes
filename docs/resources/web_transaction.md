@@ -63,6 +63,7 @@ EOF
 - `description` (String) A description of the alert rule. Defaults to an empty string.
 - `desired_status_code` (String) The valid HTTP response code you’re interested in retrieving.
 - `disable_screenshot` (Boolean) Enables or disables screenshots on error. Set true to not capture
+- `distributed_tracing` (Boolean) Adds distributed tracing headers to API requests using B3 and W3C standards.
 - `dns_override` (String) The IP address to use for DNS override.
 - `download_limit` (Number) Specify the maximum number of bytes to download from the target object.
 - `emulated_device_id` (String) ID of the emulated device, if one was given when the test was created.

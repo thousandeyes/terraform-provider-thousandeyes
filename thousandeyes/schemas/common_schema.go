@@ -766,6 +766,11 @@ var CommonSchema = map[string]*schema.Schema{
 		Description: "The POST body content. No escaping is required. If the post body is set to something other than empty, the requestMethod will be set to POST.",
 		Optional:    true,
 	},
+	"distributed_tracing": {
+		Type:        schema.TypeBool,
+		Description: "Adds distributed tracing headers to API requests using B3 and W3C standards.",
+		Optional:    true,
+	},
 
 	// PAGE LOAD
 
