@@ -20,15 +20,13 @@ resource "thousandeyes_web_transaction" "test" {
   interval           = 300
   alerts_enabled     = true
   url                = "https://www.thousandeyes.com"
-  bgp_measurements   = false
-  use_public_bgp     = true
   emulated_device_id = "1"
   target_time        = 60
   transaction_script = <<EOF
-  import { By, Key, until } from 'selenium-webdriver'; 
-  import { driver, markers, credentials, downloads, transaction, test } from 'thousandeyes'; 
-  runScript(); 
-  async function runScript() 
+  import { By, Key, until } from 'selenium-webdriver';
+  import { driver, markers, credentials, downloads, transaction, test } from 'thousandeyes';
+  runScript();
+  async function runScript()
   { const settings = test.getSettings();
   // Load page
   await driver.get(settings.url);
