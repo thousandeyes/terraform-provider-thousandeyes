@@ -22,10 +22,10 @@ resource "thousandeyes_web_transaction" "test" {
   url                = "https://www.thousandeyes.com"
   emulated_device_id = "1"
   transaction_script = <<EOF
-  import { By, Key, until } from 'selenium-webdriver';
-  import { driver, markers, credentials, downloads, transaction, test } from 'thousandeyes';
-  runScript();
-  async function runScript()
+  import { By, Key, until } from 'selenium-webdriver'; 
+  import { driver, markers, credentials, downloads, transaction, test } from 'thousandeyes'; 
+  runScript(); 
+  async function runScript() 
   { const settings = test.getSettings();
   // Load page
   await driver.get(settings.url);
