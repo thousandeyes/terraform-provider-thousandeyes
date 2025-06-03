@@ -104,6 +104,7 @@ resource "thousandeyes_api" "example_api_test" {
 - `collect_proxy_network_data` (Boolean) Indicates whether network data to the proxy should be collected.
 - `credentials` (Set of String) The array of credentialID integers. You can get the credentialId from the /credentials endpoint.
 - `description` (String) A description of the alert rule. Defaults to an empty string.
+- `distributed_tracing` (Boolean) Adds distributed tracing headers to API requests using B3 and W3C standards.
 - `enabled` (Boolean) Enables or disables the test.
 - `follow_redirects` (Boolean) Follow HTTP/301 or HTTP/302 redirect directives. Defaults to 'true'.
 - `monitors` (Set of String) Contains list of BGP monitor IDs (get `monitorId` from `/monitors` endpoint)
