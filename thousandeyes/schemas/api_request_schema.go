@@ -197,7 +197,7 @@ var apiRequest = &schema.Schema{
 				},
 			},
 			// verifyCertificate
-			"verifyCertificate": {
+			"verify_certificate": {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Description: "Ignore or acknowledge certificate errors. Set to `false` to ignore certificate errors.",
