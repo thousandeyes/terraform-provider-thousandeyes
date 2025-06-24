@@ -55,7 +55,7 @@ EOF
 - `bgp_measurements` (Boolean) Enable BGP measurements. Set to true for enabled, false for disabled.
 - `block_domains` (String) Domains or full object URLs to be excluded from metrics and waterfall data for transaction tests.
 - `browser_language` (String) Set one of the available browser language that you want to use to configure the browser.
-- `client_certificate` (String) String representation (containing newline characters) of the client certificate, if used.
+- `client_certificate` (String) String representation (containing newline characters) of client certificate, the private key must be placed first, then the certificate.
 - `collect_proxy_network_data` (Boolean) Indicates whether network data to the proxy should be collected.
 - `content_regex` (String) Verify content using a regular expression. This field does not require escaping.
 - `credentials` (Set of String) The array of credentialID integers. You can get the credentialId from the /credentials endpoint.

@@ -582,7 +582,7 @@ var CommonSchema = map[string]*schema.Schema{
 	// clientCertificate
 	"client_certificate": {
 		Type:        schema.TypeString,
-		Description: "String representation (containing newline characters) of the client certificate, if used.",
+		Description: "String representation (containing newline characters) of client certificate, the private key must be placed first, then the certificate.",
 		Optional:    true,
 	},
 	// contentRegex

@@ -196,6 +196,12 @@ var apiRequest = &schema.Schema{
 					},
 				},
 			},
+			// verifyCertificate
+			"verify_certificate": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Ignore or acknowledge certificate errors. Set to `false` to ignore certificate errors.",
+			},
 			// waitTimeMs
 			"wait_time_ms": {
 				Type:        schema.TypeInt,

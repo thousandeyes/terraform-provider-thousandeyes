@@ -38,7 +38,7 @@ resource "thousandeyes_http_server" "example_http_server_test" {
 - `auth_type` (String) [none, basic, ntlm, kerberos, oauth] The HTTP authentication type. Defaults to 'none'.
 - `bandwidth_measurements` (Boolean) Set to `true` to measure bandwidth. This only applies to Enterprise Agents assigned to the test, and requires that networkMeasurements is set. Defaults to 'false'.
 - `bgp_measurements` (Boolean) Enable BGP measurements. Set to true for enabled, false for disabled.
-- `client_certificate` (String) String representation (containing newline characters) of the client certificate, if used.
+- `client_certificate` (String) String representation (containing newline characters) of client certificate, the private key must be placed first, then the certificate.
 - `collect_proxy_network_data` (Boolean) Indicates whether network data to the proxy should be collected.
 - `content_regex` (String) Verify content using a regular expression. This field does not require escaping.
 - `custom_headers` (Block Set) The custom headers. (see [below for nested schema](#nestedblock--custom_headers))
