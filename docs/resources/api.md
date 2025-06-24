@@ -101,7 +101,7 @@ resource "thousandeyes_api" "example_api_test" {
 - `alert_rules` (Set of String) List of alert rules IDs to apply to the test (get `ruleId` from `/alerts/rules` endpoint. If `alertsEnabled` is set to `true` and `alertRules` is not included on test creation or update, applicable user default alert rules will be used)
 - `alerts_enabled` (Boolean) Set to 'true' to enable alerts, or 'false' to disable alerts. The default value is 'true'.
 - `bgp_measurements` (Boolean) Enable BGP measurements. Set to true for enabled, false for disabled.
-- `client_certificate` (String) String representation (containing newline characters) of the client certificate, if used.
+- `client_certificate` (String) String representation (containing newline characters) of client certificate, the private key must be placed first, then the certificate.
 - `collect_proxy_network_data` (Boolean) Indicates whether network data to the proxy should be collected.
 - `credentials` (Set of String) The array of credentialID integers. You can get the credentialId from the /credentials endpoint.
 - `description` (String) A description of the alert rule. Defaults to an empty string.
