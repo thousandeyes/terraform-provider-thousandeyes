@@ -213,12 +213,6 @@ var CommonSchema = map[string]*schema.Schema{
 		Optional:     true,
 		Required:     false,
 		ValidateFunc: validation.IntBetween(1, 10),
-		DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-			// If this field isn't set, it will change when
-			// network_measurements change. If we're not explicitly
-			// setting this field, then ignore the diff.
-			return !d.HasChange(k)
-		},
 	},
 	// pathTraceMode
 	"path_trace_mode": {
@@ -343,12 +337,6 @@ var CommonSchema = map[string]*schema.Schema{
 		Description: "Measure MTU sizes on the network from agents to the target.",
 		Optional:    true,
 		Required:    false,
-		DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-			// If this field isn't set, it will change when
-			// network_measurements change. If we're not explicitly
-			// setting this field, then ignore the diff.
-			return !d.HasChange(k)
-		},
 	},
 	// probeMode
 	"probe_mode": {
