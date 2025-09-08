@@ -273,6 +273,28 @@ func FixReadValues(ctx context.Context, targetMaps map[string]map[string]interfa
 			return nil, nil
 		}
 
+	// Ignore MTU measurements if it wasn't set, prevents API side effects (network_measurements) from being saved to state
+	case "mtu_measurements":
+		if isSet, _ := ctx.Value(setInConfigKey).(bool); !isSet {
+			*name = ""
+			return nil, nil
+		}
+
+	// Ignore num path traces if it wasn't set, prevents API side effects (network_measurements) from being saved to state
+	case "num_path_traces":
+		if isSet, _ := ctx.Value(setInConfigKey).(bool); !isSet {
+			*name = ""
+			return nil, nil
+		}
+
+	// Ignore target time if it wasn't set, prevents API side effects from being saved to state
+	// Remove once sdk version is updated to the latest
+	case "target_time":
+		if isSet, _ := ctx.Value(setInConfigKey).(bool); !isSet {
+			*name = ""
+			return nil, nil
+		}
+
 	// Return only host when host:port pattern obtained
 	case "server":
 		m = strings.Split(m.(string), ":")[0]
