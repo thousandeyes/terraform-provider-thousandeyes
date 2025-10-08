@@ -36,8 +36,16 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - name: Install Trivy
+        run: |
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh
+          sudo mv ./bin/trivy /usr/local/bin/
+
+      - name: Clear Trivy Cache
+        run: trivy clean
+
       - name: Run Trivy Vulnerability Scanner
-        uses: aquasecurity/trivy-action@v0.66.0
+        uses: aquasecurity/trivy-action@master
         with:
           scan-type: fs
           ignore-unfixed: true
