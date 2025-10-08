@@ -37,7 +37,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Debug Trivy Cache
-        run: ls -al home/runner/work/terraform-provider-thousandeyes/terraform-provider-thousandeyes/.cache/trivy/ || echo "Cache directory does not exist"
+        run: ls -al
       
       # Delete Trivy Cache Folder
       - name: Delete Trivy Cache
