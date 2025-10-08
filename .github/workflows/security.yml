@@ -41,6 +41,7 @@ jobs:
         with:
           scan-type: fs
           ignore-unfixed: true
+          exit-code: 1
           severity: CRITICAL,HIGH
           scanners: vuln,config,secret
 
