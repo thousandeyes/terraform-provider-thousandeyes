@@ -40,6 +40,9 @@ jobs:
       - name: Delete Trivy Cache
         run: rm -rf /home/runner/work/terraform-provider-thousandeyes/terraform-provider-thousandeyes/.cache/trivy
 
+      - name: Debug Trivy Cache
+        run: ls -al /home/runner/work/terraform-provider-thousandeyes/terraform-provider-thousandeyes/.cache/trivy || echo "Cache directory does not exist"
+      
       - name: Run Trivy Vulnerability Scanner
         uses: aquasecurity/trivy-action@master
         with:
