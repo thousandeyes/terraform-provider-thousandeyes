@@ -16,7 +16,7 @@ resource "thousandeyes_alert_rule" "test" {
 }
 
 resource "thousandeyes_page_load" "test" {
-  test_name      = "User Acceptance Test - Page Load (Updated)"
+  test_name      = "New User Acceptance Test - Page Load (Updated)"
   interval       = 300
   http_interval  = 300
   alerts_enabled = true

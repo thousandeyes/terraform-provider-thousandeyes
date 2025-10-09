@@ -28,7 +28,7 @@ func TestAccThousandEyesWebTransactions(t *testing.T) {
 			checkDestroyFunction: testAccCheckDefaultWebTransactionsResourceDestroy,
 			checkCreateFunc: []resource.TestCheckFunc{
 				resource.TestCheckResourceAttr(httpResourceName, "url", "https://www.thousandeyes.com"),
-				resource.TestCheckResourceAttr(httpResourceName, "test_name", "User Acceptance Test - Web Transactions"),
+				resource.TestCheckResourceAttr(httpResourceName, "test_name", "New User Acceptance Test - Web Transactions"),
 				resource.TestCheckResourceAttr(httpResourceName, "interval", "120"),
 				resource.TestCheckResourceAttr(httpResourceName, "transaction_script", "  import { By, Key, until } from 'selenium-webdriver'; \n  import { driver, markers, credentials, downloads, transaction, test } from 'thousandeyes'; \n  runScript(); \n  async function runScript() \n  { const settings = test.getSettings();\n  // Load page\n  await driver.get(settings.url);\n  await driver.wait(until.titleIs('Digital Experience Monitoring | ThousandEyes'), 1000);\n  await driver.takeScreenshot();\n};\n"),
 				resource.TestCheckResourceAttr(httpResourceName, "alerts_enabled", "true"),
@@ -37,7 +37,7 @@ func TestAccThousandEyesWebTransactions(t *testing.T) {
 			},
 			checkUpdateFunc: []resource.TestCheckFunc{
 				resource.TestCheckResourceAttr(httpResourceName, "url", "https://www.thousandeyes.com"),
-				resource.TestCheckResourceAttr(httpResourceName, "test_name", "User Acceptance Test - Web Transactions (Updated)"),
+				resource.TestCheckResourceAttr(httpResourceName, "test_name", "New User Acceptance Test - Web Transactions (Updated)"),
 				resource.TestCheckResourceAttr(httpResourceName, "interval", "300"),
 				resource.TestCheckResourceAttr(httpResourceName, "transaction_script", "  import { By, Key, until } from 'selenium-webdriver'; \n  import { driver, markers, credentials, downloads, transaction, test } from 'thousandeyes'; \n  runScript(); \n  async function runScript() \n  { const settings = test.getSettings();\n  // Load page\n  await driver.get(settings.url);\n  await driver.wait(until.titleIs('Digital Experience Monitoring | ThousandEyes'), 1000);\n  await driver.takeScreenshot();\n};\n"),
 				resource.TestCheckResourceAttr(httpResourceName, "alerts_enabled", "true"),
