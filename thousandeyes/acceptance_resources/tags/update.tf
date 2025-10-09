@@ -20,7 +20,7 @@ resource "thousandeyes_http_server" "test" {
 }
 
 resource "thousandeyes_agent_to_server" "test" {
-  test_name      = "User Acceptance Test - Agent To Server with tags"
+  test_name      = "New User Acceptance Test - Agent To Server with tags"
   interval       = 120
   alerts_enabled = true
   server         = "api.stg.thousandeyes.com"
