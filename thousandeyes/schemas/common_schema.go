@@ -693,6 +693,13 @@ var CommonSchema = map[string]*schema.Schema{
 		Description: "The user-agent string to be provided during the test.",
 		Optional:    true,
 	},
+	// identifyAgentTrafficWithUserAgent
+	"identify_agent_traffic_with_user_agent": {
+		Type:        schema.TypeBool,
+		Description: "Enables identification of agent traffic using user agent string.",
+		Optional:    true,
+		Computed:    true,
+	},
 	// username
 	"username": {
 		Type:        schema.TypeString,
