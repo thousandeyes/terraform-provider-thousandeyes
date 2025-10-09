@@ -31,8 +31,8 @@ resource "thousandeyes_agent_to_server" "test" {
 }
 
 resource "thousandeyes_tag" "tag1" {
-  key         = "UAT Tag1 Key"
-  value       = "UAT Tag1 Value"
+  key         = "A UAT Tag1 Key"
+  value       = "A UAT Tag1 Value"
   object_type = "test"
   color       = "#b3de69"
   access_type = "all"
@@ -40,8 +40,8 @@ resource "thousandeyes_tag" "tag1" {
 }
 
 resource "thousandeyes_tag" "tag2" {
-  key         = "UAT Tag2 Key"
-  value       = "UAT Tag2 Value"
+  key         = "A UAT Tag2 Key"
+  value       = "A UAT Tag2 Value"
   object_type = "test"
   color       = "#fdb462"
   access_type = "all"
@@ -49,8 +49,8 @@ resource "thousandeyes_tag" "tag2" {
 }
 
 resource "thousandeyes_tag" "tag3" {
-  key         = "UAT Tag3 Key"
-  value       = "UAT Tag3 Value"
+  key         = "A UAT Tag3 Key"
+  value       = "A UAT Tag3 Value"
   object_type = "test"
   color       = "#8dd3c7"
   access_type = "all"
