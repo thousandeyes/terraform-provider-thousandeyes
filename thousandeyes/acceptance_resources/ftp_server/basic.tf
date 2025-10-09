@@ -18,7 +18,7 @@ resource "thousandeyes_alert_rule" "test" {
 resource "thousandeyes_ftp_server" "test" {
   password             = "test_password"
   username             = "test_username"
-  test_name            = "User Acceptance Test - FTP Server"
+  test_name            = "New User Acceptance Test 2 - FTP Server"
   description          = "description"
   request_type         = "download"
   ftp_time_limit       = 10
