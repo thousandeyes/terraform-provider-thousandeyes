@@ -16,7 +16,7 @@ resource "thousandeyes_alert_rule" "alert-rule-http-test" {
 }
 
 resource "thousandeyes_http_server" "test" {
-  test_name      = "New User Acceptance Test - HTTP (Updated)"
+  test_name      = "User Acceptance Test - HTTP (Updated)"
   interval       = 300
   alerts_enabled = true
   url            = "https://www.thousandeyes.com"

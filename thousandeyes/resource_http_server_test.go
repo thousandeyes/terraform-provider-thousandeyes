@@ -28,14 +28,14 @@ func TestAccThousandEyesHTTPServer(t *testing.T) {
 			checkDestroyFunction: testAccCheckDefaultHTTPResourceDestroy,
 			checkCreateFunc: []resource.TestCheckFunc{
 				resource.TestCheckResourceAttr(httpResourceName, "url", "https://www.thousandeyes.com"),
-				resource.TestCheckResourceAttr(httpResourceName, "test_name", "New User Acceptance Test - HTTP"),
+				resource.TestCheckResourceAttr(httpResourceName, "test_name", "User Acceptance Test - HTTP"),
 				resource.TestCheckResourceAttr(httpResourceName, "interval", "120"),
 				resource.TestCheckResourceAttr(httpResourceName, "alerts_enabled", "true"),
 				resource.TestCheckResourceAttr(httpResourceName, "alert_rules.#", "2"),
 			},
 			checkUpdateFunc: []resource.TestCheckFunc{
 				resource.TestCheckResourceAttr(httpResourceName, "url", "https://www.thousandeyes.com"),
-				resource.TestCheckResourceAttr(httpResourceName, "test_name", "New User Acceptance Test - HTTP (Updated)"),
+				resource.TestCheckResourceAttr(httpResourceName, "test_name", "User Acceptance Test - HTTP (Updated)"),
 				resource.TestCheckResourceAttr(httpResourceName, "interval", "300"),
 				resource.TestCheckResourceAttr(httpResourceName, "alerts_enabled", "true"),
 				resource.TestCheckResourceAttr(httpResourceName, "alert_rules.#", "2"),
