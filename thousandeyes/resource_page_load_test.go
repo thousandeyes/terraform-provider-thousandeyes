@@ -28,7 +28,7 @@ func TestAccThousandEyesPageLoadServer(t *testing.T) {
 			checkDestroyFunction: testAccCheckDefaultPageLoadResourceDestroy,
 			checkCreateFunc: []resource.TestCheckFunc{
 				resource.TestCheckResourceAttr(httpResourceName, "url", "https://www.thousandeyes.com"),
-				resource.TestCheckResourceAttr(httpResourceName, "test_name", "A User Acceptance Test - Page Load"),
+				resource.TestCheckResourceAttr(httpResourceName, "test_name", "User Acceptance Test - Page Load"),
 				resource.TestCheckResourceAttr(httpResourceName, "interval", "120"),
 				resource.TestCheckResourceAttr(httpResourceName, "http_interval", "120"),
 				resource.TestCheckResourceAttr(httpResourceName, "alerts_enabled", "true"),
@@ -36,7 +36,7 @@ func TestAccThousandEyesPageLoadServer(t *testing.T) {
 			},
 			checkUpdateFunc: []resource.TestCheckFunc{
 				resource.TestCheckResourceAttr(httpResourceName, "url", "https://www.thousandeyes.com"),
-				resource.TestCheckResourceAttr(httpResourceName, "test_name", "A User Acceptance Test - Page Load (Updated)"),
+				resource.TestCheckResourceAttr(httpResourceName, "test_name", "User Acceptance Test - Page Load (Updated)"),
 				resource.TestCheckResourceAttr(httpResourceName, "interval", "300"),
 				resource.TestCheckResourceAttr(httpResourceName, "http_interval", "300"),
 				resource.TestCheckResourceAttr(httpResourceName, "alerts_enabled", "true"),

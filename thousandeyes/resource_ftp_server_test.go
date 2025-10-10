@@ -28,7 +28,7 @@ func TestAccThousandEyesFTPServer(t *testing.T) {
 			checkDestroyFunction: testAccCheckDefaultResourceDestroy,
 			checkCreateFunc: []resource.TestCheckFunc{
 				resource.TestCheckResourceAttr(ftpResourceName, "url", "ftp://speedtest.tele2.net/"),
-				resource.TestCheckResourceAttr(ftpResourceName, "test_name", "New User Acceptance Test - FTP Server"),
+				resource.TestCheckResourceAttr(ftpResourceName, "test_name", "User Acceptance Test - FTP Server"),
 				resource.TestCheckResourceAttr(ftpResourceName, "interval", "120"),
 				resource.TestCheckResourceAttr(ftpResourceName, "password", ""),
 				resource.TestCheckResourceAttr(ftpResourceName, "username", "test_username"),
@@ -41,7 +41,7 @@ func TestAccThousandEyesFTPServer(t *testing.T) {
 			},
 			checkUpdateFunc: []resource.TestCheckFunc{
 				resource.TestCheckResourceAttr(ftpResourceName, "url", "ftp://speedtest.tele2.net/"),
-				resource.TestCheckResourceAttr(ftpResourceName, "test_name", "New User Acceptance Test - FTP Server (Updated)"),
+				resource.TestCheckResourceAttr(ftpResourceName, "test_name", "User Acceptance Test - FTP Server (Updated)"),
 				resource.TestCheckResourceAttr(ftpResourceName, "interval", "300"),
 				resource.TestCheckResourceAttr(ftpResourceName, "password", ""),
 				resource.TestCheckResourceAttr(ftpResourceName, "username", "test_username"),

@@ -28,7 +28,7 @@ func TestAccThousandEyesAPI(t *testing.T) {
 			checkDestroyFunction: testAccCheckDefaultAPIResourceDestroy,
 			checkCreateFunc: []resource.TestCheckFunc{
 				resource.TestCheckResourceAttr(resourceName, "url", "https://www.thousandeyes.com"),
-				resource.TestCheckResourceAttr(resourceName, "test_name", "New User Acceptance Test - API"),
+				resource.TestCheckResourceAttr(resourceName, "test_name", "User Acceptance Test - API"),
 				resource.TestCheckResourceAttr(resourceName, "interval", "120"),
 				resource.TestCheckResourceAttr(resourceName, "alerts_enabled", "true"),
 				resource.TestCheckResourceAttr(resourceName, "alert_rules.#", "2"),
@@ -72,7 +72,7 @@ func TestAccThousandEyesAPI(t *testing.T) {
 			},
 			checkUpdateFunc: []resource.TestCheckFunc{
 				resource.TestCheckResourceAttr(resourceName, "url", "https://www.thousandeyes.com"),
-				resource.TestCheckResourceAttr(resourceName, "test_name", "New User Acceptance Test - API (Updated)"),
+				resource.TestCheckResourceAttr(resourceName, "test_name", "User Acceptance Test - API (Updated)"),
 				resource.TestCheckResourceAttr(resourceName, "interval", "300"),
 				resource.TestCheckResourceAttr(resourceName, "alerts_enabled", "true"),
 				resource.TestCheckResourceAttr(resourceName, "alert_rules.#", "2"),
