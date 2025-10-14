@@ -1,5 +1,5 @@
-data "thousandeyes_agent" "arg_frankfurt" {
-  agent_name = "Frankfurt, Germany"
+data "thousandeyes_agent" "arg_ny" {
+  agent_name = "New York, NY"
 }
 
 data "thousandeyes_alert_rule" "def_alert_rule" {
@@ -20,7 +20,7 @@ resource "thousandeyes_api" "test" {
   interval             = 300
   alerts_enabled       = true
   url                  = "https://www.thousandeyes.com"
-  agents               = [data.thousandeyes_agent.arg_frankfurt.agent_id]
+  agents               = [data.thousandeyes_agent.arg_ny.agent_id]
   alert_rules          = [data.thousandeyes_alert_rule.def_alert_rule.id, thousandeyes_alert_rule.alert-rule-http-test.id]
   network_measurements = false
   bgp_measurements     = false
