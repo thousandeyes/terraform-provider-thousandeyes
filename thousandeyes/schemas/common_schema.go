@@ -923,6 +923,7 @@ var CommonSchema = map[string]*schema.Schema{
 		Type:         schema.TypeInt,
 		Description:  "The target time for completion. The default value is 50 percent of the time limit, specified in seconds.",
 		Optional:     true,
+		Computed:     true,
 		ValidateFunc: validation.IntBetween(1, 60),
 	},
 	// timeLimit
