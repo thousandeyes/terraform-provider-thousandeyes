@@ -1,5 +1,5 @@
-data "thousandeyes_agent" "arg_amsterdam" {
-  agent_name = "Amsterdam, Netherlands"
+data "thousandeyes_agent" "arg_ny" {
+  agent_name = "New York, NY"
 }
 
 data "thousandeyes_alert_rule" "def_alert_rule" {
@@ -34,6 +34,6 @@ resource "thousandeyes_web_transaction" "test" {
 };
 EOF
 
-  agents = [data.thousandeyes_agent.arg_amsterdam.agent_id]
+  agents = [data.thousandeyes_agent.arg_ny.agent_id]
   alert_rules = [thousandeyes_alert_rule.test.id, data.thousandeyes_alert_rule.def_alert_rule.id]
 }
