@@ -698,7 +698,7 @@ var CommonSchema = map[string]*schema.Schema{
 		Type:        schema.TypeBool,
 		Description: "Enables identification of agent traffic using user agent string.",
 		Optional:    true,
-		Computed:    true,
+		Default:     false,
 	},
 	// username
 	"username": {
