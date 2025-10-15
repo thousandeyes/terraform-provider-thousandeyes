@@ -21,6 +21,7 @@ resource "thousandeyes_web_transaction" "test" {
   alerts_enabled     = true
   url                = "https://www.thousandeyes.com"
   emulated_device_id = "1"
+  target_time        = 60
   transaction_script = <<EOF
   import { By, Key, until } from 'selenium-webdriver'; 
   import { driver, markers, credentials, downloads, transaction, test } from 'thousandeyes'; 

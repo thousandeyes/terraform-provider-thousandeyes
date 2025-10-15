@@ -34,7 +34,7 @@ func TestAccThousandEyesWebTransactions(t *testing.T) {
 				resource.TestCheckResourceAttr(httpResourceName, "alerts_enabled", "true"),
 				resource.TestCheckResourceAttr(httpResourceName, "alert_rules.#", "2"),
 				resource.TestCheckResourceAttr(httpResourceName, "emulated_device_id", "1"),
-				resource.TestCheckResourceAttr(httpResourceName, "target_time", "20"),
+				resource.TestCheckResourceAttr(httpResourceName, "target_time", "10"),
 			},
 			checkUpdateFunc: []resource.TestCheckFunc{
 				resource.TestCheckResourceAttr(httpResourceName, "url", "https://www.thousandeyes.com"),
@@ -44,7 +44,7 @@ func TestAccThousandEyesWebTransactions(t *testing.T) {
 				resource.TestCheckResourceAttr(httpResourceName, "alerts_enabled", "true"),
 				resource.TestCheckResourceAttr(httpResourceName, "alert_rules.#", "2"),
 				resource.TestCheckResourceAttr(httpResourceName, "emulated_device_id", "1"),
-				resource.TestCheckResourceAttr(httpResourceName, "target_time", "10"),
+				resource.TestCheckResourceAttr(httpResourceName, "target_time", "60"),
 			},
 		},
 	}

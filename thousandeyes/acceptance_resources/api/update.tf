@@ -24,7 +24,6 @@ resource "thousandeyes_api" "test" {
   alert_rules          = [data.thousandeyes_alert_rule.def_alert_rule.id, thousandeyes_alert_rule.alert-rule-http-test.id]
   network_measurements = false
   bgp_measurements     = false
-  target_time          = 30
   time_limit           = 90
   requests {
     name                  = "Step 1 - GET Request (Updated)"

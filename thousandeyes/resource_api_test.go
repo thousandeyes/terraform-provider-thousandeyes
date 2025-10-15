@@ -69,6 +69,7 @@ func TestAccThousandEyesAPI(t *testing.T) {
 				resource.TestCheckResourceAttr(resourceName, "requests.1.assertions.1.name", "status-code"),
 				resource.TestCheckResourceAttr(resourceName, "requests.1.assertions.1.operator", "is"),
 				resource.TestCheckResourceAttr(resourceName, "requests.1.assertions.1.value", "401"),
+				resource.TestCheckResourceAttr(resourceName, "target_time", "30"),
 			},
 			checkUpdateFunc: []resource.TestCheckFunc{
 				resource.TestCheckResourceAttr(resourceName, "url", "https://www.thousandeyes.com"),
@@ -113,6 +114,7 @@ func TestAccThousandEyesAPI(t *testing.T) {
 				resource.TestCheckResourceAttr(resourceName, "requests.1.assertions.1.name", "status-code"),
 				resource.TestCheckResourceAttr(resourceName, "requests.1.assertions.1.operator", "is"),
 				resource.TestCheckResourceAttr(resourceName, "requests.1.assertions.1.value", "401"),
+				resource.TestCheckResourceAttr(resourceName, "target_time", "10"),
 			},
 		},
 	}
