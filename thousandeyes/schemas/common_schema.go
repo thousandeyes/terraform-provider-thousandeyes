@@ -693,6 +693,13 @@ var CommonSchema = map[string]*schema.Schema{
 		Description: "The user-agent string to be provided during the test.",
 		Optional:    true,
 	},
+	// identifyAgentTrafficWithUserAgent
+	"identify_agent_traffic_with_user_agent": {
+		Type:        schema.TypeBool,
+		Description: "Enables identification of agent traffic using user agent string.",
+		Optional:    true,
+		Default:     false,
+	},
 	// username
 	"username": {
 		Type:        schema.TypeString,
@@ -914,8 +921,9 @@ var CommonSchema = map[string]*schema.Schema{
 	// targetTime
 	"target_time": {
 		Type:         schema.TypeInt,
-		Description:  "The target time for completion. The default value is 50 percent of the time limit, specified in seconds.",
+		Description:  "The target time for completion. The default value is 10, specified in seconds.",
 		Optional:     true,
+		Default:      10,
 		ValidateFunc: validation.IntBetween(1, 60),
 	},
 	// timeLimit

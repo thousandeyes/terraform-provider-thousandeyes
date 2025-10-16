@@ -73,6 +73,7 @@ EOF
 - `http_target_time` (Number) The target time for HTTP server completion, specified in milliseconds.
 - `http_time_limit` (Number) The target time for HTTP server limits, specified in seconds.
 - `http_version` (Number) Set to 2 for the default HTTP version (prefer HTTP/2), or 1 for HTTP/1.1 only.
+- `identify_agent_traffic_with_user_agent` (Boolean) Enables identification of agent traffic using user agent string.
 - `include_headers` (Boolean) Set to 'true' to capture response headers for objects loaded by the test.
 - `monitors` (Set of String) Contains list of BGP monitor IDs (get `monitorId` from `/monitors` endpoint)
 - `mtu_measurements` (Boolean) Measure MTU sizes on the network from agents to the target.
@@ -89,7 +90,7 @@ EOF
 - `shared_with_accounts` (Set of String) List of accounts
 - `ssl_version_id` (String) Defines the SSL version. 0 for auto, 3 for SSLv3, 4 for TLS v1.0, 5 for TLS v1.1, 6 for TLS v1.2.
 - `subinterval` (Number) The subinterval for round-robin testing (in seconds). The value must be less than or equal to 'interval'.
-- `target_time` (Number) The target time for completion. The default value is 50 percent of the time limit, specified in seconds.
+- `target_time` (Number) The target time for completion. The default value is 10, specified in seconds.
 - `test_name` (String) The name of the test.
 - `time_limit` (Number) The time limit for the transaction. The default value is 30s.
 - `use_ntlm` (Boolean) Enable to use basic authentication. Only include this field if you are using authentication. Requires the username and password to be set if enabled.
