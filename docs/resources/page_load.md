@@ -61,7 +61,7 @@ resource "thousandeyes_page_load" "example_page_load_test" {
 - `http_target_time` (Number) The target time for HTTP server completion, specified in milliseconds.
 - `http_time_limit` (Number) The target time for HTTP server limits, specified in seconds.
 - `http_version` (Number) Set to 2 for the default HTTP version (prefer HTTP/2), or 1 for HTTP/1.1 only.
-- `identify_agent_traffic_with_user_agent` (Boolean) Enables identification of agent traffic using user agent string. The default value is 'false'.
+- `identify_agent_traffic_with_user_agent` (Boolean) Enables identification of agent traffic using user agent string.
 - `include_headers` (Boolean) Set to 'true' to capture response headers for objects loaded by the test.
 - `monitors` (Set of String) Contains list of BGP monitor IDs (get `monitorId` from `/monitors` endpoint)
 - `mtu_measurements` (Boolean) Measure MTU sizes on the network from agents to the target.
