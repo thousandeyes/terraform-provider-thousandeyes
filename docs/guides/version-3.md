@@ -5,7 +5,9 @@ subcategory: ""
 
 # ThousandEyes Terraform Provider Version 3 Upgrade Guide
 
-Version 3.x of the ThousandEyes Terraform provider introduces significant changes. This guide covers breaking changes in v3.0.0 and subsequent v3.x releases. Review the relevant sections based on your upgrade path to ensure a smooth migration.
+Version 3.x of the ThousandEyes Terraform provider introduces significant changes. This guide covers breaking changes in v3.0.0. Review the relevant sections based on your upgrade path to ensure a smooth migration.
+
+> **Upgrading from v3.0.x to v3.1.0+?** See the [Version 3.1 Upgrade Guide](version-3.1.md) for changes specific to that upgrade path.
 
 Upgrade topics:
 
@@ -14,7 +16,6 @@ Upgrade topics:
 - [Labels to Tags migration](#labels-to-tags-migration)
 - [Integrations Data source](#integrations-data-source)
 - [Test schema changes](#test-schema-changes)
-- [Alert Rule webhook notification changes](#alert-rule-webhook-notification-changes)
 - [Other notable changes](#other-notable-changes)
 - [Additional resources](#additional-resources)
 
@@ -174,70 +175,6 @@ resource "thousandeyes_dns_server" "dns_server_test" {
   monitors       = ["123"]
 }
 ```
-
-## Alert Rule webhook notification changes
-
-> **Note:** This change only affects users upgrading from v3.0.x to v3.1.0 or later. These fields were introduced as a regression in v3.0.x and are being removed in v3.1.0. If you are upgrading directly from v2.x to v3.1.0+, you will not encounter this issue as these fields never existed in v2.x.
-
-The `integration_name` and `target` fields have been removed from webhook and custom webhook notifications in alert rules. These fields were unintentionally introduced in v3.0.x and were read-only, returned by the ThousandEyes API based on the integration configuration. They could not be set through alert rules and caused configuration drift.
-
-**Breaking change in v3.1.0 (regression fix):** If you are using v3.0.x and your alert rule configurations include these fields, you must remove them before upgrading to v3.1.0.
-
-**Before:**
-
-```hcl
-resource "thousandeyes_alert_rule" "example_alert_rule" {
-  rule_name                 = "Example Alert Rule"
-  alert_type                = "http-server"
-  expression                = "((errorType != \"None\"))"
-  minimum_sources           = 2
-  rounds_violating_required = 4
-  rounds_violating_out_of   = 4
-
-  notifications {
-    webhook {
-      integration_id   = "wb-12345"
-      integration_type = "webhook"
-      integration_name = "My Webhook"  # Remove this field
-      target           = "https://example.com/webhook"  # Remove this field
-    }
-
-    custom_webhook {
-      integration_id   = "cw-67890"
-      integration_type = "custom-webhook"
-      integration_name = "My Custom Webhook"  # Remove this field
-      target           = "https://example.com/custom"  # Remove this field
-    }
-  }
-}
-```
-
-**After:**
-
-```hcl
-resource "thousandeyes_alert_rule" "example_alert_rule" {
-  rule_name                 = "Example Alert Rule"
-  alert_type                = "http-server"
-  expression                = "((errorType != \"None\"))"
-  minimum_sources           = 2
-  rounds_violating_required = 4
-  rounds_violating_out_of   = 4
-
-  notifications {
-    webhook {
-      integration_id   = "wb-12345"
-      integration_type = "webhook"
-    }
-
-    custom_webhook {
-      integration_id   = "cw-67890"
-      integration_type = "custom-webhook"
-    }
-  }
-}
-```
-
-The integration name and target URL are managed through the integration configuration in ThousandEyes and will be automatically applied when the alert rule is triggered.
 
 ## Other notable changes
 
