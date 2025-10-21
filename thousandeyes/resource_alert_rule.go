@@ -101,5 +101,26 @@ func resourceAlertRuleCreate(d *schema.ResourceData, m interface{}) error {
 }
 
 func buildAlertRuleStruct(d *schema.ResourceData) *alerts.RuleDetailUpdate {
-	return ResourceBuildStruct(d, &alerts.RuleDetailUpdate{})
+	rule := ResourceBuildStruct(d, &alerts.RuleDetailUpdate{})
+
+	// Remove integration_name and target from webhook notifications as these are
+	// read-only fields returned by the API and cannot be set through alert rules
+	// Note: While the custom hash functions prevent drift detection, it's still
+	// good practice to not send read-only fields to the API
+	if rule.Notifications != nil {
+		if rule.Notifications.Webhook != nil {
+			for i := range rule.Notifications.Webhook {
+				rule.Notifications.Webhook[i].IntegrationName = nil
+				rule.Notifications.Webhook[i].Target = nil
+			}
+		}
+		if rule.Notifications.CustomWebhook != nil {
+			for i := range rule.Notifications.CustomWebhook {
+				rule.Notifications.CustomWebhook[i].IntegrationName = nil
+				rule.Notifications.CustomWebhook[i].Target = nil
+			}
+		}
+	}
+
+	return rule
 }

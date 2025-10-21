@@ -1,6 +1,9 @@
 package schemas
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/thousandeyes/thousandeyes-sdk-go/v3/alerts"
@@ -204,6 +207,48 @@ var AlertRuleSchema = map[string]*schema.Schema{
 		Type:        schema.TypeSet,
 		Description: "The list of notifications for the alert rule.",
 		Optional:    true,
+		Set: func(v interface{}) int {
+			// Custom hash function that only considers meaningful fields for comparison
+			// This prevents drift when read-only fields like integration_name or target differ
+			var buf strings.Builder
+			m := v.(map[string]interface{})
+
+			// Hash email notifications
+			if email, ok := m["email"].(*schema.Set); ok && email != nil {
+				for _, e := range email.List() {
+					buf.WriteString(fmt.Sprintf("email:%v|", e))
+				}
+			}
+
+			// Hash third_party notifications (only integration_id and integration_type)
+			if tp, ok := m["third_party"].(*schema.Set); ok && tp != nil {
+				for _, t := range tp.List() {
+					if tpMap, ok := t.(map[string]interface{}); ok {
+						buf.WriteString(fmt.Sprintf("tp:%s:%s|", tpMap["integration_id"], tpMap["integration_type"]))
+					}
+				}
+			}
+
+			// Hash webhook notifications (only integration_id and integration_type)
+			if webhook, ok := m["webhook"].(*schema.Set); ok && webhook != nil {
+				for _, w := range webhook.List() {
+					if wMap, ok := w.(map[string]interface{}); ok {
+						buf.WriteString(fmt.Sprintf("webhook:%s:%s|", wMap["integration_id"], wMap["integration_type"]))
+					}
+				}
+			}
+
+			// Hash custom_webhook notifications (only integration_id and integration_type)
+			if cw, ok := m["custom_webhook"].(*schema.Set); ok && cw != nil {
+				for _, w := range cw.List() {
+					if wMap, ok := w.(map[string]interface{}); ok {
+						buf.WriteString(fmt.Sprintf("custom_webhook:%s:%s|", wMap["integration_id"], wMap["integration_type"]))
+					}
+				}
+			}
+
+			return schema.HashString(buf.String())
+		},
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"email": {
@@ -251,6 +296,20 @@ var AlertRuleSchema = map[string]*schema.Schema{
 					Type:        schema.TypeSet,
 					Description: "Webhook notification.",
 					Optional:    true,
+					Set: func(v interface{}) int {
+						// Custom hash function that only considers integration_id and integration_type
+						// This prevents drift when integration_name or target differ between config and state
+						m := v.(map[string]interface{})
+						integrationID := ""
+						integrationType := ""
+						if id, ok := m["integration_id"]; ok && id != nil {
+							integrationID = id.(string)
+						}
+						if typ, ok := m["integration_type"]; ok && typ != nil {
+							integrationType = typ.(string)
+						}
+						return schema.HashString(integrationID + "|" + integrationType)
+					},
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"integration_id": {
@@ -265,13 +324,17 @@ var AlertRuleSchema = map[string]*schema.Schema{
 							},
 							"integration_name": {
 								Type:        schema.TypeString,
-								Description: "Name of the integration, configured by the user.",
-								Required:    true,
+								Description: "Name of the integration.",
+								Optional:    true,
+								Computed:    true,
+								Deprecated:  "This field is informational only and cannot be set through the alert rule. It reflects the integration name from the integration configuration. Please remove this field from your configuration to avoid perpetual drift.",
 							},
 							"target": {
 								Type:        schema.TypeString,
 								Description: "Webhook target URL.",
-								Required:    true,
+								Optional:    true,
+								Computed:    true,
+								Deprecated:  "This field is informational only and cannot be set through the alert rule. It reflects the target URL from the integration configuration. Please remove this field from your configuration to avoid perpetual drift.",
 							},
 						},
 					},
@@ -280,6 +343,20 @@ var AlertRuleSchema = map[string]*schema.Schema{
 					Type:        schema.TypeSet,
 					Description: "Webhook notification.",
 					Optional:    true,
+					Set: func(v interface{}) int {
+						// Custom hash function that only considers integration_id and integration_type
+						// This prevents drift when integration_name or target differ between config and state
+						m := v.(map[string]interface{})
+						integrationID := ""
+						integrationType := ""
+						if id, ok := m["integration_id"]; ok && id != nil {
+							integrationID = id.(string)
+						}
+						if typ, ok := m["integration_type"]; ok && typ != nil {
+							integrationType = typ.(string)
+						}
+						return schema.HashString(integrationID + "|" + integrationType)
+					},
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"integration_id": {
@@ -294,13 +371,17 @@ var AlertRuleSchema = map[string]*schema.Schema{
 							},
 							"integration_name": {
 								Type:        schema.TypeString,
-								Description: "Name of the integration, configured by the user.",
-								Required:    true,
+								Description: "Name of the integration.",
+								Optional:    true,
+								Computed:    true,
+								Deprecated:  "This field is informational only and cannot be set through the alert rule. It reflects the integration name from the integration configuration. Please remove this field from your configuration to avoid perpetual drift.",
 							},
 							"target": {
 								Type:        schema.TypeString,
 								Description: "Webhook target URL.",
-								Required:    true,
+								Optional:    true,
+								Computed:    true,
+								Deprecated:  "This field is informational only and cannot be set through the alert rule. It reflects the target URL from the integration configuration. Please remove this field from your configuration to avoid perpetual drift.",
 							},
 						},
 					},
