@@ -263,16 +263,6 @@ var AlertRuleSchema = map[string]*schema.Schema{
 								Description: "The integration type, as a string.",
 								Required:    true,
 							},
-							"integration_name": {
-								Type:        schema.TypeString,
-								Description: "Name of the integration, configured by the user.",
-								Required:    true,
-							},
-							"target": {
-								Type:        schema.TypeString,
-								Description: "Webhook target URL.",
-								Required:    true,
-							},
 						},
 					},
 				},
@@ -290,16 +280,6 @@ var AlertRuleSchema = map[string]*schema.Schema{
 							"integration_type": {
 								Type:        schema.TypeString,
 								Description: "The integration type, as a string.",
-								Required:    true,
-							},
-							"integration_name": {
-								Type:        schema.TypeString,
-								Description: "Name of the integration, configured by the user.",
-								Required:    true,
-							},
-							"target": {
-								Type:        schema.TypeString,
-								Description: "Webhook target URL.",
 								Required:    true,
 							},
 						},

@@ -72,9 +72,7 @@ Optional:
 Required:
 
 - `integration_id` (String) The integration ID, as a string.
-- `integration_name` (String) Name of the integration, configured by the user.
 - `integration_type` (String) The integration type, as a string.
-- `target` (String) Webhook target URL.
 
 
 <a id="nestedblock--notifications--email"></a>
@@ -101,9 +99,7 @@ Required:
 Required:
 
 - `integration_id` (String) The integration ID, as a string.
-- `integration_name` (String) Name of the integration, configured by the user.
 - `integration_type` (String) The integration type, as a string.
-- `target` (String) Webhook target URL.
 
 ## Import
 In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) providing `resource_id`.
