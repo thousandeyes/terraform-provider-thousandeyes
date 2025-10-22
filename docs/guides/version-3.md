@@ -5,7 +5,9 @@ subcategory: ""
 
 # ThousandEyes Terraform Provider Version 3 Upgrade Guide
 
-Version 3.0.0 of the ThousandEyes Terraform provider is a major release that introduces significant changes. If you are upgrading from version 1.x or 2.x, review this guide to understand the required updates and ensure a smooth migration.
+Version 3.x of the ThousandEyes Terraform provider introduces significant changes. This guide covers breaking changes in v3.0.0. Review the relevant sections based on your upgrade path to ensure a smooth migration.
+
+> **Upgrading from v3.0.x to v3.1.0+?** See the [Version 3.1 Upgrade Guide](version-3.1.md) for changes specific to that upgrade path.
 
 Upgrade topics:
 
