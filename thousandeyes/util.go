@@ -652,6 +652,18 @@ func resourceFixups[T any](d *schema.ResourceData, structPtr *T) *T {
 		}
 	}
 
+	// When protocol is ICMP, ensure port is explicitly set to nil
+	// This is required when updating from TCP/UDP to ICMP
+	_, hasProtocol := t.FieldByName("Protocol")
+	_, hasPort := t.FieldByName("Port")
+	if hasProtocol && hasPort {
+		protocol, ok := d.GetOk("protocol")
+		if ok && protocol == "icmp" {
+			// Explicitly set port to nil for ICMP tests
+			v.FieldByName("Port").Set(reflect.Zero(v.FieldByName("Port").Type()))
+		}
+	}
+
 	return structPtr
 }
 

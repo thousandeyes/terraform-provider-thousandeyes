@@ -47,6 +47,28 @@ func TestAccThousandEyesAgentToServer(t *testing.T) {
 				resource.TestCheckResourceAttr(resourceName, "port", "82"),
 			},
 		},
+		{
+			name:                 "tcp_to_icmp_protocol_change",
+			createResourceFile:   "acceptance_resources/agent_to_server/tcp_to_icmp.tf",
+			updateResourceFile:   "acceptance_resources/agent_to_server/icmp_from_tcp.tf",
+			resourceName:         resourceName,
+			checkDestroyFunction: testAccCheckAgentToServerResourceDestroy,
+			checkCreateFunc: []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(resourceName, "test_name", "UAT - Agent To Server TCP"),
+				resource.TestCheckResourceAttr(resourceName, "server", "api.stg.thousandeyes.com"),
+				resource.TestCheckResourceAttr(resourceName, "protocol", "tcp"),
+				resource.TestCheckResourceAttr(resourceName, "interval", "120"),
+				resource.TestCheckResourceAttr(resourceName, "alerts_enabled", "false"),
+				resource.TestCheckResourceAttr(resourceName, "port", "443"),
+			},
+			checkUpdateFunc: []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(resourceName, "test_name", "UAT - Agent To Server ICMP"),
+				resource.TestCheckResourceAttr(resourceName, "server", "api.stg.thousandeyes.com"),
+				resource.TestCheckResourceAttr(resourceName, "protocol", "icmp"),
+				resource.TestCheckResourceAttr(resourceName, "interval", "120"),
+				resource.TestCheckResourceAttr(resourceName, "alerts_enabled", "false"),
+			},
+		},
 	}
 
 	for _, tc := range testCases {
