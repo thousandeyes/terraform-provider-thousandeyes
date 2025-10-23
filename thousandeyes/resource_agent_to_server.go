@@ -22,7 +22,14 @@ func resourceAgentToServer() *schema.Resource {
 			DiffSuppressFunc: func(k, oldValue, newValue string, d *schema.ResourceData) bool {
 				// allows port to be optional even for TCP tests
 				// it uses ThousandEyes' default which is 80
-				return newValue == "0"
+				if newValue == "0" {
+					return true
+				}
+				// suppress diff when protocol is ICMP, as port is not used
+				if protocol, ok := d.GetOk("protocol"); ok && protocol == "icmp" {
+					return true
+				}
+				return false
 			},
 		},
 	}
