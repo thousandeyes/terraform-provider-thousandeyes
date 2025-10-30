@@ -107,3 +107,8 @@ This provider plugin is maintained by the ThousandEyes engineering team and acce
 
 ## Acknowledgements
 ThousandEyes would like to thank William Fleming, John Dyer, and Joshua Blanchard for their contribution and community maintenance of this project.
+
+
+## Changelog
+
+See https://github.com/thousandeyes/terraform-provider-thousandeyes/releases.
