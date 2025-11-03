@@ -628,3 +628,149 @@ func TestGetJSONKey(t *testing.T) {
 		t.Errorf("Field name should be 'testField', but received '%s'", tag)
 	}
 }
+
+// TestFillValueEmptyStringToNilForSpecificTypes tests that empty strings are converted to nil
+// only for types listed in emptyStringToNilTypes (e.g., ApiClientAuthentication)
+func TestFillValueEmptyStringToNilForSpecificTypes(t *testing.T) {
+	// Test ApiClientAuthentication type - should convert empty string to nil
+	var targetEnum *tests.ApiClientAuthentication
+	sourceEmpty := ""
+
+	result := FillValue(sourceEmpty, targetEnum)
+	// Result is an interface{} containing a typed nil pointer, need to check properly
+	resultPtr, ok := result.(*tests.ApiClientAuthentication)
+	if !ok {
+		t.Errorf("Result should be *ApiClientAuthentication type, got: %T", result)
+	}
+	if resultPtr != nil {
+		t.Errorf("Empty string for *ApiClientAuthentication should become nil, got: %v", resultPtr)
+	}
+
+	// Test with valid enum value - should work normally
+	sourceValid := "in-body"
+	result = FillValue(sourceValid, targetEnum)
+	resultPtrValid, ok := result.(*tests.ApiClientAuthentication)
+	if !ok {
+		t.Errorf("Result should be *ApiClientAuthentication type, got: %T", result)
+	}
+	if resultPtrValid == nil {
+		t.Error("Valid value 'in-body' for *ApiClientAuthentication should not be nil")
+	} else {
+		expected := tests.APICLIENTAUTHENTICATION_IN_BODY
+		if *resultPtrValid != expected {
+			t.Errorf("Expected %v for ApiClientAuthentication, got: %v", expected, *resultPtrValid)
+		}
+	}
+}
+
+// TestFillValueEmptyStringForRegularPointerTypes tests that empty strings are NOT converted
+// to nil for regular pointer types like *string that are not in emptyStringToNilTypes
+func TestFillValueEmptyStringForRegularPointerTypes(t *testing.T) {
+	// Test regular *string - should NOT convert empty string to nil
+	var targetString *string
+	sourceEmpty := ""
+
+	result := FillValue(sourceEmpty, targetString)
+	resultPtr, ok := result.(*string)
+	if !ok {
+		t.Errorf("Result should be *string type, got: %T", result)
+	}
+	if resultPtr == nil {
+		t.Error("Empty string for *string should be pointer to empty string, got nil")
+	} else if *resultPtr != "" {
+		t.Errorf("Empty string for *string should remain empty string, got: %v", *resultPtr)
+	}
+
+	// Test with non-empty value to ensure normal operation
+	var targetString2 *string
+	sourceValue := "test value"
+	result2 := FillValue(sourceValue, targetString2)
+	resultPtr2, ok := result2.(*string)
+	if !ok {
+		t.Errorf("Result should be *string type, got: %T", result2)
+	}
+	if resultPtr2 == nil {
+		t.Error("Non-empty string for *string should not be nil")
+	} else if *resultPtr2 != "test value" {
+		t.Errorf("Expected 'test value', got: %v", *resultPtr2)
+	}
+}
+
+// TestFillValueEmptyStringToNilIntegration tests the complete integration of the empty string to nil
+// conversion in a realistic ApiRequest struct, ensuring ApiClientAuthentication becomes nil while
+// regular *string fields remain as pointers to empty strings
+func TestFillValueEmptyStringToNilIntegration(t *testing.T) {
+	// Test in full ApiRequest struct to verify behavior in context
+	sourceMap := map[string]interface{}{
+		"name":                   "Test Request",
+		"url":                    "https://example.com",
+		"client_authentication":  "", // ApiClientAuthentication type - should become nil
+		"body":                   "", // *string type - should stay as pointer to empty string
+		"bearer_token":           "", // *string type - should stay as pointer to empty string
+		"scope":                  "", // *string type - should stay as pointer to empty string
+		"username":               "", // *string type - should stay as pointer to empty string
+	}
+
+	// Wrap in slice like Terraform does for nested blocks
+	source := []interface{}{sourceMap}
+	target := tests.ApiRequest{}
+
+	result := FillValue(source, target)
+	resultStruct := result.(tests.ApiRequest)
+
+	// Verify ApiClientAuthentication field with empty string became nil
+	if resultStruct.ClientAuthentication != nil {
+		t.Errorf("ClientAuthentication should be nil for empty string, got: %v", *resultStruct.ClientAuthentication)
+	}
+
+	// Verify all *string fields with empty strings became pointers to empty strings
+	if resultStruct.Body == nil {
+		t.Error("Body (*string) should be pointer to empty string, got nil")
+	} else if *resultStruct.Body != "" {
+		t.Errorf("Body should be empty string, got: %v", *resultStruct.Body)
+	}
+
+	if resultStruct.BearerToken == nil {
+		t.Error("BearerToken (*string) should be pointer to empty string, got nil")
+	} else if *resultStruct.BearerToken != "" {
+		t.Errorf("BearerToken should be empty string, got: %v", *resultStruct.BearerToken)
+	}
+
+	if resultStruct.Scope == nil {
+		t.Error("Scope (*string) should be pointer to empty string, got nil")
+	} else if *resultStruct.Scope != "" {
+		t.Errorf("Scope should be empty string, got: %v", *resultStruct.Scope)
+	}
+
+	if resultStruct.Username == nil {
+		t.Error("Username (*string) should be pointer to empty string, got nil")
+	} else if *resultStruct.Username != "" {
+		t.Errorf("Username should be empty string, got: %v", *resultStruct.Username)
+	}
+
+	// Test with valid values to ensure normal operation
+	sourceMapValid := map[string]interface{}{
+		"name":                   "Test Request",
+		"url":                    "https://example.com",
+		"client_authentication":  "basic-auth-header",
+		"body":                   "test body",
+	}
+	sourceValid := []interface{}{sourceMapValid}
+	resultValid := FillValue(sourceValid, tests.ApiRequest{})
+	resultStructValid := resultValid.(tests.ApiRequest)
+
+	if resultStructValid.ClientAuthentication == nil {
+		t.Error("ClientAuthentication should not be nil for valid value")
+	} else {
+		expected := tests.APICLIENTAUTHENTICATION_BASIC_AUTH_HEADER
+		if *resultStructValid.ClientAuthentication != expected {
+			t.Errorf("ClientAuthentication should be %v, got: %v", expected, *resultStructValid.ClientAuthentication)
+		}
+	}
+
+	if resultStructValid.Body == nil {
+		t.Error("Body should not be nil for valid value")
+	} else if *resultStructValid.Body != "test body" {
+		t.Errorf("Body should be 'test body', got: %v", *resultStructValid.Body)
+	}
+}
