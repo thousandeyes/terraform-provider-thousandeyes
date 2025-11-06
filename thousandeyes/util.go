@@ -26,6 +26,14 @@ const setInConfigKey setInConfigKeyType = "is_set"
 
 var sensitiveFields = []string{"password", "custom_headers", "headers", "bearer_token", "client_id", "client_secret"}
 
+// emptyStringToNilTypes contains type names that should be converted to nil when their value is an empty string.
+// This handles cases where the Terraform SDK v2 converts null values to empty strings, but the API expects
+// the field to be omitted (via omitempty) rather than sent as an empty string.
+// Store the actual type names as they appear in the SDK (e.g., "ApiClientAuthentication")
+var emptyStringToNilTypes = []string{
+	"ApiClientAuthentication",
+}
+
 type ResourceReadFunc func(client *client.APIClient, id string) (interface{}, error)
 
 type RequestWithAid[T any] interface {
@@ -730,6 +738,19 @@ func FillValue(source interface{}, target interface{}) interface{} {
 	sourceValue := reflect.ValueOf(source)
 	switch vt.Kind() {
 	case reflect.Ptr:
+		// Check if this is an empty string that should be converted to nil for specific types
+		// This is determined by checking if the target type name is in our emptyStringToNilTypes list
+		if str, isString := source.(string); isString && str == "" {
+			targetType := reflect.TypeOf(target)
+			if targetType.Elem().Kind() == reflect.String {
+				// For string-based types (including enums), check the type name
+				typeName := targetType.Elem().Name()
+				if slices.Contains(emptyStringToNilTypes, typeName) {
+					// Return nil pointer for this type
+					return reflect.Zero(targetType).Interface()
+				}
+			}
+		}
 		p := reflect.New(reflect.TypeOf(target).Elem())
 		newVal := FillValue(source, p.Elem().Interface())
 		p.Elem().Set(reflect.ValueOf(newVal))
