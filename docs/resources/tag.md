@@ -6,7 +6,7 @@ description: |-
 
 # thousandeyes_tag (Resource)
 
-This resource provides a tagging system with key/value pairs. It allows you to tag assets within the ThousandEyes platform (such as agents, tests, or alert rules) with meaningful metadata.
+This resource provides a tagging system with key/value pairs. It allows you to tag assets within the ThousandEyes platform (such as agents, tests, or dashboards) with meaningful metadata.
 
 ## Example Usage
 
