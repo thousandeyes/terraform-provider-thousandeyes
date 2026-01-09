@@ -2,6 +2,7 @@ package schemas
 
 import (
 	"context"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -80,8 +81,8 @@ func LegacyTestStateUpgrade(ctx context.Context, rawState map[string]any, meta a
 	// This conditional is required because the schema version was introduced on `v3.0.2`.
 	// That means the provider will try to upgrade the state for all versions before that, `v3.0.0|v3.0.1` included.
 	// However, all v3 schemas comply with v7 API, so there is no need to upgrade the state for those versions.
-	// The `link` field was introduced in `v3.0.0` and is present in all test schemas.
-	if _, ok := rawState["link"].(string); !ok {
+	// The `links` field was introduced in `v3.0.0` and is present in all test schemas.
+	if _, ok := rawState["links"].(string); !ok {
 
 		if agents, ok := rawState["agents"].([]interface{}); ok {
 			for i, v := range agents {
