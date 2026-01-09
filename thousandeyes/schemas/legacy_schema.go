@@ -2,6 +2,8 @@ package schemas
 
 import (
 	"context"
+	"fmt"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -86,21 +88,21 @@ func LegacyTestStateUpgrade(ctx context.Context, rawState map[string]any, meta a
 		if agents, ok := rawState["agents"].([]interface{}); ok {
 			for i, v := range agents {
 				agent := v.(map[string]interface{})
-				agents[i] = agent["agent_id"]
+				agents[i] = fmt.Sprintf("%v", agent["agent_id"])
 			}
 		}
 
 		if alertRules, ok := rawState["alert_rules"].([]interface{}); ok {
 			for i, v := range alertRules {
 				alertRule := v.(map[string]interface{})
-				alertRules[i] = alertRule["rule_id"]
+				alertRules[i] = fmt.Sprintf("%v", alertRule["rule_id"])
 			}
 		}
 
 		if bgpMonitors, ok := rawState["bgp_monitors"].([]interface{}); ok {
 			for i, v := range bgpMonitors {
 				monitor := v.(map[string]interface{})
-				bgpMonitors[i] = monitor["monitor_id"]
+				bgpMonitors[i] = fmt.Sprintf("%v", monitor["monitor_id"])
 			}
 			rawState["monitors"] = bgpMonitors
 			rawState["bgp_monitors"] = nil
@@ -111,7 +113,7 @@ func LegacyTestStateUpgrade(ctx context.Context, rawState map[string]any, meta a
 			rawState["labels"] = make([]interface{}, len(groups))
 			for i, v := range groups {
 				group := v.(map[string]interface{})
-				groups[i] = group["group_id"]
+				groups[i] = fmt.Sprintf("%v", group["group_id"])
 			}
 			rawState["labels"] = groups
 			rawState["groups"] = nil
@@ -120,7 +122,7 @@ func LegacyTestStateUpgrade(ctx context.Context, rawState map[string]any, meta a
 		if sharedWithAccounts, ok := rawState["shared_with_accounts"].([]interface{}); ok {
 			for i, v := range sharedWithAccounts {
 				account := v.(map[string]interface{})
-				sharedWithAccounts[i] = account["aid"]
+				sharedWithAccounts[i] = fmt.Sprintf("%v", account["aid"])
 			}
 		}
 
