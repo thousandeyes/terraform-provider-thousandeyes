@@ -555,6 +555,20 @@ func TestFillValue(t *testing.T) {
 		t.Errorf("Expected []int{0,1} for testSlice, but received '%+v' of type %+v", reflect.ValueOf(testSlice), reflect.TypeOf(testSlice))
 	}
 
+	// Map test
+	sourceMap := map[string]interface{}{
+		"alpha": "one",
+		"beta":  "two",
+	}
+	expectedMap := map[string]string{
+		"alpha": "one",
+		"beta":  "two",
+	}
+	testMap := FillValue(sourceMap, map[string]string{}).(map[string]string)
+	if reflect.DeepEqual(testMap, expectedMap) != true {
+		t.Errorf("Expected map[string]string for testMap, but received '%+v' of type %+v", reflect.ValueOf(testMap), reflect.TypeOf(testMap))
+	}
+
 	// Struct test
 	refMap := map[string]string{
 		"field_name": "value foo",

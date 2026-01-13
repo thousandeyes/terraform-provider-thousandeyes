@@ -776,6 +776,28 @@ func FillValue(source interface{}, target interface{}) interface{} {
 			newSlice = reflect.Append(newSlice, appendVal)
 		}
 		return newSlice.Interface()
+	case reflect.Map:
+		// When the target is a map, convert source map entries to the target key/value types.
+		tt := reflect.TypeOf(target)
+		if source == nil {
+			return reflect.Zero(tt).Interface()
+		}
+		if sourceType.ConvertibleTo(tt) {
+			return sourceValue.Convert(tt).Interface()
+		}
+		if sourceValue.Kind() != reflect.Map {
+			return reflect.Zero(tt).Interface()
+		}
+		newMap := reflect.MakeMapWithSize(tt, sourceValue.Len())
+		keyTarget := reflect.New(tt.Key()).Elem().Interface()
+		valTarget := reflect.New(tt.Elem()).Elem().Interface()
+		iter := sourceValue.MapRange()
+		for iter.Next() {
+			newKey := FillValue(iter.Key().Interface(), keyTarget)
+			newVal := FillValue(iter.Value().Interface(), valTarget)
+			newMap.SetMapIndex(reflect.ValueOf(newKey), reflect.ValueOf(newVal))
+		}
+		return newMap.Interface()
 	case reflect.Struct:
 		// When the target is a struct, we assume that the source is a map
 		// containing values corresponding to the struct's fields, then

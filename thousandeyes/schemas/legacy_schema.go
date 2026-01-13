@@ -2,6 +2,7 @@ package schemas
 
 import (
 	"context"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -72,6 +73,12 @@ func LegacyTestSchema() *schema.Resource {
 					},
 				},
 			},
+			"custom_headers": {
+				Type:        schema.TypeMap,
+				Description: "The custom headers.",
+				Optional:    true,
+				Sensitive:   true,
+			},
 		},
 	}
 }
@@ -129,6 +136,10 @@ func LegacyTestStateUpgrade(ctx context.Context, rawState map[string]any, meta a
 				dnsServer := v.(map[string]interface{})
 				dnsSevers[i] = dnsServer["server_name"]
 			}
+		}
+
+		if _, ok := rawState["custom_headers"].(map[string]interface{}); ok {
+			rawState["custom_headers"] = nil
 		}
 	}
 
