@@ -20,11 +20,69 @@ import (
 
 type resourceKeyType string
 type setInConfigKeyType string
+type resourceTypeKeyType string
 
 const tagsKey resourceKeyType = "tags"
 const setInConfigKey setInConfigKeyType = "is_set"
+const resourceTypeKey resourceTypeKeyType = "resource_type"
 
-var sensitiveFields = []string{"password", "custom_headers", "headers", "bearer_token", "client_id", "client_secret"}
+// sensitiveField represents a field that should be treated as sensitive for a specific resource type
+type sensitiveField struct {
+	resourceType string
+	fieldName    string
+}
+
+// sensitiveFields contains the list of fields that should be treated as sensitive
+// Entries specify the exact resource type (from SDK) and field name combinations
+// Only Response types are listed here since they flow through ResourceRead
+var sensitiveFields = []sensitiveField{
+	// ApiRequest (nested in API test responses)
+	{"ApiRequest", "password"},
+	{"ApiRequest", "bearer_token"},
+	{"ApiRequest", "client_id"},
+	{"ApiRequest", "client_secret"},
+	{"ApiRequest", "headers"},
+
+	// OAuth (nested in various test responses)
+	{"OAuth", "password"},
+	{"OAuth", "headers"},
+
+	// TestSipCredentials (nested in SIP test responses)
+	{"TestSipCredentials", "password"},
+
+	// HttpServerTestResponse
+	{"HttpServerTestResponse", "password"},
+	{"HttpServerTestResponse", "custom_headers"},
+	{"HttpServerTestResponse", "headers"},
+
+	// PageLoadTestResponse
+	{"PageLoadTestResponse", "password"},
+	{"PageLoadTestResponse", "custom_headers"},
+	{"PageLoadTestResponse", "headers"},
+
+	// WebTransactionTestResponse
+	{"WebTransactionTestResponse", "password"},
+	{"WebTransactionTestResponse", "custom_headers"},
+	{"WebTransactionTestResponse", "headers"},
+
+	// FtpServerTestResponse
+	{"FtpServerTestResponse", "password"},
+	{"FtpServerTestResponse", "headers"},
+
+	// ApiTestResponse
+	{"ApiTestResponse", "password"},
+	{"ApiTestResponse", "headers"},
+}
+
+// isSensitiveField checks if a field is sensitive for the given resource type
+func isSensitiveField(resourceType, fieldName string) bool {
+	for _, sf := range sensitiveFields {
+		if sf.resourceType == resourceType && sf.fieldName == fieldName {
+			return true
+		}
+	}
+	return false
+}
 
 // emptyStringToNilTypes contains type names that should be converted to nil when their value is an empty string.
 // This handles cases where the Terraform SDK v2 converts null values to empty strings, but the API expects
@@ -126,6 +184,9 @@ func ResourceRead(ctx context.Context, d *schema.ResourceData, structPtr interfa
 	v := reflect.ValueOf(structPtr).Elem()
 	t := reflect.TypeOf(v.Interface())
 
+	// Store the resource type in context for use in ReadValue
+	ctx = context.WithValue(ctx, resourceTypeKey, t.Name())
+
 	targetMaps := getTargetFieldsMaps(structPtr)
 
 	for i := 0; i < v.NumField(); i++ {
@@ -133,7 +194,7 @@ func ResourceRead(ctx context.Context, d *schema.ResourceData, structPtr interfa
 		tfName := CamelCaseToUnderscore(tag)
 		_, ok := d.GetOk(tfName)
 
-		if slices.Contains(sensitiveFields, tfName) {
+		if isSensitiveField(t.Name(), tfName) {
 			if ok {
 				if err := d.Set(tfName, nil); err != nil {
 					return err
@@ -146,7 +207,7 @@ func ResourceRead(ctx context.Context, d *schema.ResourceData, structPtr interfa
 			continue
 		}
 
-		val, err := ReadValue(v.Field(i).Interface())
+		val, err := ReadValueWithContext(ctx, v.Field(i).Interface())
 		if err != nil {
 			return err
 		}
@@ -562,11 +623,30 @@ func FixReadValues(ctx context.Context, targetMaps map[string]map[string]interfa
 // identify in the Schema.  This is required because calling the Set function on
 // a struct results in the JSON tag name (instead of the Terraform config key)
 // being used for schema lookups.
+// ReadValue returns a value with key names for which Terraform will be able to
+// identify in the Schema. This is a wrapper around ReadValueWithContext that uses an empty context.
 func ReadValue(structPtr interface{}) (interface{}, error) {
+	return ReadValueWithContext(context.Background(), structPtr)
+}
+
+// ReadValueWithContext returns a value with key names for which Terraform will be able to
+// identify in the Schema.  This is required because calling the Set function on
+// a struct results in the JSON tag name (instead of the Terraform config key)
+// being used for schema lookups.
+func ReadValueWithContext(ctx context.Context, structPtr interface{}) (interface{}, error) {
 	var err error
 	v := reflect.Indirect(reflect.ValueOf(structPtr))
 	t := reflect.TypeOf(v.Interface())
 	eltype := v.Type()
+
+	// Get the parent resource type from context if available
+	parentResourceType := ""
+	if rt := ctx.Value(resourceTypeKey); rt != nil {
+		if rtStr, ok := rt.(string); ok {
+			parentResourceType = rtStr
+		}
+	}
+
 	switch t.Kind() {
 	case reflect.Struct:
 		// For structs, return a map with key names set to be translations of
@@ -579,7 +659,8 @@ func ReadValue(structPtr interface{}) (interface{}, error) {
 			tag := GetJSONKey(t.Field(i))
 			tfName := CamelCaseToUnderscore(tag)
 
-			if slices.Contains(sensitiveFields, tfName) {
+			// Check if this field is sensitive using the parent resource type
+			if isSensitiveField(parentResourceType, tfName) {
 				newMap[tfName] = nil
 				continue
 			}
@@ -588,7 +669,7 @@ func ReadValue(structPtr interface{}) (interface{}, error) {
 			}
 			// check for unexported fields
 			if v.Field(i).CanInterface() {
-				newMap[tfName], err = ReadValue(v.Field(i).Interface())
+				newMap[tfName], err = ReadValueWithContext(ctx, v.Field(i).Interface())
 			}
 		}
 		if err != nil {
@@ -601,7 +682,7 @@ func ReadValue(structPtr interface{}) (interface{}, error) {
 		// extended key name).
 		var newSlice []interface{}
 		for i := 0; i < v.Len(); i++ {
-			newVal, err := ReadValue(v.Index(i).Interface())
+			newVal, err := ReadValueWithContext(ctx, v.Index(i).Interface())
 			if err != nil {
 				return nil, err
 			}
