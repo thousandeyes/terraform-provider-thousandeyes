@@ -581,7 +581,7 @@ func FixReadValues(ctx context.Context, targetMaps map[string]map[string]interfa
 			m = self["href"]
 		}
 
-	case "created_date", "modified_date", "date_registered", "last_login":
+	case "create_date", "created_date", "modified_date", "date_registered", "last_login":
 		{
 			// Tags expose modified_date through explicit handling in resource_tag read.
 			// Skip generic processing for this field to avoid wrapper type drift issues.
@@ -603,6 +603,14 @@ func FixReadValues(ctx context.Context, targetMaps map[string]map[string]interfa
 				m = *v
 			case string:
 				m = v
+			case map[string]interface{}:
+				// time.Time was converted to map by ReadValue
+				// If it's an empty map, the field was null in the API response - skip it
+				if len(v) == 0 {
+					*name = ""
+					return nil, nil
+				}
+				m = ""
 			default:
 				*name = ""
 				return nil, nil
