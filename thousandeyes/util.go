@@ -40,6 +40,10 @@ type RequestWithAid[T any] interface {
 	Aid(aid string) T
 }
 
+type RequestWithFloatAid[T any] interface {
+	Aid(aid float32) T
+}
+
 func IsNotFoundError(err error) bool {
 	notFoundPatterns := []string{"404", "not found"}
 	for _, pattern := range notFoundPatterns {
@@ -934,6 +938,21 @@ func SetAidFromContext[T RequestWithAid[T]](ctx context.Context, req T) T {
 	aid, ok := ctx.Value(accountGroupIdKey).(string)
 	if ok && len(aid) > 0 {
 		return req.Aid(aid)
+	}
+	return req
+}
+
+func SetAidFloatFromContext[T RequestWithFloatAid[T]](ctx context.Context, req T) T {
+	aidStr, ok := ctx.Value(accountGroupIdKey).(string)
+	if ok && len(aidStr) > 0 {
+		// Parse as integer
+		aidInt, err := strconv.Atoi(aidStr)
+		if err != nil {
+			log.Printf("[WARN] Invalid account ID format: %s, error: %v", aidStr, err)
+			return req
+		}
+		// Convert to float32
+		return req.Aid(float32(aidInt))
 	}
 	return req
 }
