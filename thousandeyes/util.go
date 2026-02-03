@@ -581,9 +581,32 @@ func FixReadValues(ctx context.Context, targetMaps map[string]map[string]interfa
 			m = self["href"]
 		}
 
-	case "created_date", "modified_date", "date_registered", "last_login":
+	case "create_date", "created_date", "modified_date", "date_registered", "last_login":
 		{
-			m = m.(*time.Time).Format(time.RFC3339)
+			// Handle different types: *time.Time, *string, string, or map[string]interface{}
+			switch v := m.(type) {
+			case *time.Time:
+				if v != nil {
+					m = v.Format(time.RFC3339)
+				} else {
+					*name = ""
+					return nil, nil
+				}
+			case *string:
+				if v != nil {
+					m = *v
+				} else {
+					*name = ""
+					return nil, nil
+				}
+			case map[string]interface{}:
+				// time.Time was converted to map by ReadValue
+				// If it's an empty map, the field was null in the API response - skip it
+				if len(v) == 0 {
+					*name = ""
+					return nil, nil
+				}
+			}
 		}
 
 	// Ignore nullable fields (already set);  skip assignments for Tags (used in Tags Assignments)
