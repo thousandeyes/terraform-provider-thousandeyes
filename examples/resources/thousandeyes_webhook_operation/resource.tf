@@ -1,7 +1,9 @@
 resource "thousandeyes_webhook_operation" "example_webhook_operation" {
   name     = "Example Webhook Operation"
   category = "alerts"
+  status   = "pending"
   enabled  = true
+  type     = "webhook"
 
   path    = "/custom/alerts/endpoint"
   payload = jsonencode({
@@ -12,16 +14,15 @@ resource "thousandeyes_webhook_operation" "example_webhook_operation" {
     timestamp  = "{{timestamp}}"
   })
 
-  headers = [
-    {
-      name  = "Content-Type"
-      value = "application/json"
-    },
-    {
-      name  = "Authorization"
-      value = "Bearer YOUR_TOKEN_HERE"
-    }
-  ]
+  headers {
+    name  = "Content-Type"
+    value = "application/json"
+  }
+
+  headers {
+    name  = "Authorization"
+    value = "Bearer YOUR_TOKEN_HERE"
+  }
 
   query_params = jsonencode({
     source = "thousandeyes"
