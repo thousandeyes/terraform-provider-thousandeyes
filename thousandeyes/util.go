@@ -20,11 +20,9 @@ import (
 
 type resourceKeyType string
 type setInConfigKeyType string
-type resourceTypeKeyType string
 
 const tagsKey resourceKeyType = "tags"
 const setInConfigKey setInConfigKeyType = "is_set"
-const resourceTypeKey resourceTypeKeyType = "resource_type"
 
 // sensitiveField represents a field that should be treated as sensitive for a specific resource type
 type sensitiveField struct {
@@ -184,9 +182,6 @@ func ResourceRead(ctx context.Context, d *schema.ResourceData, structPtr interfa
 	v := reflect.ValueOf(structPtr).Elem()
 	t := reflect.TypeOf(v.Interface())
 
-	// Store the resource type in context for use in ReadValue
-	ctx = context.WithValue(ctx, resourceTypeKey, t.Name())
-
 	targetMaps := getTargetFieldsMaps(structPtr)
 
 	for i := 0; i < v.NumField(); i++ {
@@ -207,7 +202,7 @@ func ResourceRead(ctx context.Context, d *schema.ResourceData, structPtr interfa
 			continue
 		}
 
-		val, err := ReadValueWithContext(ctx, v.Field(i).Interface())
+		val, err := ReadValue(v.Field(i).Interface())
 		if err != nil {
 			return err
 		}
@@ -623,30 +618,11 @@ func FixReadValues(ctx context.Context, targetMaps map[string]map[string]interfa
 // identify in the Schema.  This is required because calling the Set function on
 // a struct results in the JSON tag name (instead of the Terraform config key)
 // being used for schema lookups.
-// ReadValue returns a value with key names for which Terraform will be able to
-// identify in the Schema. This is a wrapper around ReadValueWithContext that uses an empty context.
 func ReadValue(structPtr interface{}) (interface{}, error) {
-	return ReadValueWithContext(context.Background(), structPtr)
-}
-
-// ReadValueWithContext returns a value with key names for which Terraform will be able to
-// identify in the Schema.  This is required because calling the Set function on
-// a struct results in the JSON tag name (instead of the Terraform config key)
-// being used for schema lookups.
-func ReadValueWithContext(ctx context.Context, structPtr interface{}) (interface{}, error) {
 	var err error
 	v := reflect.Indirect(reflect.ValueOf(structPtr))
 	t := reflect.TypeOf(v.Interface())
 	eltype := v.Type()
-
-	// Get the parent resource type from context if available
-	parentResourceType := ""
-	if rt := ctx.Value(resourceTypeKey); rt != nil {
-		if rtStr, ok := rt.(string); ok {
-			parentResourceType = rtStr
-		}
-	}
-
 	switch t.Kind() {
 	case reflect.Struct:
 		// For structs, return a map with key names set to be translations of
@@ -655,12 +631,16 @@ func ReadValueWithContext(ctx context.Context, structPtr interface{}) (interface
 			return structPtr, nil
 		}
 		newMap := make(map[string]interface{})
+
+		// Use the current struct's type name for sensitive field checking
+		currentResourceType := t.Name()
+
 		for i := 0; i < v.NumField(); i++ {
 			tag := GetJSONKey(t.Field(i))
 			tfName := CamelCaseToUnderscore(tag)
 
-			// Check if this field is sensitive using the parent resource type
-			if isSensitiveField(parentResourceType, tfName) {
+			// Check if this field is sensitive using the current struct's type
+			if isSensitiveField(currentResourceType, tfName) {
 				newMap[tfName] = nil
 				continue
 			}
@@ -669,7 +649,7 @@ func ReadValueWithContext(ctx context.Context, structPtr interface{}) (interface
 			}
 			// check for unexported fields
 			if v.Field(i).CanInterface() {
-				newMap[tfName], err = ReadValueWithContext(ctx, v.Field(i).Interface())
+				newMap[tfName], err = ReadValue(v.Field(i).Interface())
 			}
 		}
 		if err != nil {
@@ -682,7 +662,7 @@ func ReadValueWithContext(ctx context.Context, structPtr interface{}) (interface
 		// extended key name).
 		var newSlice []interface{}
 		for i := 0; i < v.Len(); i++ {
-			newVal, err := ReadValueWithContext(ctx, v.Index(i).Interface())
+			newVal, err := ReadValue(v.Index(i).Interface())
 			if err != nil {
 				return nil, err
 			}
