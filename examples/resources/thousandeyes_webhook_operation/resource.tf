@@ -7,11 +7,10 @@ resource "thousandeyes_webhook_operation" "example_webhook_operation" {
 
   path    = "/custom/alerts/endpoint"
   payload = jsonencode({
-    alert_id   = "{{alertId}}"
-    test_name  = "{{testName}}"
-    alert_type = "{{alertType}}"
-    severity   = "{{severity}}"
-    timestamp  = "{{timestamp}}"
+    alert_id   = "{{alert.id}}"
+    test_name  = "{{alert.test.name}}"
+    alert_type = "{{type.id}}"
+    severity   = "{{alert.severity.id}}"
   })
 
   headers {
