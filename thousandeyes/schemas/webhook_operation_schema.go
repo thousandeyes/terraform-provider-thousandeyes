@@ -27,7 +27,6 @@ var WebhookOperationSchema = map[string]*schema.Schema{
 		Type:        schema.TypeBool,
 		Description: "Whether the webhook operation is enabled.",
 		Optional:    true,
-		Default:     true,
 	},
 	// category
 	"category": {
@@ -96,6 +95,7 @@ var WebhookOperationSchema = map[string]*schema.Schema{
 		Type:        schema.TypeString,
 		Description: "The type of operation. Always 'webhook' for webhook operations.",
 		Optional:    true,
+		Default:     "webhook",
 		ValidateFunc: validation.StringInSlice([]string{
 			"webhook",
 		}, false),
