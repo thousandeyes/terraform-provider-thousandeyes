@@ -81,7 +81,7 @@ resource "thousandeyes_http_server" "example_http_server_test" {
 - [X] account groups
 - [X] users
 - [X] roles
-- [x] connectors
+- [x] webhooks
 
 ## Building The Provider
 Clone repository to: `$GOPATH/src/github.com/thousandeyes/terraform-provider-thousandeyes`
