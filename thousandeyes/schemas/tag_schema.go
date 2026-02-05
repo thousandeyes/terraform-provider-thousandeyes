@@ -30,6 +30,12 @@ var TagSchema = map[string]*schema.Schema{
 		Description: "The account group ID.",
 		Computed:    true,
 	},
+	// builtIn
+	"built_in": {
+		Type:        schema.TypeBool,
+		Description: "Indicates if the tag is a built-in system tag.",
+		Computed:    true,
+	},
 	// color
 	"color": {
 		Type:        schema.TypeString,
@@ -40,6 +46,12 @@ var TagSchema = map[string]*schema.Schema{
 	"create_date": {
 		Type:        schema.TypeString,
 		Description: "Tag creation date.",
+		Computed:    true,
+	},
+	// modifiedDate
+	"modified_date": {
+		Type:        schema.TypeString,
+		Description: "Tag modification date.",
 		Computed:    true,
 	},
 	// icon
@@ -83,6 +95,16 @@ var TagSchema = map[string]*schema.Schema{
 			"dashboard",
 			"endpoint-test",
 			"v-agent",
+		}, false),
+	},
+	// type
+	"type": {
+		Type:        schema.TypeString,
+		Description: "The nature of the tag - whether the tag is dynamically assigned to products based on a filter rule or statically assigned to specified products.",
+		Optional:    true,
+		Default:     "static",
+		ValidateFunc: validation.StringInSlice([]string{
+			"static",
 		}, false),
 	},
 	// value

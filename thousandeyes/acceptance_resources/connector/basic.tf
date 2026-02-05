@@ -1,4 +1,4 @@
 resource "thousandeyes_connector" "test" {
-  name   = "UAT Test Connector"
-  target = "__CONNECTOR_TARGET__"
+  name   = "User Acceptance Test - Connector"
+  target = "https://webhook.site/6b3c063d-d857-4bb3-92eb-b04b6fc41a85"
 }
