@@ -76,5 +76,5 @@ The integration name and target URL are managed through the integration configur
 - [ThousandEyes API Documentation](https://developer.thousandeyes.com/v7/)
 - [Version 3.0 Upgrade Guide](version-3.md)
 
-If you encounter issues during the upgrade, open an issue on GitHub or reach out to us directly.
+If you encounter issues during the upgrade, please contact [ThousandEyes Support](https://docs.thousandeyes.com/product-documentation/getting-started/getting-support-from-thousandeyes#contacting-support).
 
