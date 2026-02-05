@@ -186,4 +186,4 @@ resource "thousandeyes_dns_server" "dns_server_test" {
 - [ThousandEyes API Documentation](https://developer.thousandeyes.com/v7/)
 - [ThousandEyes API Migration Guide](https://developer.cisco.com/docs/thousandeyes/migration-guide-overview/)
 
-If you encounter issues during the upgrade, open an issue on GitHub or reach out to us directly.
+If you encounter issues during the upgrade, please contact [ThousandEyes Support](https://docs.thousandeyes.com/product-documentation/getting-started/getting-support-from-thousandeyes#contacting-support).
