@@ -938,6 +938,26 @@ func SetAidFromContext[T RequestWithAid[T]](ctx context.Context, req T) T {
 	return req
 }
 
+// SetAidFromContextAny supports SDKs that model aid as string or float64.
+// NOTE: float32 is intentionally omitted to avoid scientific notation in query params.
+func SetAidFromContextAny[T any](ctx context.Context, req T) T {
+	aid, ok := ctx.Value(accountGroupIdKey).(string)
+	if !ok || len(aid) == 0 {
+		return req
+	}
+
+	if withAid, ok := any(req).(interface{ Aid(string) T }); ok {
+		return withAid.Aid(aid)
+	}
+	if withAid, ok := any(req).(interface{ Aid(float64) T }); ok {
+		if aidFloat, err := strconv.ParseFloat(aid, 64); err == nil {
+			return withAid.Aid(aidFloat)
+		}
+	}
+
+	return req
+}
+
 func getPointer[T any](v T) *T {
 	return &v
 }

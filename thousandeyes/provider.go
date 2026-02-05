@@ -76,6 +76,7 @@ func Provider() *schema.Provider {
 			"thousandeyes_account_group":   resourceAccountGroup(),
 			"thousandeyes_user":            resourceUser(),
 			"thousandeyes_role":            resourceRole(),
+			"thousandeyes_connector":       resourceConnector(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"thousandeyes_account_group": dataSourceThousandeyesAccountGroup(),
