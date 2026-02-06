@@ -40,6 +40,10 @@ type RequestWithAid[T any] interface {
 	Aid(aid string) T
 }
 
+type RequestWithAidFloat32[T any] interface {
+	Aid(aid float32) T
+}
+
 func IsNotFoundError(err error) bool {
 	notFoundPatterns := []string{"404", "not found"}
 	for _, pattern := range notFoundPatterns {
@@ -938,24 +942,21 @@ func SetAidFromContext[T RequestWithAid[T]](ctx context.Context, req T) T {
 	return req
 }
 
-// SetAidFromContextAny supports SDKs that model aid as string or float64.
-// NOTE: float32 is intentionally omitted to avoid scientific notation in query params.
-func SetAidFromContextAny[T any](ctx context.Context, req T) T {
+func SetAidFromContextFloat32[T RequestWithAidFloat32[T]](ctx context.Context, req T) T {
 	aid, ok := ctx.Value(accountGroupIdKey).(string)
-	if !ok || len(aid) == 0 {
+	if !ok || aid == "" {
 		return req
 	}
 
-	if withAid, ok := any(req).(interface{ Aid(string) T }); ok {
-		return withAid.Aid(aid)
+	aidInt, err := strconv.ParseInt(aid, 10, 64)
+	if err != nil {
+		return req
 	}
-	if withAid, ok := any(req).(interface{ Aid(float64) T }); ok {
-		if aidFloat, err := strconv.ParseFloat(aid, 64); err == nil {
-			return withAid.Aid(aidFloat)
-		}
+	aidFloat := float32(aidInt)
+	if int64(aidFloat) != aidInt {
+		return req
 	}
-
-	return req
+	return req.Aid(aidFloat)
 }
 
 func getPointer[T any](v T) *T {

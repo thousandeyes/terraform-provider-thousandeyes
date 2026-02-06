@@ -64,7 +64,7 @@ func testAccConnectorConfig(testResource string) string {
 func getConnector(id string) (*connectors.GenericConnector, error) {
 	api := (*connectors.GenericConnectorsAPIService)(&testClient.Common)
 	req := api.GetGenericConnector(id)
-	req = SetAidFromContextAny(testClient.GetConfig().Context, req)
+	req = SetAidFromContextFloat32(testClient.GetConfig().Context, req)
 	resp, _, err := req.Execute()
 	return resp, err
 }

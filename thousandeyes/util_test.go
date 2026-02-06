@@ -716,13 +716,13 @@ func TestFillValueEmptyStringForRegularPointerTypes(t *testing.T) {
 func TestFillValueEmptyStringToNilIntegration(t *testing.T) {
 	// Test in full ApiRequest struct to verify behavior in context
 	sourceMap := map[string]interface{}{
-		"name":                   "Test Request",
-		"url":                    "https://example.com",
-		"client_authentication":  "", // ApiClientAuthentication type - should become nil
-		"body":                   "", // *string type - should stay as pointer to empty string
-		"bearer_token":           "", // *string type - should stay as pointer to empty string
-		"scope":                  "", // *string type - should stay as pointer to empty string
-		"username":               "", // *string type - should stay as pointer to empty string
+		"name":                  "Test Request",
+		"url":                   "https://example.com",
+		"client_authentication": "", // ApiClientAuthentication type - should become nil
+		"body":                  "", // *string type - should stay as pointer to empty string
+		"bearer_token":          "", // *string type - should stay as pointer to empty string
+		"scope":                 "", // *string type - should stay as pointer to empty string
+		"username":              "", // *string type - should stay as pointer to empty string
 	}
 
 	// Wrap in slice like Terraform does for nested blocks
@@ -764,10 +764,10 @@ func TestFillValueEmptyStringToNilIntegration(t *testing.T) {
 
 	// Test with valid values to ensure normal operation
 	sourceMapValid := map[string]interface{}{
-		"name":                   "Test Request",
-		"url":                    "https://example.com",
-		"client_authentication":  "basic-auth-header",
-		"body":                   "test body",
+		"name":                  "Test Request",
+		"url":                   "https://example.com",
+		"client_authentication": "basic-auth-header",
+		"body":                  "test body",
 	}
 	sourceValid := []interface{}{sourceMapValid}
 	resultValid := FillValue(sourceValid, tests.ApiRequest{})
@@ -786,5 +786,50 @@ func TestFillValueEmptyStringToNilIntegration(t *testing.T) {
 		t.Error("Body should not be nil for valid value")
 	} else if *resultStructValid.Body != "test body" {
 		t.Errorf("Body should be 'test body', got: %v", *resultStructValid.Body)
+	}
+}
+
+type mockAidFloat32Request struct {
+	aid *float32
+}
+
+func (r mockAidFloat32Request) Aid(aid float32) mockAidFloat32Request {
+	r.aid = &aid
+	return r
+}
+
+func TestSetAidFromContextFloat32(t *testing.T) {
+	baseReq := mockAidFloat32Request{}
+
+	withInt := SetAidFromContextFloat32(
+		context.WithValue(context.Background(), accountGroupIdKey, "123"),
+		baseReq,
+	)
+	if withInt.aid == nil || *withInt.aid != float32(123) {
+		t.Fatalf("expected aid=123, got %#v", withInt.aid)
+	}
+
+	withInvalid := SetAidFromContextFloat32(
+		context.WithValue(context.Background(), accountGroupIdKey, "not-a-number"),
+		baseReq,
+	)
+	if withInvalid.aid != nil {
+		t.Fatalf("expected aid unset for invalid value, got %#v", withInvalid.aid)
+	}
+
+	withDecimal := SetAidFromContextFloat32(
+		context.WithValue(context.Background(), accountGroupIdKey, "123.5"),
+		baseReq,
+	)
+	if withDecimal.aid != nil {
+		t.Fatalf("expected aid unset for decimal value, got %#v", withDecimal.aid)
+	}
+
+	withLargeInt := SetAidFromContextFloat32(
+		context.WithValue(context.Background(), accountGroupIdKey, "2814749767106926"),
+		baseReq,
+	)
+	if withLargeInt.aid != nil {
+		t.Fatalf("expected aid unset for precision-loss int, got %#v", withLargeInt.aid)
 	}
 }
