@@ -4,6 +4,7 @@ import (
 	"context"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/thousandeyes/terraform-provider-thousandeyes/thousandeyes/schemas"
 
@@ -420,6 +421,29 @@ func TestFixReadValues(t *testing.T) {
 	}
 	if output != nil {
 		t.Errorf("emulated device id was set incorrectly: Received %s Expected nil", *output.(*string))
+	}
+
+	// modified_date with *time.Time
+	modifiedDateInput := time.Date(2026, 2, 6, 14, 15, 34, 0, time.UTC)
+	output, err = FixReadValues(context.TODO(), nil, &modifiedDateInput, getPointer("modified_date"))
+	if err != nil {
+		t.Errorf("modified_date input returned error: %s", err.Error())
+	}
+	if output.(string) != modifiedDateInput.Format(time.RFC3339) {
+		t.Errorf("modified_date was formatted incorrectly: Received %s Expected %s", output, modifiedDateInput.Format(time.RFC3339))
+	}
+
+	// modified_date as nullable-wrapper map representation should not panic and should be skipped
+	modifiedDateName := getPointer("modified_date")
+	output, err = FixReadValues(context.TODO(), nil, map[string]interface{}{}, modifiedDateName)
+	if err != nil {
+		t.Errorf("modified_date map input returned error: %s", err.Error())
+	}
+	if output != nil {
+		t.Errorf("modified_date map input should be skipped: Received %#v Expected nil", output)
+	}
+	if *modifiedDateName != "" {
+		t.Errorf("modified_date name should be cleared for skipped values: Received %s", *modifiedDateName)
 	}
 }
 

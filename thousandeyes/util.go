@@ -527,7 +527,12 @@ func FixReadValues(ctx context.Context, targetMaps map[string]map[string]interfa
 
 	case "created_date", "modified_date", "date_registered", "last_login":
 		{
-			m = m.(*time.Time).Format(time.RFC3339)
+			formatted, ok := normalizeDateValue(m)
+			if !ok {
+				*name = ""
+				return nil, nil
+			}
+			m = formatted
 		}
 
 	// Ignore nullable fields (already set);  skip assignments for Tags (used in Tags Assignments)
@@ -611,6 +616,37 @@ func ReadValue(structPtr interface{}) (interface{}, error) {
 
 	default:
 		return structPtr, nil
+	}
+}
+
+// normalizeDateValue transforms common timestamp representations into RFC3339.
+func normalizeDateValue(v interface{}) (string, bool) {
+	switch t := v.(type) {
+	case *time.Time:
+		if t == nil {
+			return "", false
+		}
+		return t.Format(time.RFC3339), true
+	case time.Time:
+		return t.Format(time.RFC3339), true
+	case string:
+		if t == "" {
+			return "", false
+		}
+		return t, true
+	case *string:
+		if t == nil || *t == "" {
+			return "", false
+		}
+		return *t, true
+	case map[string]interface{}:
+		// SDK nullable wrappers may appear as maps when reflection cannot expose fields.
+		if raw, ok := t["value"]; ok {
+			return normalizeDateValue(raw)
+		}
+		return "", false
+	default:
+		return "", false
 	}
 }
 
