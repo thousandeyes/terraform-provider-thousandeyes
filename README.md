@@ -78,6 +78,7 @@ resource "thousandeyes_http_server" "example_http_server_test" {
 - [X] alert rules
 - [X] tags
 - [X] tag assignments
+- [X] connector assignments
 - [X] account groups
 - [X] users
 - [X] roles
