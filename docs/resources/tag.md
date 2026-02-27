@@ -37,10 +37,13 @@ resource "thousandeyes_tag" "example_tag" {
 ### Read-Only
 
 - `aid` (String) The account group ID.
+- `built_in` (Boolean) Indicates whether this is a built-in (system) tag.
 - `create_date` (String) Tag creation date.
 - `id` (String) The tag ID.
 - `legacy_id` (Number) Legacy Id.
 - `link` (String) Its value is either a URI [RFC3986] or a URI template [RFC6570].
+- `modified_date` (String) The date and time the tag was last modified.
+- `type` (String) The nature of the tag (currently static).
 
 ## Import
 In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) providing `resource_id`.
