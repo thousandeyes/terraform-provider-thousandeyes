@@ -40,10 +40,6 @@ type RequestWithAid[T any] interface {
 	Aid(aid string) T
 }
 
-type RequestWithAidFloat32[T any] interface {
-	Aid(aid float32) T
-}
-
 func IsNotFoundError(err error) bool {
 	notFoundPatterns := []string{"404", "not found"}
 	for _, pattern := range notFoundPatterns {
@@ -527,12 +523,7 @@ func FixReadValues(ctx context.Context, targetMaps map[string]map[string]interfa
 
 	case "created_date", "modified_date", "date_registered", "last_login":
 		{
-			formatted, ok := normalizeDateValue(m)
-			if !ok {
-				*name = ""
-				return nil, nil
-			}
-			m = formatted
+			m = m.(*time.Time).Format(time.RFC3339)
 		}
 
 	// Ignore nullable fields (already set);  skip assignments for Tags (used in Tags Assignments)
@@ -616,37 +607,6 @@ func ReadValue(structPtr interface{}) (interface{}, error) {
 
 	default:
 		return structPtr, nil
-	}
-}
-
-// normalizeDateValue transforms common timestamp representations into RFC3339.
-func normalizeDateValue(v interface{}) (string, bool) {
-	switch t := v.(type) {
-	case *time.Time:
-		if t == nil {
-			return "", false
-		}
-		return t.Format(time.RFC3339), true
-	case time.Time:
-		return t.Format(time.RFC3339), true
-	case string:
-		if t == "" {
-			return "", false
-		}
-		return t, true
-	case *string:
-		if t == nil || *t == "" {
-			return "", false
-		}
-		return *t, true
-	case map[string]interface{}:
-		// SDK nullable wrappers may appear as maps when reflection cannot expose fields.
-		if raw, ok := t["value"]; ok {
-			return normalizeDateValue(raw)
-		}
-		return "", false
-	default:
-		return "", false
 	}
 }
 
@@ -978,22 +938,6 @@ func SetAidFromContext[T RequestWithAid[T]](ctx context.Context, req T) T {
 	return req
 }
 
-func SetAidFromContextFloat32[T RequestWithAidFloat32[T]](ctx context.Context, req T) T {
-	aid, ok := ctx.Value(accountGroupIdKey).(string)
-	if !ok || aid == "" {
-		return req
-	}
-
-	aidInt, err := strconv.ParseInt(aid, 10, 64)
-	if err != nil {
-		return req
-	}
-	aidFloat := float32(aidInt)
-	if int64(aidFloat) != aidInt {
-		return req
-	}
-	return req.Aid(aidFloat)
-}
 
 func getPointer[T any](v T) *T {
 	return &v

@@ -32,18 +32,15 @@ resource "thousandeyes_tag" "example_tag" {
 - `icon` (String) Tag icon.
 - `key` (String) The tags's key.
 - `object_type` (String) [test, dashboard, endpoint-test, v-agent] The object type associated with the tag.
-- `type` (String) The nature of the tag - whether the tag is dynamically assigned to products based on a filter rule or statically assigned to specified products.
 - `value` (String) The tag's value.
 
 ### Read-Only
 
 - `aid` (String) The account group ID.
-- `built_in` (Boolean) Indicates if the tag is a built-in system tag.
 - `create_date` (String) Tag creation date.
 - `id` (String) The tag ID.
 - `legacy_id` (Number) Legacy Id.
 - `link` (String) Its value is either a URI [RFC3986] or a URI template [RFC6570].
-- `modified_date` (String) Tag modification date.
 
 ## Import
 In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) providing `resource_id`.

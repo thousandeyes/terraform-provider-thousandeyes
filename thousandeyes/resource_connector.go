@@ -1,13 +1,9 @@
 package thousandeyes
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
-	"io"
 	"log"
-	"net/http"
 	"strings"
 	"time"
 
@@ -40,20 +36,10 @@ func resourceConnectorCreate(d *schema.ResourceData, m interface{}) error {
 
 	connector := buildConnectorRequest(d)
 	req := api.CreateGenericConnector().GenericConnector(*connector)
-	req = SetAidFromContextFloat32(apiClient.GetConfig().Context, req)
+	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
-	resp, httpResp, err := req.Execute()
+	resp, _, err := req.Execute()
 	if err != nil {
-		if httpResp != nil && httpResp.StatusCode < 300 {
-			if parsed, parseErr := decodeGenericConnectorFromResponse(httpResp); parseErr == nil && parsed != nil {
-				connectorID, idErr := connectorIDOrError(parsed)
-				if idErr != nil {
-					return idErr
-				}
-				d.SetId(connectorID)
-				return setConnectorResourceData(d, parsed)
-			}
-		}
 		return err
 	}
 
@@ -72,7 +58,7 @@ func resourceConnectorRead(d *schema.ResourceData, m interface{}) error {
 	log.Printf("[INFO] Reading ThousandEyes Connector %s", d.Id())
 
 	req := api.GetGenericConnector(d.Id())
-	req = SetAidFromContextFloat32(apiClient.GetConfig().Context, req)
+	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 	resp, httpResp, err := req.Execute()
 
 	if err != nil {
@@ -80,11 +66,6 @@ func resourceConnectorRead(d *schema.ResourceData, m interface{}) error {
 			log.Printf("[INFO] Connector %s not found, removing from state", d.Id())
 			d.SetId("")
 			return nil
-		}
-		if httpResp != nil && httpResp.StatusCode < 300 {
-			if parsed, parseErr := decodeGenericConnectorFromResponse(httpResp); parseErr == nil && parsed != nil {
-				return setConnectorResourceData(d, parsed)
-			}
 		}
 		return err
 	}
@@ -100,15 +81,10 @@ func resourceConnectorUpdate(d *schema.ResourceData, m interface{}) error {
 
 	connector := buildConnectorRequest(d)
 	req := api.UpdateGenericConnector(d.Id()).GenericConnector(*connector)
-	req = SetAidFromContextFloat32(apiClient.GetConfig().Context, req)
+	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
-	_, httpResp, err := req.Execute()
+	_, _, err := req.Execute()
 	if err != nil {
-		if httpResp != nil && httpResp.StatusCode < 300 {
-			if parsed, parseErr := decodeGenericConnectorFromResponse(httpResp); parseErr == nil && parsed != nil {
-				return setConnectorResourceData(d, parsed)
-			}
-		}
 		return err
 	}
 
@@ -122,7 +98,7 @@ func resourceConnectorDelete(d *schema.ResourceData, m interface{}) error {
 	log.Printf("[INFO] Deleting ThousandEyes Connector %s", d.Id())
 
 	req := api.DeleteGenericConnector(d.Id())
-	req = SetAidFromContextFloat32(apiClient.GetConfig().Context, req)
+	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 	_, err := req.Execute()
 	if err != nil {
 		return err
@@ -242,73 +218,6 @@ func connectorIDOrError(connector *connectors.GenericConnector) (string, error) 
 	return *connector.Id, nil
 }
 
-func decodeGenericConnectorFromResponse(httpResp *http.Response) (*connectors.GenericConnector, error) {
-	if httpResp == nil || httpResp.Body == nil {
-		return nil, fmt.Errorf("no response body to decode")
-	}
-	body, err := io.ReadAll(httpResp.Body)
-	if err != nil {
-		return nil, err
-	}
-	httpResp.Body = io.NopCloser(bytes.NewBuffer(body))
-	return decodeGenericConnectorFromBody(body)
-}
-
-func decodeGenericConnectorFromBody(body []byte) (*connectors.GenericConnector, error) {
-	type genericConnectorFallback struct {
-		ID               *string                  `json:"id"`
-		Type             connectors.ConnectorType `json:"type"`
-		Name             string                   `json:"name"`
-		Target           string                   `json:"target"`
-		LastModifiedDate json.RawMessage          `json:"lastModifiedDate"`
-	}
-
-	var raw genericConnectorFallback
-	if err := json.Unmarshal(body, &raw); err != nil {
-		return nil, err
-	}
-
-	connector := &connectors.GenericConnector{
-		Id:     raw.ID,
-		Type:   raw.Type,
-		Name:   raw.Name,
-		Target: raw.Target,
-	}
-
-	if ts, ok := parseConnectorLastModifiedDate(raw.LastModifiedDate); ok {
-		connector.LastModifiedDate = &ts
-	}
-
-	return connector, nil
-}
-
-func parseConnectorLastModifiedDate(raw json.RawMessage) (time.Time, bool) {
-	if len(raw) == 0 || bytes.Equal(raw, []byte("null")) {
-		return time.Time{}, false
-	}
-
-	var rfc3339 string
-	if err := json.Unmarshal(raw, &rfc3339); err == nil {
-		parsed, parseErr := time.Parse(time.RFC3339, rfc3339)
-		if parseErr != nil {
-			return time.Time{}, false
-		}
-		return parsed, true
-	}
-
-	var millis int64
-	if err := json.Unmarshal(raw, &millis); err == nil {
-		return time.UnixMilli(millis), true
-	}
-
-	var asFloat float64
-	if err := json.Unmarshal(raw, &asFloat); err == nil {
-		return time.UnixMilli(int64(asFloat)), true
-	}
-
-	return time.Time{}, false
-}
-
 func validateConnectorAuthentication(_ context.Context, d *schema.ResourceDiff, _ interface{}) error {
 	v, ok := d.GetOk("authentication")
 	if !ok {
@@ -367,7 +276,8 @@ func setConnectorResourceData(d *schema.ResourceData, connector *connectors.Gene
 	}
 
 	if connector.LastModifiedDate != nil {
-		if err := d.Set("last_modified_date", connector.LastModifiedDate.Format(time.RFC3339)); err != nil {
+		ts := time.UnixMilli(*connector.LastModifiedDate).UTC().Format(time.RFC3339)
+		if err := d.Set("last_modified_date", ts); err != nil {
 			return err
 		}
 	} else {
