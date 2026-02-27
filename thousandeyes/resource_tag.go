@@ -3,6 +3,7 @@ package thousandeyes
 import (
 	"context"
 	"log"
+	"time"
 
 	"github.com/thousandeyes/terraform-provider-thousandeyes/thousandeyes/schemas"
 
@@ -54,6 +55,17 @@ func resourceTagRead(d *schema.ResourceData, m interface{}) error {
 		if resp.LegacyId.IsSet() {
 			if err := d.Set("legacy_id", resp.LegacyId.Get()); err != nil {
 				return resp, err
+			}
+		}
+		if resp.ModifiedDate.IsSet() {
+			if modifiedAt := resp.ModifiedDate.Get(); modifiedAt != nil {
+				if err := d.Set("modified_date", modifiedAt.UTC().Format(time.RFC3339)); err != nil {
+					return resp, err
+				}
+			} else {
+				if err := d.Set("modified_date", nil); err != nil {
+					return resp, err
+				}
 			}
 		}
 

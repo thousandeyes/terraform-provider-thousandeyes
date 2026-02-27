@@ -42,6 +42,18 @@ var TagSchema = map[string]*schema.Schema{
 		Description: "Tag creation date.",
 		Computed:    true,
 	},
+	// modifiedDate
+	"modified_date": {
+		Type:        schema.TypeString,
+		Description: "The date and time the tag was last modified.",
+		Computed:    true,
+	},
+	// builtIn
+	"built_in": {
+		Type:        schema.TypeBool,
+		Description: "Indicates whether this is a built-in (system) tag.",
+		Computed:    true,
+	},
 	// icon
 	"icon": {
 		Type:        schema.TypeString,
@@ -84,6 +96,12 @@ var TagSchema = map[string]*schema.Schema{
 			"endpoint-test",
 			"v-agent",
 		}, false),
+	},
+	// type
+	"type": {
+		Type:        schema.TypeString,
+		Description: "The nature of the tag (currently static).",
+		Computed:    true,
 	},
 	// value
 	"value": {

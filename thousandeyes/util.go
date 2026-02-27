@@ -523,10 +523,33 @@ func FixReadValues(ctx context.Context, targetMaps map[string]map[string]interfa
 
 	case "created_date", "modified_date", "date_registered", "last_login":
 		{
-			m = m.(*time.Time).Format(time.RFC3339)
+			// Tags expose modified_date through explicit handling in resource_tag read.
+			// Skip generic processing for this field to avoid wrapper type drift issues.
+			if *name == "modified_date" && ctx.Value(tagsKey) != nil {
+				*name = ""
+				return nil, nil
+			}
+
+			switch v := m.(type) {
+			case *time.Time:
+				m = v.Format(time.RFC3339)
+			case time.Time:
+				m = v.Format(time.RFC3339)
+			case *string:
+				if v == nil {
+					*name = ""
+					return nil, nil
+				}
+				m = *v
+			case string:
+				m = v
+			default:
+				*name = ""
+				return nil, nil
+			}
 		}
 
-	// Ignore nullable fields (already set);  skip assignments for Tags (used in Tags Assignments)
+	// Ignore nullable fields (already set); skip assignments for Tags (used in Tags Assignments).
 	case "icon", "description", "legacy_id", "assignments":
 		isTags := ctx.Value(tagsKey)
 		if isTags != nil {
@@ -537,10 +560,14 @@ func FixReadValues(ctx context.Context, targetMaps map[string]map[string]interfa
 	case "aid":
 		isTags := ctx.Value(tagsKey)
 		if isTags != nil {
-			tmp, _ := m.(*int32)
-			if tmp != nil {
-				m = fmt.Sprintf("%v", *tmp)
-			} else {
+			switch v := m.(type) {
+			case *int32:
+				m = fmt.Sprintf("%v", *v)
+			case *int64:
+				m = fmt.Sprintf("%v", *v)
+			case int32, int64, float32, float64, string:
+				m = fmt.Sprintf("%v", v)
+			default:
 				*name = ""
 				return nil, nil
 			}
@@ -937,7 +964,6 @@ func SetAidFromContext[T RequestWithAid[T]](ctx context.Context, req T) T {
 	}
 	return req
 }
-
 
 func getPointer[T any](v T) *T {
 	return &v

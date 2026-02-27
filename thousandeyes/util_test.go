@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/thousandeyes/thousandeyes-sdk-go/v3/administrative"
+	"github.com/thousandeyes/thousandeyes-sdk-go/v3/tags"
 	"github.com/thousandeyes/thousandeyes-sdk-go/v3/tests"
 )
 
@@ -789,3 +790,77 @@ func TestFillValueEmptyStringToNilIntegration(t *testing.T) {
 	}
 }
 
+func TestFixReadValuesTagBuiltInSupported(t *testing.T) {
+	ctx := context.WithValue(context.Background(), tagsKey, struct{}{})
+	name := "built_in"
+
+	out, err := FixReadValues(ctx, nil, true, &name)
+	if err != nil {
+		t.Fatalf("FixReadValues returned error: %v", err)
+	}
+	if out != true {
+		t.Fatalf("expected passthrough bool output, got %#v", out)
+	}
+	if name != "built_in" {
+		t.Fatalf("expected name unchanged, got %q", name)
+	}
+}
+
+func TestFixReadValuesTagAidInt64(t *testing.T) {
+	ctx := context.WithValue(context.Background(), tagsKey, struct{}{})
+	name := "aid"
+	aid := int64(109108)
+
+	out, err := FixReadValues(ctx, nil, &aid, &name)
+	if err != nil {
+		t.Fatalf("FixReadValues returned error: %v", err)
+	}
+	if out != "109108" {
+		t.Fatalf("expected converted aid string, got %#v", out)
+	}
+	if name != "aid" {
+		t.Fatalf("expected name unchanged, got %q", name)
+	}
+}
+
+func TestResourceReadTagExtendedFieldsArePersisted(t *testing.T) {
+	resourceSchema := ResourceSchemaBuild(tags.Tag{}, schemas.TagSchema, nil)
+	d := getReferenceData(resourceSchema, map[string]string{})
+
+	id := "04a89b56-1467-4d73-96ee-051f93fd3a22"
+	key := "CodexTmpKey"
+	value := "CodexTmpValue"
+	aid := int64(109108)
+	builtIn := false
+	typeVal := tags.TYPE_STATIC
+
+	remoteTag := tags.Tag{
+		Id:      &id,
+		Key:     &key,
+		Value:   &value,
+		Aid:     &aid,
+		BuiltIn: &builtIn,
+		Type:    &typeVal,
+	}
+
+	ctx := context.WithValue(context.Background(), tagsKey, struct{}{})
+	if err := ResourceRead(ctx, d, &remoteTag); err != nil {
+		t.Fatalf("ResourceRead returned error: %v", err)
+	}
+
+	if got := d.Get("id").(string); got != id {
+		t.Fatalf("unexpected id in state: got %q want %q", got, id)
+	}
+	if got := d.Get("key").(string); got != key {
+		t.Fatalf("unexpected key in state: got %q want %q", got, key)
+	}
+	if got := d.Get("aid").(string); got != "109108" {
+		t.Fatalf("unexpected aid in state: got %q want %q", got, "109108")
+	}
+	if got := d.Get("built_in").(bool); got != builtIn {
+		t.Fatalf("unexpected built_in in state: got %v want %v", got, builtIn)
+	}
+	if got := d.Get("type").(string); got != string(typeVal) {
+		t.Fatalf("unexpected type in state: got %q want %q", got, typeVal)
+	}
+}
