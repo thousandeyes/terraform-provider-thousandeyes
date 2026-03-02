@@ -24,63 +24,7 @@ type setInConfigKeyType string
 const tagsKey resourceKeyType = "tags"
 const setInConfigKey setInConfigKeyType = "is_set"
 
-// sensitiveField represents a field that should be treated as sensitive for a specific resource type
-type sensitiveField struct {
-	resourceType string
-	fieldName    string
-}
-
-// sensitiveFields contains the list of fields that should be treated as sensitive
-// Entries specify the exact resource type (from SDK) and field name combinations
-// Only Response types are listed here since they flow through ResourceRead
-var sensitiveFields = []sensitiveField{
-	// ApiRequest (nested in API test responses)
-	{"ApiRequest", "password"},
-	{"ApiRequest", "bearer_token"},
-	{"ApiRequest", "client_id"},
-	{"ApiRequest", "client_secret"},
-	{"ApiRequest", "headers"},
-
-	// OAuth (nested in various test responses)
-	{"OAuth", "password"},
-	{"OAuth", "headers"},
-
-	// TestSipCredentials (nested in SIP test responses)
-	{"TestSipCredentials", "password"},
-
-	// HttpServerTestResponse
-	{"HttpServerTestResponse", "password"},
-	{"HttpServerTestResponse", "custom_headers"},
-	{"HttpServerTestResponse", "headers"},
-
-	// PageLoadTestResponse
-	{"PageLoadTestResponse", "password"},
-	{"PageLoadTestResponse", "custom_headers"},
-	{"PageLoadTestResponse", "headers"},
-
-	// WebTransactionTestResponse
-	{"WebTransactionTestResponse", "password"},
-	{"WebTransactionTestResponse", "custom_headers"},
-	{"WebTransactionTestResponse", "headers"},
-
-	// FtpServerTestResponse
-	{"FtpServerTestResponse", "password"},
-	{"FtpServerTestResponse", "headers"},
-
-	// ApiTestResponse
-	{"ApiTestResponse", "password"},
-	{"ApiTestResponse", "headers"},
-}
-
-// isSensitiveField checks if a field is sensitive for the given resource type
-func isSensitiveField(resourceType, fieldName string) bool {
-	for _, sf := range sensitiveFields {
-		if sf.resourceType == resourceType && sf.fieldName == fieldName {
-			return true
-		}
-	}
-	return false
-}
+var sensitiveFields = []string{"password", "custom_headers", "headers", "bearer_token", "client_id", "client_secret"}
 
 // emptyStringToNilTypes contains type names that should be converted to nil when their value is an empty string.
 // This handles cases where the Terraform SDK v2 converts null values to empty strings, but the API expects
@@ -94,10 +38,6 @@ type ResourceReadFunc func(client *client.APIClient, id string) (interface{}, er
 
 type RequestWithAid[T any] interface {
 	Aid(aid string) T
-}
-
-type RequestWithFloatAid[T any] interface {
-	Aid(aid float32) T
 }
 
 func IsNotFoundError(err error) bool {
@@ -189,7 +129,7 @@ func ResourceRead(ctx context.Context, d *schema.ResourceData, structPtr interfa
 		tfName := CamelCaseToUnderscore(tag)
 		_, ok := d.GetOk(tfName)
 
-		if isSensitiveField(t.Name(), tfName) {
+		if slices.Contains(sensitiveFields, tfName) {
 			if ok {
 				if err := d.Set(tfName, nil); err != nil {
 					return err
@@ -581,7 +521,7 @@ func FixReadValues(ctx context.Context, targetMaps map[string]map[string]interfa
 			m = self["href"]
 		}
 
-	case "create_date", "created_date", "modified_date", "date_registered", "last_login":
+	case "created_date", "modified_date", "date_registered", "last_login":
 		{
 			// Tags expose modified_date through explicit handling in resource_tag read.
 			// Skip generic processing for this field to avoid wrapper type drift issues.
@@ -603,14 +543,6 @@ func FixReadValues(ctx context.Context, targetMaps map[string]map[string]interfa
 				m = *v
 			case string:
 				m = v
-			case map[string]interface{}:
-				// time.Time was converted to map by ReadValue
-				// If it's an empty map, the field was null in the API response - skip it
-				if len(v) == 0 {
-					*name = ""
-					return nil, nil
-				}
-				m = ""
 			default:
 				*name = ""
 				return nil, nil
@@ -666,16 +598,11 @@ func ReadValue(structPtr interface{}) (interface{}, error) {
 			return structPtr, nil
 		}
 		newMap := make(map[string]interface{})
-
-		// Use the current struct's type name for sensitive field checking
-		currentResourceType := t.Name()
-
 		for i := 0; i < v.NumField(); i++ {
 			tag := GetJSONKey(t.Field(i))
 			tfName := CamelCaseToUnderscore(tag)
 
-			// Check if this field is sensitive using the current struct's type
-			if isSensitiveField(currentResourceType, tfName) {
+			if slices.Contains(sensitiveFields, tfName) {
 				newMap[tfName] = nil
 				continue
 			}
@@ -1034,21 +961,6 @@ func SetAidFromContext[T RequestWithAid[T]](ctx context.Context, req T) T {
 	aid, ok := ctx.Value(accountGroupIdKey).(string)
 	if ok && len(aid) > 0 {
 		return req.Aid(aid)
-	}
-	return req
-}
-
-func SetAidFloatFromContext[T RequestWithFloatAid[T]](ctx context.Context, req T) T {
-	aidStr, ok := ctx.Value(accountGroupIdKey).(string)
-	if ok && len(aidStr) > 0 {
-		// Parse as integer
-		aidInt, err := strconv.Atoi(aidStr)
-		if err != nil {
-			log.Printf("[WARN] Invalid account ID format: %s, error: %v", aidStr, err)
-			return req
-		}
-		// Convert to float32
-		return req.Aid(float32(aidInt))
 	}
 	return req
 }

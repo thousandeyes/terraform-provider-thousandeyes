@@ -30,12 +30,6 @@ var TagSchema = map[string]*schema.Schema{
 		Description: "The account group ID.",
 		Computed:    true,
 	},
-	// builtIn
-	"built_in": {
-		Type:        schema.TypeBool,
-		Description: "Indicates if the tag is a built-in system tag.",
-		Computed:    true,
-	},
 	// color
 	"color": {
 		Type:        schema.TypeString,

@@ -88,7 +88,7 @@ func testAccThousandEyesWebhookOperationConfig(testResource string) string {
 func getWebhookOperation(id string) (interface{}, error) {
 	api := (*connectors.WebhookOperationsAPIService)(&testClient.Common)
 	req := api.GetWebhookOperation(id)
-	req = SetAidFloatFromContext(testClient.GetConfig().Context, req)
+	req = SetAidFromContext(testClient.GetConfig().Context, req)
 	resp, _, err := req.Execute()
 	return resp, err
 }

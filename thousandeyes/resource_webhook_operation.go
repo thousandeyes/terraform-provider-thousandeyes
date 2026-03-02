@@ -31,7 +31,7 @@ func resourceWebhookOperationRead(d *schema.ResourceData, m interface{}) error {
 		api := (*connectors.WebhookOperationsAPIService)(&apiClient.Common)
 
 		req := api.GetWebhookOperation(id)
-		req = SetAidFloatFromContext(apiClient.GetConfig().Context, req)
+		req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 		resp, _, err := req.Execute()
 		return resp, err
@@ -46,7 +46,7 @@ func resourceWebhookOperationUpdate(d *schema.ResourceData, m interface{}) error
 	update := buildWebhookOperationStruct(d)
 
 	req := api.UpdateWebhookOperation(d.Id()).WebhookOperation(*update)
-	req = SetAidFloatFromContext(apiClient.GetConfig().Context, req)
+	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 	_, _, err := req.Execute()
 	if err != nil {
@@ -62,7 +62,7 @@ func resourceWebhookOperationDelete(d *schema.ResourceData, m interface{}) error
 	log.Printf("[INFO] Deleting ThousandEyes Webhook Operation %s", d.Id())
 
 	req := api.DeleteWebhookOperation(d.Id())
-	req = SetAidFloatFromContext(apiClient.GetConfig().Context, req)
+	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 	if _, err := req.Execute(); err != nil {
 		return err
@@ -79,7 +79,7 @@ func resourceWebhookOperationCreate(d *schema.ResourceData, m interface{}) error
 	local := buildWebhookOperationStruct(d)
 
 	req := api.CreateWebhookOperation().WebhookOperation(*local)
-	req = SetAidFloatFromContext(apiClient.GetConfig().Context, req)
+	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 	resp, _, err := req.Execute()
 	if err != nil {
