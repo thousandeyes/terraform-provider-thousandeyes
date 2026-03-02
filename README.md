@@ -78,7 +78,6 @@ resource "thousandeyes_http_server" "example_http_server_test" {
 - [X] alert rules
 - [X] tags
 - [X] tag assignments
-- [X] connector assignments
 - [X] account groups
 - [X] users
 - [X] roles
@@ -105,10 +104,6 @@ This provider plugin is maintained by the ThousandEyes engineering team and acce
 > [!NOTE]  
 > The `docs/` folder should not be changed manually. Instead, if there are changes to the examples, inputs/outputs of any `data_source` or `resource`, you need to run `go generate` locally and commit the resulting changes to the `.md` files. 
 
-
-## Support
-
-For bug reports, feature requests, or questions about this provider, please contact [ThousandEyes Support](https://docs.thousandeyes.com/product-documentation/getting-started/getting-support-from-thousandeyes#contacting-support).
 
 ## Acknowledgements
 ThousandEyes would like to thank William Fleming, John Dyer, and Joshua Blanchard for their contribution and community maintenance of this project.
