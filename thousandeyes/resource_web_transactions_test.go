@@ -2,10 +2,8 @@ package thousandeyes
 
 import (
 	"os"
-	"strings"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/thousandeyes/thousandeyes-sdk-go/v3/tests"
@@ -13,8 +11,6 @@ import (
 
 func TestAccThousandEyesWebTransactions(t *testing.T) {
 	var httpResourceName = "thousandeyes_web_transaction.test"
-	var createTestName = acctest.RandomWithPrefix("User Acceptance Test - Web Transactions")
-	var updateTestName = createTestName + " Updated"
 	var testCases = []struct {
 		name                 string
 		createResourceFile   string
@@ -32,7 +28,7 @@ func TestAccThousandEyesWebTransactions(t *testing.T) {
 			checkDestroyFunction: testAccCheckDefaultWebTransactionsResourceDestroy,
 			checkCreateFunc: []resource.TestCheckFunc{
 				resource.TestCheckResourceAttr(httpResourceName, "url", "https://www.thousandeyes.com"),
-				resource.TestCheckResourceAttr(httpResourceName, "test_name", createTestName),
+				resource.TestCheckResourceAttr(httpResourceName, "test_name", "User Acceptance Test - Web Transactions"),
 				resource.TestCheckResourceAttr(httpResourceName, "interval", "120"),
 				resource.TestCheckResourceAttr(httpResourceName, "transaction_script", "  import { By, Key, until } from 'selenium-webdriver'; \n  import { driver, markers, credentials, downloads, transaction, test } from 'thousandeyes'; \n  runScript(); \n  async function runScript() \n  { const settings = test.getSettings();\n  // Load page\n  await driver.get(settings.url);\n  await driver.wait(until.titleIs('Digital Experience Monitoring | ThousandEyes'), 1000);\n  await driver.takeScreenshot();\n};\n"),
 				resource.TestCheckResourceAttr(httpResourceName, "alerts_enabled", "true"),
@@ -43,7 +39,7 @@ func TestAccThousandEyesWebTransactions(t *testing.T) {
 			},
 			checkUpdateFunc: []resource.TestCheckFunc{
 				resource.TestCheckResourceAttr(httpResourceName, "url", "https://www.thousandeyes.com"),
-				resource.TestCheckResourceAttr(httpResourceName, "test_name", updateTestName),
+				resource.TestCheckResourceAttr(httpResourceName, "test_name", "User Acceptance Test - Web Transactions (Updated)"),
 				resource.TestCheckResourceAttr(httpResourceName, "interval", "300"),
 				resource.TestCheckResourceAttr(httpResourceName, "transaction_script", "  import { By, Key, until } from 'selenium-webdriver'; \n  import { driver, markers, credentials, downloads, transaction, test } from 'thousandeyes'; \n  runScript(); \n  async function runScript() \n  { const settings = test.getSettings();\n  // Load page\n  await driver.get(settings.url);\n  await driver.wait(until.titleIs('Digital Experience Monitoring | ThousandEyes'), 1000);\n  await driver.takeScreenshot();\n};\n"),
 				resource.TestCheckResourceAttr(httpResourceName, "alerts_enabled", "true"),
@@ -63,11 +59,11 @@ func TestAccThousandEyesWebTransactions(t *testing.T) {
 				CheckDestroy:      tc.checkDestroyFunction,
 				Steps: []resource.TestStep{
 					{
-						Config: testAccThousandEyesWebTransactionsConfig(tc.createResourceFile, createTestName),
+						Config: testAccThousandEyesWebTransactionsConfig(tc.createResourceFile),
 						Check:  resource.ComposeTestCheckFunc(tc.checkCreateFunc...),
 					},
 					{
-						Config: testAccThousandEyesWebTransactionsConfig(tc.updateResourceFile, updateTestName),
+						Config: testAccThousandEyesWebTransactionsConfig(tc.updateResourceFile),
 						Check:  resource.ComposeTestCheckFunc(tc.checkUpdateFunc...),
 					},
 				},
@@ -87,14 +83,12 @@ func testAccCheckDefaultWebTransactionsResourceDestroy(s *terraform.State) error
 	return testAccCheckResourceDestroy(resourceList, s)
 }
 
-func testAccThousandEyesWebTransactionsConfig(testResource, testName string) string {
-	const testNamePlaceholder = "__WEB_TRANSACTIONS_TEST_NAME__"
-
+func testAccThousandEyesWebTransactionsConfig(testResource string) string {
 	content, err := os.ReadFile(testResource)
 	if err != nil {
 		panic(err)
 	}
-	return strings.ReplaceAll(string(content), testNamePlaceholder, testName)
+	return string(content)
 }
 
 func getWebTransactions(id string) (interface{}, error) {

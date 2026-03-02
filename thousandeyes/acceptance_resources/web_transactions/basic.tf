@@ -16,7 +16,7 @@ resource "thousandeyes_alert_rule" "test" {
 }
 
 resource "thousandeyes_web_transaction" "test" {
-  test_name          = "__WEB_TRANSACTIONS_TEST_NAME__"
+  test_name          = "User Acceptance Test - Web Transactions"
   interval           = 120
   alerts_enabled     = true
   url                = "https://www.thousandeyes.com"
