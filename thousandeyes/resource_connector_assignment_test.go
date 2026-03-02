@@ -18,6 +18,10 @@ import (
 )
 
 func TestAccThousandEyesConnectorAssignment(t *testing.T) {
+	if os.Getenv("TF_ACC") == "" {
+		t.Skip("Acceptance tests skipped unless env 'TF_ACC' set")
+	}
+
 	testAccPreCheck(t)
 
 	operationID, err := createAcceptanceWebhookOperation(testClient)

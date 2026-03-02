@@ -161,7 +161,10 @@ func executeWebhookOperationConnectorsRequest(apiClient *client.APIClient, metho
 	}
 
 	body, err := io.ReadAll(httpResp.Body)
-	httpResp.Body.Close()
+	closeErr := httpResp.Body.Close()
+	if closeErr != nil {
+		return nil, closeErr
+	}
 	httpResp.Body = io.NopCloser(bytes.NewBuffer(body))
 	if err != nil {
 		return nil, err
