@@ -130,11 +130,6 @@ func ResourceRead(ctx context.Context, d *schema.ResourceData, structPtr interfa
 		_, ok := d.GetOk(tfName)
 
 		if slices.Contains(sensitiveFields, tfName) {
-			// Webhook operation headers are sensitive and obfuscated by the API.
-			// Keep configured values in state to avoid perpetual diffs.
-			if t.Name() == "WebhookOperation" && tfName == "headers" {
-				continue
-			}
 			if ok {
 				if err := d.Set(tfName, nil); err != nil {
 					return err

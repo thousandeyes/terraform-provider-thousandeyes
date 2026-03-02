@@ -1,7 +1,6 @@
 package thousandeyes
 
 import (
-	"context"
 	"log"
 
 	"github.com/thousandeyes/terraform-provider-thousandeyes/thousandeyes/schemas"
@@ -27,15 +26,25 @@ func resourceWebhookOperation() *schema.Resource {
 }
 
 func resourceWebhookOperationRead(d *schema.ResourceData, m interface{}) error {
-	return GetResource(context.Background(), d, m, func(apiClient *client.APIClient, id string) (interface{}, error) {
-		api := (*connectors.WebhookOperationsAPIService)(&apiClient.Common)
+	apiClient := m.(*client.APIClient)
+	api := (*connectors.WebhookOperationsAPIService)(&apiClient.Common)
 
-		req := api.GetWebhookOperation(id)
-		req = SetAidFromContext(apiClient.GetConfig().Context, req)
+	log.Printf("[INFO] Reading ThousandEyes Webhook Operation %s", d.Id())
 
-		resp, _, err := req.Execute()
-		return resp, err
-	})
+	req := api.GetWebhookOperation(d.Id())
+	req = SetAidFromContext(apiClient.GetConfig().Context, req)
+	resp, httpResp, err := req.Execute()
+
+	if err != nil {
+		if httpResp != nil && httpResp.StatusCode == 404 {
+			log.Printf("[INFO] Webhook Operation %s not found, removing from state", d.Id())
+			d.SetId("")
+			return nil
+		}
+		return err
+	}
+
+	return setWebhookOperationResourceData(d, resp)
 }
 
 func resourceWebhookOperationUpdate(d *schema.ResourceData, m interface{}) error {
@@ -93,4 +102,73 @@ func resourceWebhookOperationCreate(d *schema.ResourceData, m interface{}) error
 
 func buildWebhookOperationStruct(d *schema.ResourceData) *connectors.WebhookOperation {
 	return ResourceBuildStruct(d, &connectors.WebhookOperation{})
+}
+
+func setWebhookOperationResourceData(d *schema.ResourceData, webhook *connectors.WebhookOperation) error {
+	if err := d.Set("name", webhook.Name); err != nil {
+		return err
+	}
+	if err := d.Set("category", string(webhook.Category)); err != nil {
+		return err
+	}
+	if err := d.Set("status", string(webhook.Status)); err != nil {
+		return err
+	}
+	if err := d.Set("enabled", webhook.GetEnabled()); err != nil {
+		return err
+	}
+	if webhook.Path != nil {
+		if err := d.Set("path", *webhook.Path); err != nil {
+			return err
+		}
+	} else {
+		if err := d.Set("path", nil); err != nil {
+			return err
+		}
+	}
+	if webhook.Payload != nil {
+		if err := d.Set("payload", *webhook.Payload); err != nil {
+			return err
+		}
+	} else {
+		if err := d.Set("payload", nil); err != nil {
+			return err
+		}
+	}
+	if webhook.QueryParams != nil {
+		if err := d.Set("query_params", *webhook.QueryParams); err != nil {
+			return err
+		}
+	} else {
+		if err := d.Set("query_params", nil); err != nil {
+			return err
+		}
+	}
+	if webhook.Type != nil {
+		if err := d.Set("type", string(*webhook.Type)); err != nil {
+			return err
+		}
+	} else {
+		if err := d.Set("type", nil); err != nil {
+			return err
+		}
+	}
+	if webhook.Links != nil && webhook.Links.Self != nil {
+		if err := d.Set("link", webhook.Links.Self.Href); err != nil {
+			return err
+		}
+	} else {
+		if err := d.Set("link", nil); err != nil {
+			return err
+		}
+	}
+
+	// Keep user-configured sensitive header values in state to avoid perpetual diffs.
+	if headers, ok := d.GetOk("headers"); ok {
+		if err := d.Set("headers", headers); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
