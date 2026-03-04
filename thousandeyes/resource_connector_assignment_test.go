@@ -109,11 +109,15 @@ func testAccConnectorAssignmentConfig(resourceFile, connectorID, operationID1, o
 	}
 
 	cfg := string(content)
-	cfg = strings.ReplaceAll(cfg, "__CONNECTOR_ID__", connectorID)
-	cfg = strings.ReplaceAll(cfg, "__OPERATION_ID_1__", operationID1)
-	cfg = strings.ReplaceAll(cfg, "__OPERATION_ID_2__", operationID2)
+	prefix := fmt.Sprintf(`
+locals {
+  connector_id   = %q
+  operation_id_1 = %q
+  operation_id_2 = %q
+}
+`, connectorID, operationID1, operationID2)
 
-	return cfg
+	return prefix + "\n" + cfg
 }
 
 func createAcceptanceWebhookOperation(apiClient *client.APIClient) (string, error) {

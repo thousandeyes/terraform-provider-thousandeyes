@@ -1,6 +1,6 @@
 resource "thousandeyes_connector_assignment" "test" {
-  connector_id = "__CONNECTOR_ID__"
+  connector_id = local.connector_id
   operation_ids = [
-    "__OPERATION_ID_1__"
+    local.operation_id_1
   ]
 }
