@@ -110,9 +110,7 @@ func expandOperationIDs(d *schema.ResourceData) []string {
 	raw := d.Get("operation_ids").(*schema.Set).List()
 	operationIDs := make([]string, 0, len(raw))
 	for _, item := range raw {
-		if id, ok := item.(string); ok && id != "" {
-			operationIDs = append(operationIDs, id)
-		}
+		operationIDs = append(operationIDs, item.(string))
 	}
 	sort.Strings(operationIDs)
 	return operationIDs

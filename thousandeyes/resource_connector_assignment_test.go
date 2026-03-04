@@ -102,6 +102,77 @@ func TestAccThousandEyesConnectorAssignment(t *testing.T) {
 	})
 }
 
+func TestAccThousandEyesConnectorAssignment_threeWebhookOperations(t *testing.T) {
+	if os.Getenv("TF_ACC") == "" {
+		t.Skip("Acceptance tests skipped unless env 'TF_ACC' set")
+	}
+
+	testAccPreCheck(t)
+
+	operationID1, err := createAcceptanceWebhookOperation(testClient)
+	if err != nil {
+		t.Fatalf("failed creating first acceptance webhook operation: %v", err)
+	}
+
+	operationID2, err := createAcceptanceWebhookOperation(testClient)
+	if err != nil {
+		deleteAcceptanceWebhookOperation(testClient, operationID1)
+		t.Fatalf("failed creating second acceptance webhook operation: %v", err)
+	}
+
+	operationID3, err := createAcceptanceWebhookOperation(testClient)
+	if err != nil {
+		deleteAcceptanceWebhookOperation(testClient, operationID1)
+		deleteAcceptanceWebhookOperation(testClient, operationID2)
+		t.Fatalf("failed creating third acceptance webhook operation: %v", err)
+	}
+
+	connectorID, err := createAcceptanceConnector(testClient)
+	if err != nil {
+		deleteAcceptanceWebhookOperation(testClient, operationID1)
+		deleteAcceptanceWebhookOperation(testClient, operationID2)
+		deleteAcceptanceWebhookOperation(testClient, operationID3)
+		t.Fatalf("failed creating acceptance connector: %v", err)
+	}
+
+	defer func() {
+		deleteAcceptanceConnector(testClient, connectorID)
+		deleteAcceptanceWebhookOperation(testClient, operationID1)
+		deleteAcceptanceWebhookOperation(testClient, operationID2)
+		deleteAcceptanceWebhookOperation(testClient, operationID3)
+	}()
+
+	resourceName := "thousandeyes_connector_assignment.test"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: providerFactories,
+		CheckDestroy: func(_ *terraform.State) error {
+			assignments, err := getConnectorOperations(testClient, connectorID)
+			if err != nil {
+				return err
+			}
+			if assignments != nil && len(assignments.Items) != 0 {
+				return fmt.Errorf("expected no operation assignments after destroy, found %d", len(assignments.Items))
+			}
+			return nil
+		},
+		Steps: []resource.TestStep{
+			{
+				Config: testAccConnectorAssignmentThreeOperationsConfig(connectorID, operationID1, operationID2, operationID3),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "id", connectorID),
+					resource.TestCheckResourceAttr(resourceName, "connector_id", connectorID),
+					resource.TestCheckResourceAttr(resourceName, "operation_ids.#", "3"),
+					resource.TestCheckTypeSetElemAttr(resourceName, "operation_ids.*", operationID1),
+					resource.TestCheckTypeSetElemAttr(resourceName, "operation_ids.*", operationID2),
+					resource.TestCheckTypeSetElemAttr(resourceName, "operation_ids.*", operationID3),
+				),
+			},
+		},
+	})
+}
+
 func testAccConnectorAssignmentConfig(resourceFile, connectorID, operationID1, operationID2 string) string {
 	content, err := os.ReadFile(resourceFile)
 	if err != nil {
@@ -118,6 +189,19 @@ locals {
 `, connectorID, operationID1, operationID2)
 
 	return prefix + "\n" + cfg
+}
+
+func testAccConnectorAssignmentThreeOperationsConfig(connectorID, operationID1, operationID2, operationID3 string) string {
+	return fmt.Sprintf(`
+resource "thousandeyes_connector_assignment" "test" {
+  connector_id = %q
+  operation_ids = [
+    %q,
+    %q,
+    %q
+  ]
+}
+`, connectorID, operationID1, operationID2, operationID3)
 }
 
 func createAcceptanceWebhookOperation(apiClient *client.APIClient) (string, error) {

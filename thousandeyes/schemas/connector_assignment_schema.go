@@ -1,6 +1,9 @@
 package schemas
 
-import "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+import (
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+)
 
 var ConnectorAssignmentSchema = map[string]*schema.Schema{
 	"id": {
@@ -19,7 +22,8 @@ var ConnectorAssignmentSchema = map[string]*schema.Schema{
 		Description: "The webhook operation IDs assigned to the connector. This list is authoritative and replaces all existing assignments on apply.",
 		Required:    true,
 		Elem: &schema.Schema{
-			Type: schema.TypeString,
+			Type:         schema.TypeString,
+			ValidateFunc: validation.StringIsNotEmpty,
 		},
 	},
 }
