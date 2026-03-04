@@ -24,28 +24,28 @@ func TestAccThousandEyesConnectorAssignment(t *testing.T) {
 
 	testAccPreCheck(t)
 
-	operationID, err := createAcceptanceWebhookOperation(testClient)
+	operationID1, err := createAcceptanceWebhookOperation(testClient)
 	if err != nil {
-		t.Fatalf("failed creating acceptance webhook operation: %v", err)
+		t.Fatalf("failed creating first acceptance webhook operation: %v", err)
 	}
 
-	connectorID1, err := createAcceptanceConnector(testClient)
+	operationID2, err := createAcceptanceWebhookOperation(testClient)
 	if err != nil {
-		deleteAcceptanceWebhookOperation(testClient, operationID)
-		t.Fatalf("failed creating first acceptance connector: %v", err)
+		deleteAcceptanceWebhookOperation(testClient, operationID1)
+		t.Fatalf("failed creating second acceptance webhook operation: %v", err)
 	}
 
-	connectorID2, err := createAcceptanceConnector(testClient)
+	connectorID, err := createAcceptanceConnector(testClient)
 	if err != nil {
-		deleteAcceptanceConnector(testClient, connectorID1)
-		deleteAcceptanceWebhookOperation(testClient, operationID)
-		t.Fatalf("failed creating second acceptance connector: %v", err)
+		deleteAcceptanceWebhookOperation(testClient, operationID1)
+		deleteAcceptanceWebhookOperation(testClient, operationID2)
+		t.Fatalf("failed creating acceptance connector: %v", err)
 	}
 
 	defer func() {
-		deleteAcceptanceConnector(testClient, connectorID1)
-		deleteAcceptanceConnector(testClient, connectorID2)
-		deleteAcceptanceWebhookOperation(testClient, operationID)
+		deleteAcceptanceConnector(testClient, connectorID)
+		deleteAcceptanceWebhookOperation(testClient, operationID1)
+		deleteAcceptanceWebhookOperation(testClient, operationID2)
 	}()
 
 	resourceName := "thousandeyes_connector_assignment.test"
@@ -54,12 +54,12 @@ func TestAccThousandEyesConnectorAssignment(t *testing.T) {
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: providerFactories,
 		CheckDestroy: func(_ *terraform.State) error {
-			assignments, err := getWebhookOperationConnectors(testClient, operationID)
+			assignments, err := getConnectorOperations(testClient, connectorID)
 			if err != nil {
 				return err
 			}
 			if assignments != nil && len(assignments.Items) != 0 {
-				return fmt.Errorf("expected no connector assignments after destroy, found %d", len(assignments.Items))
+				return fmt.Errorf("expected no operation assignments after destroy, found %d", len(assignments.Items))
 			}
 			return nil
 		},
@@ -67,29 +67,30 @@ func TestAccThousandEyesConnectorAssignment(t *testing.T) {
 			{
 				Config: testAccConnectorAssignmentConfig(
 					"acceptance_resources/connector_assignment/basic.tf",
-					operationID,
-					connectorID1,
-					connectorID2,
+					connectorID,
+					operationID1,
+					operationID2,
 				),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "id", operationID),
-					resource.TestCheckResourceAttr(resourceName, "webhook_operation_id", operationID),
-					resource.TestCheckResourceAttr(resourceName, "connector_ids.#", "1"),
-					resource.TestCheckTypeSetElemAttr(resourceName, "connector_ids.*", connectorID1),
+					resource.TestCheckResourceAttr(resourceName, "id", connectorID),
+					resource.TestCheckResourceAttr(resourceName, "connector_id", connectorID),
+					resource.TestCheckResourceAttr(resourceName, "operation_ids.#", "1"),
+					resource.TestCheckTypeSetElemAttr(resourceName, "operation_ids.*", operationID1),
 				),
 			},
 			{
 				Config: testAccConnectorAssignmentConfig(
 					"acceptance_resources/connector_assignment/update.tf",
-					operationID,
-					connectorID1,
-					connectorID2,
+					connectorID,
+					operationID1,
+					operationID2,
 				),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "id", operationID),
-					resource.TestCheckResourceAttr(resourceName, "webhook_operation_id", operationID),
-					resource.TestCheckResourceAttr(resourceName, "connector_ids.#", "1"),
-					resource.TestCheckTypeSetElemAttr(resourceName, "connector_ids.*", connectorID2),
+					resource.TestCheckResourceAttr(resourceName, "id", connectorID),
+					resource.TestCheckResourceAttr(resourceName, "connector_id", connectorID),
+					resource.TestCheckResourceAttr(resourceName, "operation_ids.#", "2"),
+					resource.TestCheckTypeSetElemAttr(resourceName, "operation_ids.*", operationID1),
+					resource.TestCheckTypeSetElemAttr(resourceName, "operation_ids.*", operationID2),
 				),
 			},
 			{
@@ -101,16 +102,16 @@ func TestAccThousandEyesConnectorAssignment(t *testing.T) {
 	})
 }
 
-func testAccConnectorAssignmentConfig(resourceFile, webhookOperationID, connectorID1, connectorID2 string) string {
+func testAccConnectorAssignmentConfig(resourceFile, connectorID, operationID1, operationID2 string) string {
 	content, err := os.ReadFile(resourceFile)
 	if err != nil {
 		panic(err)
 	}
 
 	cfg := string(content)
-	cfg = strings.ReplaceAll(cfg, "__WEBHOOK_OPERATION_ID__", webhookOperationID)
-	cfg = strings.ReplaceAll(cfg, "__CONNECTOR_ID_1__", connectorID1)
-	cfg = strings.ReplaceAll(cfg, "__CONNECTOR_ID_2__", connectorID2)
+	cfg = strings.ReplaceAll(cfg, "__CONNECTOR_ID__", connectorID)
+	cfg = strings.ReplaceAll(cfg, "__OPERATION_ID_1__", operationID1)
+	cfg = strings.ReplaceAll(cfg, "__OPERATION_ID_2__", operationID2)
 
 	return cfg
 }

@@ -6,23 +6,23 @@ description: |-
 
 # thousandeyes_connector_assignment (Resource)
 
-Manages all connector assignments for a webhook operation.
+Manages all webhook operation assignments for a connector.
 
-This resource is authoritative for the operation and uses PUT replace-all semantics:
-- To assign a connector, Terraform sends the full list including the connector ID.
-- To remove all connectors, Terraform sends an empty list (`[]`).
+This resource is authoritative for the connector and uses PUT replace-all semantics:
+- To add an operation, Terraform sends the full list including the new operation ID.
+- To remove an operation, Terraform sends the full list without that ID.
+- To remove all operation assignments, Terraform sends an empty list (`[]`).
 
-Any connector assignments made outside Terraform for the same webhook operation will be removed on the next apply if they are not present in `connector_ids`.
-
-The current API supports one connector per webhook operation.
+Any operation assignments made outside Terraform for the same connector will be removed on the next apply if they are not present in `operation_ids`.
 
 ## Example Usage
 
 ```terraform
 resource "thousandeyes_connector_assignment" "example" {
-  webhook_operation_id = "webhook_operation_id"
-  connector_ids = [
-    "connector_id"
+  connector_id = "connector_id"
+  operation_ids = [
+    "webhook_operation_id_1",
+    "webhook_operation_id_2"
   ]
 }
 ```
@@ -32,24 +32,24 @@ resource "thousandeyes_connector_assignment" "example" {
 
 ### Required
 
-- `connector_ids` (Set of String) The connector IDs assigned to the webhook operation. This list is authoritative and replaces all existing assignments on apply. The current API supports one connector per webhook operation.
-- `webhook_operation_id` (String) The ID of the webhook operation whose connector assignments are managed by this resource.
+- `connector_id` (String) The ID of the connector whose webhook operation assignments are managed by this resource.
+- `operation_ids` (Set of String) The webhook operation IDs assigned to the connector. This list is authoritative and replaces all existing assignments on apply.
 
 ### Read-Only
 
-- `id` (String) The ID of this resource. Matches `webhook_operation_id`.
+- `id` (String) The ID of this resource. Matches `connector_id`.
 
 ## Import
-In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) providing the webhook operation ID.
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) providing the connector ID.
 ```terraform
 import {
   to = thousandeyes_connector_assignment.example
-  id = "webhook_operation_id"
+  id = "connector_id"
 }
 ```
 
 Using `terraform import` command.
 ```shell
-# ThousandEyes Connector Assignment can be imported using the webhook operation ID
-terraform import thousandeyes_connector_assignment.example webhook_operation_id
+# ThousandEyes Connector Assignment can be imported using the connector ID
+terraform import thousandeyes_connector_assignment.example connector_id
 ```

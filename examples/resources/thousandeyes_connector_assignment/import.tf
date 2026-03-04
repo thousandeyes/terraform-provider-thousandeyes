@@ -1,4 +1,4 @@
 import {
   to = thousandeyes_connector_assignment.example
-  id = "webhook_operation_id"
+  id = "connector_id"
 }

@@ -11,8 +11,6 @@ import (
 	"github.com/thousandeyes/thousandeyes-sdk-go/v3/connectors"
 )
 
-const operationTypeWebhooks = "webhooks"
-
 func resourceConnectorAssignment() *schema.Resource {
 	return &schema.Resource{
 		Schema:      schemas.ConnectorAssignmentSchema,
@@ -20,7 +18,7 @@ func resourceConnectorAssignment() *schema.Resource {
 		Read:        resourceConnectorAssignmentRead,
 		Update:      resourceConnectorAssignmentUpdate,
 		Delete:      resourceConnectorAssignmentDelete,
-		Description: "Manages all connector assignments for a webhook operation.\n\nThis resource is authoritative for the operation and uses PUT replace-all semantics:\n- To assign a connector, Terraform sends the full list including the connector ID.\n- To remove all connectors, Terraform sends an empty list (`[]`).\n\nAny connector assignments made outside Terraform for the same webhook operation will be removed on the next apply if they are not present in `connector_ids`.\n\nThe current API supports one connector per webhook operation.",
+		Description: "Manages all webhook operation assignments for a connector.\n\nThis resource is authoritative for the connector and uses PUT replace-all semantics:\n- To add an operation, Terraform sends the full list including the new operation ID.\n- To remove an operation, Terraform sends the full list without that ID.\n- To remove all operation assignments, Terraform sends an empty list (`[]`).\n\nAny operation assignments made outside Terraform for the same connector will be removed on the next apply if they are not present in `operation_ids`.",
 		Importer: &schema.ResourceImporter{
 			StateContext: resourceConnectorAssignmentImport,
 		},
@@ -28,37 +26,37 @@ func resourceConnectorAssignment() *schema.Resource {
 }
 
 func resourceConnectorAssignmentImport(_ context.Context, d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
-	if err := d.Set("webhook_operation_id", d.Id()); err != nil {
+	if err := d.Set("connector_id", d.Id()); err != nil {
 		return nil, err
 	}
 	return []*schema.ResourceData{d}, resourceConnectorAssignmentRead(d, m)
 }
 
 func resourceConnectorAssignmentCreate(d *schema.ResourceData, m interface{}) error {
-	operationID := d.Get("webhook_operation_id").(string)
-	log.Printf("[INFO] Creating ThousandEyes Connector Assignment for webhook operation %s", operationID)
+	connectorID := d.Get("connector_id").(string)
+	log.Printf("[INFO] Creating ThousandEyes Connector Assignment for connector %s", connectorID)
 
-	if _, err := setWebhookOperationConnectors(m.(*client.APIClient), operationID, expandConnectorIDs(d)); err != nil {
+	if _, err := setConnectorOperations(m.(*client.APIClient), connectorID, expandOperationIDs(d)); err != nil {
 		return err
 	}
 
-	d.SetId(operationID)
+	d.SetId(connectorID)
 	return resourceConnectorAssignmentRead(d, m)
 }
 
 func resourceConnectorAssignmentRead(d *schema.ResourceData, m interface{}) error {
 	apiClient := m.(*client.APIClient)
-	operationID := d.Get("webhook_operation_id").(string)
-	if operationID == "" {
-		operationID = d.Id()
+	connectorID := d.Get("connector_id").(string)
+	if connectorID == "" {
+		connectorID = d.Id()
 	}
 
-	log.Printf("[INFO] Reading ThousandEyes Connector Assignment for webhook operation %s", operationID)
+	log.Printf("[INFO] Reading ThousandEyes Connector Assignment for connector %s", connectorID)
 
-	assignments, err := getWebhookOperationConnectors(apiClient, operationID)
+	assignments, err := getConnectorOperations(apiClient, connectorID)
 	if err != nil {
 		if IsNotFoundError(err) {
-			log.Printf("[INFO] Webhook operation %s not found, removing connector assignment from state", operationID)
+			log.Printf("[INFO] Connector %s not found, removing connector assignment from state", connectorID)
 			d.SetId("")
 			return nil
 		}
@@ -70,22 +68,22 @@ func resourceConnectorAssignmentRead(d *schema.ResourceData, m interface{}) erro
 		items = assignments.Items
 	}
 
-	if err := d.Set("webhook_operation_id", operationID); err != nil {
+	if err := d.Set("connector_id", connectorID); err != nil {
 		return err
 	}
-	if err := d.Set("connector_ids", items); err != nil {
+	if err := d.Set("operation_ids", items); err != nil {
 		return err
 	}
 
-	d.SetId(operationID)
+	d.SetId(connectorID)
 	return nil
 }
 
 func resourceConnectorAssignmentUpdate(d *schema.ResourceData, m interface{}) error {
-	operationID := d.Get("webhook_operation_id").(string)
-	log.Printf("[INFO] Updating ThousandEyes Connector Assignment for webhook operation %s", operationID)
+	connectorID := d.Get("connector_id").(string)
+	log.Printf("[INFO] Updating ThousandEyes Connector Assignment for connector %s", connectorID)
 
-	if _, err := setWebhookOperationConnectors(m.(*client.APIClient), operationID, expandConnectorIDs(d)); err != nil {
+	if _, err := setConnectorOperations(m.(*client.APIClient), connectorID, expandOperationIDs(d)); err != nil {
 		return err
 	}
 
@@ -93,14 +91,14 @@ func resourceConnectorAssignmentUpdate(d *schema.ResourceData, m interface{}) er
 }
 
 func resourceConnectorAssignmentDelete(d *schema.ResourceData, m interface{}) error {
-	operationID := d.Get("webhook_operation_id").(string)
-	if operationID == "" {
-		operationID = d.Id()
+	connectorID := d.Get("connector_id").(string)
+	if connectorID == "" {
+		connectorID = d.Id()
 	}
 
-	log.Printf("[INFO] Deleting ThousandEyes Connector Assignment for webhook operation %s", operationID)
+	log.Printf("[INFO] Deleting ThousandEyes Connector Assignment for connector %s", connectorID)
 
-	if _, err := setWebhookOperationConnectors(m.(*client.APIClient), operationID, []string{}); err != nil && !IsNotFoundError(err) {
+	if _, err := setConnectorOperations(m.(*client.APIClient), connectorID, []string{}); err != nil && !IsNotFoundError(err) {
 		return err
 	}
 
@@ -108,32 +106,32 @@ func resourceConnectorAssignmentDelete(d *schema.ResourceData, m interface{}) er
 	return nil
 }
 
-func expandConnectorIDs(d *schema.ResourceData) []string {
-	raw := d.Get("connector_ids").(*schema.Set).List()
-	connectorIDs := make([]string, 0, len(raw))
+func expandOperationIDs(d *schema.ResourceData) []string {
+	raw := d.Get("operation_ids").(*schema.Set).List()
+	operationIDs := make([]string, 0, len(raw))
 	for _, item := range raw {
 		if id, ok := item.(string); ok && id != "" {
-			connectorIDs = append(connectorIDs, id)
+			operationIDs = append(operationIDs, id)
 		}
 	}
-	sort.Strings(connectorIDs)
-	return connectorIDs
+	sort.Strings(operationIDs)
+	return operationIDs
 }
 
-func getWebhookOperationConnectors(apiClient *client.APIClient, operationID string) (*connectors.Assignments, error) {
-	api := (*connectors.OperationConnectorsAPIService)(&apiClient.Common)
+func getConnectorOperations(apiClient *client.APIClient, connectorID string) (*connectors.Assignments, error) {
+	api := (*connectors.GenericConnectorsAPIService)(&apiClient.Common)
 
-	req := api.GetOperationConnectors(operationTypeWebhooks, operationID)
+	req := api.ListGenericConnectorOperations(connectorID)
 	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 	resp, _, err := req.Execute()
 	return resp, err
 }
 
-func setWebhookOperationConnectors(apiClient *client.APIClient, operationID string, connectorIDs []string) (*connectors.Assignments, error) {
-	api := (*connectors.OperationConnectorsAPIService)(&apiClient.Common)
+func setConnectorOperations(apiClient *client.APIClient, connectorID string, operationIDs []string) (*connectors.Assignments, error) {
+	api := (*connectors.GenericConnectorsAPIService)(&apiClient.Common)
 
-	req := api.SetOperationConnectors(operationTypeWebhooks, operationID).RequestBody(connectorIDs)
+	req := api.SetGenericConnectorOperations(connectorID).RequestBody(operationIDs)
 	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 	resp, _, err := req.Execute()

@@ -1,6 +1,7 @@
 resource "thousandeyes_connector_assignment" "example" {
-  webhook_operation_id = "webhook_operation_id"
-  connector_ids = [
-    "connector_id"
+  connector_id = "connector_id"
+  operation_ids = [
+    "webhook_operation_id_1",
+    "webhook_operation_id_2"
   ]
 }
