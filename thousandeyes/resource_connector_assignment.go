@@ -1,15 +1,9 @@
 package thousandeyes
 
 import (
-	"bytes"
 	"context"
-	"fmt"
-	"io"
 	"log"
-	"net/http"
-	"net/url"
 	"sort"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/thousandeyes/terraform-provider-thousandeyes/thousandeyes/schemas"
@@ -26,18 +20,18 @@ func resourceConnectorAssignment() *schema.Resource {
 		Read:        resourceConnectorAssignmentRead,
 		Update:      resourceConnectorAssignmentUpdate,
 		Delete:      resourceConnectorAssignmentDelete,
-		Description: "Manages all connector assignments for a webhook operation.\n\nThis resource is authoritative for the operation and uses PUT replace-all semantics:\n- To add a connector, Terraform sends the full list including the new ID.\n- To remove a connector, Terraform sends the full list without that ID.\n- To remove all connectors, Terraform sends an empty list (`[]`).\n\nAny connector assignments made outside Terraform for the same webhook operation will be removed on the next apply if they are not present in `connector_ids`.",
+		Description: "Manages all connector assignments for a webhook operation.\n\nThis resource is authoritative for the operation and uses PUT replace-all semantics:\n- To assign a connector, Terraform sends the full list including the connector ID.\n- To remove all connectors, Terraform sends an empty list (`[]`).\n\nAny connector assignments made outside Terraform for the same webhook operation will be removed on the next apply if they are not present in `connector_ids`.\n\nThe current API supports one connector per webhook operation.",
 		Importer: &schema.ResourceImporter{
 			StateContext: resourceConnectorAssignmentImport,
 		},
 	}
 }
 
-func resourceConnectorAssignmentImport(_ context.Context, d *schema.ResourceData, _ interface{}) ([]*schema.ResourceData, error) {
+func resourceConnectorAssignmentImport(_ context.Context, d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
 	if err := d.Set("webhook_operation_id", d.Id()); err != nil {
 		return nil, err
 	}
-	return []*schema.ResourceData{d}, nil
+	return []*schema.ResourceData{d}, resourceConnectorAssignmentRead(d, m)
 }
 
 func resourceConnectorAssignmentCreate(d *schema.ResourceData, m interface{}) error {
@@ -127,62 +121,23 @@ func expandConnectorIDs(d *schema.ResourceData) []string {
 }
 
 func getWebhookOperationConnectors(apiClient *client.APIClient, operationID string) (*connectors.Assignments, error) {
-	return executeWebhookOperationConnectorsRequest(apiClient, http.MethodGet, operationID, nil)
+	api := (*connectors.OperationConnectorsAPIService)(&apiClient.Common)
+
+	req := api.GetOperationConnectors(operationTypeWebhooks, operationID)
+	req = SetAidFromContext(apiClient.GetConfig().Context, req)
+
+	resp, _, err := req.Execute()
+	return resp, err
 }
 
 func setWebhookOperationConnectors(apiClient *client.APIClient, operationID string, connectorIDs []string) (*connectors.Assignments, error) {
-	return executeWebhookOperationConnectorsRequest(apiClient, http.MethodPut, operationID, connectorIDs)
-}
+	api := (*connectors.OperationConnectorsAPIService)(&apiClient.Common)
 
-func executeWebhookOperationConnectorsRequest(apiClient *client.APIClient, method string, operationID string, requestBody interface{}) (*connectors.Assignments, error) {
-	basePath := strings.TrimRight(apiClient.GetConfig().ServerURL, "/")
-	path := fmt.Sprintf("%s/operations/%s/%s/connectors", basePath, operationTypeWebhooks, url.PathEscape(operationID))
+	req := api.SetOperationConnectors(operationTypeWebhooks, operationID).RequestBody(connectorIDs)
+	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
-	headers := map[string]string{
-		"Accept": "application/problem+json, application/hal+json, application/json",
-	}
-	if method == http.MethodPut {
-		headers["Content-Type"] = "application/json"
-	}
-
-	queryParams := url.Values{}
-	if aid, ok := aidStringFromContext(apiClient.GetConfig().Context); ok {
-		queryParams.Set("aid", aid)
-	}
-
-	req, err := apiClient.PrepareRequest(path, method, requestBody, headers, queryParams, url.Values{})
-	if err != nil {
-		return nil, err
-	}
-
-	httpResp, err := apiClient.CallAPI(req)
-	if err != nil || httpResp == nil {
-		return nil, err
-	}
-
-	body, err := io.ReadAll(httpResp.Body)
-	closeErr := httpResp.Body.Close()
-	if closeErr != nil {
-		return nil, closeErr
-	}
-	httpResp.Body = io.NopCloser(bytes.NewBuffer(body))
-	if err != nil {
-		return nil, err
-	}
-
-	if httpResp.StatusCode >= 300 {
-		return nil, fmt.Errorf("operation connectors request failed: %s: %s", httpResp.Status, strings.TrimSpace(string(body)))
-	}
-
-	resp := &connectors.Assignments{}
-	if len(body) == 0 {
-		return resp, nil
-	}
-	if err := apiClient.Decode(resp, body, httpResp.Header.Get("Content-Type")); err != nil {
-		return nil, err
-	}
-
-	return resp, nil
+	resp, _, err := req.Execute()
+	return resp, err
 }
 
 func aidStringFromContext(ctx context.Context) (string, bool) {

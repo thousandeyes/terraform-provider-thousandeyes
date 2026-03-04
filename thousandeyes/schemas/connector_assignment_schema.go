@@ -16,8 +16,9 @@ var ConnectorAssignmentSchema = map[string]*schema.Schema{
 	},
 	"connector_ids": {
 		Type:        schema.TypeSet,
-		Description: "The connector IDs assigned to the webhook operation. This list is authoritative and replaces all existing assignments on apply.",
+		Description: "The connector IDs assigned to the webhook operation. This list is authoritative and replaces all existing assignments on apply. The current API supports one connector per webhook operation.",
 		Required:    true,
+		MaxItems:    1,
 		Elem: &schema.Schema{
 			Type: schema.TypeString,
 		},

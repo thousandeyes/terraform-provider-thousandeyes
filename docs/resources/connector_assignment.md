@@ -9,11 +9,12 @@ description: |-
 Manages all connector assignments for a webhook operation.
 
 This resource is authoritative for the operation and uses PUT replace-all semantics:
-- To add a connector, Terraform sends the full list including the new ID.
-- To remove a connector, Terraform sends the full list without that ID.
+- To assign a connector, Terraform sends the full list including the connector ID.
 - To remove all connectors, Terraform sends an empty list (`[]`).
 
 Any connector assignments made outside Terraform for the same webhook operation will be removed on the next apply if they are not present in `connector_ids`.
+
+The current API supports one connector per webhook operation.
 
 ## Example Usage
 
@@ -31,7 +32,7 @@ resource "thousandeyes_connector_assignment" "example" {
 
 ### Required
 
-- `connector_ids` (Set of String) The connector IDs assigned to the webhook operation. This list is authoritative and replaces all existing assignments on apply.
+- `connector_ids` (Set of String) The connector IDs assigned to the webhook operation. This list is authoritative and replaces all existing assignments on apply. The current API supports one connector per webhook operation.
 - `webhook_operation_id` (String) The ID of the webhook operation whose connector assignments are managed by this resource.
 
 ### Read-Only
