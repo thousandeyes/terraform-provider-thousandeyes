@@ -213,30 +213,19 @@ func TestAccThousandEyesConnector_withHeaders(t *testing.T) {
 	})
 }
 
-func TestAccThousandEyesConnector_authBasic(t *testing.T) {
+func TestAccThousandEyesConnector_withAuthentication(t *testing.T) {
 	resourceName := "thousandeyes_connector.test_auth"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: providerFactories,
 		CheckDestroy:      testAccCheckConnectorDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: fmt.Sprintf(`
-resource "thousandeyes_connector" "test_auth" {
-  name   = "UAT - Connector Auth Basic"
-  target = "%s/auth-basic"
-
-  authentication {
-    type     = "basic"
-    username = "testuser"
-    password = "testpass"
-  }
-}
-`, connectorTargetBase),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "name", "UAT - Connector Auth Basic"),
-					resource.TestCheckResourceAttr(resourceName, "authentication.#", "1"),
+			Steps: []resource.TestStep{
+				{
+					Config: testAccConnectorConfig("acceptance_resources/connector/with_authentication.tf"),
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(resourceName, "name", "UAT - Connector Auth Basic"),
+						resource.TestCheckResourceAttr(resourceName, "authentication.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "authentication.0.type", "basic"),
 					resource.TestCheckResourceAttr(resourceName, "authentication.0.username", "testuser"),
 					resource.TestCheckResourceAttrSet(resourceName, "id"),
@@ -253,22 +242,12 @@ func TestAccThousandEyesConnector_authBearerToken(t *testing.T) {
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: providerFactories,
 		CheckDestroy:      testAccCheckConnectorDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: fmt.Sprintf(`
-resource "thousandeyes_connector" "test_auth" {
-  name   = "UAT - Connector Auth Bearer"
-  target = "%s/auth-bearer"
-
-  authentication {
-    type  = "bearer-token"
-    token = "test-bearer-token-value"
-  }
-}
-`, connectorTargetBase),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "name", "UAT - Connector Auth Bearer"),
-					resource.TestCheckResourceAttr(resourceName, "authentication.0.type", "bearer-token"),
+			Steps: []resource.TestStep{
+				{
+					Config: testAccConnectorConfig("acceptance_resources/connector/auth_bearer_token.tf"),
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(resourceName, "name", "UAT - Connector Auth Bearer"),
+						resource.TestCheckResourceAttr(resourceName, "authentication.0.type", "bearer-token"),
 					resource.TestCheckResourceAttrSet(resourceName, "id"),
 				),
 			},
@@ -283,22 +262,12 @@ func TestAccThousandEyesConnector_authOtherToken(t *testing.T) {
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: providerFactories,
 		CheckDestroy:      testAccCheckConnectorDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: fmt.Sprintf(`
-resource "thousandeyes_connector" "test_auth" {
-  name   = "UAT - Connector Auth Other Token"
-  target = "%s/auth-other"
-
-  authentication {
-    type  = "other-token"
-    token = "test-other-token-value"
-  }
-}
-`, connectorTargetBase),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "name", "UAT - Connector Auth Other Token"),
-					resource.TestCheckResourceAttr(resourceName, "authentication.0.type", "other-token"),
+			Steps: []resource.TestStep{
+				{
+					Config: testAccConnectorConfig("acceptance_resources/connector/auth_other_token.tf"),
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(resourceName, "name", "UAT - Connector Auth Other Token"),
+						resource.TestCheckResourceAttr(resourceName, "authentication.0.type", "other-token"),
 					resource.TestCheckResourceAttrSet(resourceName, "id"),
 				),
 			},
@@ -313,24 +282,12 @@ func TestAccThousandEyesConnector_authOAuthClientCredentials(t *testing.T) {
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: providerFactories,
 		CheckDestroy:      testAccCheckConnectorDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: fmt.Sprintf(`
-resource "thousandeyes_connector" "test_auth" {
-  name   = "UAT - Connector Auth OAuth Client Creds"
-  target = "%s/auth-oauth-cc"
-
-  authentication {
-    type                = "oauth-client-credentials"
-    oauth_client_id     = "test-client-id"
-    oauth_client_secret = "test-client-secret"
-    oauth_token_url     = "https://auth.example.com/oauth/token"
-  }
-}
-`, connectorTargetBase),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "name", "UAT - Connector Auth OAuth Client Creds"),
-					resource.TestCheckResourceAttr(resourceName, "authentication.0.type", "oauth-client-credentials"),
+			Steps: []resource.TestStep{
+				{
+					Config: testAccConnectorConfig("acceptance_resources/connector/auth_oauth_client_credentials.tf"),
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(resourceName, "name", "UAT - Connector Auth OAuth Client Creds"),
+						resource.TestCheckResourceAttr(resourceName, "authentication.0.type", "oauth-client-credentials"),
 					resource.TestCheckResourceAttr(resourceName, "authentication.0.oauth_client_id", "test-client-id"),
 					resource.TestCheckResourceAttr(resourceName, "authentication.0.oauth_token_url", "https://auth.example.com/oauth/token"),
 					resource.TestCheckResourceAttrSet(resourceName, "id"),
@@ -347,27 +304,12 @@ func TestAccThousandEyesConnector_authOAuthCode(t *testing.T) {
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: providerFactories,
 		CheckDestroy:      testAccCheckConnectorDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: fmt.Sprintf(`
-resource "thousandeyes_connector" "test_auth" {
-  name   = "UAT - Connector Auth OAuth Code"
-  target = "%s/auth-oauth-code"
-
-  authentication {
-    type                = "oauth-auth-code"
-    oauth_client_id     = "test-client-id"
-    oauth_client_secret = "test-client-secret"
-    oauth_token_url     = "https://auth.example.com/oauth/token"
-    oauth_auth_url      = "https://auth.example.com/oauth/authorize"
-    code                = "test-auth-code"
-    redirect_uri        = "https://app.example.com/callback"
-  }
-}
-`, connectorTargetBase),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "name", "UAT - Connector Auth OAuth Code"),
-					resource.TestCheckResourceAttr(resourceName, "authentication.0.type", "oauth-auth-code"),
+			Steps: []resource.TestStep{
+				{
+					Config: testAccConnectorConfig("acceptance_resources/connector/auth_oauth_code.tf"),
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(resourceName, "name", "UAT - Connector Auth OAuth Code"),
+						resource.TestCheckResourceAttr(resourceName, "authentication.0.type", "oauth-auth-code"),
 					resource.TestCheckResourceAttr(resourceName, "authentication.0.oauth_client_id", "test-client-id"),
 					resource.TestCheckResourceAttr(resourceName, "authentication.0.oauth_token_url", "https://auth.example.com/oauth/token"),
 					resource.TestCheckResourceAttr(resourceName, "authentication.0.oauth_auth_url", "https://auth.example.com/oauth/authorize"),
@@ -386,39 +328,18 @@ func TestAccThousandEyesConnector_authSwitch(t *testing.T) {
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: providerFactories,
 		CheckDestroy:      testAccCheckConnectorDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: fmt.Sprintf(`
-resource "thousandeyes_connector" "test_auth" {
-  name   = "UAT - Connector Auth Switch"
-  target = "%s/auth-switch"
-
-  authentication {
-    type     = "basic"
-    username = "testuser"
-    password = "testpass"
-  }
-}
-`, connectorTargetBase),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "authentication.0.type", "basic"),
-				),
-			},
-			{
-				Config: fmt.Sprintf(`
-resource "thousandeyes_connector" "test_auth" {
-  name   = "UAT - Connector Auth Switch"
-  target = "%s/auth-switch"
-
-  authentication {
-    type  = "bearer-token"
-    token = "new-bearer-token"
-  }
-}
-`, connectorTargetBase),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "authentication.0.type", "bearer-token"),
-				),
+			Steps: []resource.TestStep{
+				{
+					Config: testAccConnectorConfig("acceptance_resources/connector/auth_switch_basic.tf"),
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(resourceName, "authentication.0.type", "basic"),
+					),
+				},
+				{
+					Config: testAccConnectorConfig("acceptance_resources/connector/auth_switch_bearer.tf"),
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(resourceName, "authentication.0.type", "bearer-token"),
+					),
 			},
 		},
 	})
@@ -432,28 +353,12 @@ func TestAccThousandEyesConnector_headersAndAuth(t *testing.T) {
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: providerFactories,
 		CheckDestroy:      testAccCheckConnectorDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: fmt.Sprintf(`
-resource "thousandeyes_connector" "test_full" {
-  name   = "UAT - Connector Full"
-  target = "%s/full"
-
-  headers {
-    name  = "X-Correlation-ID"
-    value = "abc-123"
-  }
-
-  authentication {
-    type     = "basic"
-    username = "admin"
-    password = "secret"
-  }
-}
-`, connectorTargetBase),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckConnectorExists(resourceName, &connector),
-					resource.TestCheckResourceAttr(resourceName, "name", "UAT - Connector Full"),
+			Steps: []resource.TestStep{
+				{
+					Config: testAccConnectorConfig("acceptance_resources/connector/headers_and_auth.tf"),
+					Check: resource.ComposeTestCheckFunc(
+						testAccCheckConnectorExists(resourceName, &connector),
+						resource.TestCheckResourceAttr(resourceName, "name", "UAT - Connector Full"),
 					resource.TestCheckResourceAttr(resourceName, "target", connectorTargetBase+"/full"),
 					resource.TestCheckResourceAttr(resourceName, "headers.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "headers.0.name", "X-Correlation-ID"),
@@ -482,35 +387,19 @@ func TestAccThousandEyesConnector_removeAuth(t *testing.T) {
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: providerFactories,
 		CheckDestroy:      testAccCheckConnectorDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: fmt.Sprintf(`
-resource "thousandeyes_connector" "test_auth" {
-  name   = "UAT - Connector Remove Auth"
-  target = "%s/remove-auth"
-
-  authentication {
-    type     = "basic"
-    username = "testuser"
-    password = "testpass"
-  }
-}
-`, connectorTargetBase),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "authentication.#", "1"),
-					resource.TestCheckResourceAttr(resourceName, "authentication.0.type", "basic"),
-				),
-			},
-			{
-				Config: fmt.Sprintf(`
-resource "thousandeyes_connector" "test_auth" {
-  name   = "UAT - Connector Remove Auth"
-  target = "%s/remove-auth"
-}
-`, connectorTargetBase),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "authentication.#", "0"),
-				),
+			Steps: []resource.TestStep{
+				{
+					Config: testAccConnectorConfig("acceptance_resources/connector/remove_auth_with_auth.tf"),
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(resourceName, "authentication.#", "1"),
+						resource.TestCheckResourceAttr(resourceName, "authentication.0.type", "basic"),
+					),
+				},
+				{
+					Config: testAccConnectorConfig("acceptance_resources/connector/remove_auth_without_auth.tf"),
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(resourceName, "authentication.#", "0"),
+					),
 			},
 		},
 	})
