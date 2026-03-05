@@ -18,7 +18,7 @@ Webhook operations allow you to customize the payload of generic connectors. The
 
 {{ if .HasImport -}}
 ## Import
-In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) providing `operation_id`.
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) providing `resource_id`.
 {{ tffile "examples/resources/thousandeyes_webhook_operation/import.tf" }}
 
 Using `terraform import` command.

@@ -68,6 +68,7 @@ var WebhookOperationSchema = map[string]*schema.Schema{
 		Type:        schema.TypeList,
 		Description: "Custom headers to include in the webhook request.",
 		Optional:    true,
+		Sensitive:   true,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"name": {

@@ -77,15 +77,17 @@ Required:
 - `value` (String, Sensitive) Header value. Note that this value is obfuscated in the response.
 
 ## Import
-In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) providing `operation_id`.
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) providing `resource_id`.
 ```terraform
-# ThousandEyes Webhook Operation can be imported using the operation ID
-terraform import thousandeyes_webhook_operation.example_webhook_operation cb1b8033-ea2d-4e9b-a920-fe87850693cf
+import {
+  to = thousandeyes_webhook_operation.example_webhook_operation
+  id = "resource_id"
+}
 ```
 
 Using `terraform import` command.
 ```shell
 #!/bin/bash
 # ThousandEyes Webhook Operation can be imported using the operation ID
-terraform import thousandeyes_webhook_operation.example_webhook_operation cb1b8033-ea2d-4e9b-a920-fe87850693cf
+terraform import thousandeyes_webhook_operation.example_webhook_operation resource_id
 ```
