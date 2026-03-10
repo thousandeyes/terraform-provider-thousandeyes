@@ -2,6 +2,7 @@ package thousandeyes
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"log"
@@ -312,4 +313,15 @@ func executeAcceptanceRequest(apiClient *client.APIClient, method, relativePath 
 	}
 
 	return apiClient.Decode(out, body, httpResp.Header.Get("Content-Type"))
+}
+
+func aidStringFromContext(ctx context.Context) (string, bool) {
+	if ctx == nil {
+		return "", false
+	}
+	aid, ok := ctx.Value(accountGroupIdKey).(string)
+	if !ok || aid == "" {
+		return "", false
+	}
+	return aid, true
 }

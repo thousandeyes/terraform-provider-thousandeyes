@@ -1,4 +1,4 @@
 import {
   to = thousandeyes_connector_assignment.example
-  id = "connector_id"
+  id = "existing_connector_id"
 }

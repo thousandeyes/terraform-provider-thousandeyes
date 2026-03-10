@@ -3,7 +3,6 @@ package thousandeyes
 import (
 	"context"
 	"log"
-	"sort"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/thousandeyes/terraform-provider-thousandeyes/thousandeyes/schemas"
@@ -112,7 +111,6 @@ func expandOperationIDs(d *schema.ResourceData) []string {
 	for _, item := range raw {
 		operationIDs = append(operationIDs, item.(string))
 	}
-	sort.Strings(operationIDs)
 	return operationIDs
 }
 
@@ -134,15 +132,4 @@ func setConnectorOperations(apiClient *client.APIClient, connectorID string, ope
 
 	resp, _, err := req.Execute()
 	return resp, err
-}
-
-func aidStringFromContext(ctx context.Context) (string, bool) {
-	if ctx == nil {
-		return "", false
-	}
-	aid, ok := ctx.Value(accountGroupIdKey).(string)
-	if !ok || aid == "" {
-		return "", false
-	}
-	return aid, true
 }
