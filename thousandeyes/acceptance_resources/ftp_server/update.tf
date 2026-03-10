@@ -1,5 +1,5 @@
 data "thousandeyes_agent" "test" {
-  agent_name = "Frankfurt, Germany"
+  agent_name = "Amsterdam, Netherlands"
 }
 
 data "thousandeyes_alert_rule" "def_alert_rule" {
