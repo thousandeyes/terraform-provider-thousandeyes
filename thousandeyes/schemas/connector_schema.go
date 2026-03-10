@@ -34,6 +34,7 @@ var ConnectorSchema = map[string]*schema.Schema{
 		Type:        schema.TypeList,
 		Description: "Custom headers to include in webhook requests.",
 		Optional:    true,
+		Sensitive:   true,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"name": {
