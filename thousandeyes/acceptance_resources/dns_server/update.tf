@@ -1,5 +1,5 @@
-data "thousandeyes_agent" "amsterdam" {
-  agent_name = "Amsterdam, Netherlands"
+data "thousandeyes_agent" "frankfurt" {
+  agent_name = "Frankfurt, Germany"
 }
 
 data "thousandeyes_alert_rule" "def_alert_rule" {
@@ -20,7 +20,7 @@ resource "thousandeyes_dns_server" "test" {
   interval       = 300
   alerts_enabled = true
   domain         = "thousandeyes.com A"
-  agents         = [data.thousandeyes_agent.amsterdam.agent_id]
+  agents         = [data.thousandeyes_agent.frankfurt.agent_id]
   alert_rules    = [data.thousandeyes_alert_rule.def_alert_rule.id, thousandeyes_alert_rule.test.id]
   dns_servers    = ["ns-cloud-d1.googledomains.com", "ns-1458.awsdns-54.org"]
 }

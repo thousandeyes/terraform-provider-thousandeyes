@@ -1,5 +1,5 @@
-data "thousandeyes_agent" "amsterdam" {
-  agent_name = "Amsterdam, Netherlands"
+data "thousandeyes_agent" "frankfurt" {
+  agent_name = "Frankfurt, Germany"
 }
 
 data "thousandeyes_alert_rule" "def_alert_rule1" {
@@ -15,7 +15,7 @@ resource "thousandeyes_http_server" "test" {
   interval       = 120
   alerts_enabled = true
   url            = "https://www.thousandeyes.com"
-  agents         = [data.thousandeyes_agent.amsterdam.agent_id]
+  agents         = [data.thousandeyes_agent.frankfurt.agent_id]
   alert_rules    = [data.thousandeyes_alert_rule.def_alert_rule1.id]
 }
 
@@ -26,7 +26,7 @@ resource "thousandeyes_agent_to_server" "test" {
   server         = "api.stg.thousandeyes.com"
   protocol       = "tcp"
   probe_mode     = "sack"
-  agents         = [data.thousandeyes_agent.amsterdam.agent_id]
+  agents         = [data.thousandeyes_agent.frankfurt.agent_id]
   alert_rules    = [data.thousandeyes_alert_rule.def_alert_rule2.id]
 }
 
