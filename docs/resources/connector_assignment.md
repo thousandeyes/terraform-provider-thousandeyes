@@ -19,10 +19,10 @@ Any operation assignments made outside Terraform for the same connector will be 
 
 ```terraform
 resource "thousandeyes_connector_assignment" "example" {
-  connector_id = "connector_id"
+  connector_id = "<existing_connector_id>"
   operation_ids = [
-    "webhook_operation_id_1",
-    "webhook_operation_id_2"
+    "<existing_webhook_operation_id_1>",
+    "<existing_webhook_operation_id_2>"
   ]
 }
 ```
@@ -44,12 +44,12 @@ In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashico
 ```terraform
 import {
   to = thousandeyes_connector_assignment.example
-  id = "connector_id"
+  id = "existing_connector_id"
 }
 ```
 
 Using `terraform import` command.
 ```shell
 # ThousandEyes Connector Assignment can be imported using the connector ID
-terraform import thousandeyes_connector_assignment.example connector_id
+terraform import thousandeyes_connector_assignment.example existing_connector_id
 ```
