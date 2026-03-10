@@ -76,6 +76,7 @@ resource "thousandeyes_http_server" "example_http_server_test" {
 
 ### Supported additional resources
 - [X] alert rules
+- [X] connectors
 - [X] tags
 - [X] tag assignments
 - [X] account groups
