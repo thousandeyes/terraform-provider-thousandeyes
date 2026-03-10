@@ -1,4 +1,4 @@
-data "thousandeyes_agent" "amsterdam" {
+data "thousandeyes_agent" "frankfurt" {
   agent_name = "Frankfurt, Germany"
 }
 
@@ -20,6 +20,6 @@ resource "thousandeyes_dnssec" "test" {
   interval       = 120
   alerts_enabled = true
   domain         = "thousandeyes.com"
-  agents         = [data.thousandeyes_agent.amsterdam.agent_id]
+  agents         = [data.thousandeyes_agent.frankfurt.agent_id]
   alert_rules    = [thousandeyes_alert_rule.test.id, data.thousandeyes_alert_rule.def_alert_rule.id]
 }
