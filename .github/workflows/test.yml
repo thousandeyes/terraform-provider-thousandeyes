@@ -12,9 +12,9 @@ jobs:
           go-version-file: 'go.mod'
           cache: true
       - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v3.0.0
+        uses: goreleaser/goreleaser-action@v3
         with:
-          version: v2.14.3
+          version: latest
           args: build --snapshot
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
