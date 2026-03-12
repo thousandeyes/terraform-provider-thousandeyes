@@ -1,6 +1,9 @@
 package schemas
 
-import "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+import (
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+)
 
 var DashboardSchema = map[string]*schema.Schema{
 	// aid
@@ -92,9 +95,10 @@ var DashboardSchema = map[string]*schema.Schema{
 			Schema: map[string]*schema.Schema{
 				// Duration
 				"duration": {
-					Type:        schema.TypeInt,
-					Description: "Duration of the timespan in seconds.",
-					Optional:    true,
+					Type:         schema.TypeInt,
+					Description:  "Duration of the timespan in seconds.",
+					Optional:     true,
+					ValidateFunc: validation.IntInSlice([]int{3600, 7200, 21600, 43200, 86400, 172800, 1209600, 2592000, 604800, 5184000}),
 				},
 				// start
 				"start": {

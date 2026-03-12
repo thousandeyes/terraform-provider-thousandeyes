@@ -4,6 +4,6 @@ resource "thousandeyes_dashboard" "test_dashboard" {
   is_private  = true
 
   default_timespan {
-    duration = 3600
+    duration = 7200
   }
 }

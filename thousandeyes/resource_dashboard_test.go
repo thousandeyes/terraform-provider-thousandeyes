@@ -31,13 +31,13 @@ func TestAccThousandEyesDashboard(t *testing.T) {
 				resource.TestCheckResourceAttr(resourceName, "description", "Test Dashboard Description"),
 				resource.TestCheckResourceAttr(resourceName, "global_filter_id", "123"),
 				resource.TestCheckResourceAttr(resourceName, "is_private", "false"),
-				resource.TestCheckResourceAttr(resourceName, "default_timespan.0.duration", "100"),
+				resource.TestCheckResourceAttr(resourceName, "default_timespan.0.duration", "3600"),
 			},
 			checkUpdateFunc: []resource.TestCheckFunc{
 				resource.TestCheckResourceAttr(resourceName, "title", "Test Dashboard (Updated)"),
 				resource.TestCheckResourceAttr(resourceName, "description", "Updated Test Dashboard Description"),
 				resource.TestCheckResourceAttr(resourceName, "is_private", "true"),
-				resource.TestCheckResourceAttr(resourceName, "default_timespan.0.duration", "3600"),
+				resource.TestCheckResourceAttr(resourceName, "default_timespan.0.duration", "7200"),
 			},
 		},
 	}

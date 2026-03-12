@@ -4,6 +4,6 @@ resource "thousandeyes_dashboard" "test_dashboard" {
   global_filter_id = 123
   is_private  = false
   default_timespan {
-    duration = 100
+    duration = 3600
   }
 }
