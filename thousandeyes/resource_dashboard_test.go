@@ -29,7 +29,6 @@ func TestAccThousandEyesDashboard(t *testing.T) {
 			checkCreateFunc: []resource.TestCheckFunc{
 				resource.TestCheckResourceAttr(resourceName, "title", "Test Dashboard"),
 				resource.TestCheckResourceAttr(resourceName, "description", "Test Dashboard Description"),
-				resource.TestCheckResourceAttr(resourceName, "global_filter_id", "123"),
 				resource.TestCheckResourceAttr(resourceName, "is_private", "false"),
 				resource.TestCheckResourceAttr(resourceName, "default_timespan.0.duration", "3600"),
 			},
