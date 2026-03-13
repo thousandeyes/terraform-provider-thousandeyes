@@ -42,7 +42,7 @@ var DashboardSchema = map[string]*schema.Schema{
 	},
 	// globalFilterId
 	"global_filter_id": {
-		Type:        schema.TypeInt,
+		Type:        schema.TypeString,
 		Description: "Default global dashboard filter ID.",
 		Optional:    true,
 	},
