@@ -3,7 +3,11 @@ package schemas
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/thousandeyes/thousandeyes-sdk-go/v3/dashboards"
 )
+
+var _ = dashboards.Dashboard{}
+var _ = dashboards.ApiDashboard{}
 
 var DashboardSchema = map[string]*schema.Schema{
 	// aid

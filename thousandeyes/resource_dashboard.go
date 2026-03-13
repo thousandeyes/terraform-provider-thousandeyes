@@ -49,11 +49,16 @@ func resourceDashboardRead(d *schema.ResourceData, m interface{}) error {
 	return GetResource(context.Background(), d, m, func(apiClient *client.APIClient, id string) (interface{}, error) {
 		api := (*dashboards.DashboardsAPIService)(&apiClient.Common)
 
+		log.Printf("[INFO] Reading ThousandEyes Dashboard %s", d.Id())
 		req := api.GetDashboard(id)
 		req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 		resp, _, err := req.Execute()
-		return resp, err
+		if err != nil {
+			return nil, err
+		}
+
+		return buildDashboardFromReadResponse(dashboards.NewDashboard(), resp), err
 	})
 }
 
@@ -94,4 +99,23 @@ func resourceDashboardDelete(d *schema.ResourceData, m interface{}) error {
 
 func buildDashboardStruct(d *schema.ResourceData) *dashboards.Dashboard {
 	return ResourceBuildStruct(d, &dashboards.Dashboard{})
+}
+
+// Map to dashboards.Dashboard as this only has fields that exist in the DashboardSchema
+func buildDashboardFromReadResponse(dashboard *dashboards.Dashboard, resp *dashboards.ApiDashboard) *dashboards.Dashboard {
+	dashboard.SetDashboardId(resp.GetDashboardId())
+	dashboard.SetDescription(resp.GetDescription())
+	dashboard.SetTitle(resp.GetTitle())
+	dashboard.SetCreatedBy(resp.GetDashboardCreatedBy())
+	dashboard.SetModifiedBy(resp.GetDashboardModifiedBy())
+	dashboard.SetModifiedDate(resp.GetDashboardModifiedDate())
+	dashboard.SetGlobalFilterId(resp.GetGlobalFilterId())
+	dashboard.SetIsBuiltIn(resp.GetIsBuiltIn())
+	dashboard.SetIsDefaultForAccount(resp.GetIsDefaultForAccount())
+	dashboard.SetIsDefaultForUser(resp.GetIsDefaultForUser())
+	dashboard.SetIsGlobalOverride(resp.GetIsGlobalOverride())
+	dashboard.SetIsMigratedReport(resp.GetIsMigratedReport())
+	dashboard.SetIsPrivate(resp.GetIsPrivate())
+	dashboard.SetDefaultTimespan(resp.GetDefaultTimespan())
+	return dashboard
 }
