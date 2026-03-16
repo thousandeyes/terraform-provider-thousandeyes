@@ -61,3 +61,64 @@ func TestFlattenConnectorAuthenticationUsesServerFieldsAndKeepsSecret(t *testing
 		t.Fatalf("expected preserved local password, got %#v", authMap["password"])
 	}
 }
+
+func TestFlattenConnectorAuthenticationFallsBackWhenValuesAreMaskedOrMissing(t *testing.T) {
+	auth := &connectors.GenericConnectorAuth{
+		OauthCodeAuthentication: &connectors.OauthCodeAuthentication{
+			Type:              connectors.AUTHENTICATIONTYPE_OAUTH_AUTH_CODE,
+			OauthClientId:     "client-id",
+			OauthClientSecret: "*****",
+			OauthTokenUrl:     "https://auth.example.com/token",
+			OauthAuthUrl:      "https://auth.example.com/authorize",
+			Code:              "*****",
+			RedirectUri:       "",
+		},
+	}
+	prior := []interface{}{
+		map[string]interface{}{
+			"type":                "oauth-auth-code",
+			"oauth_client_id":     "client-id",
+			"oauth_client_secret": "local-client-secret",
+			"oauth_token_url":     "https://auth.example.com/token",
+			"oauth_auth_url":      "https://auth.example.com/authorize",
+			"code":                "local-auth-code",
+			"redirect_uri":        "https://app.example.com/callback",
+		},
+	}
+
+	got := flattenConnectorAuthentication(auth, prior)
+	if len(got) != 1 {
+		t.Fatalf("expected 1 auth block, got %d", len(got))
+	}
+	authMap := got[0].(map[string]interface{})
+	if authMap["oauth_client_secret"] != "local-client-secret" {
+		t.Fatalf("expected fallback client secret, got %#v", authMap["oauth_client_secret"])
+	}
+	if authMap["code"] != "local-auth-code" {
+		t.Fatalf("expected fallback code, got %#v", authMap["code"])
+	}
+	if authMap["redirect_uri"] != "https://app.example.com/callback" {
+		t.Fatalf("expected fallback redirect uri, got %#v", authMap["redirect_uri"])
+	}
+}
+
+func TestShouldFallbackAuthField(t *testing.T) {
+	tests := []struct {
+		name  string
+		value string
+		want  bool
+	}{
+		{name: "empty", value: "", want: true},
+		{name: "masked", value: "*****", want: true},
+		{name: "plain", value: "testuser", want: false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := shouldFallbackAuthField(tt.value)
+			if got != tt.want {
+				t.Fatalf("shouldFallbackAuthField(%q) = %v, want %v", tt.value, got, tt.want)
+			}
+		})
+	}
+}

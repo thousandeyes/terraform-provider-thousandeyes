@@ -357,7 +357,6 @@ func flattenConnectorAuthentication(auth *connectors.GenericConnectorAuth, prior
 	}
 
 	authMap := map[string]interface{}{}
-	var sensitiveKeys []string
 
 	switch {
 	case auth.BasicAuthentication != nil:
@@ -365,17 +364,14 @@ func flattenConnectorAuthentication(auth *connectors.GenericConnectorAuth, prior
 		authMap["type"] = string(a.Type)
 		authMap["username"] = a.Username
 		authMap["password"] = a.Password
-		sensitiveKeys = []string{"password"}
 	case auth.BearerTokenAuthentication != nil:
 		a := auth.BearerTokenAuthentication
 		authMap["type"] = string(a.Type)
 		authMap["token"] = a.Token
-		sensitiveKeys = []string{"token"}
 	case auth.OtherTokenAuthentication != nil:
 		a := auth.OtherTokenAuthentication
 		authMap["type"] = string(a.Type)
 		authMap["token"] = a.Token
-		sensitiveKeys = []string{"token"}
 	case auth.OauthClientCredentialsAuthentication != nil:
 		a := auth.OauthClientCredentialsAuthentication
 		authMap["type"] = string(a.Type)
@@ -385,7 +381,6 @@ func flattenConnectorAuthentication(auth *connectors.GenericConnectorAuth, prior
 		if a.Token != nil {
 			authMap["token"] = *a.Token
 		}
-		sensitiveKeys = []string{"oauth_client_secret", "token"}
 	case auth.OauthCodeAuthentication != nil:
 		a := auth.OauthCodeAuthentication
 		authMap["type"] = string(a.Type)
@@ -401,7 +396,6 @@ func flattenConnectorAuthentication(auth *connectors.GenericConnectorAuth, prior
 		if a.RefreshToken != nil {
 			authMap["refresh_token"] = *a.RefreshToken
 		}
-		sensitiveKeys = []string{"oauth_client_secret", "code", "token", "refresh_token"}
 	default:
 		return nil
 	}
@@ -410,15 +404,36 @@ func flattenConnectorAuthentication(auth *connectors.GenericConnectorAuth, prior
 		currentType, _ := authMap["type"].(string)
 		priorType, _ := priorMap["type"].(string)
 		if currentType == priorType {
-			for _, key := range sensitiveKeys {
-				if v, ok := priorMap[key].(string); ok && v != "" {
-					authMap[key] = v
+			for key, remoteValue := range authMap {
+				if key == "type" {
+					continue
+				}
+				remoteString, ok := remoteValue.(string)
+				if !ok || (!shouldFallbackAuthField(remoteString)) {
+					continue
+				}
+				if priorValue, ok := priorMap[key].(string); ok && priorValue != "" {
+					authMap[key] = priorValue
 				}
 			}
 		}
 	}
 
 	return []interface{}{authMap}
+}
+
+func shouldFallbackAuthField(remoteValue string) bool {
+	if remoteValue == "" {
+		return true
+	}
+
+	// Connector API can obfuscate auth fields (for example "*****").
+	for _, c := range remoteValue {
+		if c != '*' {
+			return false
+		}
+	}
+	return true
 }
 
 func firstAuthMap(prior []interface{}) map[string]interface{} {
