@@ -265,6 +265,20 @@ func validateConnectorAuthentication(_ context.Context, d *schema.ResourceDiff, 
 }
 
 func setConnectorResourceData(d *schema.ResourceData, connector *connectors.GenericConnector) error {
+	if connector == nil {
+		return fmt.Errorf("connector response is nil")
+	}
+
+	var priorHeaders []interface{}
+	if v, ok := d.Get("headers").([]interface{}); ok {
+		priorHeaders = v
+	}
+
+	var priorAuthentication []interface{}
+	if v, ok := d.Get("authentication").([]interface{}); ok {
+		priorAuthentication = v
+	}
+
 	if err := d.Set("name", connector.Name); err != nil {
 		return err
 	}
@@ -286,5 +300,134 @@ func setConnectorResourceData(d *schema.ResourceData, connector *connectors.Gene
 		}
 	}
 
+	if len(connector.Headers) > 0 {
+		if err := d.Set("headers", flattenConnectorHeaders(connector.Headers, priorHeaders)); err != nil {
+			return err
+		}
+	} else {
+		if err := d.Set("headers", nil); err != nil {
+			return err
+		}
+	}
+
+	if auth := flattenConnectorAuthentication(connector.Authentication, priorAuthentication); auth != nil {
+		if err := d.Set("authentication", auth); err != nil {
+			return err
+		}
+	} else {
+		if err := d.Set("authentication", nil); err != nil {
+			return err
+		}
+	}
+
 	return nil
+}
+
+func flattenConnectorHeaders(headers []connectors.Header, prior []interface{}) []interface{} {
+	priorByName := map[string]string{}
+	for _, raw := range prior {
+		headerMap, ok := raw.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		name, _ := headerMap["name"].(string)
+		value, _ := headerMap["value"].(string)
+		if name != "" && value != "" {
+			priorByName[name] = value
+		}
+	}
+
+	out := make([]interface{}, 0, len(headers))
+	for _, header := range headers {
+		value := header.Value
+		if prior, ok := priorByName[header.Name]; ok && prior != "" {
+			value = prior
+		}
+		out = append(out, map[string]interface{}{
+			"name":  header.Name,
+			"value": value,
+		})
+	}
+	return out
+}
+
+func flattenConnectorAuthentication(auth *connectors.GenericConnectorAuth, prior []interface{}) []interface{} {
+	if auth == nil {
+		return nil
+	}
+
+	authMap := map[string]interface{}{}
+	var sensitiveKeys []string
+
+	switch {
+	case auth.BasicAuthentication != nil:
+		a := auth.BasicAuthentication
+		authMap["type"] = string(a.Type)
+		authMap["username"] = a.Username
+		authMap["password"] = a.Password
+		sensitiveKeys = []string{"password"}
+	case auth.BearerTokenAuthentication != nil:
+		a := auth.BearerTokenAuthentication
+		authMap["type"] = string(a.Type)
+		authMap["token"] = a.Token
+		sensitiveKeys = []string{"token"}
+	case auth.OtherTokenAuthentication != nil:
+		a := auth.OtherTokenAuthentication
+		authMap["type"] = string(a.Type)
+		authMap["token"] = a.Token
+		sensitiveKeys = []string{"token"}
+	case auth.OauthClientCredentialsAuthentication != nil:
+		a := auth.OauthClientCredentialsAuthentication
+		authMap["type"] = string(a.Type)
+		authMap["oauth_client_id"] = a.OauthClientId
+		authMap["oauth_token_url"] = a.OauthTokenUrl
+		authMap["oauth_client_secret"] = a.OauthClientSecret
+		if a.Token != nil {
+			authMap["token"] = *a.Token
+		}
+		sensitiveKeys = []string{"oauth_client_secret", "token"}
+	case auth.OauthCodeAuthentication != nil:
+		a := auth.OauthCodeAuthentication
+		authMap["type"] = string(a.Type)
+		authMap["oauth_client_id"] = a.OauthClientId
+		authMap["oauth_token_url"] = a.OauthTokenUrl
+		authMap["oauth_auth_url"] = a.OauthAuthUrl
+		authMap["oauth_client_secret"] = a.OauthClientSecret
+		authMap["code"] = a.Code
+		authMap["redirect_uri"] = a.RedirectUri
+		if a.Token != nil {
+			authMap["token"] = *a.Token
+		}
+		if a.RefreshToken != nil {
+			authMap["refresh_token"] = *a.RefreshToken
+		}
+		sensitiveKeys = []string{"oauth_client_secret", "code", "token", "refresh_token"}
+	default:
+		return nil
+	}
+
+	if priorMap := firstAuthMap(prior); priorMap != nil {
+		currentType, _ := authMap["type"].(string)
+		priorType, _ := priorMap["type"].(string)
+		if currentType == priorType {
+			for _, key := range sensitiveKeys {
+				if v, ok := priorMap[key].(string); ok && v != "" {
+					authMap[key] = v
+				}
+			}
+		}
+	}
+
+	return []interface{}{authMap}
+}
+
+func firstAuthMap(prior []interface{}) map[string]interface{} {
+	if len(prior) == 0 {
+		return nil
+	}
+	authMap, ok := prior[0].(map[string]interface{})
+	if !ok {
+		return nil
+	}
+	return authMap
 }
