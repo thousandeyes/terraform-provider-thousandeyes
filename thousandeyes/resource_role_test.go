@@ -64,8 +64,9 @@ func TestAccThousandEyesRole(t *testing.T) {
 
 func testAccRoleNames() (string, string) {
 	suffix := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	name := fmt.Sprintf("User Acceptance Test - Role-%s", suffix)
-	return name, name + "-Updated"
+	name := fmt.Sprintf("UAT-Role-%s", suffix)
+	updated := fmt.Sprintf("UAT-Role-Upd-%s", suffix)
+	return name, updated
 }
 
 func testAccCheckRoleResourceDestroy(s *terraform.State) error {
