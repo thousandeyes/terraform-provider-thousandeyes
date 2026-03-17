@@ -86,8 +86,10 @@ func testAccThousandEyesRoleConfig(testResource, roleName, roleNameUpdated strin
 	}
 
 	config := string(content)
-	config = strings.ReplaceAll(config, "User Acceptance Test - Role (Updated)", roleNameUpdated)
+	updatedRolePlaceholder := "__THOUSANDEYES_ROLE_UPDATED_NAME__"
+	config = strings.ReplaceAll(config, "User Acceptance Test - Role (Updated)", updatedRolePlaceholder)
 	config = strings.ReplaceAll(config, "User Acceptance Test - Role", roleName)
+	config = strings.ReplaceAll(config, updatedRolePlaceholder, roleNameUpdated)
 	return config
 }
 
