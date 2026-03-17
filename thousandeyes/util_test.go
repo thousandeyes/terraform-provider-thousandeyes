@@ -823,6 +823,23 @@ func TestFixReadValuesTagAidInt64(t *testing.T) {
 	}
 }
 
+func TestFixReadValuesTagAidNilPointer(t *testing.T) {
+	ctx := context.WithValue(context.Background(), tagsKey, struct{}{})
+	name := "aid"
+	var aid *int64
+
+	out, err := FixReadValues(ctx, nil, aid, &name)
+	if err != nil {
+		t.Fatalf("FixReadValues returned error: %v", err)
+	}
+	if out != nil {
+		t.Fatalf("expected nil output for nil aid pointer, got %#v", out)
+	}
+	if name != "" {
+		t.Fatalf("expected name to be cleared for nil aid pointer, got %q", name)
+	}
+}
+
 func TestResourceReadTagExtendedFieldsArePersisted(t *testing.T) {
 	resourceSchema := ResourceSchemaBuild(tags.Tag{}, schemas.TagSchema, nil)
 	d := getReferenceData(resourceSchema, map[string]string{})

@@ -562,8 +562,16 @@ func FixReadValues(ctx context.Context, targetMaps map[string]map[string]interfa
 		if isTags != nil {
 			switch v := m.(type) {
 			case *int32:
+				if v == nil {
+					*name = ""
+					return nil, nil
+				}
 				m = fmt.Sprintf("%v", *v)
 			case *int64:
+				if v == nil {
+					*name = ""
+					return nil, nil
+				}
 				m = fmt.Sprintf("%v", *v)
 			case int32, int64, float32, float64, string:
 				m = fmt.Sprintf("%v", v)
