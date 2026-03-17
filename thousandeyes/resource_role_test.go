@@ -1,9 +1,12 @@
 package thousandeyes
 
 import (
+	"fmt"
 	"os"
+	"strings"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/thousandeyes/thousandeyes-sdk-go/v3/administrative"
@@ -11,6 +14,7 @@ import (
 
 func TestAccThousandEyesRole(t *testing.T) {
 	var httpResourceName = "thousandeyes_role.test"
+	roleName, roleNameUpdated := testAccRoleNames()
 	var testCases = []struct {
 		name                 string
 		createResourceFile   string
@@ -27,11 +31,11 @@ func TestAccThousandEyesRole(t *testing.T) {
 			resourceName:         httpResourceName,
 			checkDestroyFunction: testAccCheckRoleResourceDestroy,
 			checkCreateFunc: []resource.TestCheckFunc{
-				resource.TestCheckResourceAttr(httpResourceName, "name", "User Acceptance Test - Role"),
+				resource.TestCheckResourceAttr(httpResourceName, "name", roleName),
 				resource.TestCheckResourceAttr(httpResourceName, "permissions.#", "1"),
 			},
 			checkUpdateFunc: []resource.TestCheckFunc{
-				resource.TestCheckResourceAttr(httpResourceName, "name", "User Acceptance Test - Role (Updated)"),
+				resource.TestCheckResourceAttr(httpResourceName, "name", roleNameUpdated),
 				resource.TestCheckResourceAttr(httpResourceName, "permissions.#", "2"),
 			},
 		},
@@ -45,17 +49,23 @@ func TestAccThousandEyesRole(t *testing.T) {
 				CheckDestroy:      tc.checkDestroyFunction,
 				Steps: []resource.TestStep{
 					{
-						Config: testAccThousandEyesRoleConfig(tc.createResourceFile),
+						Config: testAccThousandEyesRoleConfig(tc.createResourceFile, roleName, roleNameUpdated),
 						Check:  resource.ComposeTestCheckFunc(tc.checkCreateFunc...),
 					},
 					{
-						Config: testAccThousandEyesRoleConfig(tc.updateResourceFile),
+						Config: testAccThousandEyesRoleConfig(tc.updateResourceFile, roleName, roleNameUpdated),
 						Check:  resource.ComposeTestCheckFunc(tc.checkUpdateFunc...),
 					},
 				},
 			})
 		})
 	}
+}
+
+func testAccRoleNames() (string, string) {
+	suffix := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	name := fmt.Sprintf("User Acceptance Test - Role-%s", suffix)
+	return name, name + "-Updated"
 }
 
 func testAccCheckRoleResourceDestroy(s *terraform.State) error {
@@ -69,12 +79,18 @@ func testAccCheckRoleResourceDestroy(s *terraform.State) error {
 	return testAccCheckResourceDestroy(resourceList, s)
 }
 
-func testAccThousandEyesRoleConfig(testResource string) string {
+func testAccThousandEyesRoleConfig(testResource, roleName, roleNameUpdated string) string {
 	content, err := os.ReadFile(testResource)
 	if err != nil {
 		panic(err)
 	}
-	return string(content)
+
+	config := string(content)
+	updatedRolePlaceholder := "__THOUSANDEYES_ROLE_UPDATED_NAME__"
+	config = strings.ReplaceAll(config, "User Acceptance Test - Role (Updated)", updatedRolePlaceholder)
+	config = strings.ReplaceAll(config, "User Acceptance Test - Role", roleName)
+	config = strings.ReplaceAll(config, updatedRolePlaceholder, roleNameUpdated)
+	return config
 }
 
 func getRole(id string) (interface{}, error) {
