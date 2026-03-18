@@ -477,6 +477,12 @@ func FixReadValues(ctx context.Context, targetMaps map[string]map[string]interfa
 			}
 		}
 
+	case "default_timespan":
+		v := m.(map[string]interface{})
+		m = []interface{}{
+			v,
+		}
+
 	// remove all fields except the integration ID and type to
 	// mimick the behavior of the example in our docs for a
 	// regular create API request for alert rules, where only

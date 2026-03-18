@@ -105,16 +105,14 @@ func buildDashboardStruct(d *schema.ResourceData) *dashboards.Dashboard {
 // Separate Resource fields API responses by mapping dashboards.ApiDashboard to DashboardResourceData
 func buildDashboardStructFromApiResponse(resp *dashboards.ApiDashboard) *DashboardResourceData {
 	ds := &DashboardResourceData{
+		ID:                    resp.GetDashboardId(),
 		Aid:                   resp.GetAid(),
 		DashboardCreatedBy:    resp.GetDashboardCreatedBy(),
 		DashboardModifiedBy:   resp.GetDashboardModifiedBy(),
-		DashboardModifiedDate: resp.GetDashboardModifiedDate(),
+		DashboardModifiedDate: resp.GetDashboardModifiedDate().Format(time.RFC3339),
 		Description:           resp.GetDescription(),
 		GlobalFilterId:        resp.GetGlobalFilterId(),
 		Title:                 resp.GetTitle(),
-		IsBuiltIn:             resp.GetIsBuiltIn(),
-		IsDefaultForAccount:   resp.GetIsDefaultForAccount(),
-		IsDefaultForUser:      resp.GetIsDefaultForUser(),
 		IsGlobalOverride:      resp.GetIsGlobalOverride(),
 		IsMigratedReport:      resp.GetIsMigratedReport(),
 		IsPrivate:             resp.GetIsPrivate(),
@@ -123,8 +121,8 @@ func buildDashboardStructFromApiResponse(resp *dashboards.ApiDashboard) *Dashboa
 	if timespan, ok := resp.GetDefaultTimespanOk(); ok && timespan != nil {
 		ds.DefaultTimespan = &DefaultTimespanStruct{
 			Duration: timespan.GetDuration(),
-			Start:    timespan.GetStart(),
-			End:      timespan.GetEnd(),
+			Start:    timespan.GetStart().Format(time.RFC3339),
+			End:      timespan.GetEnd().Format(time.RFC3339),
 		}
 	}
 
@@ -132,24 +130,22 @@ func buildDashboardStructFromApiResponse(resp *dashboards.ApiDashboard) *Dashboa
 }
 
 type DashboardResourceData struct {
-	Aid                   string
-	DashboardCreatedBy    string
-	DashboardModifiedBy   string
-	DashboardModifiedDate time.Time
-	Description           string
-	GlobalFilterId        string
-	Title                 string
-	IsBuiltIn             bool
-	IsDefaultForAccount   bool
-	IsDefaultForUser      bool
-	IsGlobalOverride      bool
-	IsMigratedReport      bool
-	IsPrivate             bool
-	DefaultTimespan       *DefaultTimespanStruct
+	ID                    string                 `json:"id"`
+	Aid                   string                 `json:"aid"`
+	DashboardCreatedBy    string                 `json:"dashboard_created_by"`
+	DashboardModifiedBy   string                 `json:"dashboard_modified_by"`
+	DashboardModifiedDate string                 `json:"dashboard_modified_date"`
+	Description           string                 `json:"description"`
+	GlobalFilterId        string                 `json:"global_filter_id"`
+	Title                 string                 `json:"title"`
+	IsGlobalOverride      bool                   `json:"is_global_override"`
+	IsMigratedReport      bool                   `json:"is_migrated_report"`
+	IsPrivate             bool                   `json:"is_private"`
+	DefaultTimespan       *DefaultTimespanStruct `json:"default_timespan"`
 }
 
 type DefaultTimespanStruct struct {
-	Duration int64
-	Start    time.Time
-	End      time.Time
+	Duration int64  `json:"duration"`
+	Start    string `json:"start"`
+	End      string `json:"end"`
 }

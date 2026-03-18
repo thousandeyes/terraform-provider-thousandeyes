@@ -10,6 +10,12 @@ var _ = dashboards.Dashboard{}
 var _ = dashboards.ApiDashboard{}
 
 var DashboardSchema = map[string]*schema.Schema{
+	// id
+	"id": {
+		Type:        schema.TypeString,
+		Description: "The tag ID.",
+		Computed:    true,
+	},
 	// aid
 	"aid": {
 		Type:        schema.TypeString,
@@ -52,24 +58,6 @@ var DashboardSchema = map[string]*schema.Schema{
 		Description: "Title of a dashboard.",
 		Required:    true,
 	},
-	// isBuildIn
-	"is_build_in": {
-		Type:        schema.TypeBool,
-		Description: "Indicates if a dashboard is built-in. True for built-in dashboards, false for user-created dashboards.",
-		Computed:    true,
-	},
-	// isDefaultForAccount
-	"is_default_for_account": {
-		Type:        schema.TypeBool,
-		Description: "Indicates whether this dashboard is the account group's default. True for default, false if not.",
-		Computed:    true,
-	},
-	// isDefaultForUser
-	"is_default_for_user": {
-		Type:        schema.TypeBool,
-		Description: "Indicates whether this dashboard is the user's default. True for default, false if not.",
-		Computed:    true,
-	},
 	// isGlobalOverride
 	"is_global_override": {
 		Type:        schema.TypeBool,
@@ -91,10 +79,10 @@ var DashboardSchema = map[string]*schema.Schema{
 	},
 	// defaultTimespan
 	"default_timespan": {
-		Type:        schema.TypeList,
+		Type:        schema.TypeSet,
 		Description: "Defines the default time range displayed by the dashboard.",
 		Optional:    true,
-		MaxItems:    1,
+
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				// Duration
@@ -119,4 +107,12 @@ var DashboardSchema = map[string]*schema.Schema{
 			},
 		},
 	},
+	//
+	//// widgets
+	//"widgets": {
+	//	Type: schema.TypeList,
+	//	Elem: &schema.Resource{
+	//		Schema: DashboardWidgetSchema,
+	//	},
+	//},
 }
