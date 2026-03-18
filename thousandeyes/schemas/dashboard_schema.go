@@ -110,12 +110,4 @@ var DashboardSchema = map[string]*schema.Schema{
 			},
 		},
 	},
-	//
-	//// widgets
-	//"widgets": {
-	//	Type: schema.TypeList,
-	//	Elem: &schema.Resource{
-	//		Schema: DashboardWidgetSchema,
-	//	},
-	//},
 }
