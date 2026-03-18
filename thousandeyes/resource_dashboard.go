@@ -110,7 +110,7 @@ func buildDashboardStruct(d *schema.ResourceData) *dashboards.Dashboard {
 	dashboard.SetIsPrivate(d.Get("is_private").(bool))
 
 	if v, ok := d.GetOk("default_timespan"); ok {
-		timespanList := v.(*schema.Set).List()
+		timespanList := v.([]interface{})
 		if len(timespanList) > 0 {
 			ts := timespanList[0].(map[string]interface{})
 			t := dashboards.DefaultTimespan{}
@@ -181,15 +181,21 @@ func resourceDataApiDashboardMapper(d *schema.ResourceData, dashboard dashboards
 	if timespan, ok := dashboard.GetDefaultTimespanOk(); ok && timespan != nil {
 		t := map[string]any{}
 
-		if dur, ok := timespan.GetDurationOk(); ok && dur != nil && *dur != 0 {
-			t["duration"] = *dur
+		hasStart := !timespan.GetStart().IsZero()
+		hasEnd := !timespan.GetEnd().IsZero()
+
+		// Only set duration if we're not in time range mode (start/end)
+		if !hasStart && !hasEnd {
+			if dur, ok := timespan.GetDurationOk(); ok && dur != nil && *dur != 0 {
+				t["duration"] = *dur
+			}
 		}
 
-		if !timespan.GetStart().IsZero() {
+		if hasStart {
 			t["start"] = timespan.GetStart().Format(time.RFC3339)
 		}
 
-		if !timespan.GetEnd().IsZero() {
+		if hasEnd {
 			t["end"] = timespan.GetEnd().Format(time.RFC3339)
 		}
 

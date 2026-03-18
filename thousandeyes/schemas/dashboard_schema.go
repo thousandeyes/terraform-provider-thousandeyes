@@ -79,31 +79,33 @@ var DashboardSchema = map[string]*schema.Schema{
 	},
 	// defaultTimespan
 	"default_timespan": {
-		Type:        schema.TypeSet,
+		Type:        schema.TypeList,
 		Description: "Defines the default time range displayed by the dashboard.",
 		Optional:    true,
-
+		MaxItems:    1,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				// Duration
 				"duration": {
-					Type:         schema.TypeInt,
-					Description:  "Duration of the timespan in seconds.",
-					Optional:     true,
-					ValidateFunc: validation.IntInSlice([]int{3600, 7200, 21600, 43200, 86400, 172800, 1209600, 2592000, 604800, 5184000}),
-					Default:      3600,
+					Type:          schema.TypeInt,
+					Description:   "Duration of the timespan in seconds. Mutually exclusive with start/end.",
+					Optional:      true,
+					ValidateFunc:  validation.IntInSlice([]int{3600, 7200, 21600, 43200, 86400, 172800, 1209600, 2592000, 604800, 5184000}),
+					ConflictsWith: []string{"default_timespan.0.start", "default_timespan.0.end"},
 				},
 				// start
 				"start": {
-					Type:        schema.TypeString,
-					Description: "UTC start date of the timespan range (ISO date-time format).",
-					Optional:    true,
+					Type:          schema.TypeString,
+					Description:   "UTC start date of the timespan range (ISO date-time format). Mutually exclusive with duration.",
+					Optional:      true,
+					ConflictsWith: []string{"default_timespan.0.duration"},
 				},
 				// end
 				"end": {
-					Type:        schema.TypeString,
-					Description: "UTC end date of the timespan range (ISO date-time format).",
-					Optional:    true,
+					Type:          schema.TypeString,
+					Description:   "UTC end date of the timespan range (ISO date-time format). Mutually exclusive with duration.",
+					Optional:      true,
+					ConflictsWith: []string{"default_timespan.0.duration"},
 				},
 			},
 		},
