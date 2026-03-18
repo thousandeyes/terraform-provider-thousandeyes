@@ -91,6 +91,7 @@ var DashboardSchema = map[string]*schema.Schema{
 					Description:  "Duration of the timespan in seconds.",
 					Optional:     true,
 					ValidateFunc: validation.IntInSlice([]int{3600, 7200, 21600, 43200, 86400, 172800, 1209600, 2592000, 604800, 5184000}),
+					Default:      3600,
 				},
 				// start
 				"start": {

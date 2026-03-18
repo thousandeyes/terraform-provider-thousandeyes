@@ -1,7 +1,6 @@
 package thousandeyes
 
 import (
-	"context"
 	"log"
 	"time"
 
@@ -41,26 +40,32 @@ func resourceDashboardCreate(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	id := *resp.DashboardId
+	id := resp.GetDashboardId()
 	d.SetId(id)
 	return resourceDashboardRead(d, m)
 }
 
 func resourceDashboardRead(d *schema.ResourceData, m interface{}) error {
-	return GetResource(context.Background(), d, m, func(apiClient *client.APIClient, id string) (interface{}, error) {
-		api := (*dashboards.DashboardsAPIService)(&apiClient.Common)
+	apiClient := m.(*client.APIClient)
+	api := (*dashboards.DashboardsAPIService)(&apiClient.Common)
 
-		log.Printf("[INFO] Reading ThousandEyes Dashboard %s", d.Id())
-		req := api.GetDashboard(id)
-		req = SetAidFromContext(apiClient.GetConfig().Context, req)
+	log.Printf("[INFO] Reading ThousandEyes Dashboard %s", d.Id())
+	req := api.GetDashboard(d.Id())
+	ctx := apiClient.GetConfig().Context
+	req = SetAidFromContext(ctx, req)
 
-		resp, _, err := req.Execute()
-		if err != nil {
-			return nil, err
+	resp, httpResp, err := req.Execute()
+	if err != nil {
+
+		// if the dashboard doesn't exist, return nil and remove from state
+		if httpResp != nil && httpResp.StatusCode == 404 {
+			d.SetId("")
+			return nil
 		}
+		return err
+	}
 
-		return buildDashboardStructFromApiResponse(resp), err
-	})
+	return resourceDataApiDashboardMapper(d, *resp)
 }
 
 func resourceDashboardUpdate(d *schema.ResourceData, m interface{}) error {
@@ -99,59 +104,101 @@ func resourceDashboardDelete(d *schema.ResourceData, m interface{}) error {
 }
 
 func buildDashboardStruct(d *schema.ResourceData) *dashboards.Dashboard {
-	return ResourceBuildStruct(d, &dashboards.Dashboard{})
-}
+	dashboard := &dashboards.Dashboard{}
+	dashboard.SetTitle(d.Get("title").(string))
+	dashboard.SetDescription(d.Get("description").(string))
+	dashboard.SetIsPrivate(d.Get("is_private").(bool))
 
-// Separate Resource fields API responses by mapping dashboards.ApiDashboard to DashboardResourceData
-func buildDashboardStructFromApiResponse(resp *dashboards.ApiDashboard) *DashboardResourceData {
-	ds := &DashboardResourceData{
-		ID:                    resp.GetDashboardId(),
-		Aid:                   resp.GetAid(),
-		DashboardCreatedBy:    resp.GetDashboardCreatedBy(),
-		DashboardModifiedBy:   resp.GetDashboardModifiedBy(),
-		DashboardModifiedDate: resp.GetDashboardModifiedDate().Format(time.RFC3339),
-		Description:           resp.GetDescription(),
-		GlobalFilterId:        resp.GetGlobalFilterId(),
-		Title:                 resp.GetTitle(),
-		IsGlobalOverride:      resp.GetIsGlobalOverride(),
-		IsMigratedReport:      resp.GetIsMigratedReport(),
-		IsPrivate:             resp.GetIsPrivate(),
+	if v, ok := d.GetOk("default_timespan"); ok {
+		timespanList := v.(*schema.Set).List()
+		if len(timespanList) > 0 {
+			ts := timespanList[0].(map[string]interface{})
+			t := dashboards.DefaultTimespan{}
+
+			// duration comes as int from schema, cast appropriately
+			if dur, ok := ts["duration"].(int); ok && dur != 0 {
+				t.SetDuration(int64(dur))
+			}
+
+			if startStr, ok := ts["start"].(string); ok && startStr != "" {
+				if startTime, err := time.Parse(time.RFC3339, startStr); err == nil {
+					t.SetStart(startTime)
+				} else {
+					log.Printf("[WARN] Invalid start time: %s", startStr)
+				}
+			}
+
+			if endStr, ok := ts["end"].(string); ok && endStr != "" {
+				if endTime, err := time.Parse(time.RFC3339, endStr); err == nil {
+					t.SetEnd(endTime)
+				} else {
+					log.Printf("[WARN] Invalid end time: %s", endStr)
+				}
+			}
+
+			dashboard.SetDefaultTimespan(t)
+		}
 	}
 
-	if timespan, ok := resp.GetDefaultTimespanOk(); ok && timespan != nil {
-		ds.DefaultTimespan = &DefaultTimespanStruct{
-			Duration: timespan.GetDuration(),
+	return dashboard
+}
+
+func resourceDataApiDashboardMapper(d *schema.ResourceData, dashboard dashboards.ApiDashboard) error {
+	if err := d.Set("aid", dashboard.GetAid()); err != nil {
+		return err
+	}
+	if err := d.Set("description", dashboard.GetDescription()); err != nil {
+		return err
+	}
+	if err := d.Set("title", dashboard.GetTitle()); err != nil {
+		return err
+	}
+	if err := d.Set("dashboard_created_by", dashboard.GetDashboardCreatedBy()); err != nil {
+		return err
+	}
+	if err := d.Set("dashboard_modified_by", dashboard.GetDashboardModifiedBy()); err != nil {
+		return err
+	}
+	if modDate := dashboard.GetDashboardModifiedDate(); !modDate.IsZero() {
+		if err := d.Set("dashboard_modified_date", modDate.Format(time.RFC3339)); err != nil {
+			return err
+		}
+	}
+
+	if err := d.Set("global_filter_id", dashboard.GetGlobalFilterId()); err != nil {
+		return err
+	}
+	if err := d.Set("is_global_override", dashboard.GetIsGlobalOverride()); err != nil {
+		return err
+	}
+	if err := d.Set("is_migrated_report", dashboard.GetIsMigratedReport()); err != nil {
+		return err
+	}
+	if err := d.Set("is_private", dashboard.GetIsPrivate()); err != nil {
+		return err
+	}
+
+	if timespan, ok := dashboard.GetDefaultTimespanOk(); ok && timespan != nil {
+		t := map[string]any{}
+
+		if dur, ok := timespan.GetDurationOk(); ok && dur != nil && *dur != 0 {
+			t["duration"] = *dur
 		}
 
 		if !timespan.GetStart().IsZero() {
-			ds.DefaultTimespan.Start = timespan.GetStart().Format(time.RFC3339)
+			t["start"] = timespan.GetStart().Format(time.RFC3339)
 		}
 
 		if !timespan.GetEnd().IsZero() {
-			ds.DefaultTimespan.End = timespan.GetEnd().Format(time.RFC3339)
+			t["end"] = timespan.GetEnd().Format(time.RFC3339)
+		}
+
+		if len(t) > 0 {
+			if err := d.Set("default_timespan", []interface{}{t}); err != nil {
+				return err
+			}
 		}
 	}
 
-	return ds
-}
-
-type DashboardResourceData struct {
-	ID                    string                 `json:"id"`
-	Aid                   string                 `json:"aid"`
-	DashboardCreatedBy    string                 `json:"dashboard_created_by"`
-	DashboardModifiedBy   string                 `json:"dashboard_modified_by"`
-	DashboardModifiedDate string                 `json:"dashboard_modified_date"`
-	Description           string                 `json:"description"`
-	GlobalFilterId        string                 `json:"global_filter_id"`
-	Title                 string                 `json:"title"`
-	IsGlobalOverride      bool                   `json:"is_global_override"`
-	IsMigratedReport      bool                   `json:"is_migrated_report"`
-	IsPrivate             bool                   `json:"is_private"`
-	DefaultTimespan       *DefaultTimespanStruct `json:"default_timespan"`
-}
-
-type DefaultTimespanStruct struct {
-	Duration int64  `json:"duration"`
-	Start    string `json:"start"`
-	End      string `json:"end"`
+	return nil
 }
