@@ -163,12 +163,26 @@ func setWebhookOperationResourceData(d *schema.ResourceData, webhook *connectors
 		}
 	}
 
-	// Keep user-configured sensitive header values in state to avoid perpetual diffs.
-	if headers, ok := d.GetOk("headers"); ok {
-		if err := d.Set("headers", headers); err != nil {
+	if len(webhook.Headers) > 0 {
+		if err := d.Set("headers", flattenWebhookOperationHeaders(webhook.Headers)); err != nil {
+			return err
+		}
+	} else {
+		if err := d.Set("headers", nil); err != nil {
 			return err
 		}
 	}
 
 	return nil
+}
+
+func flattenWebhookOperationHeaders(headers []connectors.Header) []interface{} {
+	out := make([]interface{}, 0, len(headers))
+	for _, header := range headers {
+		out = append(out, map[string]interface{}{
+			"name":  header.Name,
+			"value": header.Value,
+		})
+	}
+	return out
 }
