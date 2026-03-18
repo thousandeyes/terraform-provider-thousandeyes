@@ -121,8 +121,14 @@ func buildDashboardStructFromApiResponse(resp *dashboards.ApiDashboard) *Dashboa
 	if timespan, ok := resp.GetDefaultTimespanOk(); ok && timespan != nil {
 		ds.DefaultTimespan = &DefaultTimespanStruct{
 			Duration: timespan.GetDuration(),
-			Start:    timespan.GetStart().Format(time.RFC3339),
-			End:      timespan.GetEnd().Format(time.RFC3339),
+		}
+
+		if !timespan.GetStart().IsZero() {
+			ds.DefaultTimespan.Start = timespan.GetStart().Format(time.RFC3339)
+		}
+
+		if !timespan.GetEnd().IsZero() {
+			ds.DefaultTimespan.End = timespan.GetEnd().Format(time.RFC3339)
 		}
 	}
 
