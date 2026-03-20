@@ -19,10 +19,10 @@ type WidgetTypeRegistry struct {
 }
 
 // widgetRegistry holds the mapping functions for each widget type
-// Currently only supports Map and Agent Status widgets
 var widgetRegistry = map[string]WidgetTypeRegistry{
-	"Map":          {Builder: buildGeoMapWidget, Mapper: mapGeoMapWidget},
-	"Agent Status": {Builder: buildAgentStatusWidget, Mapper: mapAgentStatusWidget},
+	"Map":              {Builder: buildGeoMapWidget, Mapper: mapGeoMapWidget},
+	"Agent Status":     {Builder: buildAgentStatusWidget, Mapper: mapAgentStatusWidget},
+	"Time Series: Line": {Builder: buildTimeseriesWidget, Mapper: mapTimeseriesWidget},
 }
 
 // BuildWidget builds an API widget from Terraform data using the appropriate builder
@@ -53,6 +53,8 @@ func MapWidget(widget dashboards.ApiWidget) map[string]interface{} {
 		widgetType = "Map"
 	case *dashboards.ApiAgentStatusWidget:
 		widgetType = "Agent Status"
+	case *dashboards.ApiTimeseriesWidget:
+		widgetType = "Time Series: Line"
 	default:
 		return nil
 	}

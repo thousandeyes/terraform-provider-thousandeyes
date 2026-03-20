@@ -17,6 +17,7 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 		ValidateFunc: validation.StringInSlice([]string{
 			"Map",
 			"Agent Status",
+			"Time Series: Line",
 		}, false),
 	},
 
@@ -175,6 +176,48 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 				"agent_type": {
 					Type:        schema.TypeString,
 					Description: "Type of agent (e.g., 'Enterprise', 'Cloud').",
+					Optional:    true,
+				},
+			},
+		},
+	},
+
+	// Type-specific: Timeseries configuration (for "Time Series: Line" type)
+	"timeseries_config": {
+		Type:        schema.TypeList,
+		Description: "Configuration for Time Series: Line widgets.",
+		Optional:    true,
+		MaxItems:    1,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"min_scale": {
+					Type:        schema.TypeFloat,
+					Description: "Minimum scale value for the Y-axis.",
+					Optional:    true,
+				},
+				"max_scale": {
+					Type:        schema.TypeFloat,
+					Description: "Maximum scale value for the Y-axis.",
+					Optional:    true,
+				},
+				"unit": {
+					Type:        schema.TypeString,
+					Description: "Unit for the Y-axis scale.",
+					Optional:    true,
+				},
+				"group_by": {
+					Type:        schema.TypeString,
+					Description: "Group by property.",
+					Optional:    true,
+				},
+				"show_timeseries_overall_baseline": {
+					Type:        schema.TypeBool,
+					Description: "Displays the overall baseline if set to true.",
+					Optional:    true,
+				},
+				"is_timeseries_one_chart_per_line": {
+					Type:        schema.TypeBool,
+					Description: "Displays a separate chart for each line if set to true.",
 					Optional:    true,
 				},
 			},
