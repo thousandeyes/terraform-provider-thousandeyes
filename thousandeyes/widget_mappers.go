@@ -45,6 +45,35 @@ func mapGeoMapWidget(widget dashboards.ApiWidget) map[string]interface{} {
 	return data
 }
 
+// mapPieChartWidget maps a Pie Chart widget to Terraform data
+func mapPieChartWidget(widget dashboards.ApiWidget) map[string]interface{} {
+	w := widget.ApiPieChartWidget
+	if w == nil {
+		return nil
+	}
+
+	data := map[string]interface{}{
+		"type": "Pie Chart",
+	}
+	setCommonWidgetFields(data, w.GetId(), w.GetTitle(), w.GetEmbedUrl(), w.GetIsEmbedded(), string(w.GetVisualMode()))
+	setCommonMapperFields(data, w)
+
+	// Map data_source (PieChart-specific type)
+	if v := w.GetDataSource(); v != "" {
+		data["data_source"] = string(v)
+	}
+
+	config := map[string]interface{}{}
+	if v := w.GetGroupBy(); v != "" {
+		config["group_by"] = string(v)
+	}
+	if len(config) > 0 {
+		data["pie_chart_config"] = []interface{}{config}
+	}
+
+	return data
+}
+
 // mapStackedAreaWidget maps a Stacked Area Chart widget to Terraform data
 func mapStackedAreaWidget(widget dashboards.ApiWidget) map[string]interface{} {
 	w := widget.ApiStackedAreaChartWidget

@@ -19,6 +19,7 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 			"Agent Status",
 			"Time Series: Line",
 			"Time Series: Stacked Area",
+			"Pie Chart",
 		}, false),
 	},
 
@@ -248,6 +249,23 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 					Description: "Unit for the Y-axis scale.",
 					Optional:    true,
 				},
+				"group_by": {
+					Type:        schema.TypeString,
+					Description: "Group by property.",
+					Optional:    true,
+				},
+			},
+		},
+	},
+
+	// Type-specific: Pie Chart configuration (for "Pie Chart" type)
+	"pie_chart_config": {
+		Type:        schema.TypeList,
+		Description: "Configuration for Pie Chart widgets.",
+		Optional:    true,
+		MaxItems:    1,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
 				"group_by": {
 					Type:        schema.TypeString,
 					Description: "Group by property.",

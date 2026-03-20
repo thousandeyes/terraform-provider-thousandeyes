@@ -36,6 +36,26 @@ func buildGeoMapWidget(data map[string]interface{}) dashboards.ApiWidget {
 	return dashboards.ApiGeoMapWidgetAsApiWidget(widget)
 }
 
+// buildPieChartWidget builds a Pie Chart widget from Terraform data
+func buildPieChartWidget(data map[string]interface{}) dashboards.ApiWidget {
+	widget := dashboards.NewApiPieChartWidget("Pie Chart")
+	setCommonBuilderFields(widget, data)
+
+	// Set data_source (PieChart-specific type)
+	if dataSource := getStringValue(data, "data_source"); dataSource != "" {
+		widget.SetDataSource(dashboards.PieChartDatasource(dataSource))
+	}
+
+	if configList := getListValue(data, "pie_chart_config"); len(configList) > 0 {
+		config := configList[0].(map[string]interface{})
+		if v := getStringValue(config, "group_by"); v != "" {
+			widget.SetGroupBy(dashboards.ApiAggregateProperty(v))
+		}
+	}
+
+	return dashboards.ApiPieChartWidgetAsApiWidget(widget)
+}
+
 // buildStackedAreaWidget builds a Stacked Area Chart widget from Terraform data
 func buildStackedAreaWidget(data map[string]interface{}) dashboards.ApiWidget {
 	widget := dashboards.NewApiStackedAreaChartWidget("Time Series: Stacked Area")
