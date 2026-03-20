@@ -45,6 +45,40 @@ func mapGeoMapWidget(widget dashboards.ApiWidget) map[string]interface{} {
 	return data
 }
 
+// mapListWidget maps a List widget to Terraform data
+func mapListWidget(widget dashboards.ApiWidget) map[string]interface{} {
+	w := widget.ApiListWidget
+	if w == nil {
+		return nil
+	}
+
+	data := map[string]interface{}{
+		"type": "List",
+	}
+	setCommonWidgetFields(data, w.GetId(), w.GetTitle(), w.GetEmbedUrl(), w.GetIsEmbedded(), string(w.GetVisualMode()))
+	setCommonMapperFields(data, w)
+
+	// Map data_source (List-specific type)
+	if v := w.GetDataSource(); v != "" {
+		data["data_source"] = string(v)
+	}
+
+	config := map[string]interface{}{}
+	if activeWithin, ok := w.GetActiveWithinOk(); ok && activeWithin != nil {
+		if v := activeWithin.GetValue(); v != 0 {
+			config["active_within_value"] = int(v)
+		}
+		if v := activeWithin.GetUnit(); v != "" {
+			config["active_within_unit"] = string(v)
+		}
+	}
+	if len(config) > 0 {
+		data["list_config"] = []interface{}{config}
+	}
+
+	return data
+}
+
 // mapBoxAndWhiskersWidget maps a Box and Whiskers widget to Terraform data
 func mapBoxAndWhiskersWidget(widget dashboards.ApiWidget) map[string]interface{} {
 	w := widget.ApiBoxAndWhiskersWidget

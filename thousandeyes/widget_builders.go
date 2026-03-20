@@ -36,6 +36,42 @@ func buildGeoMapWidget(data map[string]interface{}) dashboards.ApiWidget {
 	return dashboards.ApiGeoMapWidgetAsApiWidget(widget)
 }
 
+// buildListWidget builds a List widget from Terraform data
+func buildListWidget(data map[string]interface{}) dashboards.ApiWidget {
+	widget := dashboards.NewApiListWidget("List")
+	setCommonBuilderFields(widget, data)
+
+	// Set data_source (List-specific type)
+	if dataSource := getStringValue(data, "data_source"); dataSource != "" {
+		widget.SetDataSource(dashboards.ListDatasource(dataSource))
+	}
+
+	if configList := getListValue(data, "list_config"); len(configList) > 0 {
+		config := configList[0].(map[string]interface{})
+		// Handle active_within
+		activeWithinValue := 0
+		activeWithinUnit := ""
+		if v, ok := config["active_within_value"].(int); ok && v != 0 {
+			activeWithinValue = v
+		}
+		if v := getStringValue(config, "active_within_unit"); v != "" {
+			activeWithinUnit = v
+		}
+		if activeWithinValue != 0 || activeWithinUnit != "" {
+			activeWithin := dashboards.NewActiveWithin()
+			if activeWithinValue != 0 {
+				activeWithin.SetValue(int32(activeWithinValue))
+			}
+			if activeWithinUnit != "" {
+				activeWithin.SetUnit(dashboards.LegacyDurationUnit(activeWithinUnit))
+			}
+			widget.SetActiveWithin(*activeWithin)
+		}
+	}
+
+	return dashboards.ApiListWidgetAsApiWidget(widget)
+}
+
 // buildBoxAndWhiskersWidget builds a Box and Whiskers widget from Terraform data
 func buildBoxAndWhiskersWidget(data map[string]interface{}) dashboards.ApiWidget {
 	widget := dashboards.NewApiBoxAndWhiskersWidget("Box and Whiskers")

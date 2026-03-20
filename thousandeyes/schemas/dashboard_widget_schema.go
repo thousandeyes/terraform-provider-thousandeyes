@@ -21,6 +21,7 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 			"Time Series: Stacked Area",
 			"Pie Chart",
 			"Box and Whiskers",
+			"List",
 		}, false),
 	},
 
@@ -302,6 +303,28 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 				"group_by": {
 					Type:        schema.TypeString,
 					Description: "Group by property.",
+					Optional:    true,
+				},
+			},
+		},
+	},
+
+	// Type-specific: List configuration (for "List" type)
+	"list_config": {
+		Type:        schema.TypeList,
+		Description: "Configuration for List widgets.",
+		Optional:    true,
+		MaxItems:    1,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"active_within_value": {
+					Type:        schema.TypeInt,
+					Description: "Timespan value for active within filter.",
+					Optional:    true,
+				},
+				"active_within_unit": {
+					Type:        schema.TypeString,
+					Description: "Timespan unit for active within filter.",
 					Optional:    true,
 				},
 			},
