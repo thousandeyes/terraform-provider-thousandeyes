@@ -45,6 +45,44 @@ func mapGeoMapWidget(widget dashboards.ApiWidget) map[string]interface{} {
 	return data
 }
 
+// mapBoxAndWhiskersWidget maps a Box and Whiskers widget to Terraform data
+func mapBoxAndWhiskersWidget(widget dashboards.ApiWidget) map[string]interface{} {
+	w := widget.ApiBoxAndWhiskersWidget
+	if w == nil {
+		return nil
+	}
+
+	data := map[string]interface{}{
+		"type": "Box and Whiskers",
+	}
+	setCommonWidgetFields(data, w.GetId(), w.GetTitle(), w.GetEmbedUrl(), w.GetIsEmbedded(), string(w.GetVisualMode()))
+	setCommonMapperFields(data, w)
+
+	// Map data_source (BoxAndWhiskers-specific type)
+	if v := w.GetDataSource(); v != "" {
+		data["data_source"] = string(v)
+	}
+
+	config := map[string]interface{}{}
+	if v, ok := w.GetMinScaleOk(); ok && v != nil {
+		config["min_scale"] = float64(*v)
+	}
+	if v, ok := w.GetMaxScaleOk(); ok && v != nil {
+		config["max_scale"] = float64(*v)
+	}
+	if v := w.GetUnit(); v != "" {
+		config["unit"] = string(v)
+	}
+	if v := w.GetGroupBy(); v != "" {
+		config["group_by"] = string(v)
+	}
+	if len(config) > 0 {
+		data["box_and_whiskers_config"] = []interface{}{config}
+	}
+
+	return data
+}
+
 // mapPieChartWidget maps a Pie Chart widget to Terraform data
 func mapPieChartWidget(widget dashboards.ApiWidget) map[string]interface{} {
 	w := widget.ApiPieChartWidget
