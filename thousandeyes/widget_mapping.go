@@ -20,9 +20,10 @@ type WidgetTypeRegistry struct {
 
 // widgetRegistry holds the mapping functions for each widget type
 var widgetRegistry = map[string]WidgetTypeRegistry{
-	"Map":              {Builder: buildGeoMapWidget, Mapper: mapGeoMapWidget},
-	"Agent Status":     {Builder: buildAgentStatusWidget, Mapper: mapAgentStatusWidget},
-	"Time Series: Line": {Builder: buildTimeseriesWidget, Mapper: mapTimeseriesWidget},
+	"Map":                      {Builder: buildGeoMapWidget, Mapper: mapGeoMapWidget},
+	"Agent Status":             {Builder: buildAgentStatusWidget, Mapper: mapAgentStatusWidget},
+	"Time Series: Line":        {Builder: buildTimeseriesWidget, Mapper: mapTimeseriesWidget},
+	"Time Series: Stacked Area": {Builder: buildStackedAreaWidget, Mapper: mapStackedAreaWidget},
 }
 
 // BuildWidget builds an API widget from Terraform data using the appropriate builder
@@ -55,6 +56,8 @@ func MapWidget(widget dashboards.ApiWidget) map[string]interface{} {
 		widgetType = "Agent Status"
 	case *dashboards.ApiTimeseriesWidget:
 		widgetType = "Time Series: Line"
+	case *dashboards.ApiStackedAreaChartWidget:
+		widgetType = "Time Series: Stacked Area"
 	default:
 		return nil
 	}
