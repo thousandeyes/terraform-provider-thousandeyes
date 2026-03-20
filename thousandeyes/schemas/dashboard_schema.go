@@ -108,4 +108,13 @@ var DashboardSchema = map[string]*schema.Schema{
 			},
 		},
 	},
+	// widgets
+	"widgets": {
+		Type:        schema.TypeList,
+		Description: "List of widgets on the dashboard.",
+		Optional:    true,
+		Elem: &schema.Resource{
+			Schema: DashboardWidgetSchema,
+		},
+	},
 }

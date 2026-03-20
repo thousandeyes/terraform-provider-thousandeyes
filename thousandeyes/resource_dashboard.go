@@ -75,12 +75,21 @@ func resourceDashboardUpdate(d *schema.ResourceData, m interface{}) error {
 	log.Printf("[INFO] Updating ThousandEyes Dashboard %s", d.Id())
 	update := buildDashboardStruct(d)
 
+	// Debug: log the widgets being sent
+	if widgets := update.GetWidgets(); len(widgets) > 0 {
+		for i, w := range widgets {
+			log.Printf("[DEBUG] Widget %d: %+v", i, w)
+		}
+	}
+
 	req := api.UpdateDashboard(d.Id()).Dashboard(*update)
 	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
-	_, _, err := req.Execute()
+	_, resp, err := req.Execute()
 
 	if err != nil {
+		log.Printf("[ERROR] API error updating ThousandEyes Dashboard %s: %v", d.Id(), err)
+		log.Printf("[ERROR] Failed to update ThousandEyes Dashboard req %v, resp %v", req, resp)
 		return err
 	}
 
@@ -153,6 +162,15 @@ func buildDashboardStruct(d *schema.ResourceData) *dashboards.Dashboard {
 		}
 	}
 
+	// Handle widgets
+	if v, ok := d.GetOk("widgets"); ok {
+		widgetsList := v.([]interface{})
+		if len(widgetsList) > 0 {
+			widgets := BuildWidgets(widgetsList)
+			dashboard.SetWidgets(widgets)
+		}
+	}
+
 	return dashboard
 }
 
@@ -220,6 +238,13 @@ func resourceDataApiDashboardMapper(d *schema.ResourceData, dashboard dashboards
 	} else {
 		err := d.Set("default_timespan", nil)
 		if err != nil {
+			return err
+		}
+	}
+
+	// Handle widgets
+	if widgets := dashboard.GetWidgets(); len(widgets) > 0 {
+		if err := d.Set("widgets", MapWidgets(widgets)); err != nil {
 			return err
 		}
 	}

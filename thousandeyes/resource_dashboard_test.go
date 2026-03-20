@@ -12,6 +12,8 @@ import (
 func TestAccThousandEyesDashboard(t *testing.T) {
 	var resourceName = "thousandeyes_dashboard.test_dashboard"
 	var resourceNameTimeRange = "thousandeyes_dashboard.test_dashboard_time_range"
+	var resourceNameMapWidget = "thousandeyes_dashboard.test_dashboard_map_widget"
+	var resourceNameAgentStatusWidget = "thousandeyes_dashboard.test_dashboard_agent_status_widget"
 	var testCases = []struct {
 		name                 string
 		createResourceFile   string
@@ -61,6 +63,55 @@ func TestAccThousandEyesDashboard(t *testing.T) {
 				resource.TestCheckResourceAttr(resourceNameTimeRange, "is_private", "true"),
 				resource.TestCheckResourceAttr(resourceNameTimeRange, "default_timespan.0.start", "2026-02-01T00:00:00Z"),
 				resource.TestCheckResourceAttr(resourceNameTimeRange, "default_timespan.0.end", "2026-03-01T00:00:00Z"),
+			},
+		},
+		{
+			name:                 "create_update_delete_dashboard_map_widget_test",
+			createResourceFile:   "acceptance_resources/dashboard/widget_map_basic.tf",
+			updateResourceFile:   "acceptance_resources/dashboard/widget_map_update.tf",
+			resourceName:         resourceNameMapWidget,
+			checkDestroyFunction: testAccCheckDashboardResourceDestroy,
+			checkCreateFunc: []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(resourceNameMapWidget, "title", "Test Dashboard Map Widget"),
+				resource.TestCheckResourceAttr(resourceNameMapWidget, "description", "Test Dashboard with Map Widget"),
+				resource.TestCheckResourceAttr(resourceNameMapWidget, "widgets.0.type", "Map"),
+				resource.TestCheckResourceAttr(resourceNameMapWidget, "widgets.0.title", "Test Map Widget"),
+				resource.TestCheckResourceAttr(resourceNameMapWidget, "widgets.0.visual_mode", "Full"),
+				resource.TestCheckResourceAttr(resourceNameMapWidget, "widgets.0.geo_map_config.0.group_by", "COUNTRY"),
+				resource.TestCheckResourceAttr(resourceNameMapWidget, "widgets.0.geo_map_config.0.is_geo_map_per_test", "false"),
+			},
+			checkUpdateFunc: []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(resourceNameMapWidget, "title", "Test Dashboard Map Widget (Updated)"),
+				resource.TestCheckResourceAttr(resourceNameMapWidget, "description", "Test Dashboard with Map Widget (Updated)"),
+				resource.TestCheckResourceAttr(resourceNameMapWidget, "widgets.0.type", "Map"),
+				resource.TestCheckResourceAttr(resourceNameMapWidget, "widgets.0.title", "Test Map Widget (Updated)"),
+				resource.TestCheckResourceAttr(resourceNameMapWidget, "widgets.0.visual_mode", "Full"),
+				resource.TestCheckResourceAttr(resourceNameMapWidget, "widgets.0.geo_map_config.0.group_by", "COUNTRY"),
+				resource.TestCheckResourceAttr(resourceNameMapWidget, "widgets.0.geo_map_config.0.is_geo_map_per_test", "true"),
+			},
+		},
+		{
+			name:                 "create_update_delete_dashboard_agent_status_widget_test",
+			createResourceFile:   "acceptance_resources/dashboard/widget_agent_status_basic.tf",
+			updateResourceFile:   "acceptance_resources/dashboard/widget_agent_status_update.tf",
+			resourceName:         resourceNameAgentStatusWidget,
+			checkDestroyFunction: testAccCheckDashboardResourceDestroy,
+			checkCreateFunc: []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(resourceNameAgentStatusWidget, "title", "Test Dashboard Agent Status Widget"),
+				resource.TestCheckResourceAttr(resourceNameAgentStatusWidget, "description", "Test Dashboard with Agent Status Widget"),
+				resource.TestCheckResourceAttr(resourceNameAgentStatusWidget, "widgets.0.type", "Agent Status"),
+				resource.TestCheckResourceAttr(resourceNameAgentStatusWidget, "widgets.0.title", "Test Agent Status Widget"),
+				resource.TestCheckResourceAttr(resourceNameAgentStatusWidget, "widgets.0.visual_mode", "Full"),
+				//resource.TestCheckResourceAttr(resourceNameAgentStatusWidget, "widgets.0.agent_status_config.0.agent_type", "Endpoint Agents"),
+			},
+			checkUpdateFunc: []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(resourceNameAgentStatusWidget, "title", "Test Dashboard Agent Status Widget (Updated)"),
+				resource.TestCheckResourceAttr(resourceNameAgentStatusWidget, "description", "Test Dashboard with Agent Status Widget (Updated)"),
+				resource.TestCheckResourceAttr(resourceNameAgentStatusWidget, "widgets.0.type", "Agent Status"),
+				resource.TestCheckResourceAttr(resourceNameAgentStatusWidget, "widgets.0.title", "Agent Status Widget (Updated)"),
+				resource.TestCheckResourceAttr(resourceNameAgentStatusWidget, "widgets.0.visual_mode", "Full"),
+				//resource.TestCheckResourceAttr(resourceNameAgentStatusWidget, "widgets.0.agent_status_config.0.show", "All Assigned Agents"),
+				//resource.TestCheckResourceAttr(resourceNameAgentStatusWidget, "widgets.0.agent_status_config.0.agent_type", "Endpoint Agents"),
 			},
 		},
 	}
