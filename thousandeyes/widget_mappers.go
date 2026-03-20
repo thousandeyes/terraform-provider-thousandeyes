@@ -45,6 +45,50 @@ func mapGeoMapWidget(widget dashboards.ApiWidget) map[string]interface{} {
 	return data
 }
 
+// mapTimeseriesWidget maps a Timeseries widget to Terraform data
+func mapTimeseriesWidget(widget dashboards.ApiWidget) map[string]interface{} {
+	w := widget.ApiTimeseriesWidget
+	if w == nil {
+		return nil
+	}
+
+	data := map[string]interface{}{
+		"type": "Time Series: Line",
+	}
+	setCommonWidgetFields(data, w.GetId(), w.GetTitle(), w.GetEmbedUrl(), w.GetIsEmbedded(), string(w.GetVisualMode()))
+	setCommonMapperFields(data, w)
+
+	// Map data_source (Timeseries-specific type)
+	if v := w.GetDataSource(); v != "" {
+		data["data_source"] = string(v)
+	}
+
+	config := map[string]interface{}{}
+	if v, ok := w.GetMinScaleOk(); ok && v != nil {
+		config["min_scale"] = float64(*v)
+	}
+	if v, ok := w.GetMaxScaleOk(); ok && v != nil {
+		config["max_scale"] = float64(*v)
+	}
+	if v := w.GetUnit(); v != "" {
+		config["unit"] = string(v)
+	}
+	if v := w.GetGroupBy(); v != "" {
+		config["group_by"] = string(v)
+	}
+	if v, ok := w.GetShowTimeseriesOverallBaselineOk(); ok && v != nil {
+		config["show_timeseries_overall_baseline"] = *v
+	}
+	if v, ok := w.GetIsTimeseriesOneChartPerLineOk(); ok && v != nil {
+		config["is_timeseries_one_chart_per_line"] = *v
+	}
+	if len(config) > 0 {
+		data["timeseries_config"] = []interface{}{config}
+	}
+
+	return data
+}
+
 // mapAgentStatusWidget maps an Agent Status widget to Terraform data
 func mapAgentStatusWidget(widget dashboards.ApiWidget) map[string]interface{} {
 	w := widget.ApiAgentStatusWidget

@@ -14,6 +14,7 @@ func TestAccThousandEyesDashboard(t *testing.T) {
 	var resourceNameTimeRange = "thousandeyes_dashboard.test_dashboard_time_range"
 	var resourceNameMapWidget = "thousandeyes_dashboard.test_dashboard_map_widget"
 	var resourceNameAgentStatusWidget = "thousandeyes_dashboard.test_dashboard_agent_status_widget"
+	var resourceNameTimeseriesWidget = "thousandeyes_dashboard.test_dashboard_timeseries_widget"
 	var testCases = []struct {
 		name                 string
 		createResourceFile   string
@@ -112,6 +113,45 @@ func TestAccThousandEyesDashboard(t *testing.T) {
 				resource.TestCheckResourceAttr(resourceNameAgentStatusWidget, "widgets.0.visual_mode", "Full"),
 				//resource.TestCheckResourceAttr(resourceNameAgentStatusWidget, "widgets.0.agent_status_config.0.show", "All Assigned Agents"),
 				//resource.TestCheckResourceAttr(resourceNameAgentStatusWidget, "widgets.0.agent_status_config.0.agent_type", "Endpoint Agents"),
+			},
+		},
+		{
+			name:                 "create_update_delete_dashboard_timeseries_widget_test",
+			createResourceFile:   "acceptance_resources/dashboard/widget_timeseries_basic.tf",
+			updateResourceFile:   "acceptance_resources/dashboard/widget_timeseries_update.tf",
+			resourceName:         resourceNameTimeseriesWidget,
+			checkDestroyFunction: testAccCheckDashboardResourceDestroy,
+			checkCreateFunc: []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(resourceNameTimeseriesWidget, "title", "Test Dashboard Timeseries Widget"),
+				resource.TestCheckResourceAttr(resourceNameTimeseriesWidget, "description", "Test Dashboard with Timeseries Widget"),
+				resource.TestCheckResourceAttr(resourceNameTimeseriesWidget, "widgets.0.type", "Time Series: Line"),
+				resource.TestCheckResourceAttr(resourceNameTimeseriesWidget, "widgets.0.title", "Test Timeseries Widget"),
+				resource.TestCheckResourceAttr(resourceNameTimeseriesWidget, "widgets.0.visual_mode", "Full"),
+				resource.TestCheckResourceAttr(resourceNameTimeseriesWidget, "widgets.0.data_source", "ALERTS"),
+				resource.TestCheckResourceAttr(resourceNameTimeseriesWidget, "widgets.0.metric_group", "ALERTS"),
+				resource.TestCheckResourceAttr(resourceNameTimeseriesWidget, "widgets.0.metric", "ALERT_COUNT_AGENT"),
+				resource.TestCheckResourceAttr(resourceNameTimeseriesWidget, "widgets.0.measure.0.type", "TOTAL"),
+				resource.TestCheckResourceAttr(resourceNameTimeseriesWidget, "widgets.0.fixed_timespan.0.value", "1"),
+				resource.TestCheckResourceAttr(resourceNameTimeseriesWidget, "widgets.0.fixed_timespan.0.unit", "Days"),
+				resource.TestCheckResourceAttr(resourceNameTimeseriesWidget, "widgets.0.timeseries_config.0.group_by", "AGENT"),
+				resource.TestCheckResourceAttr(resourceNameTimeseriesWidget, "widgets.0.timeseries_config.0.show_timeseries_overall_baseline", "false"),
+				resource.TestCheckResourceAttr(resourceNameTimeseriesWidget, "widgets.0.timeseries_config.0.is_timeseries_one_chart_per_line", "false"),
+			},
+			checkUpdateFunc: []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(resourceNameTimeseriesWidget, "title", "Test Dashboard Timeseries Widget (Updated)"),
+				resource.TestCheckResourceAttr(resourceNameTimeseriesWidget, "description", "Test Dashboard with Timeseries Widget (Updated)"),
+				resource.TestCheckResourceAttr(resourceNameTimeseriesWidget, "widgets.0.type", "Time Series: Line"),
+				resource.TestCheckResourceAttr(resourceNameTimeseriesWidget, "widgets.0.title", "Test Timeseries Widget (Updated)"),
+				resource.TestCheckResourceAttr(resourceNameTimeseriesWidget, "widgets.0.visual_mode", "Full"),
+				resource.TestCheckResourceAttr(resourceNameTimeseriesWidget, "widgets.0.data_source", "ALERTS"),
+				resource.TestCheckResourceAttr(resourceNameTimeseriesWidget, "widgets.0.metric_group", "ALERTS"),
+				resource.TestCheckResourceAttr(resourceNameTimeseriesWidget, "widgets.0.metric", "ALERT_COUNT_AGENT"),
+				resource.TestCheckResourceAttr(resourceNameTimeseriesWidget, "widgets.0.measure.0.type", "TOTAL"),
+				resource.TestCheckResourceAttr(resourceNameTimeseriesWidget, "widgets.0.fixed_timespan.0.value", "1"),
+				resource.TestCheckResourceAttr(resourceNameTimeseriesWidget, "widgets.0.fixed_timespan.0.unit", "Days"),
+				resource.TestCheckResourceAttr(resourceNameTimeseriesWidget, "widgets.0.timeseries_config.0.group_by", "AGENT"),
+				resource.TestCheckResourceAttr(resourceNameTimeseriesWidget, "widgets.0.timeseries_config.0.show_timeseries_overall_baseline", "true"),
+				resource.TestCheckResourceAttr(resourceNameTimeseriesWidget, "widgets.0.timeseries_config.0.is_timeseries_one_chart_per_line", "true"),
 			},
 		},
 	}

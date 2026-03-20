@@ -36,6 +36,41 @@ func buildGeoMapWidget(data map[string]interface{}) dashboards.ApiWidget {
 	return dashboards.ApiGeoMapWidgetAsApiWidget(widget)
 }
 
+// buildTimeseriesWidget builds a Timeseries widget from Terraform data
+func buildTimeseriesWidget(data map[string]interface{}) dashboards.ApiWidget {
+	widget := dashboards.NewApiTimeseriesWidget("Time Series: Line")
+	setCommonBuilderFields(widget, data)
+
+	// Set data_source (Timeseries-specific type)
+	if dataSource := getStringValue(data, "data_source"); dataSource != "" {
+		widget.SetDataSource(dashboards.TimeseriesDatasource(dataSource))
+	}
+
+	if configList := getListValue(data, "timeseries_config"); len(configList) > 0 {
+		config := configList[0].(map[string]interface{})
+		if v := getFloat64Value(config, "min_scale"); v != 0 {
+			widget.SetMinScale(float32(v))
+		}
+		if v := getFloat64Value(config, "max_scale"); v != 0 {
+			widget.SetMaxScale(float32(v))
+		}
+		if v := getStringValue(config, "unit"); v != "" {
+			widget.SetUnit(dashboards.ApiWidgetFixedYScalePrefix(v))
+		}
+		if v := getStringValue(config, "group_by"); v != "" {
+			widget.SetGroupBy(dashboards.ApiAggregateProperty(v))
+		}
+		if v, ok := config["show_timeseries_overall_baseline"].(bool); ok {
+			widget.SetShowTimeseriesOverallBaseline(v)
+		}
+		if v, ok := config["is_timeseries_one_chart_per_line"].(bool); ok {
+			widget.SetIsTimeseriesOneChartPerLine(v)
+		}
+	}
+
+	return dashboards.ApiTimeseriesWidgetAsApiWidget(widget)
+}
+
 // buildAgentStatusWidget builds an Agent Status widget from Terraform data
 func buildAgentStatusWidget(data map[string]interface{}) dashboards.ApiWidget {
 	widget := dashboards.NewApiAgentStatusWidget("Agent Status")
