@@ -25,6 +25,7 @@ var widgetRegistry = map[string]WidgetTypeRegistry{
 	"Time Series: Line":         {Builder: buildTimeseriesWidget, Mapper: mapTimeseriesWidget},
 	"Time Series: Stacked Area": {Builder: buildStackedAreaWidget, Mapper: mapStackedAreaWidget},
 	"Pie Chart":                 {Builder: buildPieChartWidget, Mapper: mapPieChartWidget},
+	"Box and Whiskers":          {Builder: buildBoxAndWhiskersWidget, Mapper: mapBoxAndWhiskersWidget},
 }
 
 // BuildWidget builds an API widget from Terraform data using the appropriate builder
@@ -61,6 +62,8 @@ func MapWidget(widget dashboards.ApiWidget) map[string]interface{} {
 		widgetType = "Time Series: Stacked Area"
 	case *dashboards.ApiPieChartWidget:
 		widgetType = "Pie Chart"
+	case *dashboards.ApiBoxAndWhiskersWidget:
+		widgetType = "Box and Whiskers"
 	default:
 		return nil
 	}

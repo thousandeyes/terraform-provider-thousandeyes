@@ -36,6 +36,35 @@ func buildGeoMapWidget(data map[string]interface{}) dashboards.ApiWidget {
 	return dashboards.ApiGeoMapWidgetAsApiWidget(widget)
 }
 
+// buildBoxAndWhiskersWidget builds a Box and Whiskers widget from Terraform data
+func buildBoxAndWhiskersWidget(data map[string]interface{}) dashboards.ApiWidget {
+	widget := dashboards.NewApiBoxAndWhiskersWidget("Box and Whiskers")
+	setCommonBuilderFields(widget, data)
+
+	// Set data_source (BoxAndWhiskers-specific type)
+	if dataSource := getStringValue(data, "data_source"); dataSource != "" {
+		widget.SetDataSource(dashboards.BoxAndWhiskersDatasource(dataSource))
+	}
+
+	if configList := getListValue(data, "box_and_whiskers_config"); len(configList) > 0 {
+		config := configList[0].(map[string]interface{})
+		if v := getFloat64Value(config, "min_scale"); v != 0 {
+			widget.SetMinScale(float32(v))
+		}
+		if v := getFloat64Value(config, "max_scale"); v != 0 {
+			widget.SetMaxScale(float32(v))
+		}
+		if v := getStringValue(config, "unit"); v != "" {
+			widget.SetUnit(dashboards.ApiWidgetFixedYScalePrefix(v))
+		}
+		if v := getStringValue(config, "group_by"); v != "" {
+			widget.SetGroupBy(dashboards.ApiAggregateProperty(v))
+		}
+	}
+
+	return dashboards.ApiBoxAndWhiskersWidgetAsApiWidget(widget)
+}
+
 // buildPieChartWidget builds a Pie Chart widget from Terraform data
 func buildPieChartWidget(data map[string]interface{}) dashboards.ApiWidget {
 	widget := dashboards.NewApiPieChartWidget("Pie Chart")

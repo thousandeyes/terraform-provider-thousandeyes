@@ -17,6 +17,7 @@ func TestAccThousandEyesDashboard(t *testing.T) {
 	var resourceNameTimeseriesWidget = "thousandeyes_dashboard.test_dashboard_timeseries_widget"
 	var resourceNameStackedAreaWidget = "thousandeyes_dashboard.test_dashboard_stacked_area_widget"
 	var resourceNamePieChartWidget = "thousandeyes_dashboard.test_dashboard_pie_chart_widget"
+	var resourceNameBoxAndWhiskersWidget = "thousandeyes_dashboard.test_dashboard_box_and_whiskers_widget"
 	var testCases = []struct {
 		name                 string
 		createResourceFile   string
@@ -224,6 +225,41 @@ func TestAccThousandEyesDashboard(t *testing.T) {
 				resource.TestCheckResourceAttr(resourceNamePieChartWidget, "widgets.0.fixed_timespan.0.value", "1"),
 				resource.TestCheckResourceAttr(resourceNamePieChartWidget, "widgets.0.fixed_timespan.0.unit", "Days"),
 				resource.TestCheckResourceAttr(resourceNamePieChartWidget, "widgets.0.pie_chart_config.0.group_by", "CLOUD_NATIVE_MONITORING-REGION"),
+			},
+		},
+		{
+			name:                 "create_update_delete_dashboard_box_and_whiskers_widget_test",
+			createResourceFile:   "acceptance_resources/dashboard/widget_box_and_whiskers_basic.tf",
+			updateResourceFile:   "acceptance_resources/dashboard/widget_box_and_whiskers_update.tf",
+			resourceName:         resourceNameBoxAndWhiskersWidget,
+			checkDestroyFunction: testAccCheckDashboardResourceDestroy,
+			checkCreateFunc: []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(resourceNameBoxAndWhiskersWidget, "title", "Test Dashboard Box and Whiskers Widget"),
+				resource.TestCheckResourceAttr(resourceNameBoxAndWhiskersWidget, "description", "Test Dashboard with Box and Whiskers Widget"),
+				resource.TestCheckResourceAttr(resourceNameBoxAndWhiskersWidget, "widgets.0.type", "Box and Whiskers"),
+				resource.TestCheckResourceAttr(resourceNameBoxAndWhiskersWidget, "widgets.0.title", "Test Box and Whiskers Widget"),
+				resource.TestCheckResourceAttr(resourceNameBoxAndWhiskersWidget, "widgets.0.visual_mode", "Full"),
+				resource.TestCheckResourceAttr(resourceNameBoxAndWhiskersWidget, "widgets.0.data_source", "ALERTS"),
+				resource.TestCheckResourceAttr(resourceNameBoxAndWhiskersWidget, "widgets.0.metric_group", "ALERTS"),
+				resource.TestCheckResourceAttr(resourceNameBoxAndWhiskersWidget, "widgets.0.metric", "ALERT_COUNT_AGENT"),
+				resource.TestCheckResourceAttr(resourceNameBoxAndWhiskersWidget, "widgets.0.measure.0.type", "MEAN"),
+				resource.TestCheckResourceAttr(resourceNameBoxAndWhiskersWidget, "widgets.0.fixed_timespan.0.value", "1"),
+				resource.TestCheckResourceAttr(resourceNameBoxAndWhiskersWidget, "widgets.0.fixed_timespan.0.unit", "Days"),
+				resource.TestCheckResourceAttr(resourceNameBoxAndWhiskersWidget, "widgets.0.box_and_whiskers_config.0.group_by", "COUNTRY"),
+			},
+			checkUpdateFunc: []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(resourceNameBoxAndWhiskersWidget, "title", "Test Dashboard Box and Whiskers Widget (Updated)"),
+				resource.TestCheckResourceAttr(resourceNameBoxAndWhiskersWidget, "description", "Test Dashboard with Box and Whiskers Widget (Updated)"),
+				resource.TestCheckResourceAttr(resourceNameBoxAndWhiskersWidget, "widgets.0.type", "Box and Whiskers"),
+				resource.TestCheckResourceAttr(resourceNameBoxAndWhiskersWidget, "widgets.0.title", "Test Box and Whiskers Widget (Updated)"),
+				resource.TestCheckResourceAttr(resourceNameBoxAndWhiskersWidget, "widgets.0.visual_mode", "Full"),
+				resource.TestCheckResourceAttr(resourceNameBoxAndWhiskersWidget, "widgets.0.data_source", "ALERTS"),
+				resource.TestCheckResourceAttr(resourceNameBoxAndWhiskersWidget, "widgets.0.metric_group", "ALERTS"),
+				resource.TestCheckResourceAttr(resourceNameBoxAndWhiskersWidget, "widgets.0.metric", "ALERT_COUNT_AGENT"),
+				resource.TestCheckResourceAttr(resourceNameBoxAndWhiskersWidget, "widgets.0.measure.0.type", "MEAN"),
+				resource.TestCheckResourceAttr(resourceNameBoxAndWhiskersWidget, "widgets.0.fixed_timespan.0.value", "1"),
+				resource.TestCheckResourceAttr(resourceNameBoxAndWhiskersWidget, "widgets.0.fixed_timespan.0.unit", "Days"),
+				resource.TestCheckResourceAttr(resourceNameBoxAndWhiskersWidget, "widgets.0.box_and_whiskers_config.0.group_by", "COUNTRY"),
 			},
 		},
 	}

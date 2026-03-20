@@ -20,6 +20,7 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 			"Time Series: Line",
 			"Time Series: Stacked Area",
 			"Pie Chart",
+			"Box and Whiskers",
 		}, false),
 	},
 
@@ -266,6 +267,38 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 		MaxItems:    1,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
+				"group_by": {
+					Type:        schema.TypeString,
+					Description: "Group by property.",
+					Optional:    true,
+				},
+			},
+		},
+	},
+
+	// Type-specific: Box and Whiskers configuration (for "Box and Whiskers" type)
+	"box_and_whiskers_config": {
+		Type:        schema.TypeList,
+		Description: "Configuration for Box and Whiskers widgets.",
+		Optional:    true,
+		MaxItems:    1,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"min_scale": {
+					Type:        schema.TypeFloat,
+					Description: "Minimum scale value for the Y-axis.",
+					Optional:    true,
+				},
+				"max_scale": {
+					Type:        schema.TypeFloat,
+					Description: "Maximum scale value for the Y-axis.",
+					Optional:    true,
+				},
+				"unit": {
+					Type:        schema.TypeString,
+					Description: "Unit for the Y-axis scale.",
+					Optional:    true,
+				},
 				"group_by": {
 					Type:        schema.TypeString,
 					Description: "Group by property.",
