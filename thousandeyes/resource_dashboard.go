@@ -109,6 +109,13 @@ func buildDashboardStruct(d *schema.ResourceData) *dashboards.Dashboard {
 	dashboard.SetDescription(d.Get("description").(string))
 	dashboard.SetIsPrivate(d.Get("is_private").(bool))
 
+	if v, ok := d.GetOk("global_filter_id"); ok {
+		dashboard.SetGlobalFilterId(v.(string))
+	}
+	if v, ok := d.GetOk("is_global_override"); ok {
+		dashboard.SetIsGlobalOverride(v.(bool))
+	}
+
 	if v, ok := d.GetOk("default_timespan"); ok {
 		timespanList := v.([]interface{})
 		if len(timespanList) > 0 {
@@ -203,6 +210,11 @@ func resourceDataApiDashboardMapper(d *schema.ResourceData, dashboard dashboards
 			if err := d.Set("default_timespan", []interface{}{t}); err != nil {
 				return err
 			}
+		}
+	} else {
+		err := d.Set("default_timespan", nil)
+		if err != nil {
+			return err
 		}
 	}
 
