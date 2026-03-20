@@ -2,7 +2,6 @@ package schemas
 
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/thousandeyes/thousandeyes-sdk-go/v3/dashboards"
 )
 
@@ -90,7 +89,6 @@ var DashboardSchema = map[string]*schema.Schema{
 					Type:          schema.TypeInt,
 					Description:   "Duration of the timespan in seconds. Mutually exclusive with start/end.",
 					Optional:      true,
-					ValidateFunc:  validation.IntInSlice([]int{3600, 7200, 21600, 43200, 86400, 172800, 1209600, 2592000, 604800, 5184000}),
 					ConflictsWith: []string{"default_timespan.0.start", "default_timespan.0.end"},
 				},
 				// start
