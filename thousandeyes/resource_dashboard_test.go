@@ -18,7 +18,7 @@ func TestAccThousandEyesDashboard(t *testing.T) {
 	var resourceNameStackedAreaWidget = "thousandeyes_dashboard.test_dashboard_stacked_area_widget"
 	var resourceNamePieChartWidget = "thousandeyes_dashboard.test_dashboard_pie_chart_widget"
 	var resourceNameBoxAndWhiskersWidget = "thousandeyes_dashboard.test_dashboard_box_and_whiskers_widget"
-	var resourceNameListWidget = "thousandeyes_dashboard.test_dashboard_list_widget"
+	//var resourceNameListWidget = "thousandeyes_dashboard.test_dashboard_list_widget"
 	var testCases = []struct {
 		name                 string
 		createResourceFile   string
