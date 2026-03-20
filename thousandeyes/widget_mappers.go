@@ -45,6 +45,44 @@ func mapGeoMapWidget(widget dashboards.ApiWidget) map[string]interface{} {
 	return data
 }
 
+// mapStackedAreaWidget maps a Stacked Area Chart widget to Terraform data
+func mapStackedAreaWidget(widget dashboards.ApiWidget) map[string]interface{} {
+	w := widget.ApiStackedAreaChartWidget
+	if w == nil {
+		return nil
+	}
+
+	data := map[string]interface{}{
+		"type": "Time Series: Stacked Area",
+	}
+	setCommonWidgetFields(data, w.GetId(), w.GetTitle(), w.GetEmbedUrl(), w.GetIsEmbedded(), string(w.GetVisualMode()))
+	setCommonMapperFields(data, w)
+
+	// Map data_source (StackedAreaChart-specific type)
+	if v := w.GetDataSource(); v != "" {
+		data["data_source"] = string(v)
+	}
+
+	config := map[string]interface{}{}
+	if v, ok := w.GetMinScaleOk(); ok && v != nil {
+		config["min_scale"] = float64(*v)
+	}
+	if v, ok := w.GetMaxScaleOk(); ok && v != nil {
+		config["max_scale"] = float64(*v)
+	}
+	if v := w.GetUnit(); v != "" {
+		config["unit"] = string(v)
+	}
+	if v := w.GetGroupBy(); v != "" {
+		config["group_by"] = string(v)
+	}
+	if len(config) > 0 {
+		data["stacked_area_config"] = []interface{}{config}
+	}
+
+	return data
+}
+
 // mapTimeseriesWidget maps a Timeseries widget to Terraform data
 func mapTimeseriesWidget(widget dashboards.ApiWidget) map[string]interface{} {
 	w := widget.ApiTimeseriesWidget

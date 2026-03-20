@@ -15,6 +15,7 @@ func TestAccThousandEyesDashboard(t *testing.T) {
 	var resourceNameMapWidget = "thousandeyes_dashboard.test_dashboard_map_widget"
 	var resourceNameAgentStatusWidget = "thousandeyes_dashboard.test_dashboard_agent_status_widget"
 	var resourceNameTimeseriesWidget = "thousandeyes_dashboard.test_dashboard_timeseries_widget"
+	var resourceNameStackedAreaWidget = "thousandeyes_dashboard.test_dashboard_stacked_area_widget"
 	var testCases = []struct {
 		name                 string
 		createResourceFile   string
@@ -152,6 +153,41 @@ func TestAccThousandEyesDashboard(t *testing.T) {
 				resource.TestCheckResourceAttr(resourceNameTimeseriesWidget, "widgets.0.timeseries_config.0.group_by", "AGENT"),
 				resource.TestCheckResourceAttr(resourceNameTimeseriesWidget, "widgets.0.timeseries_config.0.show_timeseries_overall_baseline", "true"),
 				resource.TestCheckResourceAttr(resourceNameTimeseriesWidget, "widgets.0.timeseries_config.0.is_timeseries_one_chart_per_line", "true"),
+			},
+		},
+		{
+			name:                 "create_update_delete_dashboard_stacked_area_widget_test",
+			createResourceFile:   "acceptance_resources/dashboard/widget_stacked_area_basic.tf",
+			updateResourceFile:   "acceptance_resources/dashboard/widget_stacked_area_update.tf",
+			resourceName:         resourceNameStackedAreaWidget,
+			checkDestroyFunction: testAccCheckDashboardResourceDestroy,
+			checkCreateFunc: []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(resourceNameStackedAreaWidget, "title", "Test Dashboard Stacked Area Widget"),
+				resource.TestCheckResourceAttr(resourceNameStackedAreaWidget, "description", "Test Dashboard with Stacked Area Widget"),
+				resource.TestCheckResourceAttr(resourceNameStackedAreaWidget, "widgets.0.type", "Time Series: Stacked Area"),
+				resource.TestCheckResourceAttr(resourceNameStackedAreaWidget, "widgets.0.title", "Test Stacked Area Widget"),
+				resource.TestCheckResourceAttr(resourceNameStackedAreaWidget, "widgets.0.visual_mode", "Full"),
+				resource.TestCheckResourceAttr(resourceNameStackedAreaWidget, "widgets.0.data_source", "CLOUD_NATIVE_MONITORING"),
+				resource.TestCheckResourceAttr(resourceNameStackedAreaWidget, "widgets.0.metric_group", "CLOUD_NATIVE_MONITORING-EVENTS"),
+				resource.TestCheckResourceAttr(resourceNameStackedAreaWidget, "widgets.0.metric", "CLOUD_NATIVE_MONITORING-ALL_EVENTS"),
+				resource.TestCheckResourceAttr(resourceNameStackedAreaWidget, "widgets.0.measure.0.type", "CLOUD_NATIVE_MONITORING-SUM"),
+				resource.TestCheckResourceAttr(resourceNameStackedAreaWidget, "widgets.0.fixed_timespan.0.value", "1"),
+				resource.TestCheckResourceAttr(resourceNameStackedAreaWidget, "widgets.0.fixed_timespan.0.unit", "Days"),
+				resource.TestCheckResourceAttr(resourceNameStackedAreaWidget, "widgets.0.stacked_area_config.0.group_by", "CLOUD_NATIVE_MONITORING-REGION"),
+			},
+			checkUpdateFunc: []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(resourceNameStackedAreaWidget, "title", "Test Dashboard Stacked Area Widget (Updated)"),
+				resource.TestCheckResourceAttr(resourceNameStackedAreaWidget, "description", "Test Dashboard with Stacked Area Widget (Updated)"),
+				resource.TestCheckResourceAttr(resourceNameStackedAreaWidget, "widgets.0.type", "Time Series: Stacked Area"),
+				resource.TestCheckResourceAttr(resourceNameStackedAreaWidget, "widgets.0.title", "Test Stacked Area Widget (Updated)"),
+				resource.TestCheckResourceAttr(resourceNameStackedAreaWidget, "widgets.0.visual_mode", "Full"),
+				resource.TestCheckResourceAttr(resourceNameStackedAreaWidget, "widgets.0.data_source", "CLOUD_NATIVE_MONITORING"),
+				resource.TestCheckResourceAttr(resourceNameStackedAreaWidget, "widgets.0.metric_group", "CLOUD_NATIVE_MONITORING-EVENTS"),
+				resource.TestCheckResourceAttr(resourceNameStackedAreaWidget, "widgets.0.metric", "CLOUD_NATIVE_MONITORING-ALL_EVENTS"),
+				resource.TestCheckResourceAttr(resourceNameStackedAreaWidget, "widgets.0.measure.0.type", "CLOUD_NATIVE_MONITORING-SUM"),
+				resource.TestCheckResourceAttr(resourceNameStackedAreaWidget, "widgets.0.fixed_timespan.0.value", "1"),
+				resource.TestCheckResourceAttr(resourceNameStackedAreaWidget, "widgets.0.fixed_timespan.0.unit", "Days"),
+				resource.TestCheckResourceAttr(resourceNameStackedAreaWidget, "widgets.0.stacked_area_config.0.group_by", "CLOUD_NATIVE_MONITORING-REGION"),
 			},
 		},
 	}
