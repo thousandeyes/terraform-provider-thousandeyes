@@ -24,7 +24,7 @@ resource "thousandeyes_dashboard" "test_dashboard_timeseries_widget" {
     }
 
     timeseries_config {
-      group_by = "AGENT"
+      group_by = "TEST"
       show_timeseries_overall_baseline = true
       is_timeseries_one_chart_per_line = true
     }

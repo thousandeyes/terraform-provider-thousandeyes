@@ -159,7 +159,7 @@ func TestAccThousandEyesDashboard(t *testing.T) {
 				resource.TestCheckResourceAttr(resourceNameTimeseriesWidget, "widgets.0.measure.0.type", "TOTAL"),
 				resource.TestCheckResourceAttr(resourceNameTimeseriesWidget, "widgets.0.fixed_timespan.0.value", "1"),
 				resource.TestCheckResourceAttr(resourceNameTimeseriesWidget, "widgets.0.fixed_timespan.0.unit", "Days"),
-				resource.TestCheckResourceAttr(resourceNameTimeseriesWidget, "widgets.0.timeseries_config.0.group_by", "AGENT"),
+				resource.TestCheckResourceAttr(resourceNameTimeseriesWidget, "widgets.0.timeseries_config.0.group_by", "TEST"),
 				resource.TestCheckResourceAttr(resourceNameTimeseriesWidget, "widgets.0.timeseries_config.0.show_timeseries_overall_baseline", "true"),
 				resource.TestCheckResourceAttr(resourceNameTimeseriesWidget, "widgets.0.timeseries_config.0.is_timeseries_one_chart_per_line", "true"),
 			},
