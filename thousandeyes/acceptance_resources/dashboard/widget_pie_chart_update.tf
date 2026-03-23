@@ -23,7 +23,7 @@ resource "thousandeyes_dashboard" "test_dashboard_pie_chart_widget" {
     }
 
     pie_chart_config {
-      group_by = "CLOUD_NATIVE_MONITORING-REGION"
+      group_by = "CLOUD_NATIVE_MONITORING-ACCOUNT"
     }
   }
 }
