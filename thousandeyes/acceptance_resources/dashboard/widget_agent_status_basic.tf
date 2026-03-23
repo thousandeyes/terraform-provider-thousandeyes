@@ -6,8 +6,6 @@ resource "thousandeyes_dashboard" "test_dashboard_agent_status_widget" {
     duration = 3600
   }
 
-
-
   widgets {
     type        = "Agent Status"
     title       = "Test Agent Status Widget"

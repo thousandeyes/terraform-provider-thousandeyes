@@ -19,9 +19,9 @@ resource "thousandeyes_dashboard" "test_dashboard_map_widget" {
     data_source = "ALERTS"
 
     geo_map_config {
-      min_scale = 0
-      max_scale = 100
-      group_by = "COUNTRY"
+      min_scale = 10
+      max_scale = 200
+      group_by = "CONTINENT"
       is_geo_map_per_test = true
     }
   }

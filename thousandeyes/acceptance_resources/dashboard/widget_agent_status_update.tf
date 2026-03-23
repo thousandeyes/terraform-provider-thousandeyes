@@ -10,11 +10,11 @@ resource "thousandeyes_dashboard" "test_dashboard_agent_status_widget" {
     type        = "Agent Status"
     title       = "Agent Status Widget (Updated)"
     visual_mode = "Full"
-    data_source = "CLOUD_AND_ENTERPRISE_AGENTS"
+    data_source = "ENDPOINT_AGENTS"
 
     agent_status_config {
-      show       = "All Assigned Agents"
-      agent_type = "Enterprise Agents"
+      show = "Owned Agents"
+      agent_type = "Endpoint Agents"
     }
   }
 }
