@@ -107,7 +107,7 @@ func TestAccThousandEyesDashboard(t *testing.T) {
 				resource.TestCheckResourceAttr(resourceNameAgentStatusWidget, "widgets.0.type", "Agent Status"),
 				resource.TestCheckResourceAttr(resourceNameAgentStatusWidget, "widgets.0.title", "Test Agent Status Widget"),
 				resource.TestCheckResourceAttr(resourceNameAgentStatusWidget, "widgets.0.visual_mode", "Full"),
-				//resource.TestCheckResourceAttr(resourceNameAgentStatusWidget, "widgets.0.agent_status_config.0.agent_type", "Endpoint Agents"),
+				resource.TestCheckResourceAttr(resourceNameAgentStatusWidget, "widgets.0.agent_status_config.0.agent_type", "Enterprise Agents"),
 			},
 			checkUpdateFunc: []resource.TestCheckFunc{
 				resource.TestCheckResourceAttr(resourceNameAgentStatusWidget, "title", "Test Dashboard Agent Status Widget (Updated)"),
@@ -115,8 +115,8 @@ func TestAccThousandEyesDashboard(t *testing.T) {
 				resource.TestCheckResourceAttr(resourceNameAgentStatusWidget, "widgets.0.type", "Agent Status"),
 				resource.TestCheckResourceAttr(resourceNameAgentStatusWidget, "widgets.0.title", "Agent Status Widget (Updated)"),
 				resource.TestCheckResourceAttr(resourceNameAgentStatusWidget, "widgets.0.visual_mode", "Full"),
-				//resource.TestCheckResourceAttr(resourceNameAgentStatusWidget, "widgets.0.agent_status_config.0.show", "All Assigned Agents"),
-				//resource.TestCheckResourceAttr(resourceNameAgentStatusWidget, "widgets.0.agent_status_config.0.agent_type", "Endpoint Agents"),
+				resource.TestCheckResourceAttr(resourceNameAgentStatusWidget, "widgets.0.agent_status_config.0.show", "All Assigned Agents"),
+				resource.TestCheckResourceAttr(resourceNameAgentStatusWidget, "widgets.0.agent_status_config.0.agent_type", "Enterprise Agents"),
 			},
 		},
 		{
