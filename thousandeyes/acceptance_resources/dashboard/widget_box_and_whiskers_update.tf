@@ -23,7 +23,7 @@ resource "thousandeyes_dashboard" "test_dashboard_box_and_whiskers_widget" {
     }
 
     box_and_whiskers_config {
-      group_by = "COUNTRY"
+      group_by = "CONTINENT"
     }
   }
 }

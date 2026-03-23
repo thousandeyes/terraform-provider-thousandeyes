@@ -23,7 +23,7 @@ resource "thousandeyes_dashboard" "test_dashboard_stacked_area_widget" {
     }
 
     stacked_area_config {
-      group_by = "CLOUD_NATIVE_MONITORING-REGION"
+      group_by = "CLOUD_NATIVE_MONITORING-ACCOUNT"
     }
   }
 }

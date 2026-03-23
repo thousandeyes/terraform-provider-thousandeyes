@@ -196,7 +196,7 @@ func TestAccThousandEyesDashboard(t *testing.T) {
 				resource.TestCheckResourceAttr(resourceNameStackedAreaWidget, "widgets.0.measure.0.type", "CLOUD_NATIVE_MONITORING-SUM"),
 				resource.TestCheckResourceAttr(resourceNameStackedAreaWidget, "widgets.0.fixed_timespan.0.value", "1"),
 				resource.TestCheckResourceAttr(resourceNameStackedAreaWidget, "widgets.0.fixed_timespan.0.unit", "Days"),
-				resource.TestCheckResourceAttr(resourceNameStackedAreaWidget, "widgets.0.stacked_area_config.0.group_by", "CLOUD_NATIVE_MONITORING-REGION"),
+				resource.TestCheckResourceAttr(resourceNameStackedAreaWidget, "widgets.0.stacked_area_config.0.group_by", "CLOUD_NATIVE_MONITORING-ACCOUNT"),
 			},
 		},
 		{
@@ -231,7 +231,7 @@ func TestAccThousandEyesDashboard(t *testing.T) {
 				resource.TestCheckResourceAttr(resourceNamePieChartWidget, "widgets.0.measure.0.type", "CLOUD_NATIVE_MONITORING-SUM"),
 				resource.TestCheckResourceAttr(resourceNamePieChartWidget, "widgets.0.fixed_timespan.0.value", "1"),
 				resource.TestCheckResourceAttr(resourceNamePieChartWidget, "widgets.0.fixed_timespan.0.unit", "Days"),
-				resource.TestCheckResourceAttr(resourceNamePieChartWidget, "widgets.0.pie_chart_config.0.group_by", "CLOUD_NATIVE_MONITORING-REGION"),
+				resource.TestCheckResourceAttr(resourceNamePieChartWidget, "widgets.0.pie_chart_config.0.group_by", "CLOUD_NATIVE_MONITORING-ACCOUNT"),
 			},
 		},
 		{
@@ -266,7 +266,7 @@ func TestAccThousandEyesDashboard(t *testing.T) {
 				resource.TestCheckResourceAttr(resourceNameBoxAndWhiskersWidget, "widgets.0.measure.0.type", "MEAN"),
 				resource.TestCheckResourceAttr(resourceNameBoxAndWhiskersWidget, "widgets.0.fixed_timespan.0.value", "1"),
 				resource.TestCheckResourceAttr(resourceNameBoxAndWhiskersWidget, "widgets.0.fixed_timespan.0.unit", "Days"),
-				resource.TestCheckResourceAttr(resourceNameBoxAndWhiskersWidget, "widgets.0.box_and_whiskers_config.0.group_by", "COUNTRY"),
+				resource.TestCheckResourceAttr(resourceNameBoxAndWhiskersWidget, "widgets.0.box_and_whiskers_config.0.group_by", "CONTINENT"),
 			},
 		},
 		// This API is return invalid sortDirection
