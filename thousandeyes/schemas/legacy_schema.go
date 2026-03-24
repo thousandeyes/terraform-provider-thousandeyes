@@ -2,6 +2,7 @@ package schemas
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -164,6 +165,20 @@ func legacyStateBool(value any) any {
 		return v != 0
 	case int64:
 		return v != 0
+	case float32:
+		return v != 0
+	case float64:
+		return v != 0
+	case json.Number:
+		n, err := v.Int64()
+		if err == nil {
+			return n != 0
+		}
+		f, err := v.Float64()
+		if err == nil {
+			return f != 0
+		}
+		return value
 	default:
 		return value
 	}
