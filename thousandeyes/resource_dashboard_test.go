@@ -77,6 +77,11 @@ func TestAccThousandEyesDashboard(t *testing.T) {
 						Check:  resource.ComposeTestCheckFunc(tc.checkCreateFunc...),
 					},
 					{
+						ResourceName:      tc.resourceName,
+						ImportState:       true,
+						ImportStateVerify: true,
+					},
+					{
 						Config: testAccThousandEyesDashboardConfig(tc.updateResourceFile),
 						Check:  resource.ComposeTestCheckFunc(tc.checkUpdateFunc...),
 					},
