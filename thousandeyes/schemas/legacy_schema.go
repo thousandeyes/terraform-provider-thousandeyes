@@ -141,7 +141,30 @@ func LegacyTestStateUpgrade(ctx context.Context, rawState map[string]any, meta a
 		if _, ok := rawState["custom_headers"].(map[string]interface{}); ok {
 			rawState["custom_headers"] = nil
 		}
+
+		for _, field := range []string{"use_active_ftp", "use_explicit_ftps"} {
+			if value, ok := rawState[field]; ok {
+				rawState[field] = legacyStateBool(value)
+			}
+		}
 	}
 
 	return rawState, nil
+}
+
+func legacyStateBool(value any) any {
+	switch v := value.(type) {
+	case int:
+		return v != 0
+	case int8:
+		return v != 0
+	case int16:
+		return v != 0
+	case int32:
+		return v != 0
+	case int64:
+		return v != 0
+	default:
+		return value
+	}
 }
