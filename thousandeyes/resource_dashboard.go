@@ -105,10 +105,16 @@ func resourceDashboardDelete(d *schema.ResourceData, m interface{}) error {
 
 func buildDashboardStruct(d *schema.ResourceData) *dashboards.Dashboard {
 	dashboard := &dashboards.Dashboard{}
-	dashboard.SetTitle(d.Get("title").(string))
-	dashboard.SetDescription(d.Get("description").(string))
-	dashboard.SetIsPrivate(d.Get("is_private").(bool))
 
+	if v, ok := d.GetOk("title"); ok {
+		dashboard.SetTitle(v.(string))
+	}
+	if v, ok := d.GetOk("description"); ok {
+		dashboard.SetDescription(v.(string))
+	}
+	if v, ok := d.GetOk("is_private"); ok {
+		dashboard.SetIsPrivate(v.(bool))
+	}
 	if v, ok := d.GetOk("global_filter_id"); ok {
 		dashboard.SetGlobalFilterId(v.(string))
 	}
