@@ -81,6 +81,7 @@ var DashboardSchema = map[string]*schema.Schema{
 		Type:        schema.TypeList,
 		Description: "Defines the default time range displayed by the dashboard.",
 		Optional:    true,
+		Computed:    true,
 		MaxItems:    1,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
@@ -89,6 +90,7 @@ var DashboardSchema = map[string]*schema.Schema{
 					Type:          schema.TypeInt,
 					Description:   "Duration of the timespan in seconds. Mutually exclusive with start/end.",
 					Optional:      true,
+					Computed:      true,
 					ConflictsWith: []string{"default_timespan.0.start", "default_timespan.0.end"},
 				},
 				// start
@@ -96,6 +98,7 @@ var DashboardSchema = map[string]*schema.Schema{
 					Type:          schema.TypeString,
 					Description:   "UTC start date of the timespan range (ISO date-time format). Mutually exclusive with duration.",
 					Optional:      true,
+					Computed:      true,
 					ConflictsWith: []string{"default_timespan.0.duration"},
 				},
 				// end
@@ -103,6 +106,7 @@ var DashboardSchema = map[string]*schema.Schema{
 					Type:          schema.TypeString,
 					Description:   "UTC end date of the timespan range (ISO date-time format). Mutually exclusive with duration.",
 					Optional:      true,
+					Computed:      true,
 					ConflictsWith: []string{"default_timespan.0.duration"},
 				},
 			},
