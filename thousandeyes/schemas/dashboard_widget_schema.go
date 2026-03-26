@@ -38,11 +38,12 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 	},
 	"visual_mode": {
 		Type:        schema.TypeString,
-		Description: "Visual mode of the widget (e.g., 'Full', 'Half').",
+		Description: "Visual mode of the widget (e.g., 'Full', 'Half screen').",
 		Optional:    true,
+		Computed:    true,
 		ValidateFunc: validation.StringInSlice([]string{
 			"Full",
-			"Half",
+			"Half screen",
 		}, false),
 	},
 	"embed_url": {
@@ -132,6 +133,7 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 		Type:        schema.TypeList,
 		Description: "Configuration for Map widgets.",
 		Optional:    true,
+		Computed:    true,
 		MaxItems:    1,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
@@ -169,6 +171,7 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 		Type:        schema.TypeList,
 		Description: "Configuration for Agent Status widgets.",
 		Optional:    true,
+		Computed:    true,
 		MaxItems:    1,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
@@ -191,6 +194,7 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 		Type:        schema.TypeList,
 		Description: "Configuration for Time Series: Line widgets.",
 		Optional:    true,
+		Computed:    true,
 		MaxItems:    1,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
@@ -233,6 +237,7 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 		Type:        schema.TypeList,
 		Description: "Configuration for Time Series: Stacked Area widgets.",
 		Optional:    true,
+		Computed:    true,
 		MaxItems:    1,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
@@ -254,7 +259,7 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 				"group_by": {
 					Type:        schema.TypeString,
 					Description: "Group by property.",
-					Optional:    true,
+					Required:    true,
 				},
 			},
 		},
@@ -265,13 +270,14 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 		Type:        schema.TypeList,
 		Description: "Configuration for Pie Chart widgets.",
 		Optional:    true,
+		Computed:    true,
 		MaxItems:    1,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"group_by": {
 					Type:        schema.TypeString,
 					Description: "Group by property.",
-					Optional:    true,
+					Required:    true,
 				},
 			},
 		},
@@ -282,6 +288,7 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 		Type:        schema.TypeList,
 		Description: "Configuration for Box and Whiskers widgets.",
 		Optional:    true,
+		Computed:    true,
 		MaxItems:    1,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
@@ -314,6 +321,7 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 		Type:        schema.TypeList,
 		Description: "Configuration for List widgets.",
 		Optional:    true,
+		Computed:    true,
 		MaxItems:    1,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
@@ -330,4 +338,5 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 			},
 		},
 	},
+
 }

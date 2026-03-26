@@ -4,6 +4,17 @@ import (
 	"github.com/thousandeyes/thousandeyes-sdk-go/v3/dashboards"
 )
 
+// Widget type constants
+const (
+	WidgetTypeMap            = "Map"
+	WidgetTypeAgentStatus    = "Agent Status"
+	WidgetTypeTimeseriesLine = "Time Series: Line"
+	WidgetTypeStackedArea    = "Time Series: Stacked Area"
+	WidgetTypePieChart       = "Pie Chart"
+	WidgetTypeBoxAndWhiskers = "Box and Whiskers"
+	WidgetTypeList           = "List"
+)
+
 // WidgetBuilder builds an API widget from Terraform resource data (map)
 // Used for Create and Update operations
 type WidgetBuilder func(data map[string]interface{}) dashboards.ApiWidget
@@ -20,13 +31,13 @@ type WidgetTypeRegistry struct {
 
 // widgetRegistry holds the mapping functions for each widget type
 var widgetRegistry = map[string]WidgetTypeRegistry{
-	"Map":                       {Builder: buildGeoMapWidget, Mapper: mapGeoMapWidget},
-	"Agent Status":              {Builder: buildAgentStatusWidget, Mapper: mapAgentStatusWidget},
-	"Time Series: Line":         {Builder: buildTimeseriesWidget, Mapper: mapTimeseriesWidget},
-	"Time Series: Stacked Area": {Builder: buildStackedAreaWidget, Mapper: mapStackedAreaWidget},
-	"Pie Chart":                 {Builder: buildPieChartWidget, Mapper: mapPieChartWidget},
-	"Box and Whiskers":          {Builder: buildBoxAndWhiskersWidget, Mapper: mapBoxAndWhiskersWidget},
-	"List":                      {Builder: buildListWidget, Mapper: mapListWidget},
+	WidgetTypeMap:            {Builder: buildGeoMapWidget, Mapper: mapGeoMapWidget},
+	WidgetTypeAgentStatus:    {Builder: buildAgentStatusWidget, Mapper: mapAgentStatusWidget},
+	WidgetTypeTimeseriesLine: {Builder: buildTimeseriesWidget, Mapper: mapTimeseriesWidget},
+	WidgetTypeStackedArea:    {Builder: buildStackedAreaWidget, Mapper: mapStackedAreaWidget},
+	WidgetTypePieChart:       {Builder: buildPieChartWidget, Mapper: mapPieChartWidget},
+	WidgetTypeBoxAndWhiskers: {Builder: buildBoxAndWhiskersWidget, Mapper: mapBoxAndWhiskersWidget},
+	WidgetTypeList:           {Builder: buildListWidget, Mapper: mapListWidget},
 }
 
 // BuildWidget builds an API widget from Terraform data using the appropriate builder
@@ -54,19 +65,19 @@ func MapWidget(widget dashboards.ApiWidget) map[string]interface{} {
 	var widgetType string
 	switch instance.(type) {
 	case *dashboards.ApiGeoMapWidget:
-		widgetType = "Map"
+		widgetType = WidgetTypeMap
 	case *dashboards.ApiAgentStatusWidget:
-		widgetType = "Agent Status"
+		widgetType = WidgetTypeAgentStatus
 	case *dashboards.ApiTimeseriesWidget:
-		widgetType = "Time Series: Line"
+		widgetType = WidgetTypeTimeseriesLine
 	case *dashboards.ApiStackedAreaChartWidget:
-		widgetType = "Time Series: Stacked Area"
+		widgetType = WidgetTypeStackedArea
 	case *dashboards.ApiPieChartWidget:
-		widgetType = "Pie Chart"
+		widgetType = WidgetTypePieChart
 	case *dashboards.ApiBoxAndWhiskersWidget:
-		widgetType = "Box and Whiskers"
+		widgetType = WidgetTypeBoxAndWhiskers
 	case *dashboards.ApiListWidget:
-		widgetType = "List"
+		widgetType = WidgetTypeList
 	default:
 		return nil
 	}

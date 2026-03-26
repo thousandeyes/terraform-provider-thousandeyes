@@ -12,11 +12,17 @@ import (
 func TestAccThousandEyesDashboard(t *testing.T) {
 	var resourceName = "thousandeyes_dashboard.test_dashboard"
 	var resourceNameTimeRange = "thousandeyes_dashboard.test_dashboard_time_range"
+	var resourceNameMapDefaults = "thousandeyes_dashboard.test_dashboard_map_defaults"
 	var resourceNameMapWidget = "thousandeyes_dashboard.test_dashboard_map_widget"
+	var resourceNameAgentStatusDefaults = "thousandeyes_dashboard.test_dashboard_agent_status_defaults"
 	var resourceNameAgentStatusWidget = "thousandeyes_dashboard.test_dashboard_agent_status_widget"
+	var resourceNameTimeseriesDefaults = "thousandeyes_dashboard.test_dashboard_timeseries_defaults"
 	var resourceNameTimeseriesWidget = "thousandeyes_dashboard.test_dashboard_timeseries_widget"
+	var resourceNameStackedAreaDefaults = "thousandeyes_dashboard.test_dashboard_stacked_area_defaults"
 	var resourceNameStackedAreaWidget = "thousandeyes_dashboard.test_dashboard_stacked_area_widget"
+	var resourceNamePieChartDefaults = "thousandeyes_dashboard.test_dashboard_pie_chart_defaults"
 	var resourceNamePieChartWidget = "thousandeyes_dashboard.test_dashboard_pie_chart_widget"
+	var resourceNameBoxAndWhiskersDefaults = "thousandeyes_dashboard.test_dashboard_box_and_whiskers_defaults"
 	var resourceNameBoxAndWhiskersWidget = "thousandeyes_dashboard.test_dashboard_box_and_whiskers_widget"
 	//var resourceNameListWidget = "thousandeyes_dashboard.test_dashboard_list_widget"
 	var testCases = []struct {
@@ -71,6 +77,23 @@ func TestAccThousandEyesDashboard(t *testing.T) {
 			},
 		},
 		{
+			name:                 "create_dashboard_map_defaults_test",
+			createResourceFile:   "acceptance_resources/dashboard/widget_map_defaults.tf",
+			updateResourceFile:   "acceptance_resources/dashboard/widget_map_defaults.tf",
+			resourceName:         resourceNameMapDefaults,
+			checkDestroyFunction: testAccCheckDashboardResourceDestroy,
+			checkCreateFunc: []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(resourceNameMapDefaults, "title", "Test Dashboard Map Defaults"),
+				resource.TestCheckResourceAttr(resourceNameMapDefaults, "widgets.0.type", "Map"),
+				resource.TestCheckResourceAttr(resourceNameMapDefaults, "widgets.0.title", "Map With Defaults"),
+				resource.TestCheckResourceAttr(resourceNameMapDefaults, "widgets.0.data_source", "ALERTS"),
+			},
+			checkUpdateFunc: []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(resourceNameMapDefaults, "title", "Test Dashboard Map Defaults"),
+				resource.TestCheckResourceAttr(resourceNameMapDefaults, "widgets.0.type", "Map"),
+			},
+		},
+		{
 			name:                 "create_update_delete_dashboard_map_widget_test",
 			createResourceFile:   "acceptance_resources/dashboard/widget_map_basic.tf",
 			updateResourceFile:   "acceptance_resources/dashboard/widget_map_update.tf",
@@ -100,6 +123,23 @@ func TestAccThousandEyesDashboard(t *testing.T) {
 			},
 		},
 		{
+			name:                 "create_dashboard_agent_status_defaults_test",
+			createResourceFile:   "acceptance_resources/dashboard/widget_agent_status_defaults.tf",
+			updateResourceFile:   "acceptance_resources/dashboard/widget_agent_status_defaults.tf",
+			resourceName:         resourceNameAgentStatusDefaults,
+			checkDestroyFunction: testAccCheckDashboardResourceDestroy,
+			checkCreateFunc: []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(resourceNameAgentStatusDefaults, "title", "Test Dashboard Agent Status Defaults"),
+				resource.TestCheckResourceAttr(resourceNameAgentStatusDefaults, "widgets.0.type", "Agent Status"),
+				resource.TestCheckResourceAttr(resourceNameAgentStatusDefaults, "widgets.0.title", "Agent Status With Defaults"),
+				resource.TestCheckResourceAttr(resourceNameAgentStatusDefaults, "widgets.0.data_source", "CLOUD_AND_ENTERPRISE_AGENTS"),
+			},
+			checkUpdateFunc: []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(resourceNameAgentStatusDefaults, "title", "Test Dashboard Agent Status Defaults"),
+				resource.TestCheckResourceAttr(resourceNameAgentStatusDefaults, "widgets.0.type", "Agent Status"),
+			},
+		},
+		{
 			name:                 "create_update_delete_dashboard_agent_status_widget_test",
 			createResourceFile:   "acceptance_resources/dashboard/widget_agent_status_basic.tf",
 			updateResourceFile:   "acceptance_resources/dashboard/widget_agent_status_update.tf",
@@ -123,6 +163,23 @@ func TestAccThousandEyesDashboard(t *testing.T) {
 				resource.TestCheckResourceAttr(resourceNameAgentStatusWidget, "widgets.0.visual_mode", "Full"),
 				resource.TestCheckResourceAttr(resourceNameAgentStatusWidget, "widgets.0.agent_status_config.0.show", "Owned Agents"),
 				resource.TestCheckResourceAttr(resourceNameAgentStatusWidget, "widgets.0.agent_status_config.0.agent_type", "Endpoint Agents"),
+			},
+		},
+		{
+			name:                 "create_dashboard_timeseries_defaults_test",
+			createResourceFile:   "acceptance_resources/dashboard/widget_timeseries_defaults.tf",
+			updateResourceFile:   "acceptance_resources/dashboard/widget_timeseries_defaults.tf",
+			resourceName:         resourceNameTimeseriesDefaults,
+			checkDestroyFunction: testAccCheckDashboardResourceDestroy,
+			checkCreateFunc: []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(resourceNameTimeseriesDefaults, "title", "Test Dashboard Timeseries Defaults"),
+				resource.TestCheckResourceAttr(resourceNameTimeseriesDefaults, "widgets.0.type", "Time Series: Line"),
+				resource.TestCheckResourceAttr(resourceNameTimeseriesDefaults, "widgets.0.title", "Timeseries With Defaults"),
+				resource.TestCheckResourceAttr(resourceNameTimeseriesDefaults, "widgets.0.data_source", "ALERTS"),
+			},
+			checkUpdateFunc: []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(resourceNameTimeseriesDefaults, "title", "Test Dashboard Timeseries Defaults"),
+				resource.TestCheckResourceAttr(resourceNameTimeseriesDefaults, "widgets.0.type", "Time Series: Line"),
 			},
 		},
 		{
@@ -165,6 +222,25 @@ func TestAccThousandEyesDashboard(t *testing.T) {
 			},
 		},
 		{
+			name:                 "create_dashboard_stacked_area_defaults_test",
+			createResourceFile:   "acceptance_resources/dashboard/widget_stacked_area_defaults.tf",
+			updateResourceFile:   "acceptance_resources/dashboard/widget_stacked_area_defaults.tf",
+			resourceName:         resourceNameStackedAreaDefaults,
+			checkDestroyFunction: testAccCheckDashboardResourceDestroy,
+			checkCreateFunc: []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(resourceNameStackedAreaDefaults, "title", "Test Dashboard Stacked Area Defaults"),
+				resource.TestCheckResourceAttr(resourceNameStackedAreaDefaults, "widgets.0.type", "Time Series: Stacked Area"),
+				resource.TestCheckResourceAttr(resourceNameStackedAreaDefaults, "widgets.0.title", "Stacked Area With Defaults"),
+				resource.TestCheckResourceAttr(resourceNameStackedAreaDefaults, "widgets.0.data_source", "CLOUD_NATIVE_MONITORING"),
+				resource.TestCheckResourceAttr(resourceNameStackedAreaDefaults, "widgets.0.stacked_area_config.0.group_by", "CLOUD_NATIVE_MONITORING-REGION"),
+			},
+			checkUpdateFunc: []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(resourceNameStackedAreaDefaults, "title", "Test Dashboard Stacked Area Defaults"),
+				resource.TestCheckResourceAttr(resourceNameStackedAreaDefaults, "widgets.0.type", "Time Series: Stacked Area"),
+				resource.TestCheckResourceAttr(resourceNameStackedAreaDefaults, "widgets.0.stacked_area_config.0.group_by", "CLOUD_NATIVE_MONITORING-REGION"),
+			},
+		},
+		{
 			name:                 "create_update_delete_dashboard_stacked_area_widget_test",
 			createResourceFile:   "acceptance_resources/dashboard/widget_stacked_area_basic.tf",
 			updateResourceFile:   "acceptance_resources/dashboard/widget_stacked_area_update.tf",
@@ -200,6 +276,23 @@ func TestAccThousandEyesDashboard(t *testing.T) {
 			},
 		},
 		{
+			name:                 "create_dashboard_pie_chart_defaults_test",
+			createResourceFile:   "acceptance_resources/dashboard/widget_pie_chart_defaults.tf",
+			updateResourceFile:   "acceptance_resources/dashboard/widget_pie_chart_defaults.tf",
+			resourceName:         resourceNamePieChartDefaults,
+			checkDestroyFunction: testAccCheckDashboardResourceDestroy,
+			checkCreateFunc: []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(resourceNamePieChartDefaults, "title", "Test Dashboard Pie Chart Defaults"),
+				resource.TestCheckResourceAttr(resourceNamePieChartDefaults, "widgets.0.type", "Pie Chart"),
+				resource.TestCheckResourceAttr(resourceNamePieChartDefaults, "widgets.0.title", "Pie Chart With Defaults"),
+				resource.TestCheckResourceAttr(resourceNamePieChartDefaults, "widgets.0.data_source", "CLOUD_NATIVE_MONITORING"),
+			},
+			checkUpdateFunc: []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(resourceNamePieChartDefaults, "title", "Test Dashboard Pie Chart Defaults"),
+				resource.TestCheckResourceAttr(resourceNamePieChartDefaults, "widgets.0.type", "Pie Chart"),
+			},
+		},
+		{
 			name:                 "create_update_delete_dashboard_pie_chart_widget_test",
 			createResourceFile:   "acceptance_resources/dashboard/widget_pie_chart_basic.tf",
 			updateResourceFile:   "acceptance_resources/dashboard/widget_pie_chart_update.tf",
@@ -232,6 +325,23 @@ func TestAccThousandEyesDashboard(t *testing.T) {
 				resource.TestCheckResourceAttr(resourceNamePieChartWidget, "widgets.0.fixed_timespan.0.value", "1"),
 				resource.TestCheckResourceAttr(resourceNamePieChartWidget, "widgets.0.fixed_timespan.0.unit", "Days"),
 				resource.TestCheckResourceAttr(resourceNamePieChartWidget, "widgets.0.pie_chart_config.0.group_by", "CLOUD_NATIVE_MONITORING-ACCOUNT"),
+			},
+		},
+		{
+			name:                 "create_dashboard_box_and_whiskers_defaults_test",
+			createResourceFile:   "acceptance_resources/dashboard/widget_box_and_whiskers_defaults.tf",
+			updateResourceFile:   "acceptance_resources/dashboard/widget_box_and_whiskers_defaults.tf",
+			resourceName:         resourceNameBoxAndWhiskersDefaults,
+			checkDestroyFunction: testAccCheckDashboardResourceDestroy,
+			checkCreateFunc: []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(resourceNameBoxAndWhiskersDefaults, "title", "Test Dashboard Box and Whiskers Defaults"),
+				resource.TestCheckResourceAttr(resourceNameBoxAndWhiskersDefaults, "widgets.0.type", "Box and Whiskers"),
+				resource.TestCheckResourceAttr(resourceNameBoxAndWhiskersDefaults, "widgets.0.title", "Box and Whiskers With Defaults"),
+				resource.TestCheckResourceAttr(resourceNameBoxAndWhiskersDefaults, "widgets.0.data_source", "ALERTS"),
+			},
+			checkUpdateFunc: []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(resourceNameBoxAndWhiskersDefaults, "title", "Test Dashboard Box and Whiskers Defaults"),
+				resource.TestCheckResourceAttr(resourceNameBoxAndWhiskersDefaults, "widgets.0.type", "Box and Whiskers"),
 			},
 		},
 		{

@@ -1,6 +1,8 @@
 package thousandeyes
 
 import (
+	"context"
+	"fmt"
 	"log"
 	"time"
 
@@ -12,17 +14,51 @@ import (
 
 func resourceDashboard() *schema.Resource {
 	resource := schema.Resource{
-		Schema: schemas.DashboardSchema,
-		Create: resourceDashboardCreate,
-		Read:   resourceDashboardRead,
-		Update: resourceDashboardUpdate,
-		Delete: resourceDashboardDelete,
+		Schema:         schemas.DashboardSchema,
+		Create:         resourceDashboardCreate,
+		Read:           resourceDashboardRead,
+		Update:         resourceDashboardUpdate,
+		Delete:         resourceDashboardDelete,
+		CustomizeDiff:  resourceDashboardCustomizeDiff,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Description: "This resource allows you to create and manage Dashboards. For more information, see [Dashboards](https://developer.cisco.com/docs/thousandeyes/list-dashboards/).",
 	}
 	return &resource
+}
+
+func resourceDashboardCustomizeDiff(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
+	widgets := d.Get("widgets").([]interface{})
+
+	for i, w := range widgets {
+		widget := w.(map[string]interface{})
+		widgetType := widget["type"].(string)
+
+		if widgetType == WidgetTypeStackedArea {
+			stackedAreaConfig := widget["stacked_area_config"].([]interface{})
+			if len(stackedAreaConfig) == 0 {
+				return fmt.Errorf("widgets.%d: stacked_area_config is required for widget type '%s'", i, WidgetTypeStackedArea)
+			}
+			config := stackedAreaConfig[0].(map[string]interface{})
+			if groupBy, ok := config["group_by"].(string); !ok || groupBy == "" {
+				return fmt.Errorf("widgets.%d.stacked_area_config.group_by is required for widget type '%s'", i, WidgetTypeStackedArea)
+			}
+		}
+
+		if widgetType == WidgetTypePieChart {
+			pieChartConfig := widget["pie_chart_config"].([]interface{})
+			if len(pieChartConfig) == 0 {
+				return fmt.Errorf("widgets.%d: pie_chart_config is required for widget type '%s'", i, WidgetTypePieChart)
+			}
+			config := pieChartConfig[0].(map[string]interface{})
+			if groupBy, ok := config["group_by"].(string); !ok || groupBy == "" {
+				return fmt.Errorf("widgets.%d.pie_chart_config.group_by is required for widget type '%s'", i, WidgetTypePieChart)
+			}
+		}
+	}
+
+	return nil
 }
 
 func resourceDashboardCreate(d *schema.ResourceData, m interface{}) error {

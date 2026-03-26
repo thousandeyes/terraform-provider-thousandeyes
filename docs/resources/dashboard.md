@@ -227,7 +227,7 @@ Optional:
 - `stacked_area_config` (Block List, Max: 1) Configuration for Time Series: Stacked Area widgets. (see [below for nested schema](#nestedblock--widgets--stacked_area_config))
 - `timeseries_config` (Block List, Max: 1) Configuration for Time Series: Line widgets. (see [below for nested schema](#nestedblock--widgets--timeseries_config))
 - `title` (String) Title of the widget.
-- `visual_mode` (String) Visual mode of the widget (e.g., 'Full', 'Half').
+- `visual_mode` (String) Visual mode of the widget (e.g., 'Full', 'Half screen').
 
 Read-Only:
 
@@ -296,7 +296,7 @@ Optional:
 <a id="nestedblock--widgets--pie_chart_config"></a>
 ### Nested Schema for `widgets.pie_chart_config`
 
-Optional:
+Required:
 
 - `group_by` (String) Group by property.
 
@@ -304,9 +304,12 @@ Optional:
 <a id="nestedblock--widgets--stacked_area_config"></a>
 ### Nested Schema for `widgets.stacked_area_config`
 
-Optional:
+Required:
 
 - `group_by` (String) Group by property.
+
+Optional:
+
 - `max_scale` (Number) Maximum scale value for the Y-axis.
 - `min_scale` (Number) Minimum scale value for the Y-axis.
 - `unit` (String) Unit for the Y-axis scale.
