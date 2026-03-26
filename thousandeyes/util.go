@@ -281,6 +281,13 @@ func FixReadValues(ctx context.Context, targetMaps map[string]map[string]interfa
 			return nil, nil
 		}
 
+	// Ignore use public bgp if it wasn't set, prevents API side effects (bgp_measurements) from being saved to state
+	case "use_public_bgp":
+		if isSet, _ := ctx.Value(setInConfigKey).(bool); !isSet {
+			*name = ""
+			return nil, nil
+		}
+
 	// Ignore MTU measurements if it wasn't set, prevents API side effects (network_measurements) from being saved to state
 	case "mtu_measurements":
 		if isSet, _ := ctx.Value(setInConfigKey).(bool); !isSet {

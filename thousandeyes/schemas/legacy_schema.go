@@ -143,6 +143,18 @@ func LegacyTestStateUpgrade(ctx context.Context, rawState map[string]any, meta a
 			rawState["custom_headers"] = nil
 		}
 
+		// These fields may be populated by API side effects in legacy state even
+		// when they were not explicitly configured. Drop them during upgrade so
+		// the read path can continue treating them as unset.
+		for _, field := range []string{
+			"bgp_measurements",
+			"use_public_bgp",
+			"mtu_measurements",
+			"num_path_traces",
+		} {
+			delete(rawState, field)
+		}
+
 		for _, field := range []string{"use_active_ftp", "use_explicit_ftps"} {
 			if value, ok := rawState[field]; ok {
 				rawState[field] = legacyStateBool(value)
