@@ -7,6 +7,7 @@ import (
 	"log"
 	"reflect"
 	"regexp"
+	"sort"
 	"slices"
 	"strconv"
 	"strings"
@@ -24,7 +25,7 @@ type setInConfigKeyType string
 const tagsKey resourceKeyType = "tags"
 const setInConfigKey setInConfigKeyType = "is_set"
 
-var sensitiveFields = []string{"password", "custom_headers", "headers", "bearer_token", "client_id", "client_secret"}
+var sensitiveFields = []string{"password", "custom_headers", "bearer_token", "client_id", "client_secret"}
 
 // emptyStringToNilTypes contains type names that should be converted to nil when their value is an empty string.
 // This handles cases where the Terraform SDK v2 converts null values to empty strings, but the API expects
@@ -293,6 +294,12 @@ func FixReadValues(ctx context.Context, targetMaps map[string]map[string]interfa
 		if isSet, _ := ctx.Value(setInConfigKey).(bool); !isSet {
 			*name = ""
 			return nil, nil
+		}
+
+	// Normalize header order so API reordering does not cause drift.
+	case "headers":
+		if headers, ok := normalizeStringInterfaceSlice(m); ok {
+			m = headers
 		}
 
 	// Return only host when host:port pattern obtained
@@ -975,6 +982,36 @@ func SetAidFromContext[T RequestWithAid[T]](ctx context.Context, req T) T {
 
 func getPointer[T any](v T) *T {
 	return &v
+}
+
+func normalizeStringInterfaceSlice(v interface{}) ([]interface{}, bool) {
+	switch headers := v.(type) {
+	case []interface{}:
+		out := make([]string, 0, len(headers))
+		for _, item := range headers {
+			s, ok := item.(string)
+			if !ok {
+				return nil, false
+			}
+			out = append(out, s)
+		}
+		sort.Strings(out)
+		normalized := make([]interface{}, 0, len(out))
+		for _, item := range out {
+			normalized = append(normalized, item)
+		}
+		return normalized, true
+	case []string:
+		out := append([]string(nil), headers...)
+		sort.Strings(out)
+		normalized := make([]interface{}, 0, len(out))
+		for _, item := range out {
+			normalized = append(normalized, item)
+		}
+		return normalized, true
+	default:
+		return nil, false
+	}
 }
 
 func checkDomainRecordTypeExists(domain string) bool {

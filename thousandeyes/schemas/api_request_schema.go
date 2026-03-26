@@ -108,7 +108,7 @@ var apiRequest = &schema.Schema{
 			// headers
 			"headers": {
 				Type:        schema.TypeSet,
-				Description: "An array of label IDs used to assign specific Endpoint Agents to the test (get `id` from `/endpoint/labels`). This is applicable when `alertGroupType` is `browser-session`.",
+				Description: "Array of API Request Header objects.",
 				Optional:    true,
 				Sensitive:   true,
 				Elem: &schema.Resource{
