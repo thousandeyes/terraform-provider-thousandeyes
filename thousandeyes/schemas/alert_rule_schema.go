@@ -83,7 +83,6 @@ var AlertRuleSchema = map[string]*schema.Schema{
 			"endpoint-browser-sessions-agent",
 			"endpoint-browser-sessions-application",
 			"api",
-			"web-transaction",
 			"unknown",
 		}, false),
 	},
