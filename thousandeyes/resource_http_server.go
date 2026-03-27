@@ -124,6 +124,16 @@ func resourceHTTPServerCreate(d *schema.ResourceData, m interface{}) error {
 
 func buildHTTPServerStruct(d *schema.ResourceData) *tests.HttpServerTestRequest {
 	req := ResourceBuildStruct(d, &tests.HttpServerTestRequest{})
+	if headers, ok := rawConfigHeaderStrings(d); ok {
+		req.Headers = headers
+	} else {
+		req.Headers = nil
+	}
+	if customHeaders, ok := rawConfigCustomHeaders(d); ok {
+		req.CustomHeaders = customHeaders
+	} else {
+		req.CustomHeaders = nil
+	}
 	syncHTTPServerHeaders(req)
 	return req
 }
