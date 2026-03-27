@@ -136,8 +136,8 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 					Type:        schema.TypeList,
 					Description: "List of filter values (IDs).",
 					Required:    true,
-		Elem:        &schema.Schema{Type: schema.TypeString},
-	},
+					Elem:        &schema.Schema{Type: schema.TypeString},
+				},
 			},
 		},
 	},
@@ -352,5 +352,4 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 			},
 		},
 	},
-
 }
