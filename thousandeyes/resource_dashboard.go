@@ -283,6 +283,10 @@ func resourceDataApiDashboardMapper(d *schema.ResourceData, dashboard dashboards
 		if err := d.Set("widgets", MapWidgets(widgets)); err != nil {
 			return err
 		}
+	} else {
+		if err := d.Set("widgets", []interface{}{}); err != nil {
+			return err
+		}
 	}
 
 	return nil
