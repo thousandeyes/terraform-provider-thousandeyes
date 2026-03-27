@@ -20,24 +20,7 @@ func syncHTTPServerHeaders(req *tests.HttpServerTestRequest) {
 	}
 
 	req.Headers = merged
-
-	customHeaders := req.CustomHeaders
-	if customHeaders == nil {
-		customHeaders = &tests.TestCustomHeaders{}
-	}
-
-	root := make(map[string]string, len(merged))
-	for _, header := range merged {
-		name, value, ok := splitHTTPHeader(header)
-		if !ok {
-			continue
-		}
-		root[name] = value
-	}
-	if len(root) > 0 {
-		customHeaders.Root = &root
-		req.CustomHeaders = customHeaders
-	}
+	req.CustomHeaders = canonicalHTTPServerCustomHeaders(req.CustomHeaders, merged)
 }
 
 func syncHTTPServerResponseHeaders(resp *tests.HttpServerTestResponse) {
@@ -51,24 +34,7 @@ func syncHTTPServerResponseHeaders(resp *tests.HttpServerTestResponse) {
 	}
 
 	resp.Headers = merged
-
-	customHeaders := resp.CustomHeaders
-	if customHeaders == nil {
-		customHeaders = &tests.TestCustomHeaders{}
-	}
-
-	root := make(map[string]string, len(merged))
-	for _, header := range merged {
-		name, value, ok := splitHTTPHeader(header)
-		if !ok {
-			continue
-		}
-		root[name] = value
-	}
-	if len(root) > 0 {
-		customHeaders.Root = &root
-		resp.CustomHeaders = customHeaders
-	}
+	resp.CustomHeaders = canonicalHTTPServerCustomHeaders(resp.CustomHeaders, merged)
 }
 
 func mergeHTTPHeaderStrings(headers []string, customHeaders *tests.TestCustomHeaders) []string {
@@ -118,30 +84,15 @@ func splitHTTPHeader(header string) (string, string, bool) {
 
 func normalizeHTTPServerHeadersDiff(_ context.Context, d *schema.ResourceDiff, _ interface{}) error {
 	headers := diffHeaderStrings(d.Get("headers"))
-	customRoot := diffCustomRootHeaders(d.Get("custom_headers"))
-
-	customHeaders := &tests.TestCustomHeaders{}
-	if len(customRoot) > 0 {
-		customHeaders.Root = &customRoot
-	}
+	customHeaders := diffCustomHeaders(d.Get("custom_headers"))
 
 	merged := mergeHTTPHeaderStrings(headers, customHeaders)
-	root := make(map[string]interface{}, len(merged))
-	for _, header := range merged {
-		name, value, ok := splitHTTPHeader(header)
-		if !ok {
-			continue
-		}
-		root[name] = value
-	}
 
 	if err := d.SetNew("headers", stringSliceToInterfaceSlice(merged)); err != nil {
 		return err
 	}
 
-	return d.SetNew("custom_headers", terraformHTTPServerCustomHeadersValue(&tests.TestCustomHeaders{
-		Root: &customRoot,
-	}, merged))
+	return d.SetNew("custom_headers", terraformHTTPServerCustomHeadersValue(customHeaders, merged))
 }
 
 func diffHeaderStrings(v interface{}) []string {
@@ -167,7 +118,7 @@ func diffHeaderStrings(v interface{}) []string {
 	}
 }
 
-func diffCustomRootHeaders(v interface{}) map[string]string {
+func diffCustomHeaders(v interface{}) *tests.TestCustomHeaders {
 	var items []interface{}
 	switch raw := v.(type) {
 	case *schema.Set:
@@ -187,23 +138,21 @@ func diffCustomRootHeaders(v interface{}) map[string]string {
 		return nil
 	}
 
-	rootVal, ok := first["root"]
-	if !ok || rootVal == nil {
-		return nil
+	customHeaders := &tests.TestCustomHeaders{}
+	if root := interfaceMapToStringMap(first["root"]); len(root) > 0 {
+		customHeaders.Root = &root
+	}
+	if all := interfaceMapToStringMap(first["all"]); len(all) > 0 {
+		customHeaders.All = &all
+	}
+	if domains := interfaceNestedMapToStringMap(first["domains"]); len(domains) > 0 {
+		customHeaders.Domains = &domains
 	}
 
-	rootMap, ok := rootVal.(map[string]interface{})
-	if !ok {
+	if customHeaders.Root == nil && customHeaders.All == nil && customHeaders.Domains == nil {
 		return nil
 	}
-
-	out := make(map[string]string, len(rootMap))
-	for k, v := range rootMap {
-		if s, ok := v.(string); ok {
-			out[k] = s
-		}
-	}
-	return out
+	return customHeaders
 }
 
 func stringSliceToInterfaceSlice(v []string) []interface{} {
@@ -242,4 +191,58 @@ func terraformHTTPServerCustomHeadersValue(customHeaders *tests.TestCustomHeader
 			"all":     all,
 		},
 	}
+}
+
+func canonicalHTTPServerCustomHeaders(customHeaders *tests.TestCustomHeaders, mergedHeaders []string) *tests.TestCustomHeaders {
+	if len(mergedHeaders) == 0 {
+		return customHeaders
+	}
+
+	if customHeaders == nil {
+		customHeaders = &tests.TestCustomHeaders{}
+	}
+
+	root := make(map[string]string, len(mergedHeaders))
+	for _, header := range mergedHeaders {
+		name, value, ok := splitHTTPHeader(header)
+		if !ok {
+			continue
+		}
+		root[name] = value
+	}
+
+	if len(root) > 0 {
+		customHeaders.Root = &root
+	}
+	return customHeaders
+}
+
+func interfaceMapToStringMap(v interface{}) map[string]string {
+	rootMap, ok := v.(map[string]interface{})
+	if !ok || rootMap == nil {
+		return nil
+	}
+
+	out := make(map[string]string, len(rootMap))
+	for k, raw := range rootMap {
+		if s, ok := raw.(string); ok {
+			out[k] = s
+		}
+	}
+	return out
+}
+
+func interfaceNestedMapToStringMap(v interface{}) map[string]map[string]string {
+	rawMap, ok := v.(map[string]interface{})
+	if !ok || rawMap == nil {
+		return nil
+	}
+
+	out := make(map[string]map[string]string, len(rawMap))
+	for k, raw := range rawMap {
+		if nested := interfaceMapToStringMap(raw); len(nested) > 0 {
+			out[k] = nested
+		}
+	}
+	return out
 }
