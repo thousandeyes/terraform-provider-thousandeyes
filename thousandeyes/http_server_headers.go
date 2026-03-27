@@ -158,29 +158,6 @@ func rawConfigCustomHeaders(d rawConfigReader) (*tests.TestCustomHeaders, bool) 
 	return customHeaders, true
 }
 
-func diffHeaderStrings(v interface{}) []string {
-	switch headers := v.(type) {
-	case *schema.Set:
-		out := make([]string, 0, headers.Len())
-		for _, item := range headers.List() {
-			if s, ok := item.(string); ok && strings.TrimSpace(s) != "" {
-				out = append(out, s)
-			}
-		}
-		return out
-	case []interface{}:
-		out := make([]string, 0, len(headers))
-		for _, item := range headers {
-			if s, ok := item.(string); ok && strings.TrimSpace(s) != "" {
-				out = append(out, s)
-			}
-		}
-		return out
-	default:
-		return nil
-	}
-}
-
 func stringSliceToInterfaceSlice(v []string) []interface{} {
 	out := make([]interface{}, 0, len(v))
 	for _, item := range v {
@@ -241,36 +218,6 @@ func canonicalHTTPServerCustomHeaders(customHeaders *tests.TestCustomHeaders, me
 		customHeaders.Root = &root
 	}
 	return customHeaders
-}
-
-func interfaceMapToStringMap(v interface{}) map[string]string {
-	rootMap, ok := v.(map[string]interface{})
-	if !ok || rootMap == nil {
-		return nil
-	}
-
-	out := make(map[string]string, len(rootMap))
-	for k, raw := range rootMap {
-		if s, ok := raw.(string); ok {
-			out[k] = s
-		}
-	}
-	return out
-}
-
-func interfaceNestedMapToStringMap(v interface{}) map[string]map[string]string {
-	rawMap, ok := v.(map[string]interface{})
-	if !ok || rawMap == nil {
-		return nil
-	}
-
-	out := make(map[string]map[string]string, len(rawMap))
-	for k, raw := range rawMap {
-		if nested := interfaceMapToStringMap(raw); len(nested) > 0 {
-			out[k] = nested
-		}
-	}
-	return out
 }
 
 func ctyObjectToStringMap(v cty.Value, attr string) map[string]string {

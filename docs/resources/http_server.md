@@ -41,7 +41,7 @@ resource "thousandeyes_http_server" "example_http_server_test" {
 - `client_certificate` (String) String representation (containing newline characters) of client certificate, the private key must be placed first, then the certificate.
 - `collect_proxy_network_data` (Boolean) Indicates whether network data to the proxy should be collected.
 - `content_regex` (String) Verify content using a regular expression. This field does not require escaping.
-- `custom_headers` (Block Set) The custom headers. (see [below for nested schema](#nestedblock--custom_headers))
+- `custom_headers` (Block List, Max: 1) The custom headers. (see [below for nested schema](#nestedblock--custom_headers))
 - `description` (String) A description of the alert rule. Defaults to an empty string.
 - `desired_status_code` (String) The valid HTTP response code you’re interested in retrieving.
 - `distributed_tracing` (Boolean) Adds distributed tracing headers to API requests using B3 and W3C standards.
