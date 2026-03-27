@@ -158,7 +158,7 @@ Optional:
 - `client_id` (String, Sensitive) The application ID used when `authType` is set to "oauth2".
 - `client_secret` (String, Sensitive) The private client secret used when `authType` is set to "oauth2".
 - `collect_api_response` (Boolean) Set to `true` if API response body should be collected and saved. Set to `false` if API response body should not be saved.
-- `headers` (Block Set) An array of label IDs used to assign specific Endpoint Agents to the test (get `id` from `/endpoint/labels`). This is applicable when `alertGroupType` is `browser-session`. (see [below for nested schema](#nestedblock--requests--headers))
+- `headers` (Block Set) Array of API Request Header objects. (see [below for nested schema](#nestedblock--requests--headers))
 - `method` (String) [get, post, put, delete, patch] Request method.
 - `password` (String, Sensitive) The password if `authType = basic`.
 - `scope` (String) Application-specific scope values for the access token when `authType` is "oauth2".

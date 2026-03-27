@@ -59,7 +59,7 @@ EOF
 - `collect_proxy_network_data` (Boolean) Indicates whether network data to the proxy should be collected.
 - `content_regex` (String) Verify content using a regular expression. This field does not require escaping.
 - `credentials` (Set of String) The array of credentialID integers. You can get the credentialId from the /credentials endpoint.
-- `custom_headers` (Block Set) The custom headers. (see [below for nested schema](#nestedblock--custom_headers))
+- `custom_headers` (Block List, Max: 1) The custom headers. (see [below for nested schema](#nestedblock--custom_headers))
 - `description` (String) A description of the alert rule. Defaults to an empty string.
 - `desired_status_code` (String) The valid HTTP response code you’re interested in retrieving.
 - `disable_screenshot` (Boolean) Enables or disables screenshots on error. Set true to not capture
