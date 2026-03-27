@@ -1,6 +1,8 @@
 package thousandeyes
 
 import (
+	"fmt"
+
 	"github.com/thousandeyes/thousandeyes-sdk-go/v3/dashboards"
 )
 
@@ -322,23 +324,34 @@ func setCommonMapperFields(data map[string]interface{}, widget interface{}) {
 		}
 	}
 
-	// Handle filters - SDK uses map[string][]interface{}
+	// Handle filters - SDK uses map[string][]interface{}, convert to filter blocks
 	if w, ok := widget.(interface {
 		GetFiltersOk() (*map[string][]interface{}, bool)
 	}); ok {
 		if filters, ok := w.GetFiltersOk(); ok && filters != nil && len(*filters) > 0 {
-			// Convert to map[string]interface{} for Terraform (TypeMap)
-			tfFilters := make(map[string]interface{})
-			for key, vals := range *filters {
+			filterBlocks := make([]interface{}, 0, len(*filters))
+			for property, vals := range *filters {
 				if len(vals) > 0 {
-					// Take first value as string
-					if strVal, ok := vals[0].(string); ok {
-						tfFilters[key] = strVal
+					// Convert values to strings
+					strValues := make([]interface{}, 0, len(vals))
+					for _, v := range vals {
+						switch val := v.(type) {
+						case string:
+							strValues = append(strValues, val)
+						case float64:
+							strValues = append(strValues, fmt.Sprintf("%.0f", val))
+						default:
+							strValues = append(strValues, fmt.Sprintf("%v", val))
+						}
 					}
+					filterBlocks = append(filterBlocks, map[string]interface{}{
+						"property": property,
+						"values":   strValues,
+					})
 				}
 			}
-			if len(tfFilters) > 0 {
-				data["filters"] = tfFilters
+			if len(filterBlocks) > 0 {
+				data["filter"] = filterBlocks
 			}
 		}
 	}

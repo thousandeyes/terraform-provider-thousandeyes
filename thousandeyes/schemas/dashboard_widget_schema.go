@@ -121,11 +121,25 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 		Description: "Data source for the widget.",
 		Optional:    true,
 	},
-	"filters": {
-		Type:        schema.TypeMap,
-		Description: "Filters applied to the widget.",
+	"filter": {
+		Type:        schema.TypeList,
+		Description: "Filters applied to the widget. Each filter specifies a property and list of values.",
 		Optional:    true,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"property": {
+					Type:        schema.TypeString,
+					Description: "Filter property (e.g., 'TEST', 'AGENT', 'ENDPOINT_MACHINE_ID', 'MONITOR').",
+					Required:    true,
+				},
+				"values": {
+					Type:        schema.TypeList,
+					Description: "List of filter values (IDs).",
+					Required:    true,
 		Elem:        &schema.Schema{Type: schema.TypeString},
+	},
+			},
+		},
 	},
 
 	// Type-specific: GeoMap configuration (for "Map" type)

@@ -272,11 +272,22 @@ func setCommonBuilderFields(widget interface{}, data map[string]interface{}) {
 		}
 	}
 
-	// Handle filters - SDK uses map[string][]interface{}
-	if filters, ok := data["filters"].(map[string]interface{}); ok && len(filters) > 0 {
+	// Handle filter blocks - SDK uses map[string][]interface{}
+	if filterList := getListValue(data, "filter"); len(filterList) > 0 {
 		apiFilters := make(map[string][]interface{})
-		for key, val := range filters {
-			apiFilters[key] = []interface{}{val}
+		for _, f := range filterList {
+			filterData := f.(map[string]interface{})
+			property := getStringValue(filterData, "property")
+			if property == "" {
+				continue
+			}
+			var values []interface{}
+			if valuesRaw, ok := filterData["values"].([]interface{}); ok {
+				values = valuesRaw
+			}
+			if len(values) > 0 {
+				apiFilters[property] = values
+			}
 		}
 		if w, ok := widget.(interface {
 			SetFilters(map[string][]interface{})
