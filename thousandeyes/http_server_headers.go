@@ -5,6 +5,8 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/hashicorp/go-cty/cty"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/thousandeyes/thousandeyes-sdk-go/v3/tests"
 )
@@ -83,16 +85,77 @@ func splitHTTPHeader(header string) (string, string, bool) {
 }
 
 func normalizeHTTPServerHeadersDiff(_ context.Context, d *schema.ResourceDiff, _ interface{}) error {
-	headers := diffHeaderStrings(d.Get("headers"))
-	customHeaders := diffCustomHeaders(d.Get("custom_headers"))
+	headers, headersConfigured := rawConfigHeaderStrings(d)
+	customHeaders, customHeadersConfigured := rawConfigCustomHeaders(d)
 
 	merged := mergeHTTPHeaderStrings(headers, customHeaders)
 
-	if err := d.SetNew("headers", stringSliceToInterfaceSlice(merged)); err != nil {
+	var headersValue interface{} = stringSliceToInterfaceSlice(merged)
+	if !headersConfigured {
+		before, _ := d.GetChange("headers")
+		headersValue = before
+	}
+	if err := d.SetNew("headers", headersValue); err != nil {
 		return err
 	}
 
-	return d.SetNew("custom_headers", terraformHTTPServerCustomHeadersValue(customHeaders, merged))
+	var customHeadersValue interface{} = terraformHTTPServerCustomHeadersValue(customHeaders, merged)
+	if !customHeadersConfigured {
+		before, _ := d.GetChange("custom_headers")
+		customHeadersValue = before
+	}
+
+	return d.SetNew("custom_headers", customHeadersValue)
+}
+
+func rawConfigHeaderStrings(d rawConfigReader) ([]string, bool) {
+	raw, diags := d.GetRawConfigAt(cty.Path{cty.GetAttrStep{Name: "headers"}})
+	if diags.HasError() || !raw.IsKnown() || raw.IsNull() {
+		return nil, false
+	}
+
+	var out []string
+	it := raw.ElementIterator()
+	for it.Next() {
+		_, v := it.Element()
+		if !v.IsKnown() || v.IsNull() {
+			continue
+		}
+		out = append(out, strings.TrimSpace(v.AsString()))
+	}
+	return out, true
+}
+
+func rawConfigCustomHeaders(d rawConfigReader) (*tests.TestCustomHeaders, bool) {
+	raw, diags := d.GetRawConfigAt(cty.Path{cty.GetAttrStep{Name: "custom_headers"}})
+	if diags.HasError() || !raw.IsKnown() || raw.IsNull() || raw.LengthInt() == 0 {
+		return nil, false
+	}
+
+	it := raw.ElementIterator()
+	if !it.Next() {
+		return nil, false
+	}
+	_, first := it.Element()
+	if !first.IsKnown() || first.IsNull() {
+		return nil, false
+	}
+
+	customHeaders := &tests.TestCustomHeaders{}
+	if root := ctyObjectToStringMap(first, "root"); len(root) > 0 {
+		customHeaders.Root = &root
+	}
+	if all := ctyObjectToStringMap(first, "all"); len(all) > 0 {
+		customHeaders.All = &all
+	}
+	if domains := ctyObjectToNestedStringMap(first, "domains"); len(domains) > 0 {
+		customHeaders.Domains = &domains
+	}
+
+	if customHeaders.Root == nil && customHeaders.All == nil && customHeaders.Domains == nil {
+		return nil, true
+	}
+	return customHeaders, true
 }
 
 func diffHeaderStrings(v interface{}) []string {
@@ -116,43 +179,6 @@ func diffHeaderStrings(v interface{}) []string {
 	default:
 		return nil
 	}
-}
-
-func diffCustomHeaders(v interface{}) *tests.TestCustomHeaders {
-	var items []interface{}
-	switch raw := v.(type) {
-	case *schema.Set:
-		items = raw.List()
-	case []interface{}:
-		items = raw
-	default:
-		return nil
-	}
-
-	if len(items) == 0 {
-		return nil
-	}
-
-	first, ok := items[0].(map[string]interface{})
-	if !ok {
-		return nil
-	}
-
-	customHeaders := &tests.TestCustomHeaders{}
-	if root := interfaceMapToStringMap(first["root"]); len(root) > 0 {
-		customHeaders.Root = &root
-	}
-	if all := interfaceMapToStringMap(first["all"]); len(all) > 0 {
-		customHeaders.All = &all
-	}
-	if domains := interfaceNestedMapToStringMap(first["domains"]); len(domains) > 0 {
-		customHeaders.Domains = &domains
-	}
-
-	if customHeaders.Root == nil && customHeaders.All == nil && customHeaders.Domains == nil {
-		return nil
-	}
-	return customHeaders
 }
 
 func stringSliceToInterfaceSlice(v []string) []interface{} {
@@ -245,4 +271,66 @@ func interfaceNestedMapToStringMap(v interface{}) map[string]map[string]string {
 		}
 	}
 	return out
+}
+
+func ctyObjectToStringMap(v cty.Value, attr string) map[string]string {
+	if !v.Type().HasAttribute(attr) {
+		return nil
+	}
+	field := v.GetAttr(attr)
+	if !field.IsKnown() || field.IsNull() {
+		return nil
+	}
+
+	out := make(map[string]string, field.LengthInt())
+	it := field.ElementIterator()
+	for it.Next() {
+		k, val := it.Element()
+		if !val.IsKnown() || val.IsNull() {
+			continue
+		}
+		out[k.AsString()] = val.AsString()
+	}
+	return out
+}
+
+func ctyObjectToNestedStringMap(v cty.Value, attr string) map[string]map[string]string {
+	if !v.Type().HasAttribute(attr) {
+		return nil
+	}
+	field := v.GetAttr(attr)
+	if !field.IsKnown() || field.IsNull() {
+		return nil
+	}
+
+	out := make(map[string]map[string]string, field.LengthInt())
+	it := field.ElementIterator()
+	for it.Next() {
+		k, val := it.Element()
+		if nested := ctyMapToStringMap(val); len(nested) > 0 {
+			out[k.AsString()] = nested
+		}
+	}
+	return out
+}
+
+func ctyMapToStringMap(v cty.Value) map[string]string {
+	if !v.IsKnown() || v.IsNull() {
+		return nil
+	}
+
+	out := make(map[string]string, v.LengthInt())
+	it := v.ElementIterator()
+	for it.Next() {
+		k, val := it.Element()
+		if !val.IsKnown() || val.IsNull() {
+			continue
+		}
+		out[k.AsString()] = val.AsString()
+	}
+	return out
+}
+
+type rawConfigReader interface {
+	GetRawConfigAt(cty.Path) (cty.Value, diag.Diagnostics)
 }
