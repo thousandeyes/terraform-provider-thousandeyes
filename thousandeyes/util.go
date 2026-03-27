@@ -863,7 +863,11 @@ func FillValue(source interface{}, target interface{}) interface{} {
 		vs := reflect.ValueOf(source)
 		structSource := source
 		if vs.Kind() == reflect.Slice {
-			structSource = source.([]interface{})[0]
+			if vs.Len() == 0 {
+				source = nil
+			} else {
+				structSource = source.([]interface{})[0]
+			}
 		} else if vs.Kind() == reflect.Ptr {
 			structSource = source.(*schema.Set).List()
 			if len(structSource.([]interface{})) != 0 {
