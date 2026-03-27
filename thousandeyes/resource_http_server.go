@@ -13,11 +13,12 @@ import (
 
 func resourceHTTPServer() *schema.Resource {
 	resource := schema.Resource{
-		Schema: ResourceSchemaBuild(tests.HttpServerTestRequest{}, schemas.CommonSchema, nil),
-		Create: resourceHTTPServerCreate,
-		Read:   resourceHTTPServerRead,
-		Update: resourceHTTPServerUpdate,
-		Delete: resourceHTTPServerDelete,
+		Schema:        ResourceSchemaBuild(tests.HttpServerTestRequest{}, schemas.CommonSchema, nil),
+		Create:        resourceHTTPServerCreate,
+		Read:          resourceHTTPServerRead,
+		Update:        resourceHTTPServerUpdate,
+		Delete:        resourceHTTPServerDelete,
+		CustomizeDiff: normalizeHTTPServerHeadersDiff,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -36,15 +37,36 @@ func resourceHTTPServer() *schema.Resource {
 }
 
 func resourceHTTPServerRead(d *schema.ResourceData, m interface{}) error {
-	return GetResource(context.Background(), d, m, func(apiClient *client.APIClient, id string) (interface{}, error) {
-		api := (*tests.HTTPServerTestsAPIService)(&apiClient.Common)
+	apiClient := m.(*client.APIClient)
+	log.Printf("[INFO] Reading Thousandeyes Resource %s", d.Id())
 
-		req := api.GetHttpServerTest(id).Expand(tests.AllowedExpandTestOptionsEnumValues)
-		req = SetAidFromContext(apiClient.GetConfig().Context, req)
+	api := (*tests.HTTPServerTestsAPIService)(&apiClient.Common)
+	req := api.GetHttpServerTest(d.Id()).Expand(tests.AllowedExpandTestOptionsEnumValues)
+	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
-		resp, _, err := req.Execute()
-		return resp, err
-	})
+	resp, _, err := req.Execute()
+	if err != nil && IsNotFoundError(err) {
+		log.Printf("[INFO] Resource was deleted - will recreate it")
+		d.SetId("")
+		return nil
+	} else if err != nil {
+		return err
+	}
+
+	syncHTTPServerResponseHeaders(resp)
+	if err := ResourceRead(context.Background(), d, resp); err != nil {
+		return err
+	}
+
+	mergedHeaders := mergeHTTPHeaderStrings(resp.Headers, resp.CustomHeaders)
+	if err := d.Set("headers", stringSliceToInterfaceSlice(mergedHeaders)); err != nil {
+		return err
+	}
+	if err := d.Set("custom_headers", terraformHTTPServerCustomHeadersValue(resp.CustomHeaders, mergedHeaders)); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func resourceHTTPServerUpdate(d *schema.ResourceData, m interface{}) error {
@@ -101,5 +123,7 @@ func resourceHTTPServerCreate(d *schema.ResourceData, m interface{}) error {
 }
 
 func buildHTTPServerStruct(d *schema.ResourceData) *tests.HttpServerTestRequest {
-	return ResourceBuildStruct(d, &tests.HttpServerTestRequest{})
+	req := ResourceBuildStruct(d, &tests.HttpServerTestRequest{})
+	syncHTTPServerHeaders(req)
+	return req
 }
