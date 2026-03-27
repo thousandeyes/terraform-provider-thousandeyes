@@ -586,7 +586,9 @@ var CommonSchema = map[string]*schema.Schema{
 	"custom_headers": {
 		Description: "The custom headers.",
 		Optional:    true,
-		Type:        schema.TypeSet,
+		Computed:    true,
+		Type:        schema.TypeList,
+		MaxItems:    1,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"root": {
@@ -754,6 +756,7 @@ var CommonSchema = map[string]*schema.Schema{
 			Type: schema.TypeString,
 		},
 		Optional:  true,
+		Computed:  true,
 		Sensitive: true,
 	},
 	// postBody

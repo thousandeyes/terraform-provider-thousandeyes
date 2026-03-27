@@ -25,7 +25,7 @@ type setInConfigKeyType string
 const tagsKey resourceKeyType = "tags"
 const setInConfigKey setInConfigKeyType = "is_set"
 
-var sensitiveFields = []string{"password", "custom_headers", "bearer_token", "client_id", "client_secret"}
+var sensitiveFields = []string{"password", "bearer_token", "client_id", "client_secret"}
 
 // emptyStringToNilTypes contains type names that should be converted to nil when their value is an empty string.
 // This handles cases where the Terraform SDK v2 converts null values to empty strings, but the API expects
@@ -350,12 +350,21 @@ func FixReadValues(ctx context.Context, targetMaps map[string]map[string]interfa
 			m.([]interface{})[i] = label["label_id"]
 		}
 
-	// custom_headers is currently unsupported due to complications with Terraform
-	// and the object schema.  It will presently be removed from state, and when
-	// a solution is found it will be transformed here according to the specification
-	// of that solution.
+	// custom_headers is represented as a single nested block in schema, so wrap
+	// the decoded object into a one-item slice before writing state.
 	case "custom_headers":
-		m = nil
+		if m == nil {
+			return nil, nil
+		}
+		if customHeaders, ok := m.(map[string]interface{}); ok {
+			customHeaders["root"] = normalizeStringMap(customHeaders["root"])
+			customHeaders["all"] = normalizeStringMap(customHeaders["all"])
+			customHeaders["domains"] = normalizeNestedStringMap(customHeaders["domains"])
+			m = customHeaders
+		}
+		if _, ok := m.([]interface{}); !ok {
+			m = []interface{}{m}
+		}
 
 	// download_limit may appear as a string instead of an integer.
 	case "download_limit":
@@ -1011,6 +1020,76 @@ func normalizeStringInterfaceSlice(v interface{}) ([]interface{}, bool) {
 		return normalized, true
 	default:
 		return nil, false
+	}
+}
+
+func normalizeStringMap(v interface{}) map[string]interface{} {
+	switch m := v.(type) {
+	case nil:
+		return map[string]interface{}{}
+	case map[string]interface{}:
+		return m
+	case map[string]string:
+		out := make(map[string]interface{}, len(m))
+		for k, val := range m {
+			out[k] = val
+		}
+		return out
+	case *map[string]string:
+		if m == nil {
+			return map[string]interface{}{}
+		}
+		out := make(map[string]interface{}, len(*m))
+		for k, val := range *m {
+			out[k] = val
+		}
+		return out
+	case *map[string]interface{}:
+		if m == nil {
+			return map[string]interface{}{}
+		}
+		return *m
+	default:
+		return map[string]interface{}{}
+	}
+}
+
+func normalizeNestedStringMap(v interface{}) map[string]interface{} {
+	switch m := v.(type) {
+	case nil:
+		return map[string]interface{}{}
+	case map[string]interface{}:
+		out := make(map[string]interface{}, len(m))
+		for k, val := range m {
+			out[k] = normalizeStringMap(val)
+		}
+		return out
+	case map[string]map[string]string:
+		out := make(map[string]interface{}, len(m))
+		for k, val := range m {
+			out[k] = normalizeStringMap(val)
+		}
+		return out
+	case *map[string]map[string]string:
+		if m == nil {
+			return map[string]interface{}{}
+		}
+		out := make(map[string]interface{}, len(*m))
+		for k, val := range *m {
+			out[k] = normalizeStringMap(val)
+		}
+		return out
+	case *map[string]interface{}:
+		if m == nil {
+			return map[string]interface{}{}
+		}
+		out := make(map[string]interface{}, len(*m))
+		for k, val := range *m {
+			out[k] = normalizeStringMap(val)
+		}
+		return out
+	default:
+		return map[string]interface{}{}
 	}
 }
 
