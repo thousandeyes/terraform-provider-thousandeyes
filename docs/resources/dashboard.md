@@ -214,7 +214,7 @@ Optional:
 - `box_and_whiskers_config` (Block List, Max: 1) Configuration for Box and Whiskers widgets. (see [below for nested schema](#nestedblock--widgets--box_and_whiskers_config))
 - `data_source` (String) Data source for the widget.
 - `direction` (String) Direction for the metric (e.g., 'To Target', 'From Target', 'Bidirectional').
-- `filters` (Map of String) Filters applied to the widget.
+- `filter` (Block List) Filters applied to the widget. Each filter specifies a property and list of values. (see [below for nested schema](#nestedblock--widgets--filter))
 - `fixed_timespan` (Block List, Max: 1) Fixed timespan for the widget. (see [below for nested schema](#nestedblock--widgets--fixed_timespan))
 - `geo_map_config` (Block List, Max: 1) Configuration for Map widgets. (see [below for nested schema](#nestedblock--widgets--geo_map_config))
 - `is_embedded` (Boolean) Set to true if widget is marked as embedded.
@@ -252,6 +252,15 @@ Optional:
 - `max_scale` (Number) Maximum scale value for the Y-axis.
 - `min_scale` (Number) Minimum scale value for the Y-axis.
 - `unit` (String) Unit for the Y-axis scale.
+
+
+<a id="nestedblock--widgets--filter"></a>
+### Nested Schema for `widgets.filter`
+
+Required:
+
+- `property` (String) Filter property (e.g., 'TEST', 'AGENT', 'ENDPOINT_MACHINE_ID', 'MONITOR').
+- `values` (List of String) List of filter values (IDs).
 
 
 <a id="nestedblock--widgets--fixed_timespan"></a>
