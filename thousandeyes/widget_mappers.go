@@ -2,6 +2,7 @@ package thousandeyes
 
 import (
 	"fmt"
+	"sort"
 
 	"github.com/thousandeyes/thousandeyes-sdk-go/v3/dashboards"
 )
@@ -276,7 +277,9 @@ func setCommonMapperFields(data map[string]interface{}, widget interface{}) {
 			data["direction"] = string(v)
 		}
 	}
-	if w, ok := widget.(interface{ GetMetric() dashboards.DashboardMetric }); ok {
+	if w, ok := widget.(interface {
+		GetMetric() dashboards.DashboardMetric
+	}); ok {
 		if v := w.GetMetric(); v != "" {
 			data["metric"] = string(v)
 		}
@@ -329,26 +332,33 @@ func setCommonMapperFields(data map[string]interface{}, widget interface{}) {
 		GetFiltersOk() (*map[string][]interface{}, bool)
 	}); ok {
 		if filters, ok := w.GetFiltersOk(); ok && filters != nil && len(*filters) > 0 {
-			filterBlocks := make([]interface{}, 0, len(*filters))
+			properties := make([]string, 0, len(*filters))
 			for property, vals := range *filters {
 				if len(vals) > 0 {
-					// Convert values to strings
-					strValues := make([]interface{}, 0, len(vals))
-					for _, v := range vals {
-						switch val := v.(type) {
-						case string:
-							strValues = append(strValues, val)
-						case float64:
-							strValues = append(strValues, fmt.Sprintf("%.0f", val))
-						default:
-							strValues = append(strValues, fmt.Sprintf("%v", val))
-						}
-					}
-					filterBlocks = append(filterBlocks, map[string]interface{}{
-						"property": property,
-						"values":   strValues,
-					})
+					properties = append(properties, property)
 				}
+			}
+			sort.Strings(properties)
+
+			filterBlocks := make([]interface{}, 0, len(properties))
+			for _, property := range properties {
+				vals := (*filters)[property]
+				// Convert values to strings
+				strValues := make([]interface{}, 0, len(vals))
+				for _, v := range vals {
+					switch val := v.(type) {
+					case string:
+						strValues = append(strValues, val)
+					case float64:
+						strValues = append(strValues, fmt.Sprintf("%.0f", val))
+					default:
+						strValues = append(strValues, fmt.Sprintf("%v", val))
+					}
+				}
+				filterBlocks = append(filterBlocks, map[string]interface{}{
+					"property": property,
+					"values":   strValues,
+				})
 			}
 			if len(filterBlocks) > 0 {
 				data["filter"] = filterBlocks
