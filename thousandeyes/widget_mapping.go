@@ -137,14 +137,6 @@ func getIntValue(data map[string]interface{}, key string) int {
 	return 0
 }
 
-func getBoolValue(data map[string]interface{}, key string) bool {
-	if v, ok := data[key].(bool); ok {
-		return v
-	}
-	return false
-}
-
-// boolFromMapIfPresent reports whether key exists and is a bool (including false).
 func boolFromMapIfPresent(m map[string]interface{}, key string) (value bool, ok bool) {
 	v, present := m[key]
 	if !present {
