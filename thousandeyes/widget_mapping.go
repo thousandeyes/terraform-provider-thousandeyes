@@ -144,6 +144,16 @@ func getBoolValue(data map[string]interface{}, key string) bool {
 	return false
 }
 
+// boolFromMapIfPresent reports whether key exists and is a bool (including false).
+func boolFromMapIfPresent(m map[string]interface{}, key string) (value bool, ok bool) {
+	v, present := m[key]
+	if !present {
+		return false, false
+	}
+	b, typed := v.(bool)
+	return b, typed
+}
+
 func getFloat64Value(data map[string]interface{}, key string) float64 {
 	if v, ok := data[key].(float64); ok {
 		return v

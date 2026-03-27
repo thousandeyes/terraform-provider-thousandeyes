@@ -210,7 +210,7 @@ func setCommonBuilderFields(widget interface{}, data map[string]interface{}) {
 			w.SetVisualMode(dashboards.VisualMode(visualMode))
 		}
 	}
-	if isEmbedded := getBoolValue(data, "is_embedded"); isEmbedded {
+	if isEmbedded, ok := boolFromMapIfPresent(data, "is_embedded"); ok {
 		if w, ok := widget.(interface{ SetIsEmbedded(bool) }); ok {
 			w.SetIsEmbedded(isEmbedded)
 		}
@@ -250,7 +250,7 @@ func setCommonBuilderFields(widget interface{}, data map[string]interface{}) {
 			w.SetMeasure(*m)
 		}
 	}
-	if shouldExclude := getBoolValue(data, "should_exclude_alert_suppression_windows"); shouldExclude {
+	if shouldExclude, ok := boolFromMapIfPresent(data, "should_exclude_alert_suppression_windows"); ok {
 		if w, ok := widget.(interface{ SetShouldExcludeAlertSuppressionWindows(bool) }); ok {
 			w.SetShouldExcludeAlertSuppressionWindows(shouldExclude)
 		}
