@@ -14,12 +14,12 @@ import (
 
 func resourceDashboard() *schema.Resource {
 	resource := schema.Resource{
-		Schema:         schemas.DashboardSchema,
-		Create:         resourceDashboardCreate,
-		Read:           resourceDashboardRead,
-		Update:         resourceDashboardUpdate,
-		Delete:         resourceDashboardDelete,
-		CustomizeDiff:  resourceDashboardCustomizeDiff,
+		Schema:        schemas.DashboardSchema,
+		Create:        resourceDashboardCreate,
+		Read:          resourceDashboardRead,
+		Update:        resourceDashboardUpdate,
+		Delete:        resourceDashboardDelete,
+		CustomizeDiff: resourceDashboardCustomizeDiff,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -28,7 +28,7 @@ func resourceDashboard() *schema.Resource {
 	return &resource
 }
 
-func resourceDashboardCustomizeDiff(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
+func resourceDashboardCustomizeDiff(_ context.Context, d *schema.ResourceDiff, meta interface{}) error {
 	widgets := d.Get("widgets").([]interface{})
 
 	for i, w := range widgets {
