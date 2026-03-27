@@ -8,7 +8,6 @@ import (
 type DashboardWidgetSchemaType map[string]*schema.Schema
 
 var DashboardWidgetSchema = DashboardWidgetSchemaType{
-	// Widget type - currently only supports Map and Agent Status
 	"type": {
 		Type:        schema.TypeString,
 		Description: "Widget type.",
