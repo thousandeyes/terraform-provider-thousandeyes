@@ -12,6 +12,45 @@ description: |-
 
 {{ tffile .ExampleFile }}
 
+## Header Behavior
+
+`headers` and `custom_headers.root` are treated as two inputs for the same effective request headers.
+
+- `headers` accepts `"Name: value"` strings.
+- `custom_headers.root` accepts structured key/value entries.
+- During planning, apply, and refresh, the provider merges both sources into one canonical header set.
+- Order differences returned by the API do not create drift because the provider normalizes the merged values before comparing state.
+
+Example:
+
+```hcl
+resource "thousandeyes_http_server" "example" {
+  test_name = "Example HTTP Server"
+  url       = "https://example.com"
+  interval  = 300
+  agents    = ["1234"]
+
+  headers = [
+    "Content-Type: application/json",
+    "X-TE-Test: upgrade-full",
+  ]
+
+  custom_headers {
+    root = {
+      Authorization = "Bearer token"
+    }
+  }
+}
+```
+
+The effective header set for this configuration is:
+
+```text
+Authorization: Bearer token
+Content-Type: application/json
+X-TE-Test: upgrade-full
+```
+
 {{ .SchemaMarkdown | trimspace }}
 
 {{ if .HasImport -}}
