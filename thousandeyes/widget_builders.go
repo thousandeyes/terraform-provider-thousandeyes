@@ -16,12 +16,8 @@ func buildGeoMapWidget(data map[string]interface{}) dashboards.ApiWidget {
 
 	if configList := getListValue(data, "geo_map_config"); len(configList) > 0 {
 		config := configList[0].(map[string]interface{})
-		if v := getFloat64Value(config, "min_scale"); v != 0 {
-			widget.SetMinScale(float32(v))
-		}
-		if v := getFloat64Value(config, "max_scale"); v != 0 {
-			widget.SetMaxScale(float32(v))
-		}
+		setFloat32FromMapIfPresent(config, "min_scale", widget.SetMinScale)
+		setFloat32FromMapIfPresent(config, "max_scale", widget.SetMaxScale)
 		if v := getStringValue(config, "unit"); v != "" {
 			widget.SetUnit(dashboards.ApiWidgetFixedYScalePrefix(v))
 		}
@@ -84,12 +80,8 @@ func buildBoxAndWhiskersWidget(data map[string]interface{}) dashboards.ApiWidget
 
 	if configList := getListValue(data, "box_and_whiskers_config"); len(configList) > 0 {
 		config := configList[0].(map[string]interface{})
-		if v := getFloat64Value(config, "min_scale"); v != 0 {
-			widget.SetMinScale(float32(v))
-		}
-		if v := getFloat64Value(config, "max_scale"); v != 0 {
-			widget.SetMaxScale(float32(v))
-		}
+		setFloat32FromMapIfPresent(config, "min_scale", widget.SetMinScale)
+		setFloat32FromMapIfPresent(config, "max_scale", widget.SetMaxScale)
 		if v := getStringValue(config, "unit"); v != "" {
 			widget.SetUnit(dashboards.ApiWidgetFixedYScalePrefix(v))
 		}
@@ -133,12 +125,8 @@ func buildStackedAreaWidget(data map[string]interface{}) dashboards.ApiWidget {
 
 	if configList := getListValue(data, "stacked_area_config"); len(configList) > 0 {
 		config := configList[0].(map[string]interface{})
-		if v := getFloat64Value(config, "min_scale"); v != 0 {
-			widget.SetMinScale(float32(v))
-		}
-		if v := getFloat64Value(config, "max_scale"); v != 0 {
-			widget.SetMaxScale(float32(v))
-		}
+		setFloat32FromMapIfPresent(config, "min_scale", widget.SetMinScale)
+		setFloat32FromMapIfPresent(config, "max_scale", widget.SetMaxScale)
 		if v := getStringValue(config, "unit"); v != "" {
 			widget.SetUnit(dashboards.ApiWidgetFixedYScalePrefix(v))
 		}
@@ -162,12 +150,8 @@ func buildTimeseriesWidget(data map[string]interface{}) dashboards.ApiWidget {
 
 	if configList := getListValue(data, "timeseries_config"); len(configList) > 0 {
 		config := configList[0].(map[string]interface{})
-		if v := getFloat64Value(config, "min_scale"); v != 0 {
-			widget.SetMinScale(float32(v))
-		}
-		if v := getFloat64Value(config, "max_scale"); v != 0 {
-			widget.SetMaxScale(float32(v))
-		}
+		setFloat32FromMapIfPresent(config, "min_scale", widget.SetMinScale)
+		setFloat32FromMapIfPresent(config, "max_scale", widget.SetMaxScale)
 		if v := getStringValue(config, "unit"); v != "" {
 			widget.SetUnit(dashboards.ApiWidgetFixedYScalePrefix(v))
 		}

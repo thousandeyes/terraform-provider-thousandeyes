@@ -151,6 +151,35 @@ func getFloat64Value(data map[string]interface{}, key string) float64 {
 	return 0
 }
 
+// asTerraformFloat coerces Terraform/SDK numeric values to float64.
+func asTerraformFloat(v interface{}) (float64, bool) {
+	switch x := v.(type) {
+	case float64:
+		return x, true
+	case float32:
+		return float64(x), true
+	case int:
+		return float64(x), true
+	case int64:
+		return float64(x), true
+	default:
+		return 0, false
+	}
+}
+
+// setFloat32FromMapIfPresent calls set when key exists and the value is numeric (including 0).
+func setFloat32FromMapIfPresent(m map[string]interface{}, key string, set func(float32)) {
+	raw, ok := m[key]
+	if !ok {
+		return
+	}
+	f, ok := asTerraformFloat(raw)
+	if !ok {
+		return
+	}
+	set(float32(f))
+}
+
 func getListValue(data map[string]interface{}, key string) []interface{} {
 	if v, ok := data[key].([]interface{}); ok {
 		return v
