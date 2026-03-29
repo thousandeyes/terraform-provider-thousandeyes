@@ -12,7 +12,6 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 		Type:        schema.TypeString,
 		Description: "Widget type.",
 		Required:    true,
-		ForceNew:    true,
 		ValidateFunc: validation.StringInSlice([]string{
 			"Map",
 			"Agent Status",
