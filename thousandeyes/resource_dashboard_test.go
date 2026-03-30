@@ -26,6 +26,8 @@ func TestAccThousandEyesDashboard(t *testing.T) {
 	var resourceNameBoxAndWhiskersDefaults = "thousandeyes_dashboard.test_dashboard_box_and_whiskers_defaults"
 	var resourceNameBoxAndWhiskersWidget = "thousandeyes_dashboard.test_dashboard_box_and_whiskers_widget"
 	var resourceNameFilterWidget = "thousandeyes_dashboard.test_dashboard_filter_widget"
+	var resourceNameNumberDefaults = "thousandeyes_dashboard.test_dashboard_number_defaults"
+	var resourceNameNumberWidget = "thousandeyes_dashboard.test_dashboard_number_widget"
 	//var resourceNameListWidget = "thousandeyes_dashboard.test_dashboard_list_widget"
 	var testCases = []struct {
 		name                 string
@@ -410,6 +412,62 @@ func TestAccThousandEyesDashboard(t *testing.T) {
 				resource.TestCheckTypeSetElemAttr(resourceNameFilterWidget, "widgets.0.filter.0.values.*", "8075"),
 				resource.TestCheckTypeSetElemAttr(resourceNameFilterWidget, "widgets.0.filter.0.values.*", "262287"),
 				resource.TestCheckTypeSetElemAttr(resourceNameFilterWidget, "widgets.0.filter.0.values.*", "46606"),
+			},
+		},
+		{
+			name:                 "create_dashboard_number_defaults_test",
+			createResourceFile:   "acceptance_resources/dashboard/widget_number_defaults.tf",
+			updateResourceFile:   "acceptance_resources/dashboard/widget_number_defaults.tf",
+			resourceName:         resourceNameNumberDefaults,
+			checkDestroyFunction: testAccCheckDashboardResourceDestroy,
+			checkCreateFunc: []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(resourceNameNumberDefaults, "title", "Test Dashboard Number Defaults"),
+				resource.TestCheckResourceAttr(resourceNameNumberDefaults, "widgets.0.type", "Number"),
+				resource.TestCheckResourceAttr(resourceNameNumberDefaults, "widgets.0.title", "Number With Defaults"),
+				resource.TestCheckResourceAttr(resourceNameNumberDefaults, "widgets.0.data_source", "ALERTS"),
+				resource.TestCheckResourceAttr(resourceNameNumberDefaults, "widgets.0.number_cards.0.metric", "ALERT_COUNT_AGENT"),
+			},
+			checkUpdateFunc: []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(resourceNameNumberDefaults, "title", "Test Dashboard Number Defaults"),
+				resource.TestCheckResourceAttr(resourceNameNumberDefaults, "widgets.0.type", "Number"),
+			},
+		},
+		{
+			name:                 "create_update_delete_dashboard_number_widget_test",
+			createResourceFile:   "acceptance_resources/dashboard/widget_number_basic.tf",
+			updateResourceFile:   "acceptance_resources/dashboard/widget_number_update.tf",
+			resourceName:         resourceNameNumberWidget,
+			checkDestroyFunction: testAccCheckDashboardResourceDestroy,
+			checkCreateFunc: []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(resourceNameNumberWidget, "title", "Test Dashboard Number Widget"),
+				resource.TestCheckResourceAttr(resourceNameNumberWidget, "description", "Test Dashboard with Number Widget"),
+				resource.TestCheckResourceAttr(resourceNameNumberWidget, "widgets.0.type", "Number"),
+				resource.TestCheckResourceAttr(resourceNameNumberWidget, "widgets.0.title", "Test Number Widget"),
+				resource.TestCheckResourceAttr(resourceNameNumberWidget, "widgets.0.visual_mode", "Full"),
+				resource.TestCheckResourceAttr(resourceNameNumberWidget, "widgets.0.data_source", "ALERTS"),
+				resource.TestCheckResourceAttr(resourceNameNumberWidget, "widgets.0.number_cards.0.description", "Alert Count"),
+				resource.TestCheckResourceAttr(resourceNameNumberWidget, "widgets.0.number_cards.0.data_source", "ALERTS"),
+				resource.TestCheckResourceAttr(resourceNameNumberWidget, "widgets.0.number_cards.0.metric_group", "ALERTS"),
+				resource.TestCheckResourceAttr(resourceNameNumberWidget, "widgets.0.number_cards.0.metric", "ALERT_COUNT_AGENT"),
+				resource.TestCheckResourceAttr(resourceNameNumberWidget, "widgets.0.number_cards.0.measure.0.type", "MEAN"),
+				resource.TestCheckResourceAttr(resourceNameNumberWidget, "widgets.0.number_cards.0.fixed_timespan.0.value", "1"),
+				resource.TestCheckResourceAttr(resourceNameNumberWidget, "widgets.0.number_cards.0.fixed_timespan.0.unit", "Days"),
+				resource.TestCheckResourceAttr(resourceNameNumberWidget, "widgets.0.number_cards.1.description", "Active Alerts"),
+				resource.TestCheckResourceAttr(resourceNameNumberWidget, "widgets.0.number_cards.1.metric", "ACTIVE_ALERT_COUNT"),
+				resource.TestCheckResourceAttr(resourceNameNumberWidget, "widgets.0.number_cards.1.measure.0.type", "MEAN"),
+			},
+			checkUpdateFunc: []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(resourceNameNumberWidget, "title", "Test Dashboard Number Widget (Updated)"),
+				resource.TestCheckResourceAttr(resourceNameNumberWidget, "description", "Test Dashboard with Number Widget (Updated)"),
+				resource.TestCheckResourceAttr(resourceNameNumberWidget, "widgets.0.type", "Number"),
+				resource.TestCheckResourceAttr(resourceNameNumberWidget, "widgets.0.title", "Test Number Widget (Updated)"),
+				resource.TestCheckResourceAttr(resourceNameNumberWidget, "widgets.0.visual_mode", "Full"),
+				resource.TestCheckResourceAttr(resourceNameNumberWidget, "widgets.0.data_source", "ALERTS"),
+				resource.TestCheckResourceAttr(resourceNameNumberWidget, "widgets.0.number_cards.0.description", "Alert Count (Updated)"),
+				resource.TestCheckResourceAttr(resourceNameNumberWidget, "widgets.0.number_cards.0.fixed_timespan.0.value", "7"),
+				resource.TestCheckResourceAttr(resourceNameNumberWidget, "widgets.0.number_cards.0.fixed_timespan.0.unit", "Days"),
+				resource.TestCheckResourceAttr(resourceNameNumberWidget, "widgets.0.number_cards.1.description", "Active Alerts (Updated)"),
+				resource.TestCheckResourceAttr(resourceNameNumberWidget, "widgets.0.number_cards.1.measure.0.type", "TOTAL"),
 			},
 		},
 		// This API is return invalid sortDirection

@@ -22,6 +22,7 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 			// "List" is temporarily disabled until the API returns valid
 			// sortDirection values (CP-2702). The SDK cannot deserialize the
 			// ASC/DESC values the API currently sends, breaking refresh.
+			"Number",
 		}, false),
 	},
 
@@ -355,6 +356,137 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 					Type:        schema.TypeString,
 					Description: "Timespan unit for active within filter.",
 					Optional:    true,
+				},
+			},
+		},
+	},
+
+	// Type-specific: Number Cards (for "Number" type)
+	"number_cards": {
+		Type:        schema.TypeList,
+		Description: "List of number cards within a Number widget. Each card can have its own data source, metric, and measure.",
+		Optional:    true,
+		Computed:    true,
+		Elem: &schema.Resource{
+			Schema: NumberCardSchema,
+		},
+	},
+}
+
+var NumberCardSchema = map[string]*schema.Schema{
+	"id": {
+		Type:        schema.TypeString,
+		Description: "Identifier of the number card.",
+		Computed:    true,
+	},
+	"description": {
+		Type:        schema.TypeString,
+		Description: "Description of the number card.",
+		Optional:    true,
+	},
+	"min_scale": {
+		Type:        schema.TypeFloat,
+		Description: "Minimum scale configured for the card.",
+		Optional:    true,
+	},
+	"max_scale": {
+		Type:        schema.TypeFloat,
+		Description: "Maximum scale configured for the card.",
+		Optional:    true,
+	},
+	"unit": {
+		Type:        schema.TypeString,
+		Description: "Unit for the scale.",
+		Optional:    true,
+	},
+	"compare_to_previous_value": {
+		Type:        schema.TypeBool,
+		Description: "Enables comparison with the previous metric value.",
+		Optional:    true,
+	},
+	"fixed_timespan": {
+		Type:        schema.TypeList,
+		Description: "Fixed timespan for the card.",
+		Optional:    true,
+		MaxItems:    1,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"value": {
+					Type:        schema.TypeInt,
+					Description: "Time value.",
+					Optional:    true,
+				},
+				"unit": {
+					Type:        schema.TypeString,
+					Description: "Time unit.",
+					Optional:    true,
+				},
+			},
+		},
+	},
+	"should_exclude_alert_suppression_windows": {
+		Type:        schema.TypeBool,
+		Description: "Excludes alert suppression window data if set to true.",
+		Optional:    true,
+	},
+	"data_source": {
+		Type:        schema.TypeString,
+		Description: "Data source for the card.",
+		Optional:    true,
+		Computed:    true,
+	},
+	"metric_group": {
+		Type:        schema.TypeString,
+		Description: "Metric group for the card.",
+		Optional:    true,
+	},
+	"direction": {
+		Type:        schema.TypeString,
+		Description: "Direction for the metric.",
+		Optional:    true,
+		Computed:    true,
+	},
+	"metric": {
+		Type:        schema.TypeString,
+		Description: "Metric for the card.",
+		Optional:    true,
+	},
+	"measure": {
+		Type:        schema.TypeList,
+		Description: "Measure configuration for the card.",
+		Optional:    true,
+		MaxItems:    1,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"type": {
+					Type:        schema.TypeString,
+					Description: "Measure type.",
+					Optional:    true,
+				},
+				"percentile_value": {
+					Type:        schema.TypeFloat,
+					Description: "Percentile value when type is NTH_PERCENTILE.",
+					Optional:    true,
+				},
+			},
+		},
+	},
+	"filter": {
+		Type:        schema.TypeList,
+		Description: "Filters applied to the card.",
+		Optional:    true,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"property": {
+					Type:        schema.TypeString,
+					Description: "Filter property.",
+					Required:    true,
+				},
+				"values": {
+					Type:        schema.TypeList,
+					Description: "List of filter values.",
+					Required:    true,
+					Elem:        &schema.Schema{Type: schema.TypeString},
 				},
 			},
 		},

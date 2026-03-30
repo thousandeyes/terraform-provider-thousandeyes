@@ -263,6 +263,136 @@ func mapAgentStatusWidget(widget dashboards.ApiWidget) (map[string]interface{}, 
 	return data, nil
 }
 
+// mapNumberWidget maps a Number widget to Terraform data
+func mapNumberWidget(widget dashboards.ApiWidget) (map[string]interface{}, error) {
+	w := widget.ApiNumbersCardWidget
+	if w == nil {
+		return nil, nil
+	}
+
+	data := map[string]interface{}{
+		"type": "Number",
+	}
+	setCommonWidgetFields(data, w.GetId(), w.GetTitle(), w.GetEmbedUrl(), w.GetIsEmbedded(), string(w.GetVisualMode()))
+	setCommonMapperFields(data, w)
+
+	if v := w.GetDataSource(); v != "" {
+		data["data_source"] = string(v)
+	}
+
+	if cards := w.GetNumberCards(); len(cards) > 0 {
+		data["number_cards"] = mapNumberCards(cards)
+	}
+
+	return data, nil
+}
+
+func mapNumberCards(cards []dashboards.ApiNumbersCard) []interface{} {
+	result := make([]interface{}, 0, len(cards))
+	for _, card := range cards {
+		cardData := map[string]interface{}{}
+
+		if v := card.GetId(); v != "" {
+			cardData["id"] = v
+		}
+		if v := card.GetDescription(); v != "" {
+			cardData["description"] = v
+		}
+		if v, ok := card.GetMinScaleOk(); ok && v != nil {
+			cardData["min_scale"] = float64(*v)
+		}
+		if v, ok := card.GetMaxScaleOk(); ok && v != nil {
+			cardData["max_scale"] = float64(*v)
+		}
+		if v := card.GetUnit(); v != "" {
+			cardData["unit"] = string(v)
+		}
+		if v, ok := card.GetCompareToPreviousValueOk(); ok && v != nil {
+			cardData["compare_to_previous_value"] = *v
+		}
+		if v, ok := card.GetShouldExcludeAlertSuppressionWindowsOk(); ok && v != nil {
+			cardData["should_exclude_alert_suppression_windows"] = *v
+		}
+		if v := card.GetDataSource(); v != "" {
+			cardData["data_source"] = string(v)
+		}
+		if v := card.GetMetricGroup(); v != "" {
+			cardData["metric_group"] = string(v)
+		}
+		if v := card.GetDirection(); v != "" {
+			cardData["direction"] = string(v)
+		}
+		if v := card.GetMetric(); v != "" {
+			cardData["metric"] = string(v)
+		}
+
+		if measure, ok := card.GetMeasureOk(); ok && measure != nil {
+			measureMap := map[string]interface{}{}
+			if measureType := measure.GetType(); measureType != "" {
+				measureMap["type"] = string(measureType)
+			}
+			if percentile, ok := measure.GetPercentileValueOk(); ok && percentile != nil {
+				measureMap["percentile_value"] = float64(*percentile)
+			}
+			if len(measureMap) > 0 {
+				cardData["measure"] = []interface{}{measureMap}
+			}
+		}
+
+		if fixedTimespan, ok := card.GetFixedTimespanOk(); ok && fixedTimespan != nil {
+			ftsMap := map[string]interface{}{}
+			if v, ok := fixedTimespan.GetValueOk(); ok && v != nil {
+				ftsMap["value"] = int(*v)
+			}
+			if v := fixedTimespan.GetUnit(); v != "" {
+				ftsMap["unit"] = string(v)
+			}
+			if len(ftsMap) > 0 {
+				cardData["fixed_timespan"] = []interface{}{ftsMap}
+			}
+		}
+
+		if filters, ok := card.GetFiltersOk(); ok && filters != nil && len(*filters) > 0 {
+			cardData["filter"] = mapFilterBlocks(*filters)
+		}
+
+		result = append(result, cardData)
+	}
+	return result
+}
+
+// mapFilterBlocks converts SDK filter map to Terraform filter blocks with stable ordering.
+func mapFilterBlocks(filters map[string][]interface{}) []interface{} {
+	properties := make([]string, 0, len(filters))
+	for property, vals := range filters {
+		if len(vals) > 0 {
+			properties = append(properties, property)
+		}
+	}
+	sort.Strings(properties)
+
+	filterBlocks := make([]interface{}, 0, len(properties))
+	for _, property := range properties {
+		vals := filters[property]
+		strValues := make([]interface{}, 0, len(vals))
+		for _, v := range vals {
+			switch val := v.(type) {
+			case string:
+				strValues = append(strValues, val)
+			case float64:
+				strValues = append(strValues, fmt.Sprintf("%.0f", val))
+			default:
+				strValues = append(strValues, fmt.Sprintf("%v", val))
+			}
+		}
+		filterBlocks = append(filterBlocks, map[string]interface{}{
+			"property": property,
+			"values":   strValues,
+		})
+	}
+	return filterBlocks
+}
+
 // setCommonMapperFields sets common fields from any widget that has them
 func setCommonMapperFields(data map[string]interface{}, widget interface{}) {
 	if w, ok := widget.(interface{ GetMetricGroup() dashboards.MetricGroup }); ok {
@@ -332,36 +462,8 @@ func setCommonMapperFields(data map[string]interface{}, widget interface{}) {
 		GetFiltersOk() (*map[string][]interface{}, bool)
 	}); ok {
 		if filters, ok := w.GetFiltersOk(); ok && filters != nil && len(*filters) > 0 {
-			properties := make([]string, 0, len(*filters))
-			for property, vals := range *filters {
-				if len(vals) > 0 {
-					properties = append(properties, property)
-				}
-			}
-			sort.Strings(properties)
-
-			filterBlocks := make([]interface{}, 0, len(properties))
-			for _, property := range properties {
-				vals := (*filters)[property]
-				// Convert values to strings
-				strValues := make([]interface{}, 0, len(vals))
-				for _, v := range vals {
-					switch val := v.(type) {
-					case string:
-						strValues = append(strValues, val)
-					case float64:
-						strValues = append(strValues, fmt.Sprintf("%.0f", val))
-					default:
-						strValues = append(strValues, fmt.Sprintf("%v", val))
-					}
-				}
-				filterBlocks = append(filterBlocks, map[string]interface{}{
-					"property": property,
-					"values":   strValues,
-				})
-			}
-			if len(filterBlocks) > 0 {
-				data["filter"] = filterBlocks
+			if blocks := mapFilterBlocks(*filters); len(blocks) > 0 {
+				data["filter"] = blocks
 			}
 		}
 	}

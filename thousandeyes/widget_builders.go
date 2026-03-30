@@ -195,6 +195,125 @@ func buildAgentStatusWidget(data map[string]interface{}) dashboards.ApiWidget {
 	return dashboards.ApiAgentStatusWidgetAsApiWidget(widget)
 }
 
+// buildNumberWidget builds a Number widget from Terraform data
+func buildNumberWidget(data map[string]interface{}) dashboards.ApiWidget {
+	widget := dashboards.NewApiNumbersCardWidget("Number")
+	setCommonBuilderFields(widget, data)
+
+	if dataSource := getStringValue(data, "data_source"); dataSource != "" {
+		widget.SetDataSource(dashboards.NumbersCardDatasource(dataSource))
+	}
+
+	cardsList := getListValue(data, "number_cards")
+	if len(cardsList) > 0 {
+		widget.SetNumberCards(buildNumberCards(cardsList))
+	} else {
+		widget.SetNumberCards([]dashboards.ApiNumbersCard{})
+	}
+
+	return dashboards.ApiNumbersCardWidgetAsApiWidget(widget)
+}
+
+func buildNumberCards(cardsList []interface{}) []dashboards.ApiNumbersCard {
+	cards := make([]dashboards.ApiNumbersCard, 0, len(cardsList))
+	for _, c := range cardsList {
+		cardData, ok := c.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		card := dashboards.NewApiNumbersCard()
+
+		if v := getStringValue(cardData, "id"); v != "" {
+			card.SetId(v)
+		}
+		if v := getStringValue(cardData, "description"); v != "" {
+			card.SetDescription(v)
+		}
+		setFloat32FromMapIfPresent(cardData, "min_scale", card.SetMinScale)
+		setFloat32FromMapIfPresent(cardData, "max_scale", card.SetMaxScale)
+		if v := getStringValue(cardData, "unit"); v != "" {
+			card.SetUnit(dashboards.ApiWidgetFixedYScalePrefix(v))
+		}
+		if v, ok := boolFromMapIfPresent(cardData, "compare_to_previous_value"); ok {
+			card.SetCompareToPreviousValue(v)
+		}
+		if v, ok := boolFromMapIfPresent(cardData, "should_exclude_alert_suppression_windows"); ok {
+			card.SetShouldExcludeAlertSuppressionWindows(v)
+		}
+		if dataSource := getStringValue(cardData, "data_source"); dataSource != "" {
+			card.SetDataSource(dashboards.NumbersCardDatasource(dataSource))
+		}
+		if v := getStringValue(cardData, "metric_group"); v != "" {
+			card.SetMetricGroup(dashboards.MetricGroup(v))
+		}
+		if v := getStringValue(cardData, "direction"); v != "" {
+			card.SetDirection(dashboards.DashboardMetricDirection(v))
+		}
+		if v := getStringValue(cardData, "metric"); v != "" {
+			card.SetMetric(dashboards.DashboardMetric(v))
+		}
+
+		if measureList := getListValue(cardData, "measure"); len(measureList) > 0 {
+			measureData := measureList[0].(map[string]interface{})
+			m := dashboards.NewApiWidgetMeasure()
+			if v := getStringValue(measureData, "type"); v != "" {
+				m.SetType(dashboards.WidgetMeasureType(v))
+			}
+			if v := getFloat64Value(measureData, "percentile_value"); v != 0 {
+				m.SetPercentileValue(float32(v))
+			}
+			card.SetMeasure(*m)
+		}
+
+		if filterList := getListValue(cardData, "filter"); len(filterList) > 0 {
+			apiFilters := make(map[string][]interface{})
+			for _, f := range filterList {
+				filterData := f.(map[string]interface{})
+				property := getStringValue(filterData, "property")
+				if property == "" {
+					continue
+				}
+				var values []interface{}
+				switch v := filterData["values"].(type) {
+				case *schema.Set:
+					strs := make([]string, 0, v.Len())
+					for _, item := range v.List() {
+						strs = append(strs, item.(string))
+					}
+					sort.Strings(strs)
+					values = make([]interface{}, len(strs))
+					for i, s := range strs {
+						values[i] = s
+					}
+				case []interface{}:
+					values = v
+				}
+				if len(values) > 0 {
+					apiFilters[property] = values
+				}
+			}
+			if len(apiFilters) > 0 {
+				card.SetFilters(apiFilters)
+			}
+		}
+
+		if fixedTimespanList := getListValue(cardData, "fixed_timespan"); len(fixedTimespanList) > 0 {
+			fixedTimespan := fixedTimespanList[0].(map[string]interface{})
+			duration := dashboards.NewApiDuration()
+			if v := getIntValue(fixedTimespan, "value"); v != 0 {
+				duration.SetValue(int32(v))
+			}
+			if v := getStringValue(fixedTimespan, "unit"); v != "" {
+				duration.SetUnit(dashboards.LegacyDurationUnit(v))
+			}
+			card.SetFixedTimespan(*duration)
+		}
+
+		cards = append(cards, *card)
+	}
+	return cards
+}
+
 // setCommonBuilderFields sets common fields on any widget
 func setCommonBuilderFields(widget interface{}, data map[string]interface{}) {
 	// Set widget ID if present (important for updates)

@@ -141,6 +141,62 @@ resource "thousandeyes_dashboard" "example" {
       group_by = "COUNTRY"
     }
   }
+
+  widgets {
+    type        = "List"
+    title       = "List Widget"
+    visual_mode = "Full"
+    data_source = "EVENT_DETECTION"
+    direction   = "TO_TARGET"
+
+    measure {
+      type = "MEAN"
+    }
+
+    fixed_timespan {
+      value = 1
+      unit  = "Days"
+    }
+
+    list_config {
+      active_within_value = 7
+      active_within_unit  = "Days"
+    }
+  }
+
+  widgets {
+    type        = "Number"
+    title       = "Number Widget"
+    visual_mode = "Full"
+    data_source = "ALERTS"
+
+    number_cards {
+      description  = "Alert Count"
+      data_source  = "ALERTS"
+      metric_group = "ALERTS"
+      metric       = "ALERT_COUNT_AGENT"
+
+      measure {
+        type = "MEAN"
+      }
+
+      fixed_timespan {
+        value = 1
+        unit  = "Days"
+      }
+    }
+
+    number_cards {
+      description  = "Active Alerts"
+      data_source  = "ALERTS"
+      metric_group = "ALERTS"
+      metric       = "ACTIVE_ALERT_COUNT"
+
+      measure {
+        type = "MEAN"
+      }
+    }
+  }
 }
 ```
 
@@ -200,6 +256,7 @@ Optional:
 - `measure` (Block List, Max: 1) Measure configuration for the widget. (see [below for nested schema](#nestedblock--widgets--measure))
 - `metric` (String) Metric for the widget.
 - `metric_group` (String) Metric group for the widget.
+- `number_cards` (Block List) List of number cards within a Number widget. Each card can have its own data source, metric, and measure. (see [below for nested schema](#nestedblock--widgets--number_cards))
 - `pie_chart_config` (Block List, Max: 1) Configuration for Pie Chart widgets. (see [below for nested schema](#nestedblock--widgets--pie_chart_config))
 - `should_exclude_alert_suppression_windows` (Boolean) Excludes alert suppression window data if set to true.
 - `stacked_area_config` (Block List, Max: 1) Configuration for Time Series: Stacked Area widgets. (see [below for nested schema](#nestedblock--widgets--stacked_area_config))
@@ -238,7 +295,7 @@ Optional:
 Required:
 
 - `property` (String) Filter property (e.g., 'TEST', 'AGENT', 'ENDPOINT_MACHINE_ID', 'MONITOR').
-- `values` (Set of String) Set of filter values (IDs). Order is not significant.
+- `values` (List of String) List of filter values (IDs).
 
 
 <a id="nestedblock--widgets--fixed_timespan"></a>
@@ -278,6 +335,57 @@ Optional:
 
 - `percentile_value` (Number) The percentile value to use when type is NTH_PERCENTILE.
 - `type` (String) Measure type (e.g., 'MEAN', 'MEDIAN', 'MAXIMUM', 'MINIMUM', 'NTH_PERCENTILE').
+
+
+<a id="nestedblock--widgets--number_cards"></a>
+### Nested Schema for `widgets.number_cards`
+
+Optional:
+
+- `compare_to_previous_value` (Boolean) Enables comparison with the previous metric value.
+- `data_source` (String) Data source for the card.
+- `description` (String) Description of the number card.
+- `direction` (String) Direction for the metric.
+- `filter` (Block List) Filters applied to the card. (see [below for nested schema](#nestedblock--widgets--number_cards--filter))
+- `fixed_timespan` (Block List, Max: 1) Fixed timespan for the card. (see [below for nested schema](#nestedblock--widgets--number_cards--fixed_timespan))
+- `max_scale` (Number) Maximum scale configured for the card.
+- `measure` (Block List, Max: 1) Measure configuration for the card. (see [below for nested schema](#nestedblock--widgets--number_cards--measure))
+- `metric` (String) Metric for the card.
+- `metric_group` (String) Metric group for the card.
+- `min_scale` (Number) Minimum scale configured for the card.
+- `should_exclude_alert_suppression_windows` (Boolean) Excludes alert suppression window data if set to true.
+- `unit` (String) Unit for the scale.
+
+Read-Only:
+
+- `id` (String) Identifier of the number card.
+
+<a id="nestedblock--widgets--number_cards--filter"></a>
+### Nested Schema for `widgets.number_cards.filter`
+
+Required:
+
+- `property` (String) Filter property.
+- `values` (List of String) List of filter values.
+
+
+<a id="nestedblock--widgets--number_cards--fixed_timespan"></a>
+### Nested Schema for `widgets.number_cards.fixed_timespan`
+
+Optional:
+
+- `unit` (String) Time unit.
+- `value` (Number) Time value.
+
+
+<a id="nestedblock--widgets--number_cards--measure"></a>
+### Nested Schema for `widgets.number_cards.measure`
+
+Optional:
+
+- `percentile_value` (Number) Percentile value when type is NTH_PERCENTILE.
+- `type` (String) Measure type.
+
 
 
 <a id="nestedblock--widgets--pie_chart_config"></a>

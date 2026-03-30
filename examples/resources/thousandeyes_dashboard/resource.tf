@@ -128,4 +128,38 @@ resource "thousandeyes_dashboard" "example" {
       group_by = "COUNTRY"
     }
   }
+
+  widgets {
+    type        = "Number"
+    title       = "Number Widget"
+    visual_mode = "Full"
+    data_source = "ALERTS"
+
+    number_cards {
+      description  = "Alert Count"
+      data_source  = "ALERTS"
+      metric_group = "ALERTS"
+      metric       = "ALERT_COUNT_AGENT"
+
+      measure {
+        type = "MEAN"
+      }
+
+      fixed_timespan {
+        value = 1
+        unit  = "Days"
+      }
+    }
+
+    number_cards {
+      description  = "Active Alerts"
+      data_source  = "ALERTS"
+      metric_group = "ALERTS"
+      metric       = "ACTIVE_ALERT_COUNT"
+
+      measure {
+        type = "MEAN"
+      }
+    }
+  }
 }
