@@ -113,6 +113,7 @@ var DashboardSchema = map[string]*schema.Schema{
 		Type:        schema.TypeList,
 		Description: "List of widgets on the dashboard.",
 		Optional:    true,
+		Computed:    true,
 		Elem: &schema.Resource{
 			Schema: DashboardWidgetSchema,
 		},
