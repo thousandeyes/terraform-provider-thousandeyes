@@ -188,7 +188,7 @@ resource "thousandeyes_dashboard" "example" {
 - `dashboard_created_by` (String) Identifier for the user that created a dashboard.
 - `dashboard_modified_by` (String) Identifier for the user that last modified a dashboard.
 - `dashboard_modified_date` (String) UTC date/time when a dashboard was last modified (ISO date-time format).
-- `id` (String) The tag ID.
+- `id` (String) The dashboard ID.
 - `is_migrated_report` (Boolean) True if this dashboard was previously a report.
 
 <a id="nestedblock--default_timespan"></a>
