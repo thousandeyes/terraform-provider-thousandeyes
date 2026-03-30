@@ -82,7 +82,7 @@ func widgetTypeFromInstance(instance interface{}) (string, error) {
 // mapWidgetWithInstance maps using instance as returned by GetActualInstance (tests may pass a synthetic type).
 func mapWidgetWithInstance(widget dashboards.ApiWidget, instance interface{}) (map[string]interface{}, error) {
 	if instance == nil {
-		return nil, nil
+		return nil, fmt.Errorf("widget instance is nil")
 	}
 
 	widgetType, err := widgetTypeFromInstance(instance)
