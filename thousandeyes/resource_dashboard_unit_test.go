@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -152,6 +153,142 @@ func TestBuildDashboardStruct(t *testing.T) {
 			tc.validate(t, result)
 		})
 	}
+}
+
+func TestBuildDashboardStruct_explicitEmptyWidgetsSendsEmptySlice(t *testing.T) {
+	d := schema.TestResourceDataRaw(t, schemas.DashboardSchema, map[string]interface{}{
+		"title":   "T",
+		"widgets": []interface{}{},
+	})
+	result, err := buildDashboardStruct(d)
+	require.NoError(t, err)
+	assert.Empty(t, result.GetWidgets())
+}
+
+func TestBuildDashboardStruct_noWidgetsSendsEmptySlice(t *testing.T) {
+	d := schema.TestResourceDataRaw(t, schemas.DashboardSchema, map[string]interface{}{
+		"title": "T",
+	})
+	result, err := buildDashboardStruct(d)
+	require.NoError(t, err)
+	assert.Empty(t, result.GetWidgets())
+}
+
+func TestBuildDashboardStruct_withWidgets(t *testing.T) {
+	d := schema.TestResourceDataRaw(t, schemas.DashboardSchema, map[string]interface{}{
+		"title": "T",
+		"widgets": []interface{}{
+			map[string]interface{}{
+				"type":  "List",
+				"title": "My List",
+			},
+		},
+	})
+	result, err := buildDashboardStruct(d)
+	require.NoError(t, err)
+	require.Len(t, result.GetWidgets(), 1)
+	assert.NotNil(t, result.GetWidgets()[0].ApiListWidget)
+}
+
+// TestConfigWidgetsNullOrEmpty tests configWidgetsNullOrEmpty which covers the case where
+// Terraform represents absent Optional+Computed block lists as null in raw config.
+func TestConfigWidgetsNullOrEmpty(t *testing.T) {
+	widgetsListType := cty.List(cty.DynamicPseudoType)
+
+	tests := []struct {
+		name string
+		cfg  cty.Value
+		want bool
+	}{
+		{
+			name: "nil value",
+			cfg:  cty.NilVal,
+			want: false,
+		},
+		{
+			name: "null value",
+			cfg:  cty.NullVal(cty.EmptyObject),
+			want: false,
+		},
+		{
+			name: "unknown value",
+			cfg:  cty.DynamicVal,
+			want: false,
+		},
+		{
+			name: "object without widgets attribute",
+			cfg:  cty.EmptyObjectVal,
+			want: false,
+		},
+		{
+			name: "widgets is null — the key case: Optional+Computed absent blocks",
+			cfg: cty.ObjectVal(map[string]cty.Value{
+				"widgets": cty.NullVal(widgetsListType),
+			}),
+			want: true, // null = user omitted all blocks
+		},
+		{
+			name: "widgets is explicitly empty list",
+			cfg: cty.ObjectVal(map[string]cty.Value{
+				"widgets": cty.ListValEmpty(cty.DynamicPseudoType),
+			}),
+			want: true, // empty list = user wrote zero blocks
+		},
+		{
+			name: "widgets has one element",
+			cfg: cty.ObjectVal(map[string]cty.Value{
+				"widgets": cty.ListVal([]cty.Value{cty.StringVal("a")}),
+			}),
+			want: false,
+		},
+		{
+			name: "widgets attribute is a string (wrong type)",
+			cfg: cty.ObjectVal(map[string]cty.Value{
+				"widgets": cty.StringVal("not-a-list"),
+			}),
+			want: false,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			assert.Equal(t, tc.want, configWidgetsNullOrEmpty(tc.cfg))
+		})
+	}
+}
+
+// TestCustomizeDiff_explicitEmptyWidgets_helperIntegration verifies the two halves of the
+// "remove all widgets" fix work together:
+//  1. configWidgetsNullOrEmpty detects both null (absent blocks) and empty list in raw config.
+//  2. buildDashboardStruct produces a payload with an explicit empty widget slice.
+func TestCustomizeDiff_explicitEmptyWidgets_helperIntegration(t *testing.T) {
+	widgetsListType := cty.List(cty.DynamicPseudoType)
+
+	// Case A: Terraform uses null for absent Optional+Computed block attributes — the
+	// most common case when a user removes all widget blocks from their HCL.
+	nullCfg := cty.ObjectVal(map[string]cty.Value{
+		"widgets": cty.NullVal(widgetsListType),
+	})
+	assert.True(t, configWidgetsNullOrEmpty(nullCfg),
+		"null widgets (absent blocks) should trigger SetNew in CustomizeDiff")
+
+	// Case B: Terraform produces an empty tuple when it can confirm zero blocks.
+	emptyCfg := cty.ObjectVal(map[string]cty.Value{
+		"widgets": cty.ListValEmpty(cty.DynamicPseudoType),
+	})
+	assert.True(t, configWidgetsNullOrEmpty(emptyCfg),
+		"empty list widgets should trigger SetNew in CustomizeDiff")
+
+	// Part 2: by the time Update runs, d.Get("widgets") returns [] because CustomizeDiff
+	// already called SetNew. Confirm buildDashboardStruct sends an empty slice to the API.
+	d := schema.TestResourceDataRaw(t, schemas.DashboardSchema, map[string]interface{}{
+		"title":   "T",
+		"widgets": []interface{}{},
+	})
+	result, err := buildDashboardStruct(d)
+	require.NoError(t, err)
+	assert.NotNil(t, result.Widgets, "widgets field should be set (not omitted) on the payload")
+	assert.Empty(t, result.GetWidgets(), "widgets slice should be empty so the API clears all widgets")
 }
 
 func TestResourceDataApiDashboardMapper(t *testing.T) {

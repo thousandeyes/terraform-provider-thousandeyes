@@ -445,6 +445,43 @@ func TestAccThousandEyesDashboard(t *testing.T) {
 	}
 }
 
+// TestAccThousandEyesDashboard_removeAllWidgets is a dedicated test for the bug where removing
+// all widget blocks from config produced no diff and left widgets unchanged on the API.
+func TestAccThousandEyesDashboard_removeAllWidgets(t *testing.T) {
+	resourceName := "thousandeyes_dashboard.test_dashboard_remove_all_widgets"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: providerFactories,
+		CheckDestroy:      testAccCheckDashboardResourceDestroy,
+		Steps: []resource.TestStep{
+			{
+				// Create dashboard with two widgets.
+				Config: testAccThousandEyesDashboardConfig("acceptance_resources/dashboard/widget_remove_all_basic.tf"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "title", "Test Dashboard Remove All Widgets"),
+					resource.TestCheckResourceAttr(resourceName, "widgets.#", "2"),
+					resource.TestCheckResourceAttr(resourceName, "widgets.0.type", "Time Series: Line"),
+					resource.TestCheckResourceAttr(resourceName, "widgets.1.type", "Box and Whiskers"),
+				),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
+				// Remove all widget blocks — previously produced no diff (the bug).
+				Config: testAccThousandEyesDashboardConfig("acceptance_resources/dashboard/widget_remove_all_update.tf"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "title", "Test Dashboard Remove All Widgets"),
+					resource.TestCheckResourceAttr(resourceName, "widgets.#", "0"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckDashboardResourceDestroy(s *terraform.State) error {
 	resourceList := []ResourceType{
 		{

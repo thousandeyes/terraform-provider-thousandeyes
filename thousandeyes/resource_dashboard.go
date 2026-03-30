@@ -6,6 +6,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/thousandeyes/terraform-provider-thousandeyes/thousandeyes/schemas"
 	"github.com/thousandeyes/thousandeyes-sdk-go/v3/client"
@@ -29,6 +30,22 @@ func resourceDashboard() *schema.Resource {
 }
 
 func resourceDashboardCustomizeDiff(_ context.Context, d *schema.ResourceDiff, meta interface{}) error {
+	// Optional+Computed TypeList: Terraform merges prior state into the plan when no widget
+	// blocks are present in config, suppressing any diff. Force an empty planned value so
+	// Terraform detects the removal and calls Update.
+	//
+	// Guard on len(oldList) > 0 to avoid a spurious diff on new resources where both
+	// config and state are already empty.
+	if configWidgetsNullOrEmpty(d.GetRawConfig()) {
+		old, _ := d.GetChange("widgets")
+		oldList, _ := old.([]interface{})
+		if len(oldList) > 0 {
+			if err := d.SetNew("widgets", []interface{}{}); err != nil {
+				return err
+			}
+		}
+	}
+
 	raw := d.Get("widgets")
 	if raw == nil {
 		return nil
@@ -95,6 +112,36 @@ func resourceDashboardCustomizeDiff(_ context.Context, d *schema.ResourceDiff, m
 	return nil
 }
 
+// configWidgetsNullOrEmpty reports whether widgets is absent (null) or explicitly empty in
+// configuration. This covers both ways a user can express "no widget blocks":
+//   - Omitting all widget blocks → Terraform sets the attribute to null for Optional+Computed lists
+//   - Writing zero blocks → Terraform produces an empty tuple/list
+func configWidgetsNullOrEmpty(cfg cty.Value) bool {
+	w, ok := widgetsFromRawConfig(cfg)
+	if !ok {
+		return false
+	}
+	if w.IsNull() {
+		return true
+	}
+	return w.IsKnown() &&
+		(w.Type().IsListType() || w.Type().IsTupleType()) &&
+		w.LengthInt() == 0
+}
+
+// widgetsFromRawConfig extracts the widgets cty.Value from raw config. Returns false when
+// raw config is unavailable or not a proper object (e.g. some test helpers).
+func widgetsFromRawConfig(cfg cty.Value) (cty.Value, bool) {
+	if cfg == cty.NilVal || cfg.IsNull() || !cfg.IsKnown() {
+		return cty.NilVal, false
+	}
+	ty := cfg.Type()
+	if !ty.IsObjectType() || !ty.HasAttribute("widgets") {
+		return cty.NilVal, false
+	}
+	return cfg.GetAttr("widgets"), true
+}
+
 func resourceDashboardCreate(d *schema.ResourceData, m interface{}) error {
 	apiClient := m.(*client.APIClient)
 	api := (*dashboards.DashboardsAPIService)(&apiClient.Common)
@@ -151,18 +198,10 @@ func resourceDashboardUpdate(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	// Debug: log the widgets being sent
-	if widgets := update.GetWidgets(); len(widgets) > 0 {
-		for i, w := range widgets {
-			log.Printf("[DEBUG] Widget %d: %+v", i, w)
-		}
-	}
-
 	req := api.UpdateDashboard(d.Id()).Dashboard(*update)
 	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 	_, resp, err := req.Execute()
-
 	if err != nil {
 		log.Printf("[ERROR] API error updating ThousandEyes Dashboard %s: %v", d.Id(), err)
 		log.Printf("[ERROR] Failed to update ThousandEyes Dashboard req %v, resp %v", req, resp)
@@ -213,11 +252,9 @@ func buildDashboardStruct(d *schema.ResourceData) (*dashboards.Dashboard, error)
 			ts := timespanList[0].(map[string]interface{})
 			t := dashboards.DefaultTimespan{}
 
-			// duration comes as int from schema, cast appropriately
 			if dur, ok := ts["duration"].(int); ok && dur != 0 {
 				t.SetDuration(int64(dur))
 			}
-
 			if startStr, ok := ts["start"].(string); ok && startStr != "" {
 				if startTime, err := time.Parse(time.RFC3339, startStr); err == nil {
 					t.SetStart(startTime)
@@ -225,7 +262,6 @@ func buildDashboardStruct(d *schema.ResourceData) (*dashboards.Dashboard, error)
 					log.Printf("[WARN] Invalid start time: %s", startStr)
 				}
 			}
-
 			if endStr, ok := ts["end"].(string); ok && endStr != "" {
 				if endTime, err := time.Parse(time.RFC3339, endStr); err == nil {
 					t.SetEnd(endTime)
@@ -233,25 +269,28 @@ func buildDashboardStruct(d *schema.ResourceData) (*dashboards.Dashboard, error)
 					log.Printf("[WARN] Invalid end time: %s", endStr)
 				}
 			}
-
 			dashboard.SetDefaultTimespan(t)
 		}
 	}
 
-	// Handle widgets
-	if v, ok := d.GetOk("widgets"); ok {
-		widgetsList, ok := v.([]interface{})
-		if !ok {
-			return nil, fmt.Errorf("widgets: expected a list of objects, got %T", v)
-		}
-		if len(widgetsList) > 0 {
-			widgets, err := BuildWidgets(widgetsList)
-			if err != nil {
-				return nil, err
-			}
-			dashboard.SetWidgets(widgets)
-		}
+	// Always send an explicit widget slice — populated or empty — so the API
+	// performs a true replacement. For Optional+Computed TypeList attributes,
+	// d.Get returns the prior-state value when no blocks are written in config.
+	// We read the raw config instead to get the authoritative intended value.
+	var widgetList []interface{}
+	if configWidgetsNullOrEmpty(d.GetRawConfig()) {
+		widgetList = []interface{}{}
+	} else {
+		widgetList, _ = d.Get("widgets").([]interface{})
 	}
+	widgets, err := BuildWidgets(widgetList)
+	if err != nil {
+		return nil, err
+	}
+	if widgets == nil {
+		widgets = []dashboards.ApiWidget{}
+	}
+	dashboard.SetWidgets(widgets)
 
 	return dashboard, nil
 }
