@@ -16,7 +16,7 @@ type unsupportedWidgetTestStub struct{}
 
 func TestMapWidgetNilInstance(t *testing.T) {
 	data, err := MapWidget(dashboards.ApiWidget{})
-	assert.NoError(t, err)
+	assert.Error(t, err)
 	assert.Nil(t, data)
 }
 
