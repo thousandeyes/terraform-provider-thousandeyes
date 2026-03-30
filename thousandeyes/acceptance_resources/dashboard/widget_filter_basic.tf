@@ -24,7 +24,7 @@ resource "thousandeyes_dashboard" "test_dashboard_filter_widget" {
 
     filter {
       property = "INSIGHTS_NETWORK"
-      values   = [4230, 32133]
+      values   = [32133, 262287, 46606]
     }
 
     timeseries_config {
