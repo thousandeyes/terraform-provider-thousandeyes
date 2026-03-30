@@ -58,3 +58,34 @@ func TestMapAllWidgetsPropagatesMapperError(t *testing.T) {
 	require.Error(t, err)
 	assert.Equal(t, boom, err)
 }
+
+func TestBuildWidgetRequiresType(t *testing.T) {
+	_, err := BuildWidget(map[string]interface{}{"title": "x"})
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "type")
+
+	_, err = BuildWidget(map[string]interface{}{"type": ""})
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "type")
+}
+
+func TestBuildWidgetUnsupportedType(t *testing.T) {
+	_, err := BuildWidget(map[string]interface{}{"type": "Color Grid"})
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "unsupported widget type")
+}
+
+func TestBuildWidgetsRejectsNonObject(t *testing.T) {
+	_, err := BuildWidgets([]interface{}{"not-a-map"})
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "widgets.0")
+}
+
+func TestBuildWidgetsWrapsBuildWidgetError(t *testing.T) {
+	_, err := BuildWidgets([]interface{}{
+		map[string]interface{}{"type": "Time Series: Line", "title": "ok"},
+		map[string]interface{}{"type": "Unknown Widget"},
+	})
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "widgets.1")
+}

@@ -43,18 +43,18 @@ var widgetRegistry = map[string]WidgetTypeRegistry{
 }
 
 // BuildWidget builds an API widget from Terraform data using the appropriate builder
-func BuildWidget(data map[string]interface{}) dashboards.ApiWidget {
+func BuildWidget(data map[string]interface{}) (dashboards.ApiWidget, error) {
 	widgetType, ok := data["type"].(string)
-	if !ok {
-		return dashboards.ApiWidget{}
+	if !ok || widgetType == "" {
+		return dashboards.ApiWidget{}, fmt.Errorf("type is required and must be a non-empty string")
 	}
 
 	registry, exists := widgetRegistry[widgetType]
 	if !exists {
-		return dashboards.ApiWidget{}
+		return dashboards.ApiWidget{}, fmt.Errorf("unsupported widget type %q", widgetType)
 	}
 
-	return registry.Builder(data)
+	return registry.Builder(data), nil
 }
 
 // widgetTypeFromInstance maps a concrete API widget instance to the Terraform "type" string key.
@@ -104,19 +104,27 @@ func MapWidget(widget dashboards.ApiWidget) (map[string]interface{}, error) {
 }
 
 // BuildWidgets builds a slice of API widgets from Terraform data
-func BuildWidgets(widgetsData []interface{}) []dashboards.ApiWidget {
+func BuildWidgets(widgetsData []interface{}) ([]dashboards.ApiWidget, error) {
 	if len(widgetsData) == 0 {
-		return nil
+		return nil, nil
 	}
 
 	widgets := make([]dashboards.ApiWidget, 0, len(widgetsData))
-	for _, w := range widgetsData {
-		if widgetData, ok := w.(map[string]interface{}); ok {
-			widget := BuildWidget(widgetData)
-			widgets = append(widgets, widget)
+	for i, w := range widgetsData {
+		if w == nil {
+			return nil, fmt.Errorf("widgets.%d: must not be null", i)
 		}
+		widgetData, ok := w.(map[string]interface{})
+		if !ok {
+			return nil, fmt.Errorf("widgets.%d: expected object, got %T", i, w)
+		}
+		widget, err := BuildWidget(widgetData)
+		if err != nil {
+			return nil, fmt.Errorf("widgets.%d: %w", i, err)
+		}
+		widgets = append(widgets, widget)
 	}
-	return widgets
+	return widgets, nil
 }
 
 // mapAllWidgets maps each widget with mapOne (MapWidgets passes MapWidget).

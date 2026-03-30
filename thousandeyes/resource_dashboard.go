@@ -29,29 +29,63 @@ func resourceDashboard() *schema.Resource {
 }
 
 func resourceDashboardCustomizeDiff(_ context.Context, d *schema.ResourceDiff, meta interface{}) error {
-	widgets := d.Get("widgets").([]interface{})
+	raw := d.Get("widgets")
+	if raw == nil {
+		return nil
+	}
+	widgets, ok := raw.([]interface{})
+	if !ok {
+		return fmt.Errorf("widgets: expected a list of objects, got %T", raw)
+	}
 
 	for i, w := range widgets {
-		widget := w.(map[string]interface{})
-		widgetType := widget["type"].(string)
+		if w == nil {
+			return fmt.Errorf("widgets.%d: must not be null", i)
+		}
+		widget, ok := w.(map[string]interface{})
+		if !ok {
+			return fmt.Errorf("widgets.%d: expected object, got %T", i, w)
+		}
+		typeVal, ok := widget["type"]
+		if !ok || typeVal == nil {
+			return fmt.Errorf("widgets.%d: type is required", i)
+		}
+		widgetType, ok := typeVal.(string)
+		if !ok || widgetType == "" {
+			return fmt.Errorf("widgets.%d: type must be a non-empty string", i)
+		}
 
 		if widgetType == WidgetTypeStackedArea {
-			stackedAreaConfig := widget["stacked_area_config"].([]interface{})
+			rawCfg := widget["stacked_area_config"]
+			stackedAreaConfig, ok := rawCfg.([]interface{})
+			if !ok {
+				return fmt.Errorf("widgets.%d: stacked_area_config must be a list for widget type %q", i, WidgetTypeStackedArea)
+			}
 			if len(stackedAreaConfig) == 0 {
 				return fmt.Errorf("widgets.%d: stacked_area_config is required for widget type '%s'", i, WidgetTypeStackedArea)
 			}
-			config := stackedAreaConfig[0].(map[string]interface{})
+			config, ok := stackedAreaConfig[0].(map[string]interface{})
+			if !ok || config == nil {
+				return fmt.Errorf("widgets.%d: stacked_area_config.0 must be an object", i)
+			}
 			if groupBy, ok := config["group_by"].(string); !ok || groupBy == "" {
 				return fmt.Errorf("widgets.%d.stacked_area_config.group_by is required for widget type '%s'", i, WidgetTypeStackedArea)
 			}
 		}
 
 		if widgetType == WidgetTypePieChart {
-			pieChartConfig := widget["pie_chart_config"].([]interface{})
+			rawCfg := widget["pie_chart_config"]
+			pieChartConfig, ok := rawCfg.([]interface{})
+			if !ok {
+				return fmt.Errorf("widgets.%d: pie_chart_config must be a list for widget type %q", i, WidgetTypePieChart)
+			}
 			if len(pieChartConfig) == 0 {
 				return fmt.Errorf("widgets.%d: pie_chart_config is required for widget type '%s'", i, WidgetTypePieChart)
 			}
-			config := pieChartConfig[0].(map[string]interface{})
+			config, ok := pieChartConfig[0].(map[string]interface{})
+			if !ok || config == nil {
+				return fmt.Errorf("widgets.%d: pie_chart_config.0 must be an object", i)
+			}
 			if groupBy, ok := config["group_by"].(string); !ok || groupBy == "" {
 				return fmt.Errorf("widgets.%d.pie_chart_config.group_by is required for widget type '%s'", i, WidgetTypePieChart)
 			}
@@ -66,7 +100,10 @@ func resourceDashboardCreate(d *schema.ResourceData, m interface{}) error {
 	api := (*dashboards.DashboardsAPIService)(&apiClient.Common)
 
 	log.Printf("[INFO] Creating ThousandEyes Dashboard %s", d.Get("title"))
-	local := buildDashboardStruct(d)
+	local, err := buildDashboardStruct(d)
+	if err != nil {
+		return err
+	}
 
 	req := api.CreateDashboard().Dashboard(*local)
 	req = SetAidFromContext(apiClient.GetConfig().Context, req)
@@ -109,7 +146,10 @@ func resourceDashboardUpdate(d *schema.ResourceData, m interface{}) error {
 	api := (*dashboards.DashboardsAPIService)(&apiClient.Common)
 
 	log.Printf("[INFO] Updating ThousandEyes Dashboard %s", d.Id())
-	update := buildDashboardStruct(d)
+	update, err := buildDashboardStruct(d)
+	if err != nil {
+		return err
+	}
 
 	// Debug: log the widgets being sent
 	if widgets := update.GetWidgets(); len(widgets) > 0 {
@@ -148,7 +188,7 @@ func resourceDashboardDelete(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func buildDashboardStruct(d *schema.ResourceData) *dashboards.Dashboard {
+func buildDashboardStruct(d *schema.ResourceData) (*dashboards.Dashboard, error) {
 	dashboard := &dashboards.Dashboard{}
 
 	if v, ok := d.GetOk("title"); ok {
@@ -200,14 +240,20 @@ func buildDashboardStruct(d *schema.ResourceData) *dashboards.Dashboard {
 
 	// Handle widgets
 	if v, ok := d.GetOk("widgets"); ok {
-		widgetsList := v.([]interface{})
+		widgetsList, ok := v.([]interface{})
+		if !ok {
+			return nil, fmt.Errorf("widgets: expected a list of objects, got %T", v)
+		}
 		if len(widgetsList) > 0 {
-			widgets := BuildWidgets(widgetsList)
+			widgets, err := BuildWidgets(widgetsList)
+			if err != nil {
+				return nil, err
+			}
 			dashboard.SetWidgets(widgets)
 		}
 	}
 
-	return dashboard
+	return dashboard, nil
 }
 
 func resourceDataApiDashboardMapper(d *schema.ResourceData, dashboard dashboards.ApiDashboard) error {

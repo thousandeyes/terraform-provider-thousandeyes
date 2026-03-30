@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/thousandeyes/terraform-provider-thousandeyes/thousandeyes/schemas"
 	"github.com/thousandeyes/thousandeyes-sdk-go/v3/dashboards"
 )
@@ -146,7 +147,8 @@ func TestBuildDashboardStruct(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			d := schema.TestResourceDataRaw(t, schemas.DashboardSchema, tc.input)
-			result := buildDashboardStruct(d)
+			result, err := buildDashboardStruct(d)
+			require.NoError(t, err)
 			tc.validate(t, result)
 		})
 	}
