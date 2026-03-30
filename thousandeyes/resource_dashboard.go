@@ -280,7 +280,11 @@ func resourceDataApiDashboardMapper(d *schema.ResourceData, dashboard dashboards
 
 	// Handle widgets
 	if widgets := dashboard.GetWidgets(); len(widgets) > 0 {
-		if err := d.Set("widgets", MapWidgets(widgets)); err != nil {
+		mappedWidgets, err := MapWidgets(widgets)
+		if err != nil {
+			return err
+		}
+		if err := d.Set("widgets", mappedWidgets); err != nil {
 			return err
 		}
 	} else {

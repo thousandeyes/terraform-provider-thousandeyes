@@ -157,7 +157,8 @@ func TestMapPieChartWidget(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			widget := tc.input()
-			data := mapPieChartWidget(widget)
+			data, err := mapPieChartWidget(widget)
+			assert.NoError(t, err)
 			assert.NotNil(t, data)
 			tc.validate(t, data)
 		})
@@ -166,6 +167,7 @@ func TestMapPieChartWidget(t *testing.T) {
 
 func TestMapPieChartWidgetNil(t *testing.T) {
 	widget := dashboards.ApiWidget{}
-	data := mapPieChartWidget(widget)
+	data, err := mapPieChartWidget(widget)
+	assert.NoError(t, err)
 	assert.Nil(t, data)
 }

@@ -196,7 +196,8 @@ func TestMapBoxAndWhiskersWidget(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			widget := tc.input()
-			data := mapBoxAndWhiskersWidget(widget)
+			data, err := mapBoxAndWhiskersWidget(widget)
+			assert.NoError(t, err)
 			assert.NotNil(t, data)
 			tc.validate(t, data)
 		})
@@ -205,6 +206,7 @@ func TestMapBoxAndWhiskersWidget(t *testing.T) {
 
 func TestMapBoxAndWhiskersWidgetNil(t *testing.T) {
 	widget := dashboards.ApiWidget{}
-	data := mapBoxAndWhiskersWidget(widget)
+	data, err := mapBoxAndWhiskersWidget(widget)
+	assert.NoError(t, err)
 	assert.Nil(t, data)
 }

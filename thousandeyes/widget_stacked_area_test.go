@@ -196,7 +196,8 @@ func TestMapStackedAreaWidget(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			widget := tc.input()
-			data := mapStackedAreaWidget(widget)
+			data, err := mapStackedAreaWidget(widget)
+			assert.NoError(t, err)
 			assert.NotNil(t, data)
 			tc.validate(t, data)
 		})
@@ -205,6 +206,7 @@ func TestMapStackedAreaWidget(t *testing.T) {
 
 func TestMapStackedAreaWidgetNil(t *testing.T) {
 	widget := dashboards.ApiWidget{}
-	data := mapStackedAreaWidget(widget)
+	data, err := mapStackedAreaWidget(widget)
+	assert.NoError(t, err)
 	assert.Nil(t, data)
 }

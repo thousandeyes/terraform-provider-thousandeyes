@@ -8,10 +8,10 @@ import (
 )
 
 // mapGeoMapWidget maps a GeoMap widget to Terraform data
-func mapGeoMapWidget(widget dashboards.ApiWidget) map[string]interface{} {
+func mapGeoMapWidget(widget dashboards.ApiWidget) (map[string]interface{}, error) {
 	w := widget.ApiGeoMapWidget
 	if w == nil {
-		return nil
+		return nil, nil
 	}
 
 	data := map[string]interface{}{
@@ -45,14 +45,14 @@ func mapGeoMapWidget(widget dashboards.ApiWidget) map[string]interface{} {
 		data["geo_map_config"] = []interface{}{config}
 	}
 
-	return data
+	return data, nil
 }
 
 // mapListWidget maps a List widget to Terraform data
-func mapListWidget(widget dashboards.ApiWidget) map[string]interface{} {
+func mapListWidget(widget dashboards.ApiWidget) (map[string]interface{}, error) {
 	w := widget.ApiListWidget
 	if w == nil {
-		return nil
+		return nil, nil
 	}
 
 	data := map[string]interface{}{
@@ -79,14 +79,14 @@ func mapListWidget(widget dashboards.ApiWidget) map[string]interface{} {
 		data["list_config"] = []interface{}{config}
 	}
 
-	return data
+	return data, nil
 }
 
 // mapBoxAndWhiskersWidget maps a Box and Whiskers widget to Terraform data
-func mapBoxAndWhiskersWidget(widget dashboards.ApiWidget) map[string]interface{} {
+func mapBoxAndWhiskersWidget(widget dashboards.ApiWidget) (map[string]interface{}, error) {
 	w := widget.ApiBoxAndWhiskersWidget
 	if w == nil {
-		return nil
+		return nil, nil
 	}
 
 	data := map[string]interface{}{
@@ -117,14 +117,14 @@ func mapBoxAndWhiskersWidget(widget dashboards.ApiWidget) map[string]interface{}
 		data["box_and_whiskers_config"] = []interface{}{config}
 	}
 
-	return data
+	return data, nil
 }
 
 // mapPieChartWidget maps a Pie Chart widget to Terraform data
-func mapPieChartWidget(widget dashboards.ApiWidget) map[string]interface{} {
+func mapPieChartWidget(widget dashboards.ApiWidget) (map[string]interface{}, error) {
 	w := widget.ApiPieChartWidget
 	if w == nil {
-		return nil
+		return nil, nil
 	}
 
 	data := map[string]interface{}{
@@ -146,14 +146,14 @@ func mapPieChartWidget(widget dashboards.ApiWidget) map[string]interface{} {
 		data["pie_chart_config"] = []interface{}{config}
 	}
 
-	return data
+	return data, nil
 }
 
 // mapStackedAreaWidget maps a Stacked Area Chart widget to Terraform data
-func mapStackedAreaWidget(widget dashboards.ApiWidget) map[string]interface{} {
+func mapStackedAreaWidget(widget dashboards.ApiWidget) (map[string]interface{}, error) {
 	w := widget.ApiStackedAreaChartWidget
 	if w == nil {
-		return nil
+		return nil, nil
 	}
 
 	data := map[string]interface{}{
@@ -184,14 +184,14 @@ func mapStackedAreaWidget(widget dashboards.ApiWidget) map[string]interface{} {
 		data["stacked_area_config"] = []interface{}{config}
 	}
 
-	return data
+	return data, nil
 }
 
 // mapTimeseriesWidget maps a Timeseries widget to Terraform data
-func mapTimeseriesWidget(widget dashboards.ApiWidget) map[string]interface{} {
+func mapTimeseriesWidget(widget dashboards.ApiWidget) (map[string]interface{}, error) {
 	w := widget.ApiTimeseriesWidget
 	if w == nil {
-		return nil
+		return nil, nil
 	}
 
 	data := map[string]interface{}{
@@ -228,14 +228,14 @@ func mapTimeseriesWidget(widget dashboards.ApiWidget) map[string]interface{} {
 		data["timeseries_config"] = []interface{}{config}
 	}
 
-	return data
+	return data, nil
 }
 
 // mapAgentStatusWidget maps an Agent Status widget to Terraform data
-func mapAgentStatusWidget(widget dashboards.ApiWidget) map[string]interface{} {
+func mapAgentStatusWidget(widget dashboards.ApiWidget) (map[string]interface{}, error) {
 	w := widget.ApiAgentStatusWidget
 	if w == nil {
-		return nil
+		return nil, nil
 	}
 
 	data := map[string]interface{}{
@@ -260,7 +260,7 @@ func mapAgentStatusWidget(widget dashboards.ApiWidget) map[string]interface{} {
 		data["agent_status_config"] = []interface{}{config}
 	}
 
-	return data
+	return data, nil
 }
 
 // setCommonMapperFields sets common fields from any widget that has them

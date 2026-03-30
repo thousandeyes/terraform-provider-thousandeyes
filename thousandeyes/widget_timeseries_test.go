@@ -203,7 +203,8 @@ func TestMapTimeseriesWidget(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			widget := tc.input()
-			data := mapTimeseriesWidget(widget)
+			data, err := mapTimeseriesWidget(widget)
+			assert.NoError(t, err)
 			assert.NotNil(t, data)
 			tc.validate(t, data)
 		})
@@ -212,6 +213,7 @@ func TestMapTimeseriesWidget(t *testing.T) {
 
 func TestMapTimeseriesWidgetNil(t *testing.T) {
 	widget := dashboards.ApiWidget{}
-	data := mapTimeseriesWidget(widget)
+	data, err := mapTimeseriesWidget(widget)
+	assert.NoError(t, err)
 	assert.Nil(t, data)
 }

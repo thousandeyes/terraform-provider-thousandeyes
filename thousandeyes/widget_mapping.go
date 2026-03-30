@@ -1,6 +1,8 @@
 package thousandeyes
 
 import (
+	"fmt"
+
 	"github.com/thousandeyes/thousandeyes-sdk-go/v3/dashboards"
 )
 
@@ -21,7 +23,7 @@ type WidgetBuilder func(data map[string]interface{}) dashboards.ApiWidget
 
 // WidgetMapper maps an API widget back to Terraform resource data (map)
 // Used for Read operations
-type WidgetMapper func(widget dashboards.ApiWidget) map[string]interface{}
+type WidgetMapper func(widget dashboards.ApiWidget) (map[string]interface{}, error)
 
 // WidgetTypeRegistry maps widget type strings to their builder and mapper functions
 type WidgetTypeRegistry struct {
@@ -55,39 +57,51 @@ func BuildWidget(data map[string]interface{}) dashboards.ApiWidget {
 	return registry.Builder(data)
 }
 
-// MapWidget maps an API widget to Terraform data using the appropriate mapper
-func MapWidget(widget dashboards.ApiWidget) map[string]interface{} {
-	instance := widget.GetActualInstance()
-	if instance == nil {
-		return nil
-	}
-
-	var widgetType string
+// widgetTypeFromInstance maps a concrete API widget instance to the Terraform "type" string key.
+func widgetTypeFromInstance(instance interface{}) (string, error) {
 	switch instance.(type) {
 	case *dashboards.ApiGeoMapWidget:
-		widgetType = WidgetTypeMap
+		return WidgetTypeMap, nil
 	case *dashboards.ApiAgentStatusWidget:
-		widgetType = WidgetTypeAgentStatus
+		return WidgetTypeAgentStatus, nil
 	case *dashboards.ApiTimeseriesWidget:
-		widgetType = WidgetTypeTimeseriesLine
+		return WidgetTypeTimeseriesLine, nil
 	case *dashboards.ApiStackedAreaChartWidget:
-		widgetType = WidgetTypeStackedArea
+		return WidgetTypeStackedArea, nil
 	case *dashboards.ApiPieChartWidget:
-		widgetType = WidgetTypePieChart
+		return WidgetTypePieChart, nil
 	case *dashboards.ApiBoxAndWhiskersWidget:
-		widgetType = WidgetTypeBoxAndWhiskers
+		return WidgetTypeBoxAndWhiskers, nil
 	case *dashboards.ApiListWidget:
-		widgetType = WidgetTypeList
+		return WidgetTypeList, nil
 	default:
-		return nil
+		return "", fmt.Errorf("unknown widget type: %T", instance)
+	}
+}
+
+// mapWidgetWithInstance maps widget using the given concrete instance (same value SDK's GetActualInstance returns).
+// Tests use this with a synthetic type so unsupported-widget behavior does not depend on a specific SDK widget.
+func mapWidgetWithInstance(widget dashboards.ApiWidget, instance interface{}) (map[string]interface{}, error) {
+	if instance == nil {
+		return nil, nil
+	}
+
+	widgetType, err := widgetTypeFromInstance(instance)
+	if err != nil {
+		return nil, err
 	}
 
 	registry, exists := widgetRegistry[widgetType]
 	if !exists {
-		return nil
+		return nil, fmt.Errorf("no mapper registered for widget type: %s", widgetType)
 	}
 
 	return registry.Mapper(widget)
+}
+
+// MapWidget maps an API widget to Terraform data using the appropriate mapper
+func MapWidget(widget dashboards.ApiWidget) (map[string]interface{}, error) {
+	return mapWidgetWithInstance(widget, widget.GetActualInstance())
 }
 
 // BuildWidgets builds a slice of API widgets from Terraform data
@@ -106,19 +120,26 @@ func BuildWidgets(widgetsData []interface{}) []dashboards.ApiWidget {
 	return widgets
 }
 
-// MapWidgets maps a slice of API widgets to Terraform data
-func MapWidgets(widgets []dashboards.ApiWidget) []interface{} {
+// mapAllWidgets maps each widget with mapOne; used by MapWidgets and tests (inject mapOne to assert error propagation).
+func mapAllWidgets(widgets []dashboards.ApiWidget, mapOne func(dashboards.ApiWidget) (map[string]interface{}, error)) ([]interface{}, error) {
 	if len(widgets) == 0 {
-		return nil
+		return nil, nil
 	}
 
 	result := make([]interface{}, 0, len(widgets))
 	for _, widget := range widgets {
-		if mapped := MapWidget(widget); mapped != nil {
-			result = append(result, mapped)
+		mapped, err := mapOne(widget)
+		if err != nil {
+			return nil, err
 		}
+		result = append(result, mapped)
 	}
-	return result
+	return result, nil
+}
+
+// MapWidgets maps a slice of API widgets to Terraform data
+func MapWidgets(widgets []dashboards.ApiWidget) ([]interface{}, error) {
+	return mapAllWidgets(widgets, MapWidget)
 }
 
 // Helper functions for extracting values from map data
