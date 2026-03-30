@@ -59,17 +59,17 @@ func resourceDashboardCustomizeDiff(_ context.Context, d *schema.ResourceDiff, m
 			rawCfg := widget["stacked_area_config"]
 			stackedAreaConfig, ok := rawCfg.([]interface{})
 			if !ok {
-				return fmt.Errorf("widgets.%d: stacked_area_config must be a list for widget type %q", i, WidgetTypeStackedArea)
+				return fmt.Errorf("widgets[%d]: stacked_area_config must be a list for widget type %q", i, WidgetTypeStackedArea)
 			}
 			if len(stackedAreaConfig) == 0 {
-				return fmt.Errorf("widgets.%d: stacked_area_config is required for widget type '%s'", i, WidgetTypeStackedArea)
+				return fmt.Errorf("widgets[%d]: stacked_area_config is required for widget type '%s'", i, WidgetTypeStackedArea)
 			}
 			config, ok := stackedAreaConfig[0].(map[string]interface{})
 			if !ok || config == nil {
 				return fmt.Errorf("widgets.%d: stacked_area_config.0 must be an object", i)
 			}
 			if groupBy, ok := config["group_by"].(string); !ok || groupBy == "" {
-				return fmt.Errorf("widgets.%d.stacked_area_config.group_by is required for widget type '%s'", i, WidgetTypeStackedArea)
+				return fmt.Errorf("widgets[%d].stacked_area_config.group_by is required for widget type '%s'", i, WidgetTypeStackedArea)
 			}
 		}
 
@@ -77,17 +77,17 @@ func resourceDashboardCustomizeDiff(_ context.Context, d *schema.ResourceDiff, m
 			rawCfg := widget["pie_chart_config"]
 			pieChartConfig, ok := rawCfg.([]interface{})
 			if !ok {
-				return fmt.Errorf("widgets.%d: pie_chart_config must be a list for widget type %q", i, WidgetTypePieChart)
+				return fmt.Errorf("widgets[%d]: pie_chart_config must be a list for widget type %q", i, WidgetTypePieChart)
 			}
 			if len(pieChartConfig) == 0 {
-				return fmt.Errorf("widgets.%d: pie_chart_config is required for widget type '%s'", i, WidgetTypePieChart)
+				return fmt.Errorf("widgets[%d]: pie_chart_config is required for widget type '%s'", i, WidgetTypePieChart)
 			}
 			config, ok := pieChartConfig[0].(map[string]interface{})
 			if !ok || config == nil {
 				return fmt.Errorf("widgets.%d: pie_chart_config.0 must be an object", i)
 			}
 			if groupBy, ok := config["group_by"].(string); !ok || groupBy == "" {
-				return fmt.Errorf("widgets.%d.pie_chart_config.group_by is required for widget type '%s'", i, WidgetTypePieChart)
+				return fmt.Errorf("widgets[%d].pie_chart_config.group_by is required for widget type '%s'", i, WidgetTypePieChart)
 			}
 		}
 	}
