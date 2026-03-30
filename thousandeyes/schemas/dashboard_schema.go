@@ -12,7 +12,7 @@ var DashboardSchema = map[string]*schema.Schema{
 	// id
 	"id": {
 		Type:        schema.TypeString,
-		Description: "The tag ID.",
+		Description: "The dashboard ID.",
 		Computed:    true,
 	},
 	// aid
