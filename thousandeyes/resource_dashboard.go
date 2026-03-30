@@ -40,19 +40,19 @@ func resourceDashboardCustomizeDiff(_ context.Context, d *schema.ResourceDiff, m
 
 	for i, w := range widgets {
 		if w == nil {
-			return fmt.Errorf("widgets.%d: must not be null", i)
+			return fmt.Errorf("widgets[%d]: must not be null", i)
 		}
 		widget, ok := w.(map[string]interface{})
 		if !ok {
-			return fmt.Errorf("widgets.%d: expected object, got %T", i, w)
+			return fmt.Errorf("widgets[%d]: expected object, got %T", i, w)
 		}
 		typeVal, ok := widget["type"]
 		if !ok || typeVal == nil {
-			return fmt.Errorf("widgets.%d: type is required", i)
+			return fmt.Errorf("widgets[%d]: type is required", i)
 		}
 		widgetType, ok := typeVal.(string)
 		if !ok || widgetType == "" {
-			return fmt.Errorf("widgets.%d: type must be a non-empty string", i)
+			return fmt.Errorf("widgets[%d]: type must be a non-empty string", i)
 		}
 
 		if widgetType == WidgetTypeStackedArea {
