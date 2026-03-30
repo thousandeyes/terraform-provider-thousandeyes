@@ -79,8 +79,7 @@ func widgetTypeFromInstance(instance interface{}) (string, error) {
 	}
 }
 
-// mapWidgetWithInstance maps widget using the given concrete instance (same value SDK's GetActualInstance returns).
-// Tests use this with a synthetic type so unsupported-widget behavior does not depend on a specific SDK widget.
+// mapWidgetWithInstance maps using instance as returned by GetActualInstance (tests may pass a synthetic type).
 func mapWidgetWithInstance(widget dashboards.ApiWidget, instance interface{}) (map[string]interface{}, error) {
 	if instance == nil {
 		return nil, nil
@@ -120,7 +119,7 @@ func BuildWidgets(widgetsData []interface{}) []dashboards.ApiWidget {
 	return widgets
 }
 
-// mapAllWidgets maps each widget with mapOne; used by MapWidgets and tests (inject mapOne to assert error propagation).
+// mapAllWidgets maps each widget with mapOne (MapWidgets passes MapWidget).
 func mapAllWidgets(widgets []dashboards.ApiWidget, mapOne func(dashboards.ApiWidget) (map[string]interface{}, error)) ([]interface{}, error) {
 	if len(widgets) == 0 {
 		return nil, nil
