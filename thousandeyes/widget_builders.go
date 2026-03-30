@@ -1,6 +1,9 @@
 package thousandeyes
 
 import (
+	"sort"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/thousandeyes/thousandeyes-sdk-go/v3/dashboards"
 )
 
@@ -265,10 +268,18 @@ func setCommonBuilderFields(widget interface{}, data map[string]interface{}) {
 			if property == "" {
 				continue
 			}
-			var values []interface{}
-			if valuesRaw, ok := filterData["values"].([]interface{}); ok {
-				values = valuesRaw
+		var values []interface{}
+		if valuesSet, ok := filterData["values"].(*schema.Set); ok {
+			strs := make([]string, 0, valuesSet.Len())
+			for _, v := range valuesSet.List() {
+				strs = append(strs, v.(string))
 			}
+			sort.Strings(strs)
+			values = make([]interface{}, len(strs))
+			for i, s := range strs {
+				values[i] = s
+			}
+		}
 			if len(values) > 0 {
 				apiFilters[property] = values
 			}

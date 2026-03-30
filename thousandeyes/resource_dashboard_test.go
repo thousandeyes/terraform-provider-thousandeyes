@@ -24,6 +24,7 @@ func TestAccThousandEyesDashboard(t *testing.T) {
 	var resourceNamePieChartWidget = "thousandeyes_dashboard.test_dashboard_pie_chart_widget"
 	var resourceNameBoxAndWhiskersDefaults = "thousandeyes_dashboard.test_dashboard_box_and_whiskers_defaults"
 	var resourceNameBoxAndWhiskersWidget = "thousandeyes_dashboard.test_dashboard_box_and_whiskers_widget"
+	var resourceNameFilterWidget = "thousandeyes_dashboard.test_dashboard_filter_widget"
 	//var resourceNameListWidget = "thousandeyes_dashboard.test_dashboard_list_widget"
 	var testCases = []struct {
 		name                 string
@@ -377,6 +378,33 @@ func TestAccThousandEyesDashboard(t *testing.T) {
 				resource.TestCheckResourceAttr(resourceNameBoxAndWhiskersWidget, "widgets.0.fixed_timespan.0.value", "1"),
 				resource.TestCheckResourceAttr(resourceNameBoxAndWhiskersWidget, "widgets.0.fixed_timespan.0.unit", "Days"),
 				resource.TestCheckResourceAttr(resourceNameBoxAndWhiskersWidget, "widgets.0.box_and_whiskers_config.0.group_by", "CONTINENT"),
+			},
+		},
+		{
+			name:                 "create_update_delete_dashboard_filter_widget_test",
+			createResourceFile:   "acceptance_resources/dashboard/widget_filter_basic.tf",
+			updateResourceFile:   "acceptance_resources/dashboard/widget_filter_update.tf",
+			resourceName:         resourceNameFilterWidget,
+			checkDestroyFunction: testAccCheckDashboardResourceDestroy,
+			checkCreateFunc: []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(resourceNameFilterWidget, "title", "Test Dashboard Filter Widget"),
+				resource.TestCheckResourceAttr(resourceNameFilterWidget, "description", "Test Dashboard with Widget Filter"),
+				resource.TestCheckResourceAttr(resourceNameFilterWidget, "widgets.0.type", "Time Series: Line"),
+				resource.TestCheckResourceAttr(resourceNameFilterWidget, "widgets.0.filter.#", "1"),
+				resource.TestCheckResourceAttr(resourceNameFilterWidget, "widgets.0.filter.0.property", "INSIGHTS_NETWORK"),
+				resource.TestCheckResourceAttr(resourceNameFilterWidget, "widgets.0.filter.0.values.#", "2"),
+				resource.TestCheckTypeSetElemAttr(resourceNameFilterWidget, "widgets.0.filter.0.values.*", "32133"),
+				resource.TestCheckTypeSetElemAttr(resourceNameFilterWidget, "widgets.0.filter.0.values.*", "4230"),
+			},
+			checkUpdateFunc: []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(resourceNameFilterWidget, "title", "Test Dashboard Filter Widget (Updated)"),
+				resource.TestCheckResourceAttr(resourceNameFilterWidget, "description", "Test Dashboard with Widget Filter (Updated)"),
+				resource.TestCheckResourceAttr(resourceNameFilterWidget, "widgets.0.type", "Time Series: Line"),
+				resource.TestCheckResourceAttr(resourceNameFilterWidget, "widgets.0.filter.#", "1"),
+				resource.TestCheckResourceAttr(resourceNameFilterWidget, "widgets.0.filter.0.property", "INSIGHTS_NETWORK"),
+				resource.TestCheckResourceAttr(resourceNameFilterWidget, "widgets.0.filter.0.values.#", "2"),
+				resource.TestCheckTypeSetElemAttr(resourceNameFilterWidget, "widgets.0.filter.0.values.*", "32133"),
+				resource.TestCheckTypeSetElemAttr(resourceNameFilterWidget, "widgets.0.filter.0.values.*", "4230"),
 			},
 		},
 		// This API is return invalid sortDirection

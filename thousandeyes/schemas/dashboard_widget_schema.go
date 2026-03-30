@@ -133,8 +133,8 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 					Required:    true,
 				},
 				"values": {
-					Type:        schema.TypeList,
-					Description: "List of filter values (IDs).",
+					Type:        schema.TypeSet,
+					Description: "Set of filter values (IDs). Order is not significant.",
 					Required:    true,
 					Elem:        &schema.Schema{Type: schema.TypeString},
 				},

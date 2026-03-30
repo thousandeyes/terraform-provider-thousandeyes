@@ -260,7 +260,7 @@ Optional:
 Required:
 
 - `property` (String) Filter property (e.g., 'TEST', 'AGENT', 'ENDPOINT_MACHINE_ID', 'MONITOR').
-- `values` (List of String) List of filter values (IDs).
+- `values` (Set of String) Set of filter values (IDs). Order is not significant.
 
 
 <a id="nestedblock--widgets--fixed_timespan"></a>
