@@ -22,11 +22,11 @@ resource "thousandeyes_http_server" "example_http_server_test" {
 
 ## Header Behavior
 
-This branch treats `headers` and `custom_headers` as mutually exclusive inputs.
+The provider treats `headers` and `custom_headers` as mutually exclusive inputs.
 
 - If `headers` is configured, the provider sends only `headers` to the API and suppresses `custom_headers` in Terraform state.
 - If `custom_headers` is configured, the provider sends only `custom_headers` to the API and suppresses `headers` in Terraform state.
-- If both are configured at the same time, Terraform returns an error and asks you to choose a single source of truth.
+- If both are configured at the same time, Terraform returns an error asking you to choose a single source of truth.
 
 Use `headers` when you want to manage request headers as `"Name: value"` strings:
 

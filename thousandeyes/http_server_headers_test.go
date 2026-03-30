@@ -43,6 +43,20 @@ func TestTerraformHTTPServerCustomHeadersValue_preservesAllSections(t *testing.T
 	}
 }
 
+func TestTerraformHTTPServerCustomHeadersValue_nilReturnsEmpty(t *testing.T) {
+	got := terraformHTTPServerCustomHeadersValue(nil)
+	if len(got) != 0 {
+		t.Fatalf("expected empty slice for nil custom headers, got %#v", got)
+	}
+}
+
+func TestTerraformHTTPServerCustomHeadersValue_allNilFieldsReturnsEmpty(t *testing.T) {
+	got := terraformHTTPServerCustomHeadersValue(&tests.TestCustomHeaders{})
+	if len(got) != 0 {
+		t.Fatalf("expected empty slice for zero-value custom headers, got %#v", got)
+	}
+}
+
 func TestRawConfigCustomHeadersAllowsEmptyBlock(t *testing.T) {
 	empty := &mockRawConfigReader{
 		values: map[string]mockRawConfigValue{
@@ -56,6 +70,15 @@ func TestRawConfigCustomHeadersAllowsEmptyBlock(t *testing.T) {
 	}
 	if got != nil {
 		t.Fatalf("expected nil custom headers for empty block, got %#v", got)
+	}
+}
+
+func TestRawConfigCustomHeadersNotConfigured(t *testing.T) {
+	reader := &mockRawConfigReader{values: map[string]mockRawConfigValue{}}
+
+	_, ok := rawConfigCustomHeaders(reader)
+	if ok {
+		t.Fatalf("expected not-configured when custom_headers is absent from raw config")
 	}
 }
 
@@ -85,6 +108,77 @@ func TestRawConfigHeaderStringsSortsValues(t *testing.T) {
 		t.Fatalf("unexpected header order: got %#v want %#v", got, want)
 	}
 }
+
+func TestRawConfigHeaderStringsTrimsWhitespace(t *testing.T) {
+	reader := &mockRawConfigReader{
+		values: map[string]mockRawConfigValue{
+			"headers": {
+				present: true,
+				list:    []string{"  Content-Type: application/json  "},
+			},
+		},
+	}
+
+	got, ok := rawConfigHeaderStrings(reader)
+	if !ok {
+		t.Fatalf("expected headers to be configured")
+	}
+	if got[0] != "Content-Type: application/json" {
+		t.Fatalf("expected trimmed header, got %q", got[0])
+	}
+}
+
+func TestRawConfigHeaderStringsNotConfigured(t *testing.T) {
+	reader := &mockRawConfigReader{values: map[string]mockRawConfigValue{}}
+
+	_, ok := rawConfigHeaderStrings(reader)
+	if ok {
+		t.Fatalf("expected not-configured when headers is absent from raw config")
+	}
+}
+
+func TestHttpHeaderSourceMode_headersConfigured(t *testing.T) {
+	reader := &mockRawConfigReader{
+		values: map[string]mockRawConfigValue{
+			"headers": {present: true, list: []string{"X-Test: 1"}},
+		},
+	}
+	if mode := httpHeaderSourceMode(reader); mode != httpHeaderSourceModeHeaders {
+		t.Fatalf("expected %q, got %q", httpHeaderSourceModeHeaders, mode)
+	}
+}
+
+func TestHttpHeaderSourceMode_customHeadersConfigured(t *testing.T) {
+	reader := &mockRawConfigReader{
+		values: map[string]mockRawConfigValue{
+			"custom_headers": {present: true, block: map[string]mockRawConfigValue{}},
+		},
+	}
+	if mode := httpHeaderSourceMode(reader); mode != httpHeaderSourceModeCustomHeaders {
+		t.Fatalf("expected %q, got %q", httpHeaderSourceModeCustomHeaders, mode)
+	}
+}
+
+func TestHttpHeaderSourceMode_neitherConfiguredDefaultsToHeaders(t *testing.T) {
+	reader := &mockRawConfigReader{values: map[string]mockRawConfigValue{}}
+	if mode := httpHeaderSourceMode(reader); mode != httpHeaderSourceModeHeaders {
+		t.Fatalf("expected default %q, got %q", httpHeaderSourceModeHeaders, mode)
+	}
+}
+
+func TestHttpHeaderSourceMode_customHeadersTakesPrecedence(t *testing.T) {
+	reader := &mockRawConfigReader{
+		values: map[string]mockRawConfigValue{
+			"headers":        {present: true, list: []string{"X-Test: 1"}},
+			"custom_headers": {present: true, block: map[string]mockRawConfigValue{}},
+		},
+	}
+	if mode := httpHeaderSourceMode(reader); mode != httpHeaderSourceModeCustomHeaders {
+		t.Fatalf("expected %q when both present, got %q", httpHeaderSourceModeCustomHeaders, mode)
+	}
+}
+
+// --- mocks ---
 
 type mockRawConfigReader struct {
 	values map[string]mockRawConfigValue
