@@ -201,10 +201,9 @@ func resourceDashboardUpdate(d *schema.ResourceData, m interface{}) error {
 	req := api.UpdateDashboard(d.Id()).Dashboard(*update)
 	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
-	_, resp, err := req.Execute()
+	_, _, err = req.Execute()
 	if err != nil {
 		log.Printf("[ERROR] API error updating ThousandEyes Dashboard %s: %v", d.Id(), err)
-		log.Printf("[ERROR] Failed to update ThousandEyes Dashboard req %v, resp %v", req, resp)
 		return err
 	}
 
