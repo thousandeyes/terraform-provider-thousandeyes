@@ -63,6 +63,7 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 		Type:        schema.TypeString,
 		Description: "Direction for the metric (e.g., 'To Target', 'From Target', 'Bidirectional').",
 		Optional:    true,
+		Computed:    true,
 	},
 	"metric": {
 		Type:        schema.TypeString,
@@ -168,6 +169,7 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 					Type:        schema.TypeString,
 					Description: "Group by property.",
 					Optional:    true,
+					Computed:    true,
 				},
 				"is_geo_map_per_test": {
 					Type:        schema.TypeBool,
@@ -229,6 +231,7 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 					Type:        schema.TypeString,
 					Description: "Group by property.",
 					Optional:    true,
+					Computed:    true,
 				},
 				"show_timeseries_overall_baseline": {
 					Type:        schema.TypeBool,
@@ -323,6 +326,7 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 					Type:        schema.TypeString,
 					Description: "Group by property.",
 					Optional:    true,
+					Computed:    true,
 				},
 			},
 		},
