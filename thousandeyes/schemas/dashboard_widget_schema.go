@@ -119,6 +119,7 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 		Type:        schema.TypeString,
 		Description: "Data source for the widget.",
 		Optional:    true,
+		Computed:    true,
 	},
 	"filter": {
 		Type:        schema.TypeList,
