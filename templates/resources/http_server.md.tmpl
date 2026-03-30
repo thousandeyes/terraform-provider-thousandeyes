@@ -20,6 +20,8 @@ The provider treats `headers` and `custom_headers` as mutually exclusive inputs.
 - If `custom_headers` is configured, the provider sends only `custom_headers` to the API and suppresses `headers` in Terraform state.
 - If both are configured at the same time, Terraform returns an error asking you to choose a single source of truth.
 
+> **Recommendation:** Prefer `custom_headers` for new configurations. It provides finer-grained control by letting you scope headers to `root` (initial request only), `all` (every request), or specific `domains`, matching the options available in the ThousandEyes UI. The `headers` attribute is supported for backward compatibility.
+
 Use `headers` when you want to manage request headers as `"Name: value"` strings:
 
 ```terraform
