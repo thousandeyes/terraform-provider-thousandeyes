@@ -9,14 +9,15 @@ import (
 
 // Widget type constants
 const (
-	WidgetTypeMap            = "Map"
-	WidgetTypeAgentStatus    = "Agent Status"
-	WidgetTypeTimeseriesLine = "Time Series: Line"
-	WidgetTypeStackedArea    = "Time Series: Stacked Area"
-	WidgetTypePieChart       = "Pie Chart"
-	WidgetTypeBoxAndWhiskers = "Box and Whiskers"
-	WidgetTypeList           = "List"
-	WidgetTypeNumber         = "Number"
+	WidgetTypeMap              = "Map"
+	WidgetTypeAgentStatus      = "Agent Status"
+	WidgetTypeTimeseriesLine   = "Time Series: Line"
+	WidgetTypeStackedArea      = "Time Series: Stacked Area"
+	WidgetTypePieChart         = "Pie Chart"
+	WidgetTypeBoxAndWhiskers   = "Box and Whiskers"
+	WidgetTypeList             = "List"
+	WidgetTypeNumber           = "Number"
+	WidgetTypeMultiMetricTable = "Multi Metric Table"
 )
 
 // WidgetBuilder builds an API widget from Terraform resource data (map)
@@ -35,14 +36,15 @@ type WidgetTypeRegistry struct {
 
 // widgetRegistry holds the mapping functions for each widget type
 var widgetRegistry = map[string]WidgetTypeRegistry{
-	WidgetTypeMap:            {Builder: buildGeoMapWidget, Mapper: mapGeoMapWidget},
-	WidgetTypeAgentStatus:    {Builder: buildAgentStatusWidget, Mapper: mapAgentStatusWidget},
-	WidgetTypeTimeseriesLine: {Builder: buildTimeseriesWidget, Mapper: mapTimeseriesWidget},
-	WidgetTypeStackedArea:    {Builder: buildStackedAreaWidget, Mapper: mapStackedAreaWidget},
-	WidgetTypePieChart:       {Builder: buildPieChartWidget, Mapper: mapPieChartWidget},
-	WidgetTypeBoxAndWhiskers: {Builder: buildBoxAndWhiskersWidget, Mapper: mapBoxAndWhiskersWidget},
-	WidgetTypeList:           {Builder: buildListWidget, Mapper: mapListWidget},
-	WidgetTypeNumber:         {Builder: buildNumberWidget, Mapper: mapNumberWidget},
+	WidgetTypeMap:              {Builder: buildGeoMapWidget, Mapper: mapGeoMapWidget},
+	WidgetTypeAgentStatus:      {Builder: buildAgentStatusWidget, Mapper: mapAgentStatusWidget},
+	WidgetTypeTimeseriesLine:   {Builder: buildTimeseriesWidget, Mapper: mapTimeseriesWidget},
+	WidgetTypeStackedArea:      {Builder: buildStackedAreaWidget, Mapper: mapStackedAreaWidget},
+	WidgetTypePieChart:         {Builder: buildPieChartWidget, Mapper: mapPieChartWidget},
+	WidgetTypeBoxAndWhiskers:   {Builder: buildBoxAndWhiskersWidget, Mapper: mapBoxAndWhiskersWidget},
+	WidgetTypeList:             {Builder: buildListWidget, Mapper: mapListWidget},
+	WidgetTypeNumber:           {Builder: buildNumberWidget, Mapper: mapNumberWidget},
+	WidgetTypeMultiMetricTable: {Builder: buildMultiMetricTableWidget, Mapper: mapMultiMetricTableWidget},
 }
 
 // BuildWidget builds an API widget from Terraform data using the appropriate builder
@@ -79,6 +81,8 @@ func widgetTypeFromInstance(instance interface{}) (string, error) {
 		return WidgetTypeList, nil
 	case *dashboards.ApiNumbersCardWidget:
 		return WidgetTypeNumber, nil
+	case *dashboards.ApiMultiMetricTableWidget:
+		return WidgetTypeMultiMetricTable, nil
 	default:
 		return "", nil
 	}

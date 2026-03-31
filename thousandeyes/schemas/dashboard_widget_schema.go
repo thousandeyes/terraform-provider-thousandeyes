@@ -21,6 +21,7 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 			"Box and Whiskers",
 			"List",
 			"Number",
+			"Multi Metric Table",
 		}, false),
 	},
 
@@ -367,6 +368,46 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 			Schema: NumberCardSchema,
 		},
 	},
+
+	// Type-specific: Multi Metric Table configuration
+	"multi_metric_table_config": {
+		Type:        schema.TypeList,
+		Description: "Configuration for Multi Metric Table widgets.",
+		Optional:    true,
+		Computed:    true,
+		MaxItems:    1,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"compare_to_previous_value": {
+					Type:        schema.TypeBool,
+					Description: "Enables comparison of the current metric value with the previous value.",
+					Optional:    true,
+				},
+				"row_group_by": {
+					Type:        schema.TypeString,
+					Description: "Property to group rows by.",
+					Optional:    true,
+					Computed:    true,
+				},
+				"limit": {
+					Type:        schema.TypeInt,
+					Description: "Maximum number of rows displayed.",
+					Optional:    true,
+				},
+			},
+		},
+	},
+
+	// Type-specific: Multi Metric Columns (for "Multi Metric Table" type)
+	"multi_metric_columns": {
+		Type:        schema.TypeList,
+		Description: "List of columns within a Multi Metric Table widget. Each column has its own data source, metric, and measure.",
+		Optional:    true,
+		Computed:    true,
+		Elem: &schema.Resource{
+			Schema: MultiMetricColumnSchema,
+		},
+	},
 }
 
 var NumberCardSchema = map[string]*schema.Schema{
@@ -478,12 +519,82 @@ var NumberCardSchema = map[string]*schema.Schema{
 					Description: "Filter property.",
 					Required:    true,
 				},
-			"values": {
-				Type:        schema.TypeSet,
-				Description: "Set of filter values (IDs). Order is not significant.",
-				Required:    true,
-				Elem:        &schema.Schema{Type: schema.TypeString},
+				"values": {
+					Type:        schema.TypeSet,
+					Description: "Set of filter values (IDs). Order is not significant.",
+					Required:    true,
+					Elem:        &schema.Schema{Type: schema.TypeString},
+				},
 			},
+		},
+	},
+}
+
+var MultiMetricColumnSchema = map[string]*schema.Schema{
+	"id": {
+		Type:        schema.TypeString,
+		Description: "Identifier of the column.",
+		Computed:    true,
+	},
+	"data_source": {
+		Type:        schema.TypeString,
+		Description: "Data source for the column.",
+		Optional:    true,
+		Computed:    true,
+	},
+	"metric_group": {
+		Type:        schema.TypeString,
+		Description: "Metric group for the column.",
+		Optional:    true,
+	},
+	"direction": {
+		Type:        schema.TypeString,
+		Description: "Direction for the metric.",
+		Optional:    true,
+		Computed:    true,
+	},
+	"metric": {
+		Type:        schema.TypeString,
+		Description: "Metric for the column.",
+		Optional:    true,
+	},
+	"measure": {
+		Type:        schema.TypeList,
+		Description: "Measure configuration for the column.",
+		Optional:    true,
+		MaxItems:    1,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"type": {
+					Type:        schema.TypeString,
+					Description: "Measure type.",
+					Optional:    true,
+				},
+				"percentile_value": {
+					Type:        schema.TypeFloat,
+					Description: "Percentile value when type is NTH_PERCENTILE.",
+					Optional:    true,
+				},
+			},
+		},
+	},
+	"filter": {
+		Type:        schema.TypeList,
+		Description: "Filters applied to the column.",
+		Optional:    true,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"property": {
+					Type:        schema.TypeString,
+					Description: "Filter property.",
+					Required:    true,
+				},
+				"values": {
+					Type:        schema.TypeSet,
+					Description: "Set of filter values (IDs). Order is not significant.",
+					Required:    true,
+					Elem:        &schema.Schema{Type: schema.TypeString},
+				},
 			},
 		},
 	},

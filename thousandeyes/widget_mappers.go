@@ -359,6 +359,87 @@ func mapNumberCards(cards []dashboards.ApiNumbersCard) []interface{} {
 	return result
 }
 
+// mapMultiMetricTableWidget maps a Multi Metric Table widget to Terraform data
+func mapMultiMetricTableWidget(widget dashboards.ApiWidget) (map[string]interface{}, error) {
+	w := widget.ApiMultiMetricTableWidget
+	if w == nil {
+		return nil, nil
+	}
+
+	data := map[string]interface{}{
+		"type": "Multi Metric Table",
+	}
+	setCommonWidgetFields(data, w.GetId(), w.GetTitle(), w.GetEmbedUrl(), w.GetIsEmbedded(), string(w.GetVisualMode()))
+	setCommonMapperFields(data, w)
+
+	if v := w.GetDataSource(); v != "" {
+		data["data_source"] = string(v)
+	}
+
+	config := map[string]interface{}{}
+	if v, ok := w.GetCompareToPreviousValueOk(); ok && v != nil {
+		config["compare_to_previous_value"] = *v
+	}
+	if v := w.GetRowGroupBy(); v != "" {
+		config["row_group_by"] = string(v)
+	}
+	if v, ok := w.GetLimitOk(); ok && v != nil {
+		config["limit"] = int(*v)
+	}
+	if len(config) > 0 {
+		data["multi_metric_table_config"] = []interface{}{config}
+	}
+
+	if columns := w.GetMultiMetricColumns(); len(columns) > 0 {
+		data["multi_metric_columns"] = mapMultiMetricColumns(columns)
+	}
+
+	return data, nil
+}
+
+func mapMultiMetricColumns(columns []dashboards.ApiMultiMetricColumn) []interface{} {
+	result := make([]interface{}, 0, len(columns))
+	for _, col := range columns {
+		colData := map[string]interface{}{}
+
+		if v := col.GetId(); v != "" {
+			colData["id"] = v
+		}
+		if v := col.GetDataSource(); v != "" {
+			colData["data_source"] = string(v)
+		}
+		if v := col.GetMetricGroup(); v != "" {
+			colData["metric_group"] = string(v)
+		}
+		if v := col.GetDirection(); v != "" {
+			colData["direction"] = string(v)
+		}
+		if v := col.GetMetric(); v != "" {
+			colData["metric"] = string(v)
+		}
+
+		if measure, ok := col.GetMeasureOk(); ok && measure != nil {
+			measureMap := map[string]interface{}{}
+			if measureType := measure.GetType(); measureType != "" {
+				measureMap["type"] = string(measureType)
+			}
+			if percentile, ok := measure.GetPercentileValueOk(); ok && percentile != nil {
+				measureMap["percentile_value"] = float64(*percentile)
+			}
+			if len(measureMap) > 0 {
+				colData["measure"] = []interface{}{measureMap}
+			}
+		}
+
+		if filters, ok := col.GetFiltersOk(); ok && filters != nil && len(*filters) > 0 {
+			colData["filter"] = mapFilterBlocks(*filters)
+		}
+
+		result = append(result, colData)
+	}
+	return result
+}
+
 // mapFilterBlocks converts SDK filter map to Terraform filter blocks with stable ordering.
 func mapFilterBlocks(filters map[string][]interface{}) []interface{} {
 	properties := make([]string, 0, len(filters))

@@ -29,6 +29,8 @@ func TestAccThousandEyesDashboard(t *testing.T) {
 	var resourceNameNumberDefaults = "thousandeyes_dashboard.test_dashboard_number_defaults"
 	var resourceNameNumberWidget = "thousandeyes_dashboard.test_dashboard_number_widget"
 	var resourceNameListWidget = "thousandeyes_dashboard.test_dashboard_list_widget"
+	var resourceNameMultiMetricTableDefaults = "thousandeyes_dashboard.test_dashboard_multi_metric_table_defaults"
+	var resourceNameMultiMetricTableWidget = "thousandeyes_dashboard.test_dashboard_multi_metric_table_widget"
 	var testCases = []struct {
 		name                 string
 		createResourceFile   string
@@ -496,6 +498,59 @@ func TestAccThousandEyesDashboard(t *testing.T) {
 				resource.TestCheckResourceAttr(resourceNameListWidget, "widgets.0.measure.0.type", "MEAN"),
 				resource.TestCheckResourceAttr(resourceNameListWidget, "widgets.0.list_config.0.active_within_value", "14"),
 				resource.TestCheckResourceAttr(resourceNameListWidget, "widgets.0.list_config.0.active_within_unit", "Days"),
+			},
+		},
+		{
+			name:                 "create_dashboard_multi_metric_table_defaults_test",
+			createResourceFile:   "acceptance_resources/dashboard/widget_multi_metric_table_defaults.tf",
+			updateResourceFile:   "acceptance_resources/dashboard/widget_multi_metric_table_defaults.tf",
+			resourceName:         resourceNameMultiMetricTableDefaults,
+			checkDestroyFunction: testAccCheckDashboardResourceDestroy,
+			checkCreateFunc: []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(resourceNameMultiMetricTableDefaults, "title", "Test Dashboard Multi Metric Table Defaults"),
+				resource.TestCheckResourceAttr(resourceNameMultiMetricTableDefaults, "widgets.0.type", "Multi Metric Table"),
+				resource.TestCheckResourceAttr(resourceNameMultiMetricTableDefaults, "widgets.0.title", "Multi Metric Table With Defaults"),
+				resource.TestCheckResourceAttr(resourceNameMultiMetricTableDefaults, "widgets.0.data_source", "ALERTS"),
+			},
+			checkUpdateFunc: []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(resourceNameMultiMetricTableDefaults, "title", "Test Dashboard Multi Metric Table Defaults"),
+				resource.TestCheckResourceAttr(resourceNameMultiMetricTableDefaults, "widgets.0.type", "Multi Metric Table"),
+			},
+		},
+		{
+			name:                 "create_update_delete_dashboard_multi_metric_table_widget_test",
+			createResourceFile:   "acceptance_resources/dashboard/widget_multi_metric_table_basic.tf",
+			updateResourceFile:   "acceptance_resources/dashboard/widget_multi_metric_table_update.tf",
+			resourceName:         resourceNameMultiMetricTableWidget,
+			checkDestroyFunction: testAccCheckDashboardResourceDestroy,
+			checkCreateFunc: []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(resourceNameMultiMetricTableWidget, "title", "Test Dashboard Multi Metric Table Widget"),
+				resource.TestCheckResourceAttr(resourceNameMultiMetricTableWidget, "description", "Test Dashboard with Multi Metric Table Widget"),
+				resource.TestCheckResourceAttr(resourceNameMultiMetricTableWidget, "widgets.0.type", "Multi Metric Table"),
+				resource.TestCheckResourceAttr(resourceNameMultiMetricTableWidget, "widgets.0.title", "Test Multi Metric Table Widget"),
+				resource.TestCheckResourceAttr(resourceNameMultiMetricTableWidget, "widgets.0.visual_mode", "Full"),
+				resource.TestCheckResourceAttr(resourceNameMultiMetricTableWidget, "widgets.0.data_source", "ALERTS"),
+				resource.TestCheckResourceAttr(resourceNameMultiMetricTableWidget, "widgets.0.measure.0.type", "MEAN"),
+				resource.TestCheckResourceAttr(resourceNameMultiMetricTableWidget, "widgets.0.multi_metric_table_config.0.compare_to_previous_value", "true"),
+				resource.TestCheckResourceAttr(resourceNameMultiMetricTableWidget, "widgets.0.multi_metric_table_config.0.row_group_by", "TESTS"),
+				resource.TestCheckResourceAttr(resourceNameMultiMetricTableWidget, "widgets.0.multi_metric_table_config.0.limit", "10"),
+				resource.TestCheckResourceAttr(resourceNameMultiMetricTableWidget, "widgets.0.multi_metric_columns.#", "2"),
+				resource.TestCheckResourceAttr(resourceNameMultiMetricTableWidget, "widgets.0.multi_metric_columns.0.data_source", "ALERTS"),
+				resource.TestCheckResourceAttr(resourceNameMultiMetricTableWidget, "widgets.0.multi_metric_columns.0.metric_group", "ALERTS"),
+				resource.TestCheckResourceAttr(resourceNameMultiMetricTableWidget, "widgets.0.multi_metric_columns.0.metric", "ALERT_COUNT_AGENT"),
+				resource.TestCheckResourceAttr(resourceNameMultiMetricTableWidget, "widgets.0.multi_metric_columns.0.measure.0.type", "MEAN"),
+				resource.TestCheckResourceAttr(resourceNameMultiMetricTableWidget, "widgets.0.multi_metric_columns.1.metric", "ACTIVE_ALERT_COUNT"),
+				resource.TestCheckResourceAttr(resourceNameMultiMetricTableWidget, "widgets.0.multi_metric_columns.1.measure.0.type", "MEAN"),
+			},
+			checkUpdateFunc: []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(resourceNameMultiMetricTableWidget, "title", "Test Dashboard Multi Metric Table Widget (Updated)"),
+				resource.TestCheckResourceAttr(resourceNameMultiMetricTableWidget, "description", "Test Dashboard with Multi Metric Table Widget (Updated)"),
+				resource.TestCheckResourceAttr(resourceNameMultiMetricTableWidget, "widgets.0.type", "Multi Metric Table"),
+				resource.TestCheckResourceAttr(resourceNameMultiMetricTableWidget, "widgets.0.title", "Test Multi Metric Table Widget (Updated)"),
+				resource.TestCheckResourceAttr(resourceNameMultiMetricTableWidget, "widgets.0.multi_metric_table_config.0.compare_to_previous_value", "false"),
+				resource.TestCheckResourceAttr(resourceNameMultiMetricTableWidget, "widgets.0.multi_metric_table_config.0.limit", "20"),
+				resource.TestCheckResourceAttr(resourceNameMultiMetricTableWidget, "widgets.0.multi_metric_columns.#", "3"),
+				resource.TestCheckResourceAttr(resourceNameMultiMetricTableWidget, "widgets.0.multi_metric_columns.2.measure.0.type", "TOTAL"),
 			},
 		},
 	}
