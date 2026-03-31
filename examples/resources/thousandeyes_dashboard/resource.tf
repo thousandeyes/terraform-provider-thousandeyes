@@ -181,7 +181,6 @@ resource "thousandeyes_dashboard" "example" {
     type        = "Multi Metric Table"
     title       = "Multi Metric Table Widget"
     visual_mode = "Full"
-    data_source = "ALERTS"
 
     measure {
       type = "MEAN"
@@ -196,7 +195,7 @@ resource "thousandeyes_dashboard" "example" {
     multi_metric_columns {
       data_source  = "ALERTS"
       metric_group = "ALERTS"
-      metric       = "ALERT_COUNT_AGENT"
+      metric       = "ALERT_COUNT"
       measure {
         type = "MEAN"
       }
@@ -205,9 +204,9 @@ resource "thousandeyes_dashboard" "example" {
     multi_metric_columns {
       data_source  = "ALERTS"
       metric_group = "ALERTS"
-      metric       = "ACTIVE_ALERT_COUNT"
+      metric       = "ALERT_COUNT"
       measure {
-        type = "MEAN"
+        type = "TOTAL"
       }
     }
   }

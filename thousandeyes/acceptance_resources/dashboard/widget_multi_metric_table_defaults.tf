@@ -6,11 +6,16 @@ resource "thousandeyes_dashboard" "test_dashboard_multi_metric_table_defaults" {
     duration = 3600
   }
   widgets {
-    type        = "Multi Metric Table"
-    title       = "Multi Metric Table With Defaults"
-    data_source = "ALERTS"
-    measure {
-      type = "MEAN"
+    type  = "Multi Metric Table"
+    title = "Multi Metric Table With Defaults"
+
+    multi_metric_columns {
+      data_source  = "ALERTS"
+      metric_group = "ALERTS"
+      metric       = "ALERT_COUNT"
+      measure {
+        type = "MEAN"
+      }
     }
   }
 }
