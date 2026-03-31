@@ -276,10 +276,6 @@ func mapNumberWidget(widget dashboards.ApiWidget) (map[string]interface{}, error
 	setCommonWidgetFields(data, w.GetId(), w.GetTitle(), w.GetEmbedUrl(), w.GetIsEmbedded(), string(w.GetVisualMode()))
 	setCommonMapperFields(data, w)
 
-	if v := w.GetDataSource(); v != "" {
-		data["data_source"] = string(v)
-	}
-
 	if cards := w.GetNumberCards(); len(cards) > 0 {
 		data["number_cards"] = mapNumberCards(cards)
 	}

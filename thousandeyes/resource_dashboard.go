@@ -107,6 +107,14 @@ func resourceDashboardCustomizeDiff(_ context.Context, d *schema.ResourceDiff, m
 				return fmt.Errorf("widgets[%d].pie_chart_config.group_by is required for widget type '%s'", i, WidgetTypePieChart)
 			}
 		}
+
+		if widgetType == WidgetTypeNumber {
+			if rawDataSource, exists := widget["data_source"]; exists {
+				if dataSource, ok := rawDataSource.(string); ok && dataSource != "" {
+					return fmt.Errorf("widgets[%d]: data_source is not supported for widget type '%s'; set data_source on each number_cards block instead", i, WidgetTypeNumber)
+				}
+			}
+		}
 	}
 
 	return nil

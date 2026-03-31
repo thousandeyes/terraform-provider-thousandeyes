@@ -168,7 +168,6 @@ resource "thousandeyes_dashboard" "example" {
     type        = "Number"
     title       = "Number Widget"
     visual_mode = "Full"
-    data_source = "ALERTS"
 
     number_cards {
       description  = "Alert Count"

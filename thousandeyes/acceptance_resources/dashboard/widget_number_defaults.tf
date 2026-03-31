@@ -8,7 +8,6 @@ resource "thousandeyes_dashboard" "test_dashboard_number_defaults" {
   widgets {
     type        = "Number"
     title       = "Number With Defaults"
-    data_source = "ALERTS"
 
     number_cards {
       data_source  = "ALERTS"

@@ -19,7 +19,6 @@ func TestBuildNumberWidget(t *testing.T) {
 				"type":        "Number",
 				"title":       "Test Number",
 				"visual_mode": "Full",
-				"data_source": "CLOUD_AND_ENTERPRISE_AGENTS",
 			},
 			validate: func(t *testing.T, widget dashboards.ApiWidget) {
 				w := widget.ApiNumbersCardWidget
@@ -27,7 +26,8 @@ func TestBuildNumberWidget(t *testing.T) {
 				assert.Equal(t, "Number", w.GetType())
 				assert.Equal(t, "Test Number", w.GetTitle())
 				assert.Equal(t, dashboards.VisualMode("Full"), w.GetVisualMode())
-				assert.Equal(t, dashboards.NumbersCardDatasource("CLOUD_AND_ENTERPRISE_AGENTS"), w.GetDataSource())
+				_, ok := w.GetDataSourceOk()
+				assert.False(t, ok)
 			},
 		},
 		{
@@ -35,14 +35,12 @@ func TestBuildNumberWidget(t *testing.T) {
 			input: map[string]interface{}{
 				"type":        "Number",
 				"title":       "Multi-Card Number",
-				"data_source": "CLOUD_AND_ENTERPRISE_AGENTS",
 				"number_cards": []interface{}{
 					map[string]interface{}{
 						"description":  "Card 1",
 						"data_source":  "CLOUD_AND_ENTERPRISE_AGENTS",
-						"metric_group": "WEB_HTTP_SERVER",
-						"metric":       "RESPONSE_TIME",
-						"direction":    "TO_TARGET",
+						"metric_group": "HTTP_SERVER",
+						"metric":       "WEB_TTFB",
 						"measure": []interface{}{
 							map[string]interface{}{
 								"type": "MEAN",
@@ -52,7 +50,8 @@ func TestBuildNumberWidget(t *testing.T) {
 					map[string]interface{}{
 						"description": "Card 2",
 						"data_source": "CLOUD_AND_ENTERPRISE_AGENTS",
-						"metric":      "AVAILABILITY",
+						"metric_group": "HTTP_SERVER",
+						"metric":      "WEB_AVAILABILITY",
 						"measure": []interface{}{
 							map[string]interface{}{
 								"type": "MEAN",
@@ -69,14 +68,13 @@ func TestBuildNumberWidget(t *testing.T) {
 
 				assert.Equal(t, "Card 1", cards[0].GetDescription())
 				assert.Equal(t, dashboards.NumbersCardDatasource("CLOUD_AND_ENTERPRISE_AGENTS"), cards[0].GetDataSource())
-				assert.Equal(t, dashboards.MetricGroup("WEB_HTTP_SERVER"), cards[0].GetMetricGroup())
-				assert.Equal(t, dashboards.DashboardMetric("RESPONSE_TIME"), cards[0].GetMetric())
-				assert.Equal(t, dashboards.DashboardMetricDirection("TO_TARGET"), cards[0].GetDirection())
+				assert.Equal(t, dashboards.MetricGroup("HTTP_SERVER"), cards[0].GetMetricGroup())
+				assert.Equal(t, dashboards.DashboardMetric("WEB_TTFB"), cards[0].GetMetric())
 				measure := cards[0].GetMeasure()
 				assert.Equal(t, dashboards.WidgetMeasureType("MEAN"), measure.GetType())
 
 				assert.Equal(t, "Card 2", cards[1].GetDescription())
-				assert.Equal(t, dashboards.DashboardMetric("AVAILABILITY"), cards[1].GetMetric())
+				assert.Equal(t, dashboards.DashboardMetric("WEB_AVAILABILITY"), cards[1].GetMetric())
 			},
 		},
 		{
@@ -131,9 +129,8 @@ func TestBuildNumberWidget(t *testing.T) {
 		{
 			name: "removing all cards sends empty array",
 			input: map[string]interface{}{
-				"type":        "Number",
-				"title":       "Empty Cards",
-				"data_source": "CLOUD_AND_ENTERPRISE_AGENTS",
+				"type":  "Number",
+				"title": "Empty Cards",
 			},
 			validate: func(t *testing.T, widget dashboards.ApiWidget) {
 				w := widget.ApiNumbersCardWidget
@@ -166,7 +163,6 @@ func TestMapNumberWidget(t *testing.T) {
 				w.SetId("widget-num-1")
 				w.SetTitle("Test Number")
 				w.SetVisualMode(dashboards.VisualMode("Full"))
-				w.SetDataSource(dashboards.NumbersCardDatasource("CLOUD_AND_ENTERPRISE_AGENTS"))
 				return dashboards.ApiNumbersCardWidgetAsApiWidget(w)
 			},
 			validate: func(t *testing.T, data map[string]interface{}) {
@@ -174,7 +170,7 @@ func TestMapNumberWidget(t *testing.T) {
 				assert.Equal(t, "widget-num-1", data["id"])
 				assert.Equal(t, "Test Number", data["title"])
 				assert.Equal(t, "Full", data["visual_mode"])
-				assert.Equal(t, "CLOUD_AND_ENTERPRISE_AGENTS", data["data_source"])
+				assert.NotContains(t, data, "data_source")
 			},
 		},
 		{
@@ -182,15 +178,13 @@ func TestMapNumberWidget(t *testing.T) {
 			input: func() dashboards.ApiWidget {
 				w := dashboards.NewApiNumbersCardWidget("Number")
 				w.SetTitle("Multi-Card")
-				w.SetDataSource(dashboards.NumbersCardDatasource("CLOUD_AND_ENTERPRISE_AGENTS"))
 
 				card1 := dashboards.NewApiNumbersCard()
 				card1.SetId("card-1")
 				card1.SetDescription("Response Time")
 				card1.SetDataSource(dashboards.NumbersCardDatasource("CLOUD_AND_ENTERPRISE_AGENTS"))
-				card1.SetMetricGroup(dashboards.MetricGroup("WEB_HTTP_SERVER"))
-				card1.SetMetric(dashboards.DashboardMetric("RESPONSE_TIME"))
-				card1.SetDirection(dashboards.DashboardMetricDirection("TO_TARGET"))
+				card1.SetMetricGroup(dashboards.MetricGroup("HTTP_SERVER"))
+				card1.SetMetric(dashboards.DashboardMetric("WEB_TTFB"))
 				measure := dashboards.NewApiWidgetMeasure()
 				measure.SetType(dashboards.WidgetMeasureType("MEAN"))
 				card1.SetMeasure(*measure)
@@ -198,7 +192,8 @@ func TestMapNumberWidget(t *testing.T) {
 				card2 := dashboards.NewApiNumbersCard()
 				card2.SetId("card-2")
 				card2.SetDescription("Availability")
-				card2.SetMetric(dashboards.DashboardMetric("AVAILABILITY"))
+				card2.SetMetricGroup(dashboards.MetricGroup("HTTP_SERVER"))
+				card2.SetMetric(dashboards.DashboardMetric("WEB_AVAILABILITY"))
 
 				w.SetNumberCards([]dashboards.ApiNumbersCard{*card1, *card2})
 				return dashboards.ApiNumbersCardWidgetAsApiWidget(w)
@@ -214,9 +209,8 @@ func TestMapNumberWidget(t *testing.T) {
 				assert.Equal(t, "card-1", c1["id"])
 				assert.Equal(t, "Response Time", c1["description"])
 				assert.Equal(t, "CLOUD_AND_ENTERPRISE_AGENTS", c1["data_source"])
-				assert.Equal(t, "WEB_HTTP_SERVER", c1["metric_group"])
-				assert.Equal(t, "RESPONSE_TIME", c1["metric"])
-				assert.Equal(t, "TO_TARGET", c1["direction"])
+				assert.Equal(t, "HTTP_SERVER", c1["metric_group"])
+				assert.Equal(t, "WEB_TTFB", c1["metric"])
 				measureList := c1["measure"].([]interface{})
 				assert.Len(t, measureList, 1)
 				measureMap := measureList[0].(map[string]interface{})
@@ -225,7 +219,7 @@ func TestMapNumberWidget(t *testing.T) {
 				c2 := cards[1].(map[string]interface{})
 				assert.Equal(t, "card-2", c2["id"])
 				assert.Equal(t, "Availability", c2["description"])
-				assert.Equal(t, "AVAILABILITY", c2["metric"])
+				assert.Equal(t, "WEB_AVAILABILITY", c2["metric"])
 			},
 		},
 		{

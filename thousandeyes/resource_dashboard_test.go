@@ -424,7 +424,6 @@ func TestAccThousandEyesDashboard(t *testing.T) {
 				resource.TestCheckResourceAttr(resourceNameNumberDefaults, "title", "Test Dashboard Number Defaults"),
 				resource.TestCheckResourceAttr(resourceNameNumberDefaults, "widgets.0.type", "Number"),
 				resource.TestCheckResourceAttr(resourceNameNumberDefaults, "widgets.0.title", "Number With Defaults"),
-				resource.TestCheckResourceAttr(resourceNameNumberDefaults, "widgets.0.data_source", "ALERTS"),
 				resource.TestCheckResourceAttr(resourceNameNumberDefaults, "widgets.0.number_cards.0.metric", "ALERT_COUNT_AGENT"),
 			},
 			checkUpdateFunc: []resource.TestCheckFunc{
@@ -444,7 +443,6 @@ func TestAccThousandEyesDashboard(t *testing.T) {
 				resource.TestCheckResourceAttr(resourceNameNumberWidget, "widgets.0.type", "Number"),
 				resource.TestCheckResourceAttr(resourceNameNumberWidget, "widgets.0.title", "Test Number Widget"),
 				resource.TestCheckResourceAttr(resourceNameNumberWidget, "widgets.0.visual_mode", "Full"),
-				resource.TestCheckResourceAttr(resourceNameNumberWidget, "widgets.0.data_source", "ALERTS"),
 				resource.TestCheckResourceAttr(resourceNameNumberWidget, "widgets.0.number_cards.0.description", "Alert Count"),
 				resource.TestCheckResourceAttr(resourceNameNumberWidget, "widgets.0.number_cards.0.data_source", "ALERTS"),
 				resource.TestCheckResourceAttr(resourceNameNumberWidget, "widgets.0.number_cards.0.metric_group", "ALERTS"),
@@ -462,7 +460,6 @@ func TestAccThousandEyesDashboard(t *testing.T) {
 				resource.TestCheckResourceAttr(resourceNameNumberWidget, "widgets.0.type", "Number"),
 				resource.TestCheckResourceAttr(resourceNameNumberWidget, "widgets.0.title", "Test Number Widget (Updated)"),
 				resource.TestCheckResourceAttr(resourceNameNumberWidget, "widgets.0.visual_mode", "Full"),
-				resource.TestCheckResourceAttr(resourceNameNumberWidget, "widgets.0.data_source", "ALERTS"),
 				resource.TestCheckResourceAttr(resourceNameNumberWidget, "widgets.0.number_cards.0.description", "Alert Count (Updated)"),
 				resource.TestCheckResourceAttr(resourceNameNumberWidget, "widgets.0.number_cards.0.fixed_timespan.0.value", "7"),
 				resource.TestCheckResourceAttr(resourceNameNumberWidget, "widgets.0.number_cards.0.fixed_timespan.0.unit", "Days"),

@@ -9,7 +9,6 @@ resource "thousandeyes_dashboard" "test_dashboard_number_widget" {
     type        = "Number"
     title       = "Test Number Widget (Updated)"
     visual_mode = "Full"
-    data_source = "ALERTS"
 
     number_cards {
       description  = "Alert Count (Updated)"

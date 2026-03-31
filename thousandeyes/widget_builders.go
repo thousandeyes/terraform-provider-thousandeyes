@@ -200,10 +200,6 @@ func buildNumberWidget(data map[string]interface{}) dashboards.ApiWidget {
 	widget := dashboards.NewApiNumbersCardWidget("Number")
 	setCommonBuilderFields(widget, data)
 
-	if dataSource := getStringValue(data, "data_source"); dataSource != "" {
-		widget.SetDataSource(dashboards.NumbersCardDatasource(dataSource))
-	}
-
 	cardsList := getListValue(data, "number_cards")
 	if len(cardsList) > 0 {
 		widget.SetNumberCards(buildNumberCards(cardsList))
