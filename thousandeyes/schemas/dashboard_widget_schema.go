@@ -549,7 +549,7 @@ var MultiMetricColumnSchema = map[string]*schema.Schema{
 	},
 	"direction": {
 		Type:        schema.TypeString,
-		Description: "Direction for the metric.",
+		Description: "Direction for the metric (e.g., TO_TARGET, FROM_TARGET). Only applicable to certain data sources.",
 		Optional:    true,
 		Computed:    true,
 	},

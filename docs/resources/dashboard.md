@@ -367,7 +367,7 @@ Optional:
 Optional:
 
 - `data_source` (String) Data source for the column.
-- `direction` (String) Direction for the metric.
+- `direction` (String) Direction for the metric (e.g., TO_TARGET, FROM_TARGET). Only applicable to certain data sources.
 - `filter` (Block List) Filters applied to the column. (see [below for nested schema](#nestedblock--widgets--multi_metric_columns--filter))
 - `measure` (Block List, Max: 1) Measure configuration for the column. (see [below for nested schema](#nestedblock--widgets--multi_metric_columns--measure))
 - `metric` (String) Metric for the column.
