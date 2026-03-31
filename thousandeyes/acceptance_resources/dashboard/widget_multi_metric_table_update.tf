@@ -12,8 +12,7 @@ resource "thousandeyes_dashboard" "test_dashboard_multi_metric_table_widget" {
 
     multi_metric_table_config {
       compare_to_previous_value = false
-      row_group_by              = "TESTS"
-      limit                     = 20
+      row_group_by              = "COUNTRY"
     }
 
     multi_metric_columns {
@@ -26,20 +25,21 @@ resource "thousandeyes_dashboard" "test_dashboard_multi_metric_table_widget" {
     }
 
     multi_metric_columns {
-      data_source  = "ALERTS"
-      metric_group = "ALERTS"
-      metric       = "ALERT_COUNT"
+      data_source  = "CLOUD_AND_ENTERPRISE_AGENTS"
+      metric_group = "HTTP_SERVER"
+      metric       = "WEB_FETCH"
       measure {
-        type = "TOTAL"
+        type = "MEAN"
       }
     }
 
     multi_metric_columns {
-      data_source  = "ALERTS"
-      metric_group = "ALERTS"
-      metric       = "ALERT_COUNT"
+      data_source  = "CLOUD_AND_ENTERPRISE_AGENTS"
+      metric_group = "HTTP_SERVER"
+      metric       = "WEB_FETCH"
       measure {
-        type = "MAXIMUM"
+        type = "NTH_PERCENTILE"
+        percentile_value = 99
       }
     }
   }

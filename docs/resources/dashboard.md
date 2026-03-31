@@ -189,11 +189,11 @@ resource "thousandeyes_dashboard" "example" {
     }
 
     multi_metric_columns {
-      data_source  = "ALERTS"
-      metric_group = "ALERTS"
-      metric       = "ALERT_COUNT"
+      data_source  = "CLOUD_AND_ENTERPRISE_AGENTS"
+      metric_group = "HTTP_SERVER"
+      metric       = "WEB_FETCH"
       measure {
-        type = "TOTAL"
+        type = "MEAN"
       }
     }
   }
