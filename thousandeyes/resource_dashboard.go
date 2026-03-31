@@ -191,6 +191,7 @@ func resourceDashboardRead(d *schema.ResourceData, m interface{}) error {
 func resourceDashboardUpdate(d *schema.ResourceData, m interface{}) error {
 	apiClient := m.(*client.APIClient)
 	api := (*dashboards.DashboardsAPIService)(&apiClient.Common)
+	ctx := apiClient.GetConfig().Context
 
 	log.Printf("[INFO] Updating ThousandEyes Dashboard %s", d.Id())
 	update, err := buildDashboardStruct(d)
@@ -198,8 +199,18 @@ func resourceDashboardUpdate(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
+	getReq := api.GetDashboard(d.Id())
+	getReq = SetAidFromContext(ctx, getReq)
+	existing, _, err := getReq.Execute()
+	if err != nil {
+		return fmt.Errorf("fetching current dashboard for merge: %w", err)
+	}
+
+	merged := mergeUnmanagedWidgets(update.GetWidgets(), existing.GetWidgets())
+	update.SetWidgets(merged)
+
 	req := api.UpdateDashboard(d.Id()).Dashboard(*update)
-	req = SetAidFromContext(apiClient.GetConfig().Context, req)
+	req = SetAidFromContext(ctx, req)
 
 	_, _, err = req.Execute()
 	if err != nil {

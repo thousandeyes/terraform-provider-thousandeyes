@@ -268,18 +268,18 @@ func setCommonBuilderFields(widget interface{}, data map[string]interface{}) {
 			if property == "" {
 				continue
 			}
-		var values []interface{}
-		if valuesSet, ok := filterData["values"].(*schema.Set); ok {
-			strs := make([]string, 0, valuesSet.Len())
-			for _, v := range valuesSet.List() {
-				strs = append(strs, v.(string))
+			var values []interface{}
+			if valuesSet, ok := filterData["values"].(*schema.Set); ok {
+				strs := make([]string, 0, valuesSet.Len())
+				for _, v := range valuesSet.List() {
+					strs = append(strs, v.(string))
+				}
+				sort.Strings(strs)
+				values = make([]interface{}, len(strs))
+				for i, s := range strs {
+					values[i] = s
+				}
 			}
-			sort.Strings(strs)
-			values = make([]interface{}, len(strs))
-			for i, s := range strs {
-				values[i] = s
-			}
-		}
 			if len(values) > 0 {
 				apiFilters[property] = values
 			}

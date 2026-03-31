@@ -2,6 +2,7 @@ package thousandeyes
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/thousandeyes/thousandeyes-sdk-go/v3/dashboards"
 )
@@ -75,7 +76,7 @@ func widgetTypeFromInstance(instance interface{}) (string, error) {
 	case *dashboards.ApiListWidget:
 		return WidgetTypeList, nil
 	default:
-		return "", fmt.Errorf("unknown widget type: %T", instance)
+		return "", nil
 	}
 }
 
@@ -88,6 +89,10 @@ func mapWidgetWithInstance(widget dashboards.ApiWidget, instance interface{}) (m
 	widgetType, err := widgetTypeFromInstance(instance)
 	if err != nil {
 		return nil, err
+	}
+	if widgetType == "" {
+		log.Printf("[WARN] Skipping unmanaged widget type: %T", instance)
+		return nil, nil
 	}
 
 	registry, exists := widgetRegistry[widgetType]
@@ -139,7 +144,9 @@ func mapAllWidgets(widgets []dashboards.ApiWidget, mapOne func(dashboards.ApiWid
 		if err != nil {
 			return nil, err
 		}
-		result = append(result, mapped)
+		if mapped != nil {
+			result = append(result, mapped)
+		}
 	}
 	return result, nil
 }
@@ -147,6 +154,39 @@ func mapAllWidgets(widgets []dashboards.ApiWidget, mapOne func(dashboards.ApiWid
 // MapWidgets maps a slice of API widgets to Terraform data
 func MapWidgets(widgets []dashboards.ApiWidget) ([]interface{}, error) {
 	return mapAllWidgets(widgets, MapWidget)
+}
+
+// isUnmanagedWidget reports whether the given API widget is a type not
+// supported by this provider's widget registry.
+func isUnmanagedWidget(w dashboards.ApiWidget) bool {
+	instance := w.GetActualInstance()
+	if instance == nil {
+		return false
+	}
+	wType, _ := widgetTypeFromInstance(instance)
+	return wType == ""
+}
+
+// mergeUnmanagedWidgets combines managed widgets from config with unmanaged
+// widgets from the current API state. Unmanaged widgets are kept at their
+// current positions; managed slots are filled in config order. Extra config
+// widgets (newly added) are appended at the end.
+func mergeUnmanagedWidgets(configWidgets, currentAPIWidgets []dashboards.ApiWidget) []dashboards.ApiWidget {
+	merged := make([]dashboards.ApiWidget, 0, len(currentAPIWidgets)+len(configWidgets))
+	mi := 0
+
+	for _, apiWidget := range currentAPIWidgets {
+		if isUnmanagedWidget(apiWidget) {
+			merged = append(merged, apiWidget)
+		} else if mi < len(configWidgets) {
+			merged = append(merged, configWidgets[mi])
+			mi++
+		}
+	}
+	for ; mi < len(configWidgets); mi++ {
+		merged = append(merged, configWidgets[mi])
+	}
+	return merged
 }
 
 // Helper functions for extracting values from map data

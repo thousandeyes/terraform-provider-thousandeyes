@@ -1,6 +1,7 @@
 package thousandeyes
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
@@ -512,6 +513,108 @@ func TestAccThousandEyesDashboard_removeAllWidgets(t *testing.T) {
 			},
 		},
 	})
+}
+
+// TestAccThousandEyesDashboard_preserveUnmanagedWidgets verifies that when a dashboard
+// contains widget types not supported by the provider, those widgets are preserved
+// across Terraform updates rather than being silently dropped.
+func TestAccThousandEyesDashboard_preserveUnmanagedWidgets(t *testing.T) {
+	resourceName := "thousandeyes_dashboard.test_dashboard_preserve_unmanaged"
+	var dashboardID string
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: providerFactories,
+		CheckDestroy:      testAccCheckDashboardResourceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccThousandEyesDashboardConfig("acceptance_resources/dashboard/widget_unmanaged_basic.tf"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "widgets.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "widgets.0.type", "Time Series: Line"),
+					resource.TestCheckResourceAttr(resourceName, "widgets.0.title", "Managed Timeseries Widget"),
+					func(s *terraform.State) error {
+						rs, ok := s.RootModule().Resources[resourceName]
+						if !ok {
+							return fmt.Errorf("resource not found: %s", resourceName)
+						}
+						dashboardID = rs.Primary.ID
+						return nil
+					},
+				),
+			},
+			{
+				PreConfig: func() {
+					addUnmanagedWidgetViaDashboardAPI(t, dashboardID)
+				},
+				Config: testAccThousandEyesDashboardConfig("acceptance_resources/dashboard/widget_unmanaged_update.tf"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "widgets.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "widgets.0.type", "Time Series: Line"),
+					resource.TestCheckResourceAttr(resourceName, "widgets.0.title", "Managed Timeseries Widget (Updated)"),
+					func(s *terraform.State) error {
+						return checkDashboardTotalWidgetCount(dashboardID, 2)
+					},
+				),
+			},
+		},
+	})
+}
+
+// addUnmanagedWidgetViaDashboardAPI adds a Color Grid widget (unsupported by the provider)
+// directly to the dashboard via the API, simulating a widget created outside Terraform.
+func addUnmanagedWidgetViaDashboardAPI(t *testing.T, dashboardID string) {
+	t.Helper()
+	api := (*dashboards.DashboardsAPIService)(&testClient.Common)
+	ctx := testClient.GetConfig().Context
+
+	getReq := api.GetDashboard(dashboardID)
+	getReq = SetAidFromContext(ctx, getReq)
+	existing, _, err := getReq.Execute()
+	if err != nil {
+		t.Fatalf("failed to GET dashboard %s: %v", dashboardID, err)
+	}
+
+	widgets := existing.GetWidgets()
+	colorGrid := dashboards.NewApiColorGridWidget("Color Grid")
+	colorGrid.SetTitle("Unmanaged Color Grid Widget")
+	widgets = append(widgets, dashboards.ApiColorGridWidgetAsApiWidget(colorGrid))
+
+	update := dashboards.Dashboard{}
+	update.SetTitle(existing.GetTitle())
+	update.SetDescription(existing.GetDescription())
+	update.SetIsPrivate(existing.GetIsPrivate())
+	if ts, ok := existing.GetDefaultTimespanOk(); ok && ts != nil {
+		update.SetDefaultTimespan(dashboards.DefaultTimespan{Duration: ts.Duration})
+	}
+	update.SetWidgets(widgets)
+
+	updateReq := api.UpdateDashboard(dashboardID).Dashboard(update)
+	updateReq = SetAidFromContext(ctx, updateReq)
+	if _, _, err := updateReq.Execute(); err != nil {
+		t.Fatalf("failed to add unmanaged widget to dashboard %s: %v", dashboardID, err)
+	}
+}
+
+// checkDashboardTotalWidgetCount verifies the dashboard has exactly the expected
+// number of widgets by querying the API directly (since unmanaged widgets are
+// filtered from Terraform state).
+func checkDashboardTotalWidgetCount(dashboardID string, expected int) error {
+	api := (*dashboards.DashboardsAPIService)(&testClient.Common)
+	ctx := testClient.GetConfig().Context
+
+	getReq := api.GetDashboard(dashboardID)
+	getReq = SetAidFromContext(ctx, getReq)
+	resp, _, err := getReq.Execute()
+	if err != nil {
+		return fmt.Errorf("failed to GET dashboard %s: %w", dashboardID, err)
+	}
+
+	actual := len(resp.GetWidgets())
+	if actual != expected {
+		return fmt.Errorf("expected %d total widgets on dashboard, got %d", expected, actual)
+	}
+	return nil
 }
 
 func testAccCheckDashboardResourceDestroy(s *terraform.State) error {
