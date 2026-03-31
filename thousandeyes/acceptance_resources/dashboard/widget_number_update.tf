@@ -11,10 +11,10 @@ resource "thousandeyes_dashboard" "test_dashboard_number_widget" {
     visual_mode = "Full"
 
     number_cards {
-      description  = "Alert Count (Updated)"
-      data_source  = "ALERTS"
-      metric_group = "ALERTS"
-      metric       = "ALERT_COUNT_AGENT"
+      description  = "CEA Availability (Updated)"
+      data_source  = "CLOUD_AND_ENTERPRISE_AGENTS"
+      metric_group = "HTTP_SERVER"
+      metric       = "WEB_AVAILABILITY"
 
       measure {
         type = "MEAN"
@@ -27,10 +27,10 @@ resource "thousandeyes_dashboard" "test_dashboard_number_widget" {
     }
 
     number_cards {
-      description  = "Active Alerts (Updated)"
+      description  = "Agent Alerts (Updated)"
       data_source  = "ALERTS"
       metric_group = "ALERTS"
-      metric       = "ACTIVE_ALERT_COUNT"
+      metric       = "ALERT_COUNT_AGENT"
 
       measure {
         type = "TOTAL"
