@@ -19,7 +19,9 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 			"Time Series: Stacked Area",
 			"Pie Chart",
 			"Box and Whiskers",
-			"List",
+			// "List" is temporarily disabled until the API returns valid
+			// sortDirection values (CP-2702). The SDK cannot deserialize the
+			// ASC/DESC values the API currently sends, breaking refresh.
 		}, false),
 	},
 
@@ -53,6 +55,7 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 		Type:        schema.TypeBool,
 		Description: "Set to true if widget is marked as embedded.",
 		Optional:    true,
+		Computed:    true,
 	},
 	"metric_group": {
 		Type:        schema.TypeString,
@@ -114,6 +117,7 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 		Type:        schema.TypeBool,
 		Description: "Excludes alert suppression window data if set to true.",
 		Optional:    true,
+		Computed:    true,
 	},
 	"data_source": {
 		Type:        schema.TypeString,
