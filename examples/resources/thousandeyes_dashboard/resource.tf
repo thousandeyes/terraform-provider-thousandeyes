@@ -182,13 +182,9 @@ resource "thousandeyes_dashboard" "example" {
     title       = "Multi Metric Table Widget"
     visual_mode = "Full"
 
-    measure {
-      type = "MEAN"
-    }
-
     multi_metric_table_config {
       compare_to_previous_value = true
-      row_group_by              = "TESTS"
+      row_group_by              = "COUNTRY"
       limit                     = 10
     }
 

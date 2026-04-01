@@ -169,13 +169,9 @@ resource "thousandeyes_dashboard" "example" {
     title       = "Multi Metric Table Widget"
     visual_mode = "Full"
 
-    measure {
-      type = "MEAN"
-    }
-
     multi_metric_table_config {
       compare_to_previous_value = true
-      row_group_by              = "TESTS"
+      row_group_by              = "COUNTRY"
       limit                     = 10
     }
 
@@ -319,7 +315,7 @@ Optional:
 Required:
 
 - `property` (String) Filter property (e.g., 'TEST', 'AGENT', 'ENDPOINT_MACHINE_ID', 'MONITOR').
-- `values` (List of String) List of filter values (IDs).
+- `values` (Set of String) Set of filter values (IDs). Order is not significant.
 
 
 <a id="nestedblock--widgets--fixed_timespan"></a>
@@ -383,7 +379,7 @@ Read-Only:
 Required:
 
 - `property` (String) Filter property.
-- `values` (List of String) List of filter values.
+- `values` (Set of String) Set of filter values (IDs). Order is not significant.
 
 
 <a id="nestedblock--widgets--multi_metric_columns--measure"></a>
