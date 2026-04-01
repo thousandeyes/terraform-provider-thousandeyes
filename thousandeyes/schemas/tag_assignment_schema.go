@@ -44,4 +44,4 @@ var TagAssignmentSchema = map[string]*schema.Schema{
 			},
 		},
 	},
-} 
+}
