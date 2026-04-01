@@ -16,6 +16,7 @@ func resourceTagAssignment() *schema.Resource {
 		Schema: ResourceSchemaBuild(tags.BulkTagAssignment{}, schemas.TagAssignmentSchema, nil),
 		Create: resourceTagAssignmentCreate,
 		Read:   resourceTagAssignmentRead,
+		Update: resourceTagAssignmentUpdate,
 		Delete: resourceTagAssignmentDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -73,9 +74,44 @@ func resourceTagAssignmentCreate(d *schema.ResourceData, m interface{}) error {
 	return resourceTagAssignmentRead(d, m)
 }
 
+func resourceTagAssignmentUpdate(d *schema.ResourceData, m interface{}) error {
+	apiClient := m.(*client.APIClient)
+	api := (*tags.TagAssignmentAPIService)(&apiClient.Common)
+
+	oldTagIDRaw, newTagIDRaw := d.GetChange("tag_id")
+	oldAssignmentsRaw, newAssignmentsRaw := d.GetChange("assignments")
+
+	oldTagID, oldLocal := buildTagAssignmentStructFromValues(oldTagIDRaw.(string), oldAssignmentsRaw)
+	newTagID, newLocal := buildTagAssignmentStructFromValues(newTagIDRaw.(string), newAssignmentsRaw)
+
+	log.Printf("[INFO] Updating ThousandEyes Tag assignment %s", d.Id())
+
+	oldReq := api.UnassignTag(*oldTagID).TagAssignment(*oldLocal)
+	oldReq = SetAidFromContext(apiClient.GetConfig().Context, oldReq)
+	if _, err := oldReq.Execute(); err != nil && !IsNotFoundError(err) {
+		return err
+	}
+
+	newReq := api.AssignTag(*newTagID).TagAssignment(*newLocal)
+	newReq = SetAidFromContext(apiClient.GetConfig().Context, newReq)
+
+	resp, _, err := newReq.Execute()
+	if err != nil {
+		return err
+	}
+
+	d.SetId(*resp.TagId)
+	return resourceTagAssignmentRead(d, m)
+}
+
 func buildTagAssignmentStruct(d *schema.ResourceData) (*string, *tags.TagAssignment) {
 	bulkTagAssignment := ResourceBuildStruct(d, &tags.BulkTagAssignment{})
 	return bulkTagAssignment.TagId, &tags.TagAssignment{Assignments: bulkTagAssignment.Assignments}
+}
+
+func buildTagAssignmentStructFromValues(tagID string, assignments interface{}) (*string, *tags.TagAssignment) {
+	expandedAssignments := FillValue(assignments, []tags.Assignment{}).([]tags.Assignment)
+	return &tagID, &tags.TagAssignment{Assignments: expandedAssignments}
 }
 
 func mapTagToBulkTagAssignment(in *tags.Tag) *tags.BulkTagAssignment {

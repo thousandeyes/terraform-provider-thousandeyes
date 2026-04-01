@@ -17,13 +17,11 @@ var TagAssignmentSchema = map[string]*schema.Schema{
 		Type:        schema.TypeString,
 		Description: "The ID of the tag to assign.",
 		Required:    true,
-		ForceNew:    true,
 	},
 	// assignments
 	"assignments": {
 		Description: "",
 		Required:    true,
-		ForceNew:    true,
 		Type:        schema.TypeSet,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
@@ -46,4 +44,4 @@ var TagAssignmentSchema = map[string]*schema.Schema{
 			},
 		},
 	},
-}
+} 
