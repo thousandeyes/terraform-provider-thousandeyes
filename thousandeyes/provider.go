@@ -82,11 +82,12 @@ func Provider() *schema.Provider {
 			"thousandeyes_dashboard":            resourceDashboard(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
-			"thousandeyes_account_group": dataSourceThousandeyesAccountGroup(),
-			"thousandeyes_agent":         dataSourceThousandeyesAgent(),
-			"thousandeyes_bgp_monitor":   dataSourceThousandeyesBGPMonitor(),
-			"thousandeyes_alert_rule":    dataSourceThousandeyesAlertRule(),
-			"thousandeyes_permission":    dataSourceThousandeyesPermission(),
+			"thousandeyes_account_group":    dataSourceThousandeyesAccountGroup(),
+			"thousandeyes_agent":            dataSourceThousandeyesAgent(),
+			"thousandeyes_bgp_monitor":      dataSourceThousandeyesBGPMonitor(),
+			"thousandeyes_alert_rule":       dataSourceThousandeyesAlertRule(),
+			"thousandeyes_permission":       dataSourceThousandeyesPermission(),
+			"thousandeyes_dashboard_filter": dataSourceThousandeyesDashboardFilter(),
 		},
 		ConfigureContextFunc: providerConfigureWithContext,
 	}
