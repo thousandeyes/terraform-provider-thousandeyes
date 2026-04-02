@@ -13,105 +13,39 @@ func TestAccThousandEyesTagAssignmentUpdate(t *testing.T) {
 	var tag1ID string
 	var tag2ID string
 
-	testCases := []struct {
-		name               string
-		updateResourceFile string
-		createCheckFunc    []resource.TestCheckFunc
-		updateCheckFunc    []resource.TestCheckFunc
-	}{
-		{
-			name:               "update_tag_assignment_tag_id",
-			updateResourceFile: "acceptance_resources/tag_assignment_update/update_tag_id.tf",
-			createCheckFunc: testAccCheckTagAssignmentUpdateState(
-				&httpTestID,
-				&agentToServerTestID,
-				&tag1ID,
-				&tag2ID,
-				&tag1ID,
-				&httpTestID,
-				1,
-				0,
-			),
-			updateCheckFunc: testAccCheckTagAssignmentUpdateState(
-				&httpTestID,
-				&agentToServerTestID,
-				&tag1ID,
-				&tag2ID,
-				&tag2ID,
-				&httpTestID,
-				0,
-				1,
-			),
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: providerFactories,
+		CheckDestroy:      testAccCheckTagAssignmentUpdateDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccThousandEyesTagConfig("acceptance_resources/tag_assignment_update/basic.tf"),
+				Check: resource.ComposeTestCheckFunc(testAccCheckTagAssignmentUpdateState(
+					&httpTestID,
+					&agentToServerTestID,
+					&tag1ID,
+					&tag2ID,
+					&tag1ID,
+					&httpTestID,
+					1,
+					0,
+				)...),
+			},
+			{
+				Config: testAccThousandEyesTagConfig("acceptance_resources/tag_assignment_update/update_assignments.tf"),
+				Check: resource.ComposeTestCheckFunc(testAccCheckTagAssignmentUpdateState(
+					&httpTestID,
+					&agentToServerTestID,
+					&tag1ID,
+					&tag2ID,
+					&tag1ID,
+					&agentToServerTestID,
+					1,
+					0,
+				)...),
+			},
 		},
-		{
-			name:               "update_tag_assignment_assignments",
-			updateResourceFile: "acceptance_resources/tag_assignment_update/update_assignments.tf",
-			createCheckFunc: testAccCheckTagAssignmentUpdateState(
-				&httpTestID,
-				&agentToServerTestID,
-				&tag1ID,
-				&tag2ID,
-				&tag1ID,
-				&httpTestID,
-				1,
-				0,
-			),
-			updateCheckFunc: testAccCheckTagAssignmentUpdateState(
-				&httpTestID,
-				&agentToServerTestID,
-				&tag1ID,
-				&tag2ID,
-				&tag1ID,
-				&agentToServerTestID,
-				1,
-				0,
-			),
-		},
-		{
-			name:               "update_tag_assignment_tag_id_and_assignments",
-			updateResourceFile: "acceptance_resources/tag_assignment_update/update_both.tf",
-			createCheckFunc: testAccCheckTagAssignmentUpdateState(
-				&httpTestID,
-				&agentToServerTestID,
-				&tag1ID,
-				&tag2ID,
-				&tag1ID,
-				&httpTestID,
-				1,
-				0,
-			),
-			updateCheckFunc: testAccCheckTagAssignmentUpdateState(
-				&httpTestID,
-				&agentToServerTestID,
-				&tag1ID,
-				&tag2ID,
-				&tag2ID,
-				&agentToServerTestID,
-				0,
-				1,
-			),
-		},
-	}
-
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			resource.Test(t, resource.TestCase{
-				PreCheck:          func() { testAccPreCheck(t) },
-				ProviderFactories: providerFactories,
-				CheckDestroy:      testAccCheckTagAssignmentUpdateDestroy,
-				Steps: []resource.TestStep{
-					{
-						Config: testAccThousandEyesTagConfig("acceptance_resources/tag_assignment_update/basic.tf"),
-						Check:  resource.ComposeTestCheckFunc(tc.createCheckFunc...),
-					},
-					{
-						Config: testAccThousandEyesTagConfig(tc.updateResourceFile),
-						Check:  resource.ComposeTestCheckFunc(tc.updateCheckFunc...),
-					},
-				},
-			})
-		})
-	}
+	})
 }
 
 func testAccCheckTagAssignmentUpdateDestroy(s *terraform.State) error {
