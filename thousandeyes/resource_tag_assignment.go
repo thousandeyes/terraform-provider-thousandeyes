@@ -86,21 +86,21 @@ func resourceTagAssignmentUpdate(d *schema.ResourceData, m interface{}) error {
 
 	log.Printf("[INFO] Updating ThousandEyes Tag assignment %s", d.Id())
 
-	oldReq := api.UnassignTag(*oldTagID).TagAssignment(*oldLocal)
-	oldReq = SetAidFromContext(apiClient.GetConfig().Context, oldReq)
-	if _, err := oldReq.Execute(); err != nil && !IsNotFoundError(err) {
+	assignmentsToAdd := newLocal.Assignments
+	assignmentsToRemove := oldLocal.Assignments
+	if *oldTagID == *newTagID {
+		assignmentsToAdd, assignmentsToRemove = diffTagAssignments(oldLocal.Assignments, newLocal.Assignments)
+	}
+
+	if err := applyTagAssignments(apiClient, api, *newTagID, assignmentsToAdd, true); err != nil {
+		return err
+	}
+	if err := applyTagAssignments(apiClient, api, *oldTagID, assignmentsToRemove, false); err != nil {
+		_ = applyTagAssignments(apiClient, api, *newTagID, assignmentsToAdd, false)
 		return err
 	}
 
-	newReq := api.AssignTag(*newTagID).TagAssignment(*newLocal)
-	newReq = SetAidFromContext(apiClient.GetConfig().Context, newReq)
-
-	resp, _, err := newReq.Execute()
-	if err != nil {
-		return err
-	}
-
-	d.SetId(*resp.TagId)
+	d.SetId(*newTagID)
 	return resourceTagAssignmentRead(d, m)
 }
 
@@ -110,8 +110,73 @@ func buildTagAssignmentStruct(d *schema.ResourceData) (*string, *tags.TagAssignm
 }
 
 func buildTagAssignmentStructFromValues(tagID string, assignments interface{}) (*string, *tags.TagAssignment) {
-	expandedAssignments := FillValue(assignments, []tags.Assignment{}).([]tags.Assignment)
-	return &tagID, &tags.TagAssignment{Assignments: expandedAssignments}
+	return &tagID, &tags.TagAssignment{
+		Assignments: FillValue(assignments, []tags.Assignment{}).([]tags.Assignment),
+	}
+}
+
+func applyTagAssignments(apiClient *client.APIClient, api *tags.TagAssignmentAPIService, tagID string, assignments []tags.Assignment, assign bool) error {
+	if len(assignments) == 0 {
+		return nil
+	}
+
+	tagAssignment := tags.TagAssignment{Assignments: assignments}
+	if assign {
+		req := api.AssignTag(tagID).TagAssignment(tagAssignment)
+		req = SetAidFromContext(apiClient.GetConfig().Context, req)
+		_, _, err := req.Execute()
+		return err
+	}
+
+	req := api.UnassignTag(tagID).TagAssignment(tagAssignment)
+	req = SetAidFromContext(apiClient.GetConfig().Context, req)
+	_, err := req.Execute()
+	if err != nil && !IsNotFoundError(err) {
+		return err
+	}
+	return nil
+}
+
+func diffTagAssignments(oldAssignments []tags.Assignment, newAssignments []tags.Assignment) ([]tags.Assignment, []tags.Assignment) {
+	oldByKey := make(map[string]tags.Assignment, len(oldAssignments))
+	newByKey := make(map[string]tags.Assignment, len(newAssignments))
+
+	for _, assignment := range oldAssignments {
+		oldByKey[tagAssignmentKey(assignment)] = assignment
+	}
+	for _, assignment := range newAssignments {
+		newByKey[tagAssignmentKey(assignment)] = assignment
+	}
+
+	addedAssignments := make([]tags.Assignment, 0)
+	for key, assignment := range newByKey {
+		if _, exists := oldByKey[key]; !exists {
+			addedAssignments = append(addedAssignments, assignment)
+		}
+	}
+
+	removedAssignments := make([]tags.Assignment, 0)
+	for key, assignment := range oldByKey {
+		if _, exists := newByKey[key]; !exists {
+			removedAssignments = append(removedAssignments, assignment)
+		}
+	}
+
+	return addedAssignments, removedAssignments
+}
+
+func tagAssignmentKey(assignment tags.Assignment) string {
+	var id string
+	if assignment.Id != nil {
+		id = *assignment.Id
+	}
+
+	var assignmentType string
+	if assignment.Type != nil {
+		assignmentType = string(*assignment.Type)
+	}
+
+	return assignmentType + "|" + id
 }
 
 func mapTagToBulkTagAssignment(in *tags.Tag) *tags.BulkTagAssignment {
