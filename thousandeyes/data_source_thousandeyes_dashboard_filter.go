@@ -12,7 +12,6 @@ import (
 func dataSourceThousandeyesDashboardFilter() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceDashboardFilterRead,
-
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:        schema.TypeString,
