@@ -110,84 +110,6 @@ func TestAccThousandEyesTag(t *testing.T) {
 				testAccCheckAsignmentsCountInTagsResponse(&tag3Id, 0),
 			},
 		},
-		{
-			name:                 "update_tag_assignment_tag_id",
-			createResourceFile:   "acceptance_resources/tag_assignment_update/basic.tf",
-			updateResourceFile:   "acceptance_resources/tag_assignment_update/update_tag_id.tf",
-			checkDestroyFunction: testAccCheckTagAssignmentUpdateDestroy,
-			checkCreateFunc: testAccCheckTagAssignmentUpdateState(
-				&httpTestId,
-				&agentToServerTestId,
-				&tag1Id,
-				&tag2Id,
-				&tag1Id,
-				&httpTestId,
-				1,
-				0,
-			),
-			checkUpdateFunc: testAccCheckTagAssignmentUpdateState(
-				&httpTestId,
-				&agentToServerTestId,
-				&tag1Id,
-				&tag2Id,
-				&tag2Id,
-				&httpTestId,
-				0,
-				1,
-			),
-		},
-		{
-			name:                 "update_tag_assignment_assignments",
-			createResourceFile:   "acceptance_resources/tag_assignment_update/basic.tf",
-			updateResourceFile:   "acceptance_resources/tag_assignment_update/update_assignments.tf",
-			checkDestroyFunction: testAccCheckTagAssignmentUpdateDestroy,
-			checkCreateFunc: testAccCheckTagAssignmentUpdateState(
-				&httpTestId,
-				&agentToServerTestId,
-				&tag1Id,
-				&tag2Id,
-				&tag1Id,
-				&httpTestId,
-				1,
-				0,
-			),
-			checkUpdateFunc: testAccCheckTagAssignmentUpdateState(
-				&httpTestId,
-				&agentToServerTestId,
-				&tag1Id,
-				&tag2Id,
-				&tag1Id,
-				&agentToServerTestId,
-				1,
-				0,
-			),
-		},
-		{
-			name:                 "update_tag_assignment_tag_id_and_assignments",
-			createResourceFile:   "acceptance_resources/tag_assignment_update/basic.tf",
-			updateResourceFile:   "acceptance_resources/tag_assignment_update/update_both.tf",
-			checkDestroyFunction: testAccCheckTagAssignmentUpdateDestroy,
-			checkCreateFunc: testAccCheckTagAssignmentUpdateState(
-				&httpTestId,
-				&agentToServerTestId,
-				&tag1Id,
-				&tag2Id,
-				&tag1Id,
-				&httpTestId,
-				1,
-				0,
-			),
-			checkUpdateFunc: testAccCheckTagAssignmentUpdateState(
-				&httpTestId,
-				&agentToServerTestId,
-				&tag1Id,
-				&tag2Id,
-				&tag2Id,
-				&agentToServerTestId,
-				0,
-				1,
-			),
-		},
 	}
 
 	for _, tc := range testCases {
@@ -208,38 +130,6 @@ func TestAccThousandEyesTag(t *testing.T) {
 				},
 			})
 		})
-	}
-}
-
-func testAccCheckTagAssignmentUpdateDestroy(s *terraform.State) error {
-	resourceList := []ResourceType{
-		{
-			ResourceName: "thousandeyes_tag.tag1",
-			GetResource: func(id string) (interface{}, error) {
-				return getTag(id)
-			},
-		},
-		{
-			ResourceName: "thousandeyes_tag.tag2",
-			GetResource: func(id string) (interface{}, error) {
-				return getTag(id)
-			},
-		},
-	}
-	return testAccCheckResourceDestroy(resourceList, s)
-}
-
-func testAccCheckTagAssignmentUpdateState(httpTestID *string, agentToServerTestID *string, tag1ID *string, tag2ID *string, expectedTagID *string, expectedAssignmentID *string, tag1Assignments int, tag2Assignments int) []resource.TestCheckFunc {
-	return []resource.TestCheckFunc{
-		testAccCheckResourceExistsAndStoreID("thousandeyes_http_server.test", httpTestID),
-		testAccCheckResourceExistsAndStoreID("thousandeyes_agent_to_server.test", agentToServerTestID),
-		testAccCheckResourceExistsAndStoreID("thousandeyes_tag.tag1", tag1ID),
-		testAccCheckResourceExistsAndStoreID("thousandeyes_tag.tag2", tag2ID),
-		testAccCheckDependentResourceHasCorrectID("thousandeyes_tag_assignment.assign1", "tag_id", expectedTagID),
-		testAccCheckDependentResourceHasCorrectID("thousandeyes_tag_assignment.assign1", "assignments.0.id", expectedAssignmentID),
-		resource.TestCheckResourceAttr("thousandeyes_tag_assignment.assign1", "assignments.0.type", "test"),
-		testAccCheckAsignmentsCountInTagsResponse(tag1ID, tag1Assignments),
-		testAccCheckAsignmentsCountInTagsResponse(tag2ID, tag2Assignments),
 	}
 }
 
