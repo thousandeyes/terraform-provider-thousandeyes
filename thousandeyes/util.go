@@ -159,6 +159,8 @@ func ResourceRead(ctx context.Context, d *schema.ResourceData, structPtr interfa
 			continue
 		}
 
+		val = preserveNestedSensitiveFields(d, tfName, val)
+
 		err = d.Set(tfName, val)
 		if err != nil {
 			return err
@@ -172,6 +174,52 @@ func ResourceRead(ctx context.Context, d *schema.ResourceData, structPtr interfa
 	}
 
 	return nil
+}
+
+// preserveNestedSensitiveFields injects current state values for sensitive
+// sub-fields into nested block values before they are written back via d.Set.
+// The API never returns sensitive field values, so ReadValue produces maps
+// that lack them. Without this, d.Set would overwrite the parent block and
+// reset the sensitive sub-fields to empty strings.
+func preserveNestedSensitiveFields(d *schema.ResourceData, tfName string, val interface{}) interface{} {
+	valSlice, ok := val.([]interface{})
+	if !ok {
+		return val
+	}
+
+	current := d.Get(tfName)
+	var currentList []interface{}
+	switch c := current.(type) {
+	case *schema.Set:
+		currentList = c.List()
+	case []interface{}:
+		currentList = c
+	default:
+		return val
+	}
+
+	for i, elem := range valSlice {
+		elemMap, ok := elem.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		if i >= len(currentList) {
+			continue
+		}
+		currentMap, ok := currentList[i].(map[string]interface{})
+		if !ok {
+			continue
+		}
+		for _, sf := range sensitiveFields {
+			if _, exists := elemMap[sf]; !exists {
+				if stateVal, exists := currentMap[sf]; exists && stateVal != "" {
+					elemMap[sf] = stateVal
+				}
+			}
+		}
+	}
+
+	return val
 }
 
 // getTargetFieldsMaps builds a map of target fields for resources where

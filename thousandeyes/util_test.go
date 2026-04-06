@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/thousandeyes/thousandeyes-sdk-go/v3/administrative"
+	"github.com/thousandeyes/thousandeyes-sdk-go/v3/alerts"
 	"github.com/thousandeyes/thousandeyes-sdk-go/v3/tags"
 	"github.com/thousandeyes/thousandeyes-sdk-go/v3/tests"
 )
@@ -126,6 +127,74 @@ func TestResourceReadHTTPServerEmptyOAuth(t *testing.T) {
 	}
 	if oauthSet.Len() != 0 {
 		t.Fatalf("expected empty oauth set for empty API response, got %d elements", oauthSet.Len())
+	}
+}
+
+func TestResourceReadAlertRuleNotifications(t *testing.T) {
+	d := getReferenceData(schemas.AlertRuleSchema, map[string]string{})
+
+	integrationType := alerts.THIRDPARTYINTEGRATIONTYPE_SLACK
+	integrationID := "123456"
+	recipient := "user@example.com"
+
+	remoteResource := alerts.RuleDetail{
+		Notifications: &alerts.AlertNotification{
+			Email: &alerts.NotificationEmail{
+				Recipients: []string{recipient},
+			},
+			ThirdParty: []alerts.NotificationThirdParty{
+				{
+					IntegrationId:   &integrationID,
+					IntegrationType: &integrationType,
+				},
+			},
+		},
+	}
+
+	if err := ResourceRead(context.TODO(), d, &remoteResource); err != nil {
+		t.Fatalf("ResourceRead returned error: %v", err)
+	}
+
+	notifSet, ok := d.Get("notifications").(*schema.Set)
+	if !ok {
+		t.Fatalf("expected notifications to be *schema.Set, got %T", d.Get("notifications"))
+	}
+	if notifSet.Len() != 1 {
+		t.Fatalf("expected 1 notifications element, got %d", notifSet.Len())
+	}
+
+	notif := notifSet.List()[0].(map[string]interface{})
+
+	emailSet, ok := notif["email"].(*schema.Set)
+	if !ok {
+		t.Fatalf("expected email to be *schema.Set, got %T", notif["email"])
+	}
+	if emailSet.Len() != 1 {
+		t.Fatalf("expected 1 email element, got %d", emailSet.Len())
+	}
+
+	email := emailSet.List()[0].(map[string]interface{})
+	recipientSet, ok := email["recipients"].(*schema.Set)
+	if !ok {
+		t.Fatalf("expected recipients to be *schema.Set, got %T", email["recipients"])
+	}
+	if recipientSet.Len() != 1 {
+		t.Fatalf("expected 1 recipient, got %d", recipientSet.Len())
+	}
+	if recipientSet.List()[0] != recipient {
+		t.Fatalf("expected recipient %q, got %q", recipient, recipientSet.List()[0])
+	}
+
+	tpSet, ok := notif["third_party"].(*schema.Set)
+	if !ok {
+		t.Fatalf("expected third_party to be *schema.Set, got %T", notif["third_party"])
+	}
+	if tpSet.Len() != 1 {
+		t.Fatalf("expected 1 third_party element, got %d", tpSet.Len())
+	}
+	tp := tpSet.List()[0].(map[string]interface{})
+	if tp["integration_type"] != string(integrationType) {
+		t.Fatalf("expected integration_type %q, got %q", integrationType, tp["integration_type"])
 	}
 }
 
@@ -948,5 +1017,51 @@ func TestResourceReadTagExtendedFieldsArePersisted(t *testing.T) {
 	}
 	if got := d.Get("type").(string); got != string(typeVal) {
 		t.Fatalf("unexpected type in state: got %q want %q", got, typeVal)
+	}
+}
+
+func TestResourceReadAPINestedSensitiveFields(t *testing.T) {
+	apiSchema := ResourceSchemaBuild(tests.ApiTestRequest{}, schemas.CommonSchema, nil)
+	d := getReferenceData(apiSchema, map[string]string{
+		"requests.#":            "1",
+		"requests.0.name":       "step1",
+		"requests.0.url":        "https://example.com",
+		"requests.0.password":   "test_password",
+		"requests.0.auth_type":  "basic",
+		"requests.0.client_id":  "test_client",
+		"requests.0.bearer_token": "test_bearer",
+	})
+
+	authType := tests.APIREQUESTAUTHTYPE_BASIC
+	remoteResource := tests.NewApiTestResponse(
+		tests.TESTINTERVAL__60,
+		[]tests.ApiRequest{
+			{
+				Name:     "step1",
+				Url:      "https://example.com",
+				AuthType: &authType,
+			},
+		},
+		"https://example.com",
+	)
+
+	if err := ResourceRead(context.TODO(), d, remoteResource); err != nil {
+		t.Fatalf("ResourceRead returned error: %v", err)
+	}
+
+	requests := d.Get("requests").([]interface{})
+	if len(requests) != 1 {
+		t.Fatalf("expected 1 request, got %d", len(requests))
+	}
+
+	req := requests[0].(map[string]interface{})
+	if got := req["password"]; got != "test_password" {
+		t.Fatalf("expected password %q preserved in state, got %q", "test_password", got)
+	}
+	if got := req["client_id"]; got != "test_client" {
+		t.Fatalf("expected client_id %q preserved in state, got %q", "test_client", got)
+	}
+	if got := req["bearer_token"]; got != "test_bearer" {
+		t.Fatalf("expected bearer_token %q preserved in state, got %q", "test_bearer", got)
 	}
 }
