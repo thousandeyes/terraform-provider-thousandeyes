@@ -33,7 +33,6 @@ resource "thousandeyes_api" "test" {
     auth_type             = "basic"
     username              = "test_username"
     password              = "test_password"
-    client_authentication = "in-body"
 
     headers {
       key   = "Accept"
