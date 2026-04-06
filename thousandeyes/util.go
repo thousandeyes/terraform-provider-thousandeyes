@@ -123,7 +123,7 @@ func ResourceRead(ctx context.Context, d *schema.ResourceData, structPtr interfa
 	v := reflect.ValueOf(structPtr).Elem()
 	t := reflect.TypeOf(v.Interface())
 
-	targetMaps := getTargetFieldsMaps(structPtr)
+	targetMaps := getTargetFieldsMaps(d, structPtr)
 
 	for i := 0; i < v.NumField(); i++ {
 		tag := GetJSONKey(t.Field(i))
@@ -172,32 +172,39 @@ func ResourceRead(ctx context.Context, d *schema.ResourceData, structPtr interfa
 	return nil
 }
 
-// getTargetFieldsMaps gets a map of target fields for a specific resource when multiple fields need to be set in a single target map.
-func getTargetFieldsMaps(structPtr interface{}) map[string]map[string]interface{} {
+// getTargetFieldsMaps builds a map of target fields for resources where
+// multiple flat API response fields map to a single nested Terraform block.
+// Fields are pre-populated from the current state so that values the API
+// doesn't return (nil pointers) keep their existing values instead of
+// becoming empty strings, which would change the TypeSet hash and cause
+// Terraform to silently drop config values during planning.
+func getTargetFieldsMaps(d *schema.ResourceData, structPtr interface{}) map[string]map[string]interface{} {
+	var res map[string]map[string]interface{}
+
 	switch structPtr.(type) {
-	// Example:
-	// case (tests.Example):
-	// 	res := make(map[string]map[string]interface{})
-	// 	res["TARGET_FIELD"] = map[string]interface{}{
-	// 		"SOURCE_FIELD_1":     nil,
-	// 		"SOURCE_FIELD_2":     nil,
-	// 		"SOURCE_FIELD_3":     nil,
-	// 		...
-	// 	}
-	// 	return res
 	case (*tests.SipServerTestResponse):
-		res := make(map[string]map[string]interface{})
-		res["target_sip_credentials"] = map[string]interface{}{
-			"auth_user":     nil,
-			"port":          nil,
-			"protocol":      nil,
-			"sip_registrar": nil,
-			"user":          nil,
+		res = map[string]map[string]interface{}{
+			"target_sip_credentials": {
+				"auth_user":     nil,
+				"port":          nil,
+				"protocol":      nil,
+				"sip_registrar": nil,
+				"user":          nil,
+			},
 		}
-		return res
+		if existing, ok := d.GetOk("target_sip_credentials"); ok {
+			for _, item := range existing.(*schema.Set).List() {
+				old := item.(map[string]interface{})
+				for field := range res["target_sip_credentials"] {
+					if val, exists := old[field]; exists {
+						res["target_sip_credentials"][field] = val
+					}
+				}
+			}
+		}
 	}
 
-	return nil
+	return res
 }
 
 // FixReadValues adjusts certain values returned from ThousandEyes to make them
@@ -277,6 +284,13 @@ func FixReadValues(ctx context.Context, targetMaps map[string]map[string]interfa
 
 	// Ignore emulated device ID if it wasn't set
 	case "emulated_device_id":
+		if isSet, _ := ctx.Value(setInConfigKey).(bool); !isSet {
+			*name = ""
+			return nil, nil
+		}
+
+	// Ignore BGP measurements if it wasn't set, prevents API side effects from being saved to state
+	case "bgp_measurements":
 		if isSet, _ := ctx.Value(setInConfigKey).(bool); !isSet {
 			*name = ""
 			return nil, nil
