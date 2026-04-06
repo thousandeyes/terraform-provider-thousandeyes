@@ -148,7 +148,14 @@ func ResourceRead(ctx context.Context, d *schema.ResourceData, structPtr interfa
 			return err
 		}
 
-		ctx = context.WithValue(ctx, setInConfigKey, ok)
+		isConfigured := ok
+		if rawConfig := d.GetRawConfig(); !rawConfig.IsNull() && rawConfig.IsKnown() {
+			if ty := rawConfig.Type(); ty.IsObjectType() && ty.HasAttribute(tfName) {
+				v := rawConfig.GetAttr(tfName)
+				isConfigured = v.IsKnown() && !v.IsNull()
+			}
+		}
+		ctx = context.WithValue(ctx, setInConfigKey, isConfigured)
 		val, err = FixReadValues(ctx, targetMaps, val, &tfName)
 		if err != nil {
 			return err
