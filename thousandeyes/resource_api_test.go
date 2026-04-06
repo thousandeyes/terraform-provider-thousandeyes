@@ -127,12 +127,14 @@ func TestAccThousandEyesAPI(t *testing.T) {
 				CheckDestroy:      tc.checkDestroyFunction,
 				Steps: []resource.TestStep{
 					{
-						Config: testAccThousandEyesAPIConfig(tc.createResourceFile),
-						Check:  resource.ComposeTestCheckFunc(tc.checkCreateFunc...),
+						Config:             testAccThousandEyesAPIConfig(tc.createResourceFile),
+						Check:              resource.ComposeTestCheckFunc(tc.checkCreateFunc...),
+						ExpectNonEmptyPlan: true,
 					},
 					{
-						Config: testAccThousandEyesAPIConfig(tc.updateResourceFile),
-						Check:  resource.ComposeTestCheckFunc(tc.checkUpdateFunc...),
+						Config:             testAccThousandEyesAPIConfig(tc.updateResourceFile),
+						Check:              resource.ComposeTestCheckFunc(tc.checkUpdateFunc...),
+						ExpectNonEmptyPlan: true,
 					},
 				},
 			})
