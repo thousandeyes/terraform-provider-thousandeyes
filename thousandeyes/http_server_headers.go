@@ -107,7 +107,7 @@ func rawConfigCustomHeaders(d rawConfigReader) (*tests.TestCustomHeaders, bool) 
 
 func rawConfigOAuthConfigured(d rawConfigReader) bool {
 	raw, diags := d.GetRawConfigAt(cty.Path{cty.GetAttrStep{Name: "oauth"}})
-	return !(diags.HasError() || !raw.IsKnown() || raw.IsNull() || raw.LengthInt() == 0)
+	return !diags.HasError() && raw.IsKnown() && !raw.IsNull() && raw.LengthInt() != 0
 }
 
 func stringSliceToInterfaceSlice(v []string) []interface{} {
