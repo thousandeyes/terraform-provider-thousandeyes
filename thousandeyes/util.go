@@ -625,6 +625,9 @@ func FixReadValues(ctx context.Context, targetMaps map[string]map[string]interfa
 		if m == nil {
 			return nil, nil
 		}
+		if oauthMap, ok := m.(map[string]interface{}); ok && len(oauthMap) == 0 {
+			return nil, nil
+		}
 		if _, ok := m.([]interface{}); !ok {
 			m = []interface{}{m}
 		}

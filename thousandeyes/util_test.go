@@ -110,6 +110,25 @@ func TestResourceReadHTTPServerOAuthState(t *testing.T) {
 	}
 }
 
+func TestResourceReadHTTPServerEmptyOAuth(t *testing.T) {
+	d := getReferenceData(resourceHTTPServer().Schema, map[string]string{})
+
+	remoteResource := tests.NewHttpServerTestResponse(tests.TESTINTERVAL__60, "https://www.thousandeyes.com")
+	remoteResource.OAuth = &tests.OAuth{}
+
+	if err := ResourceRead(context.TODO(), d, remoteResource); err != nil {
+		t.Fatalf("ResourceRead returned error: %v", err)
+	}
+
+	oauthSet, ok := d.Get("oauth").(*schema.Set)
+	if !ok {
+		t.Fatalf("expected oauth state to be *schema.Set, got %#v", d.Get("oauth"))
+	}
+	if oauthSet.Len() != 0 {
+		t.Fatalf("expected empty oauth set for empty API response, got %d elements", oauthSet.Len())
+	}
+}
+
 func TestResourceReadValue(t *testing.T) {
 	testStruct := administrative.RoleDetail{
 		Name:      getPointer("TestRole"),
