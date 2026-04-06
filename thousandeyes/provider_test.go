@@ -58,3 +58,9 @@ func testAccCheckResourceDestroy(resources []ResourceType, s *terraform.State) e
 	}
 	return nil
 }
+
+func TestProviderInternalValidate(t *testing.T) {
+	if err := Provider().InternalValidate(); err != nil {
+		t.Fatalf("provider internal validation failed: %v", err)
+	}
+}

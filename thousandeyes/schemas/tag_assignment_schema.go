@@ -23,6 +23,7 @@ var TagAssignmentSchema = map[string]*schema.Schema{
 	"assignments": {
 		Description: "",
 		Required:    true,
+		ForceNew:    true,
 		Type:        schema.TypeSet,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
