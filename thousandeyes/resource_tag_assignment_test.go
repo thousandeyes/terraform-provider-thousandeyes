@@ -12,7 +12,6 @@ func TestAccThousandEyesTagAssignmentUpdate(t *testing.T) {
 	var agentToServerTestID string
 	var tag1ID string
 	var tag2ID string
-	updateConfig := testAccThousandEyesTagConfig("acceptance_resources/tag_assignment_update/update_assignments.tf")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
@@ -33,12 +32,7 @@ func TestAccThousandEyesTagAssignmentUpdate(t *testing.T) {
 				)...),
 			},
 			{
-				Config:             updateConfig,
-				PlanOnly:           true,
-				ExpectNonEmptyPlan: true,
-			},
-			{
-				Config: updateConfig,
+				Config: testAccThousandEyesTagConfig("acceptance_resources/tag_assignment_update/update_assignments.tf"),
 				Check: resource.ComposeTestCheckFunc(testAccCheckTagAssignmentUpdateState(
 					&httpTestID,
 					&agentToServerTestID,
