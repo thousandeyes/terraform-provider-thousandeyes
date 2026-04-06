@@ -60,6 +60,56 @@ func TestResourceRead(t *testing.T) {
 	}
 }
 
+func TestResourceReadHTTPServerOAuthState(t *testing.T) {
+	d := getReferenceData(resourceHTTPServer().Schema, map[string]string{})
+
+	remoteResource := tests.NewHttpServerTestResponse(tests.TESTINTERVAL__60, "https://www.thousandeyes.com")
+	configID := "2660950"
+	testURL := "https://auth.example.com/oauth/token"
+	requestMethod := tests.REQUESTMETHOD_GET
+	header := "Authorization: Basic test-client"
+	username := "oauth-user"
+	authType := tests.TESTAUTHTYPE_BASIC
+
+	remoteResource.OAuth = &tests.OAuth{
+		ConfigId:      &configID,
+		TestUrl:       &testURL,
+		RequestMethod: &requestMethod,
+		Headers:       &header,
+		Username:      &username,
+		AuthType:      &authType,
+	}
+
+	if err := ResourceRead(context.TODO(), d, remoteResource); err != nil {
+		t.Fatalf("ResourceRead returned error: %v", err)
+	}
+
+	oauthSet, ok := d.Get("oauth").(*schema.Set)
+	if !ok {
+		t.Fatalf("expected oauth state to be stored as *schema.Set, got %#v", d.Get("oauth"))
+	}
+	if oauthSet.Len() != 1 {
+		t.Fatalf("expected a single oauth block, got %d", oauthSet.Len())
+	}
+
+	oauthState := oauthSet.List()[0].(map[string]interface{})
+	if oauthState["config_id"] != configID {
+		t.Fatalf("unexpected oauth config_id: got %#v want %q", oauthState["config_id"], configID)
+	}
+	if oauthState["test_url"] != testURL {
+		t.Fatalf("unexpected oauth test_url: got %#v want %q", oauthState["test_url"], testURL)
+	}
+	if oauthState["headers"] != header {
+		t.Fatalf("unexpected oauth headers: got %#v want %q", oauthState["headers"], header)
+	}
+	if oauthState["username"] != username {
+		t.Fatalf("unexpected oauth username: got %#v want %q", oauthState["username"], username)
+	}
+	if oauthState["auth_type"] != string(authType) {
+		t.Fatalf("unexpected oauth auth_type: got %#v want %q", oauthState["auth_type"], authType)
+	}
+}
+
 func TestResourceReadValue(t *testing.T) {
 	testStruct := administrative.RoleDetail{
 		Name:      getPointer("TestRole"),

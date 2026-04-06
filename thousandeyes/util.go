@@ -7,8 +7,8 @@ import (
 	"log"
 	"reflect"
 	"regexp"
-	"sort"
 	"slices"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -606,6 +606,12 @@ func FixReadValues(ctx context.Context, targetMaps map[string]map[string]interfa
 
 	case "o_auth":
 		*name = "oauth"
+		if m == nil {
+			return nil, nil
+		}
+		if _, ok := m.([]interface{}); !ok {
+			m = []interface{}{m}
+		}
 
 	}
 
