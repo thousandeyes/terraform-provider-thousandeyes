@@ -131,11 +131,6 @@ func ResourceRead(ctx context.Context, d *schema.ResourceData, structPtr interfa
 		_, ok := d.GetOk(tfName)
 
 		if slices.Contains(sensitiveFields, tfName) {
-			if ok {
-				if err := d.Set(tfName, nil); err != nil {
-					return err
-				}
-			}
 			continue
 		}
 
@@ -661,7 +656,6 @@ func ReadValue(structPtr interface{}) (interface{}, error) {
 			tfName := CamelCaseToUnderscore(tag)
 
 			if slices.Contains(sensitiveFields, tfName) {
-				newMap[tfName] = nil
 				continue
 			}
 			if v.Field(i).Kind() == reflect.Ptr && v.Field(i).IsNil() {
