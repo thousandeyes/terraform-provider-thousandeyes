@@ -2,6 +2,7 @@ package thousandeyes
 
 import (
 	"context"
+	"errors"
 	"log"
 
 	"github.com/thousandeyes/terraform-provider-thousandeyes/thousandeyes/schemas"
@@ -96,7 +97,10 @@ func resourceTagAssignmentUpdate(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 	if err := applyTagAssignments(apiClient, api, *oldTagID, assignmentsToRemove, false); err != nil {
-		_ = applyTagAssignments(apiClient, api, *newTagID, assignmentsToAdd, false)
+		if rollbackErr := applyTagAssignments(apiClient, api, *newTagID, assignmentsToAdd, false); rollbackErr != nil {
+			log.Printf("[WARN] Rollback failed for ThousandEyes Tag assignment %s: %v", d.Id(), rollbackErr)
+			return errors.Join(err, rollbackErr)
+		}
 		return err
 	}
 

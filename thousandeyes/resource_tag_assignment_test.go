@@ -73,9 +73,17 @@ func testAccCheckTagAssignmentUpdateState(httpTestID *string, agentToServerTestI
 		testAccCheckResourceExistsAndStoreID("thousandeyes_tag.tag1", tag1ID),
 		testAccCheckResourceExistsAndStoreID("thousandeyes_tag.tag2", tag2ID),
 		testAccCheckDependentResourceHasCorrectID("thousandeyes_tag_assignment.assign1", "tag_id", expectedTagID),
-		testAccCheckDependentResourceHasCorrectID("thousandeyes_tag_assignment.assign1", "assignments.0.id", expectedAssignmentID),
-		resource.TestCheckResourceAttr("thousandeyes_tag_assignment.assign1", "assignments.0.type", "test"),
+		testAccCheckTagAssignmentSetElem("thousandeyes_tag_assignment.assign1", expectedAssignmentID, "test"),
 		testAccCheckAsignmentsCountInTagsResponse(tag1ID, tag1Assignments),
 		testAccCheckAsignmentsCountInTagsResponse(tag2ID, tag2Assignments),
+	}
+}
+
+func testAccCheckTagAssignmentSetElem(resourceName string, expectedAssignmentID *string, expectedAssignmentType string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		return resource.TestCheckTypeSetElemNestedAttrs(resourceName, "assignments.*", map[string]string{
+			"id":   *expectedAssignmentID,
+			"type": expectedAssignmentType,
+		})(s)
 	}
 }
