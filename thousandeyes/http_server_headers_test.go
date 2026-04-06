@@ -57,6 +57,53 @@ func TestTerraformHTTPServerCustomHeadersValue_allNilFieldsReturnsEmpty(t *testi
 	}
 }
 
+func TestTerraformHTTPServerOAuthValue_nilReturnsEmpty(t *testing.T) {
+	got := terraformHTTPServerOAuthValue(nil)
+	if len(got) != 0 {
+		t.Fatalf("expected empty slice for nil oauth, got %#v", got)
+	}
+}
+
+func TestTerraformHTTPServerOAuthValue_zeroValueReturnsEmpty(t *testing.T) {
+	got := terraformHTTPServerOAuthValue(tests.NewOAuth())
+	if len(got) != 0 {
+		t.Fatalf("expected empty slice for zero-value oauth, got %#v", got)
+	}
+}
+
+func TestTerraformHTTPServerOAuthValue_preservesConfiguredFields(t *testing.T) {
+	configID := "2660950"
+	testURL := "https://auth.example.com/oauth/token"
+	requestMethod := tests.REQUESTMETHOD_GET
+	header := "Authorization: Basic test-client"
+	username := "oauth-user"
+	authType := tests.TESTAUTHTYPE_BASIC
+
+	got := terraformHTTPServerOAuthValue(&tests.OAuth{
+		ConfigId:      &configID,
+		TestUrl:       &testURL,
+		RequestMethod: &requestMethod,
+		Headers:       &header,
+		Username:      &username,
+		AuthType:      &authType,
+	})
+
+	want := []interface{}{
+		map[string]interface{}{
+			"config_id":      configID,
+			"test_url":       testURL,
+			"request_method": string(requestMethod),
+			"headers":        header,
+			"username":       username,
+			"auth_type":      string(authType),
+		},
+	}
+
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("unexpected terraform oauth value: got %#v want %#v", got, want)
+	}
+}
+
 func TestRawConfigCustomHeadersAllowsEmptyBlock(t *testing.T) {
 	empty := &mockRawConfigReader{
 		values: map[string]mockRawConfigValue{
@@ -79,6 +126,26 @@ func TestRawConfigCustomHeadersNotConfigured(t *testing.T) {
 	_, ok := rawConfigCustomHeaders(reader)
 	if ok {
 		t.Fatalf("expected not-configured when custom_headers is absent from raw config")
+	}
+}
+
+func TestRawConfigOAuthConfigured(t *testing.T) {
+	reader := &mockRawConfigReader{
+		values: map[string]mockRawConfigValue{
+			"oauth": {present: true, block: map[string]mockRawConfigValue{}},
+		},
+	}
+
+	if !rawConfigOAuthConfigured(reader) {
+		t.Fatalf("expected oauth block to be treated as configured")
+	}
+}
+
+func TestRawConfigOAuthNotConfigured(t *testing.T) {
+	reader := &mockRawConfigReader{values: map[string]mockRawConfigValue{}}
+
+	if rawConfigOAuthConfigured(reader) {
+		t.Fatalf("expected oauth to be treated as absent when not configured")
 	}
 }
 

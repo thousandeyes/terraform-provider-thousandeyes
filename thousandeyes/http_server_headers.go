@@ -105,6 +105,11 @@ func rawConfigCustomHeaders(d rawConfigReader) (*tests.TestCustomHeaders, bool) 
 	return customHeaders, true
 }
 
+func rawConfigOAuthConfigured(d rawConfigReader) bool {
+	raw, diags := d.GetRawConfigAt(cty.Path{cty.GetAttrStep{Name: "oauth"}})
+	return !(diags.HasError() || !raw.IsKnown() || raw.IsNull() || raw.LengthInt() == 0)
+}
+
 func stringSliceToInterfaceSlice(v []string) []interface{} {
 	out := make([]interface{}, 0, len(v))
 	for _, item := range v {
@@ -133,6 +138,41 @@ func terraformHTTPServerCustomHeadersValue(customHeaders *tests.TestCustomHeader
 			"all":     all,
 		},
 	}
+}
+
+func terraformHTTPServerOAuthValue(oauth *tests.OAuth) []interface{} {
+	if oauth == nil {
+		return []interface{}{}
+	}
+
+	value := map[string]interface{}{}
+	if oauth.ConfigId != nil && *oauth.ConfigId != "" {
+		value["config_id"] = *oauth.ConfigId
+	}
+	if oauth.TestUrl != nil && *oauth.TestUrl != "" {
+		value["test_url"] = *oauth.TestUrl
+	}
+	if oauth.RequestMethod != nil && *oauth.RequestMethod != "" {
+		value["request_method"] = string(*oauth.RequestMethod)
+	}
+	if oauth.PostBody != nil && *oauth.PostBody != "" {
+		value["post_body"] = *oauth.PostBody
+	}
+	if oauth.Headers != nil && *oauth.Headers != "" {
+		value["headers"] = *oauth.Headers
+	}
+	if oauth.AuthType != nil && *oauth.AuthType != "" && *oauth.AuthType != tests.TESTAUTHTYPE_NONE {
+		value["auth_type"] = string(*oauth.AuthType)
+	}
+	if oauth.Username != nil && *oauth.Username != "" {
+		value["username"] = *oauth.Username
+	}
+
+	if len(value) == 0 {
+		return []interface{}{}
+	}
+
+	return []interface{}{value}
 }
 
 func ctyObjectToStringMap(v cty.Value, attr string) map[string]string {

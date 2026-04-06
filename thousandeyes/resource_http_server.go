@@ -65,6 +65,14 @@ func resourceHTTPServerRead(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
+	if rawConfigOAuthConfigured(d) {
+		if err := d.Set("oauth", terraformHTTPServerOAuthValue(resp.OAuth)); err != nil {
+			return err
+		}
+	} else if err := d.Set("oauth", nil); err != nil {
+		return err
+	}
+
 	mode := httpHeaderSourceMode(d)
 	if mode == httpHeaderSourceModeCustomHeaders {
 		// Keep only custom_headers in state when it is the configured source of truth.
