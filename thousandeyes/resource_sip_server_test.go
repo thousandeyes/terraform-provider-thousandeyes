@@ -91,7 +91,7 @@ func testAccThousandEyesSIPServerConfig(testResource string) string {
 
 func getSIPServer(id string) (interface{}, error) {
 	api := (*tests.SIPServerTestsAPIService)(&testClient.Common)
-	req := api.GetSipServerTest(id).Expand(tests.AllowedExpandTestOptionsEnumValues)
+	req := api.GetSipServerTest(id).Expand(knownExpandTestOptions())
 	req = SetAidFromContext(testClient.GetConfig().Context, req)
 	resp, _, err := req.Execute()
 	return resp, err

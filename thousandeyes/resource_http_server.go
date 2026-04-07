@@ -49,7 +49,7 @@ func resourceHTTPServerRead(d *schema.ResourceData, m interface{}) error {
 	log.Printf("[INFO] Reading Thousandeyes Resource %s", d.Id())
 
 	api := (*tests.HTTPServerTestsAPIService)(&apiClient.Common)
-	req := api.GetHttpServerTest(d.Id()).Expand(tests.AllowedExpandTestOptionsEnumValues)
+	req := api.GetHttpServerTest(d.Id()).Expand(knownExpandTestOptions())
 	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 	resp, _, err := req.Execute()
@@ -110,7 +110,7 @@ func resourceHTTPServerUpdate(d *schema.ResourceData, m interface{}) error {
 	log.Printf("[INFO] Updating ThousandEyes Test %s", d.Id())
 	update := buildHTTPServerStruct(d)
 
-	req := api.UpdateHttpServerTest(d.Id()).HttpServerTestRequest(*update).Expand(tests.AllowedExpandTestOptionsEnumValues)
+	req := api.UpdateHttpServerTest(d.Id()).HttpServerTestRequest(*update).Expand(knownExpandTestOptions())
 	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 	_, _, err := req.Execute()
@@ -143,7 +143,7 @@ func resourceHTTPServerCreate(d *schema.ResourceData, m interface{}) error {
 	log.Printf("[INFO] Creating ThousandEyes Test %s", d.Id())
 	local := buildHTTPServerStruct(d)
 
-	req := api.CreateHttpServerTest().HttpServerTestRequest(*local).Expand(tests.AllowedExpandTestOptionsEnumValues)
+	req := api.CreateHttpServerTest().HttpServerTestRequest(*local).Expand(knownExpandTestOptions())
 	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 	resp, _, err := req.Execute()

@@ -42,7 +42,7 @@ func resourceWebTransactionRead(ctx context.Context, d *schema.ResourceData, m i
 		GetResource(ctx, d, m, func(apiClient *client.APIClient, id string) (interface{}, error) {
 			api := (*tests.WebTransactionTestsAPIService)(&apiClient.Common)
 
-			req := api.GetWebTransactionsTest(id).Expand(tests.AllowedExpandTestOptionsEnumValues)
+			req := api.GetWebTransactionsTest(id).Expand(knownExpandTestOptions())
 			req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 			resp, _, err := req.Execute()
@@ -58,7 +58,7 @@ func resourceWebTransactionUpdate(ctx context.Context, d *schema.ResourceData, m
 	log.Printf("[INFO] Updating ThousandEyes Test %s", d.Id())
 	update := buildWebTransactionStruct(d)
 
-	req := api.UpdateWebTransactionsTest(d.Id()).WebTransactionTestRequest(*update).Expand(tests.AllowedExpandTestOptionsEnumValues)
+	req := api.UpdateWebTransactionsTest(d.Id()).WebTransactionTestRequest(*update).Expand(knownExpandTestOptions())
 	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 	_, _, err := req.Execute()
@@ -91,7 +91,7 @@ func resourceWebTransactionCreate(ctx context.Context, d *schema.ResourceData, m
 	log.Printf("[INFO] Creating ThousandEyes Test %s", d.Id())
 	local := buildWebTransactionStruct(d)
 
-	req := api.CreateWebTransactionsTest().WebTransactionTestRequest(*local).Expand(tests.AllowedExpandTestOptionsEnumValues)
+	req := api.CreateWebTransactionsTest().WebTransactionTestRequest(*local).Expand(knownExpandTestOptions())
 	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 	resp, _, err := req.Execute()

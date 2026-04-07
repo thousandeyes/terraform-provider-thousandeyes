@@ -40,7 +40,7 @@ func resourcePageLoadRead(ctx context.Context, d *schema.ResourceData, m interfa
 		GetResource(context.Background(), d, m, func(apiClient *client.APIClient, id string) (interface{}, error) {
 			api := (*tests.PageLoadTestsAPIService)(&apiClient.Common)
 
-			req := api.GetPageLoadTest(id).Expand(tests.AllowedExpandTestOptionsEnumValues)
+			req := api.GetPageLoadTest(id).Expand(knownExpandTestOptions())
 			req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 			resp, _, err := req.Execute()
@@ -56,7 +56,7 @@ func resourcePageLoadUpdate(ctx context.Context, d *schema.ResourceData, m inter
 	log.Printf("[INFO] Updating ThousandEyes Test %s", d.Id())
 	update := buildPageLoadStruct(d)
 
-	req := api.UpdatePageLoadTest(d.Id()).PageLoadTestRequest(*update).Expand(tests.AllowedExpandTestOptionsEnumValues)
+	req := api.UpdatePageLoadTest(d.Id()).PageLoadTestRequest(*update).Expand(knownExpandTestOptions())
 	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 	_, _, err := req.Execute()
@@ -89,7 +89,7 @@ func resourcePageLoadCreate(ctx context.Context, d *schema.ResourceData, m inter
 	log.Printf("[INFO] Creating ThousandEyes Test %s", d.Id())
 	local := buildPageLoadStruct(d)
 
-	req := api.CreatePageLoadTest().PageLoadTestRequest(*local).Expand(tests.AllowedExpandTestOptionsEnumValues)
+	req := api.CreatePageLoadTest().PageLoadTestRequest(*local).Expand(knownExpandTestOptions())
 	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 	resp, _, err := req.Execute()

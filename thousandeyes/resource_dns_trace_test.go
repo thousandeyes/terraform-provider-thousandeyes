@@ -85,7 +85,7 @@ func testAccThousandEyesDNSTraceConfig(testResource string) string {
 
 func getDNSTrace(id string) (interface{}, error) {
 	api := (*tests.DNSTraceTestsAPIService)(&testClient.Common)
-	req := api.GetDnsTraceTest(id).Expand(tests.AllowedExpandTestOptionsEnumValues)
+	req := api.GetDnsTraceTest(id).Expand(knownExpandTestOptions())
 	req = SetAidFromContext(testClient.GetConfig().Context, req)
 	resp, _, err := req.Execute()
 	return resp, err

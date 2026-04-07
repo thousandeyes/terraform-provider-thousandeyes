@@ -113,7 +113,7 @@ func testAccThousandEyesAgentToServerConfig(testResource string) string {
 
 func getAgentToServer(id string) (interface{}, error) {
 	api := (*tests.AgentToServerTestsAPIService)(&testClient.Common)
-	req := api.GetAgentToServerTest(id).Expand(tests.AllowedExpandTestOptionsEnumValues)
+	req := api.GetAgentToServerTest(id).Expand(knownExpandTestOptions())
 	req = SetAidFromContext(testClient.GetConfig().Context, req)
 	resp, _, err := req.Execute()
 	return resp, err
