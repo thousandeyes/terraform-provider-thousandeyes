@@ -53,8 +53,7 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 	},
 	"is_embedded": {
 		Type:        schema.TypeBool,
-		Description: "Set to true if widget is marked as embedded.",
-		Optional:    true,
+		Description: "Indicates whether the widget is marked as embedded.",
 		Computed:    true,
 	},
 	"metric_group": {

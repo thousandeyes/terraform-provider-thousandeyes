@@ -213,11 +213,6 @@ func setCommonBuilderFields(widget interface{}, data map[string]interface{}) {
 			w.SetVisualMode(dashboards.VisualMode(visualMode))
 		}
 	}
-	if isEmbedded, ok := boolFromMapIfPresent(data, "is_embedded"); ok {
-		if w, ok := widget.(interface{ SetIsEmbedded(bool) }); ok {
-			w.SetIsEmbedded(isEmbedded)
-		}
-	}
 	if metricGroup := getStringValue(data, "metric_group"); metricGroup != "" {
 		if w, ok := widget.(interface{ SetMetricGroup(dashboards.MetricGroup) }); ok {
 			w.SetMetricGroup(dashboards.MetricGroup(metricGroup))

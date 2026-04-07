@@ -22,7 +22,6 @@ resource "thousandeyes_dashboard" "example" {
     type         = "Map"
     title        = "Map Widget"
     visual_mode  = "Full"
-    is_embedded  = false
     metric_group = "ALERTS"
     metric       = "ALERT_COUNT_BGP"
     data_source  = "ALERTS"

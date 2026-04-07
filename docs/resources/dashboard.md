@@ -35,7 +35,6 @@ resource "thousandeyes_dashboard" "example" {
     type         = "Map"
     title        = "Map Widget"
     visual_mode  = "Full"
-    is_embedded  = false
     metric_group = "ALERTS"
     metric       = "ALERT_COUNT_BGP"
     data_source  = "ALERTS"
@@ -195,7 +194,6 @@ Optional:
 - `filter` (Block List) Filters applied to the widget. Each filter specifies a property and list of values. (see [below for nested schema](#nestedblock--widgets--filter))
 - `fixed_timespan` (Block List, Max: 1) Fixed timespan for the widget. (see [below for nested schema](#nestedblock--widgets--fixed_timespan))
 - `geo_map_config` (Block List, Max: 1) Configuration for Map widgets. (see [below for nested schema](#nestedblock--widgets--geo_map_config))
-- `is_embedded` (Boolean) Set to true if widget is marked as embedded.
 - `list_config` (Block List, Max: 1) Configuration for List widgets. (see [below for nested schema](#nestedblock--widgets--list_config))
 - `measure` (Block List, Max: 1) Measure configuration for the widget. (see [below for nested schema](#nestedblock--widgets--measure))
 - `metric` (String) Metric for the widget.

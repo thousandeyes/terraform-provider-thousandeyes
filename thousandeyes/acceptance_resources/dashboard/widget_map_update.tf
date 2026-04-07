@@ -10,7 +10,6 @@ resource "thousandeyes_dashboard" "test_dashboard_map_widget" {
     type        = "Map"
     title       = "Test Map Widget (Updated)"
     visual_mode = "Full"
-    is_embedded    = false
     metric_group= "ALERTS"
     metric      = "ALERT_COUNT_BGP"
     measure     {
