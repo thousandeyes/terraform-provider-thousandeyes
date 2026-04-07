@@ -30,7 +30,7 @@ func resourceAPIRead(d *schema.ResourceData, m interface{}) error {
 	return GetResource(context.Background(), d, m, func(apiClient *client.APIClient, id string) (interface{}, error) {
 		api := (*tests.APITestsAPIService)(&apiClient.Common)
 
-		req := api.GetApiTest(id).Expand(tests.AllowedExpandTestOptionsEnumValues)
+		req := api.GetApiTest(id).Expand(knownExpandTestOptions())
 		req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 		resp, _, err := req.Execute()
@@ -45,7 +45,7 @@ func resourceAPIUpdate(d *schema.ResourceData, m interface{}) error {
 	log.Printf("[INFO] Updating ThousandEyes Test %s", d.Id())
 	update := buildAPITestStruct(d)
 
-	req := api.UpdateApiTest(d.Id()).ApiTestRequest(*update).Expand(tests.AllowedExpandTestOptionsEnumValues)
+	req := api.UpdateApiTest(d.Id()).ApiTestRequest(*update).Expand(knownExpandTestOptions())
 	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 	_, _, err := req.Execute()
@@ -78,7 +78,7 @@ func resourceAPICreate(d *schema.ResourceData, m interface{}) error {
 	log.Printf("[INFO] Creating ThousandEyes Test %s", d.Id())
 	local := buildAPITestStruct(d)
 
-	req := api.CreateApiTest().ApiTestRequest(*local).Expand(tests.AllowedExpandTestOptionsEnumValues)
+	req := api.CreateApiTest().ApiTestRequest(*local).Expand(knownExpandTestOptions())
 	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 	resp, _, err := req.Execute()

@@ -83,7 +83,7 @@ func testAccThousandEyesVoiceConfig(testResource string) string {
 
 func getRTPStream(id string) (interface{}, error) {
 	api := (*tests.VoiceTestsAPIService)(&testClient.Common)
-	req := api.GetVoiceTest(id).Expand(tests.AllowedExpandTestOptionsEnumValues)
+	req := api.GetVoiceTest(id).Expand(knownExpandTestOptions())
 	req = SetAidFromContext(testClient.GetConfig().Context, req)
 	resp, _, err := req.Execute()
 	return resp, err

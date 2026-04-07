@@ -87,7 +87,7 @@ func testAccThousandEyesPageLoadConfig(testResource string) string {
 
 func getPageLoad(id string) (interface{}, error) {
 	api := (*tests.PageLoadTestsAPIService)(&testClient.Common)
-	req := api.GetPageLoadTest(id).Expand(tests.AllowedExpandTestOptionsEnumValues)
+	req := api.GetPageLoadTest(id).Expand(knownExpandTestOptions())
 	req = SetAidFromContext(testClient.GetConfig().Context, req)
 	resp, _, err := req.Execute()
 	return resp, err

@@ -85,7 +85,7 @@ func testAccThousandEyesHTTPServerConfig(testResource string) string {
 
 func getHttpServer(id string) (interface{}, error) {
 	api := (*tests.HTTPServerTestsAPIService)(&testClient.Common)
-	req := api.GetHttpServerTest(id).Expand(tests.AllowedExpandTestOptionsEnumValues)
+	req := api.GetHttpServerTest(id).Expand(knownExpandTestOptions())
 	req = SetAidFromContext(testClient.GetConfig().Context, req)
 	resp, _, err := req.Execute()
 	return resp, err

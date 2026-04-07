@@ -39,7 +39,7 @@ func resourceDNSSecRead(d *schema.ResourceData, m interface{}) error {
 	return GetResource(context.Background(), d, m, func(apiClient *client.APIClient, id string) (interface{}, error) {
 		api := (*tests.DNSSECTestsAPIService)(&apiClient.Common)
 
-		req := api.GetDnsSecTest(id).Expand(tests.AllowedExpandTestOptionsEnumValues)
+		req := api.GetDnsSecTest(id).Expand(knownExpandTestOptions())
 		req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 		resp, _, err := req.Execute()
@@ -58,7 +58,7 @@ func resourceDNSSecUpdate(d *schema.ResourceData, m interface{}) error {
 		update.Domain = fmt.Sprintf("%s ANY", update.Domain)
 	}
 
-	req := api.UpdateDnsSecTest(d.Id()).DnsSecTestRequest(*update).Expand(tests.AllowedExpandTestOptionsEnumValues)
+	req := api.UpdateDnsSecTest(d.Id()).DnsSecTestRequest(*update).Expand(knownExpandTestOptions())
 	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 	_, _, err := req.Execute()
@@ -91,7 +91,7 @@ func resourceDNSSecCreate(d *schema.ResourceData, m interface{}) error {
 	log.Printf("[INFO] Creating ThousandEyes Test %s", d.Id())
 	local := buildDNSSecStruct(d)
 
-	req := api.CreateDnsSecTest().DnsSecTestRequest(*local).Expand(tests.AllowedExpandTestOptionsEnumValues)
+	req := api.CreateDnsSecTest().DnsSecTestRequest(*local).Expand(knownExpandTestOptions())
 	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 	resp, _, err := req.Execute()

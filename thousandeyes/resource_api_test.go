@@ -163,7 +163,7 @@ func testAccThousandEyesAPIConfig(testResource string) string {
 
 func getAPI(id string) (interface{}, error) {
 	api := (*tests.APITestsAPIService)(&testClient.Common)
-	req := api.GetApiTest(id).Expand(tests.AllowedExpandTestOptionsEnumValues)
+	req := api.GetApiTest(id).Expand(knownExpandTestOptions())
 	req = SetAidFromContext(testClient.GetConfig().Context, req)
 	resp, _, err := req.Execute()
 	return resp, err

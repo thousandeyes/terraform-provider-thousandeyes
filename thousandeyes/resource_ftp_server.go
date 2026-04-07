@@ -40,7 +40,7 @@ func resourceFTPServerRead(d *schema.ResourceData, m interface{}) error {
 	return GetResource(context.Background(), d, m, func(apiClient *client.APIClient, id string) (interface{}, error) {
 		api := (*tests.FTPServerTestsAPIService)(&apiClient.Common)
 
-		req := api.GetFtpServerTest(id).Expand(tests.AllowedExpandTestOptionsEnumValues)
+		req := api.GetFtpServerTest(id).Expand(knownExpandTestOptions())
 		req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 		resp, _, err := req.Execute()
@@ -55,7 +55,7 @@ func resourceFTPServerUpdate(d *schema.ResourceData, m interface{}) error {
 	log.Printf("[INFO] Updating ThousandEyes Test %s", d.Id())
 	update := buildFTPServerStruct(d)
 
-	req := api.UpdateFtpServerTest(d.Id()).FtpServerTestRequest(*update).Expand(tests.AllowedExpandTestOptionsEnumValues)
+	req := api.UpdateFtpServerTest(d.Id()).FtpServerTestRequest(*update).Expand(knownExpandTestOptions())
 	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 	_, _, err := req.Execute()
@@ -88,7 +88,7 @@ func resourceFTPServerCreate(d *schema.ResourceData, m interface{}) error {
 	log.Printf("[INFO] Creating ThousandEyes Test %s", d.Id())
 	local := buildFTPServerStruct(d)
 
-	req := api.CreateFtpServerTest().FtpServerTestRequest(*local).Expand(tests.AllowedExpandTestOptionsEnumValues)
+	req := api.CreateFtpServerTest().FtpServerTestRequest(*local).Expand(knownExpandTestOptions())
 	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 	resp, _, err := req.Execute()

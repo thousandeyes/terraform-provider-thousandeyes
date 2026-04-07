@@ -38,7 +38,7 @@ func resourceSIPServerRead(d *schema.ResourceData, m interface{}) error {
 	return GetResource(context.Background(), d, m, func(apiClient *client.APIClient, id string) (interface{}, error) {
 		api := (*tests.SIPServerTestsAPIService)(&apiClient.Common)
 
-		req := api.GetSipServerTest(id).Expand(tests.AllowedExpandTestOptionsEnumValues)
+		req := api.GetSipServerTest(id).Expand(knownExpandTestOptions())
 		req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 		resp, _, err := req.Execute()
@@ -61,7 +61,7 @@ func resourceSIPServerUpdate(d *schema.ResourceData, m interface{}) error {
 	// without being rejected.
 	fullUpdate := buildSIPServerStruct(d)
 	update.TargetSipCredentials = fullUpdate.TargetSipCredentials
-	req := api.UpdateSipServerTest(d.Id()).SipServerTestRequest(*update).Expand(tests.AllowedExpandTestOptionsEnumValues)
+	req := api.UpdateSipServerTest(d.Id()).SipServerTestRequest(*update).Expand(knownExpandTestOptions())
 	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 	if _, _, err := req.Execute(); err != nil {
@@ -93,7 +93,7 @@ func resourceSIPServerCreate(d *schema.ResourceData, m interface{}) error {
 	log.Printf("[INFO] Creating ThousandEyes Test %s", d.Id())
 	local := buildSIPServerStruct(d)
 
-	req := api.CreateSipServerTest().SipServerTestRequest(*local).Expand(tests.AllowedExpandTestOptionsEnumValues)
+	req := api.CreateSipServerTest().SipServerTestRequest(*local).Expand(knownExpandTestOptions())
 	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 	resp, _, err := req.Execute()

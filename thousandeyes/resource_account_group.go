@@ -30,7 +30,7 @@ func resourceAccountGroupRead(d *schema.ResourceData, m interface{}) error {
 	return GetResource(context.Background(), d, m, func(apiClient *client.APIClient, id string) (interface{}, error) {
 		api := (*administrative.AccountGroupsAPIService)(&apiClient.Common)
 
-		req := api.GetAccountGroup(id).Expand(administrative.AllowedExpandAccountGroupOptionsEnumValues)
+		req := api.GetAccountGroup(id).Expand(knownExpandAccountGroupOptions())
 
 		resp, _, err := req.Execute()
 		return resp, err
@@ -44,7 +44,7 @@ func resourceAccountGroupUpdate(d *schema.ResourceData, m interface{}) error {
 	log.Printf("[INFO] Updating ThousandEyes Account Group %s", d.Id())
 	update := buildAccountGroupStruct(d)
 
-	req := api.UpdateAccountGroup(d.Id()).AccountGroupRequest(*update).Expand(administrative.AllowedExpandAccountGroupOptionsEnumValues)
+	req := api.UpdateAccountGroup(d.Id()).AccountGroupRequest(*update).Expand(knownExpandAccountGroupOptions())
 
 	_, _, err := req.Execute()
 	if err != nil {
@@ -76,7 +76,7 @@ func resourceAccountGroupCreate(d *schema.ResourceData, m interface{}) error {
 	log.Printf("[INFO] Creating ThousandEyes Account Group %s", d.Id())
 	local := buildAccountGroupStruct(d)
 
-	req := api.CreateAccountGroup().AccountGroupRequest(*local).Expand(administrative.AllowedExpandAccountGroupOptionsEnumValues)
+	req := api.CreateAccountGroup().AccountGroupRequest(*local).Expand(knownExpandAccountGroupOptions())
 
 	resp, _, err := req.Execute()
 	if err != nil {
