@@ -19,9 +19,7 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 			"Time Series: Stacked Area",
 			"Pie Chart",
 			"Box and Whiskers",
-			// "List" is temporarily disabled until the API returns valid
-			// sortDirection values (CP-2702). The SDK cannot deserialize the
-			// ASC/DESC values the API currently sends, breaking refresh.
+			"List",
 		}, false),
 	},
 

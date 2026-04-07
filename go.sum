@@ -195,6 +195,8 @@ github.com/stretchr/testify v1.8.4 h1:CcVxjf3Q8PM0mHUKJCdn+eZZtm5yQwehR5yeSVQQcU
 github.com/stretchr/testify v1.8.4/go.mod h1:sz/lmYIOXD/1dqDmKjjqLyZ2RngseejIcXlSw2iwfAo=
 github.com/thousandeyes/thousandeyes-sdk-go/v3 v3.0.0-alpha.15 h1:9ZwzHnqX/6wTWZDcNgN+VsfH+sURoGSXC5weD4Ma3nk=
 github.com/thousandeyes/thousandeyes-sdk-go/v3 v3.0.0-alpha.15/go.mod h1:EWD+kNN2rC06wBi+KB9dIOM+4WJin7VZjqcFSgHF+Ow=
+github.com/thousandeyes/thousandeyes-sdk-go/v3 v3.0.0-alpha.16 h1:trxLKxOWYQrya8gowL4pnYRSmdjHrdRkLUVf7XxaH9s=
+github.com/thousandeyes/thousandeyes-sdk-go/v3 v3.0.0-alpha.16/go.mod h1:EWD+kNN2rC06wBi+KB9dIOM+4WJin7VZjqcFSgHF+Ow=
 github.com/vmihailenco/msgpack v3.3.3+incompatible/go.mod h1:fy3FlTQTDXWkZ7Bh6AcGMlsjHatGryHQYUTf1ShIgkk=
 github.com/vmihailenco/msgpack v4.0.4+incompatible h1:dSLoQfGFAo3F6OoNhwUmLwVgaUXK79GlxNBwueZn0xI=
 github.com/vmihailenco/msgpack v4.0.4+incompatible/go.mod h1:fy3FlTQTDXWkZ7Bh6AcGMlsjHatGryHQYUTf1ShIgkk=

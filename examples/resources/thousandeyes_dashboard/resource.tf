@@ -128,4 +128,19 @@ resource "thousandeyes_dashboard" "example" {
       group_by = "COUNTRY"
     }
   }
+  widgets {
+    type        = "List"
+    title       = "List Widget"
+    visual_mode = "Full"
+    data_source = "EVENT_DETECTION"
+
+    measure {
+      type = "MEAN"
+    }
+
+    list_config {
+      active_within_value = 7
+      active_within_unit  = "Days"
+    }
+  }
 }

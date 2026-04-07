@@ -26,7 +26,7 @@ func TestAccThousandEyesDashboard(t *testing.T) {
 	var resourceNameBoxAndWhiskersDefaults = "thousandeyes_dashboard.test_dashboard_box_and_whiskers_defaults"
 	var resourceNameBoxAndWhiskersWidget = "thousandeyes_dashboard.test_dashboard_box_and_whiskers_widget"
 	var resourceNameFilterWidget = "thousandeyes_dashboard.test_dashboard_filter_widget"
-	//var resourceNameListWidget = "thousandeyes_dashboard.test_dashboard_list_widget"
+	var resourceNameListWidget = "thousandeyes_dashboard.test_dashboard_list_widget"
 	var testCases = []struct {
 		name                 string
 		createResourceFile   string
@@ -107,6 +107,7 @@ func TestAccThousandEyesDashboard(t *testing.T) {
 				resource.TestCheckResourceAttr(resourceNameMapWidget, "widgets.0.type", "Map"),
 				resource.TestCheckResourceAttr(resourceNameMapWidget, "widgets.0.title", "Test Map Widget"),
 				resource.TestCheckResourceAttr(resourceNameMapWidget, "widgets.0.visual_mode", "Full"),
+				resource.TestCheckResourceAttr(resourceNameMapWidget, "widgets.0.is_embedded", "false"),
 				resource.TestCheckResourceAttr(resourceNameMapWidget, "widgets.0.geo_map_config.0.min_scale", "0"),
 				resource.TestCheckResourceAttr(resourceNameMapWidget, "widgets.0.geo_map_config.0.max_scale", "100"),
 				resource.TestCheckResourceAttr(resourceNameMapWidget, "widgets.0.geo_map_config.0.group_by", "COUNTRY"),
@@ -118,6 +119,7 @@ func TestAccThousandEyesDashboard(t *testing.T) {
 				resource.TestCheckResourceAttr(resourceNameMapWidget, "widgets.0.type", "Map"),
 				resource.TestCheckResourceAttr(resourceNameMapWidget, "widgets.0.title", "Test Map Widget (Updated)"),
 				resource.TestCheckResourceAttr(resourceNameMapWidget, "widgets.0.visual_mode", "Full"),
+				resource.TestCheckResourceAttr(resourceNameMapWidget, "widgets.0.is_embedded", "false"),
 				resource.TestCheckResourceAttr(resourceNameMapWidget, "widgets.0.geo_map_config.0.min_scale", "10"),
 				resource.TestCheckResourceAttr(resourceNameMapWidget, "widgets.0.geo_map_config.0.max_scale", "200"),
 				resource.TestCheckResourceAttr(resourceNameMapWidget, "widgets.0.geo_map_config.0.group_by", "CONTINENT"),
@@ -412,44 +414,35 @@ func TestAccThousandEyesDashboard(t *testing.T) {
 				resource.TestCheckTypeSetElemAttr(resourceNameFilterWidget, "widgets.0.filter.0.values.*", "46606"),
 			},
 		},
-		// This API is return invalid sortDirection
-		//  "sortDirection": "ASC",
-		// The expected values according to the docs
-		// sortDirection: LegacyWidgetSortDirection (Deprecated) Specifies the order in which cards are sorted.
-		// enum = ["Ascending", "Descending"]
-		//{
-		//	name:                 "create_update_delete_dashboard_list_widget_test",
-		//	createResourceFile:   "acceptance_resources/dashboard/widget_list_basic.tf",
-		//	updateResourceFile:   "acceptance_resources/dashboard/widget_list_update.tf",
-		//	resourceName:         resourceNameListWidget,
-		//	checkDestroyFunction: testAccCheckDashboardResourceDestroy,
-		//	checkCreateFunc: []resource.TestCheckFunc{
-		//		resource.TestCheckResourceAttr(resourceNameListWidget, "title", "Test Dashboard List Widget"),
-		//		resource.TestCheckResourceAttr(resourceNameListWidget, "description", "Test Dashboard with List Widget"),
-		//		resource.TestCheckResourceAttr(resourceNameListWidget, "widgets.0.type", "List"),
-		//		resource.TestCheckResourceAttr(resourceNameListWidget, "widgets.0.title", "Test List Widget"),
-		//		resource.TestCheckResourceAttr(resourceNameListWidget, "widgets.0.visual_mode", "Full"),
-		//		resource.TestCheckResourceAttr(resourceNameListWidget, "widgets.0.data_source", "EVENT_DETECTION"),
-		//		resource.TestCheckResourceAttr(resourceNameListWidget, "widgets.0.measure.0.type", "MEAN"),
-		//		resource.TestCheckResourceAttr(resourceNameListWidget, "widgets.0.fixed_timespan.0.value", "1"),
-		//		resource.TestCheckResourceAttr(resourceNameListWidget, "widgets.0.fixed_timespan.0.unit", "Days"),
-		//		resource.TestCheckResourceAttr(resourceNameListWidget, "widgets.0.list_config.0.active_within_value", "7"),
-		//		resource.TestCheckResourceAttr(resourceNameListWidget, "widgets.0.list_config.0.active_within_unit", "Days"),
-		//	},
-		//	checkUpdateFunc: []resource.TestCheckFunc{
-		//		resource.TestCheckResourceAttr(resourceNameListWidget, "title", "Test Dashboard List Widget (Updated)"),
-		//		resource.TestCheckResourceAttr(resourceNameListWidget, "description", "Test Dashboard with List Widget (Updated)"),
-		//		resource.TestCheckResourceAttr(resourceNameListWidget, "widgets.0.type", "List"),
-		//		resource.TestCheckResourceAttr(resourceNameListWidget, "widgets.0.title", "Test List Widget (Updated)"),
-		//		resource.TestCheckResourceAttr(resourceNameListWidget, "widgets.0.visual_mode", "Full"),
-		//		resource.TestCheckResourceAttr(resourceNameListWidget, "widgets.0.data_source", "ALERTS"),
-		//		resource.TestCheckResourceAttr(resourceNameListWidget, "widgets.0.measure.0.type", "MEAN"),
-		//		resource.TestCheckResourceAttr(resourceNameListWidget, "widgets.0.fixed_timespan.0.value", "1"),
-		//		resource.TestCheckResourceAttr(resourceNameListWidget, "widgets.0.fixed_timespan.0.unit", "Days"),
-		//		resource.TestCheckResourceAttr(resourceNameListWidget, "widgets.0.list_config.0.active_within_value", "14"),
-		//		resource.TestCheckResourceAttr(resourceNameListWidget, "widgets.0.list_config.0.active_within_unit", "Days"),
-		//	},
-		//},
+		{
+			name:                 "create_update_delete_dashboard_list_widget_test",
+			createResourceFile:   "acceptance_resources/dashboard/widget_list_basic.tf",
+			updateResourceFile:   "acceptance_resources/dashboard/widget_list_update.tf",
+			resourceName:         resourceNameListWidget,
+			checkDestroyFunction: testAccCheckDashboardResourceDestroy,
+			checkCreateFunc: []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(resourceNameListWidget, "title", "Test Dashboard List Widget"),
+				resource.TestCheckResourceAttr(resourceNameListWidget, "description", "Test Dashboard with List Widget"),
+				resource.TestCheckResourceAttr(resourceNameListWidget, "widgets.0.type", "List"),
+				resource.TestCheckResourceAttr(resourceNameListWidget, "widgets.0.title", "Test List Widget"),
+				resource.TestCheckResourceAttr(resourceNameListWidget, "widgets.0.visual_mode", "Full"),
+				resource.TestCheckResourceAttr(resourceNameListWidget, "widgets.0.data_source", "EVENT_DETECTION"),
+				resource.TestCheckResourceAttr(resourceNameListWidget, "widgets.0.measure.0.type", "MEAN"),
+				resource.TestCheckResourceAttr(resourceNameListWidget, "widgets.0.list_config.0.active_within_value", "7"),
+				resource.TestCheckResourceAttr(resourceNameListWidget, "widgets.0.list_config.0.active_within_unit", "Days"),
+			},
+			checkUpdateFunc: []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(resourceNameListWidget, "title", "Test Dashboard List Widget (Updated)"),
+				resource.TestCheckResourceAttr(resourceNameListWidget, "description", "Test Dashboard with List Widget (Updated)"),
+				resource.TestCheckResourceAttr(resourceNameListWidget, "widgets.0.type", "List"),
+				resource.TestCheckResourceAttr(resourceNameListWidget, "widgets.0.title", "Test List Widget (Updated)"),
+				resource.TestCheckResourceAttr(resourceNameListWidget, "widgets.0.visual_mode", "Full"),
+				resource.TestCheckResourceAttr(resourceNameListWidget, "widgets.0.data_source", "EVENT_DETECTION"),
+				resource.TestCheckResourceAttr(resourceNameListWidget, "widgets.0.measure.0.type", "MEAN"),
+				resource.TestCheckResourceAttr(resourceNameListWidget, "widgets.0.list_config.0.active_within_value", "14"),
+				resource.TestCheckResourceAttr(resourceNameListWidget, "widgets.0.list_config.0.active_within_unit", "Days"),
+			},
+		},
 	}
 
 	for _, tc := range testCases {
