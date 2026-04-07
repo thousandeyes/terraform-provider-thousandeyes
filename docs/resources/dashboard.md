@@ -209,6 +209,7 @@ Read-Only:
 
 - `embed_url` (String) When isEmbedded is set to true, an embedUrl is provided.
 - `id` (String) Identifier of the widget.
+- `is_embedded` (Boolean) Indicates whether the widget is marked as embedded.
 
 <a id="nestedblock--widgets--agent_status_config"></a>
 ### Nested Schema for `widgets.agent_status_config`
