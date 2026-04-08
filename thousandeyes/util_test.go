@@ -928,6 +928,130 @@ func TestFillValueEmptyStringToNilIntegration(t *testing.T) {
 	}
 }
 
+func TestFixReadValuesBgpFieldsAlwaysPassthrough(t *testing.T) {
+	fields := []struct {
+		name  string
+		value interface{}
+	}{
+		{"bgp_measurements", getPointer(false)},
+		{"bgp_measurements", getPointer(true)},
+		{"use_public_bgp", getPointer(true)},
+		{"use_public_bgp", getPointer(false)},
+		{"mtu_measurements", getPointer(true)},
+		{"mtu_measurements", getPointer(false)},
+		{"num_path_traces", getPointer("3")},
+	}
+
+	for _, tc := range fields {
+		t.Run(tc.name, func(t *testing.T) {
+			fieldName := tc.name
+
+			// Without setInConfigKey (field NOT in HCL) — should still pass through.
+			out, err := FixReadValues(context.Background(), nil, tc.value, &fieldName)
+			if err != nil {
+				t.Fatalf("FixReadValues(%q) returned error: %v", tc.name, err)
+			}
+			if fieldName == "" {
+				t.Fatalf("FixReadValues(%q) cleared the field name; value would be lost from state", tc.name)
+			}
+			if out == nil {
+				t.Fatalf("FixReadValues(%q) returned nil; value would be lost from state", tc.name)
+			}
+
+			// With setInConfigKey (field IS in HCL) — should also pass through.
+			fieldName2 := tc.name
+			ctx := context.WithValue(context.Background(), setInConfigKey, true)
+			out2, err2 := FixReadValues(ctx, nil, tc.value, &fieldName2)
+			if err2 != nil {
+				t.Fatalf("FixReadValues(%q, setInConfig) returned error: %v", tc.name, err2)
+			}
+			if fieldName2 == "" {
+				t.Fatalf("FixReadValues(%q, setInConfig) cleared the field name", tc.name)
+			}
+			if out2 == nil {
+				t.Fatalf("FixReadValues(%q, setInConfig) returned nil", tc.name)
+			}
+		})
+	}
+}
+
+func TestResourceReadBgpFieldsStoredInState(t *testing.T) {
+	d := getReferenceData(resourceHTTPServer().Schema, map[string]string{})
+
+	bgp := false
+	publicBgp := false
+	mtu := true
+	numPaths := int32(3)
+	network := true
+
+	remoteResource := tests.NewHttpServerTestResponse(tests.TESTINTERVAL__300, "https://example.com")
+	remoteResource.BgpMeasurements = &bgp
+	remoteResource.UsePublicBgp = &publicBgp
+	remoteResource.MtuMeasurements = &mtu
+	remoteResource.NumPathTraces = &numPaths
+	remoteResource.NetworkMeasurements = &network
+
+	if err := ResourceRead(context.TODO(), d, remoteResource); err != nil {
+		t.Fatalf("ResourceRead returned error: %v", err)
+	}
+
+	checks := []struct {
+		field    string
+		expected interface{}
+	}{
+		{"bgp_measurements", false},
+		{"use_public_bgp", false},
+		{"mtu_measurements", true},
+		{"num_path_traces", 3},
+		{"network_measurements", true},
+	}
+
+	for _, c := range checks {
+		got := d.Get(c.field)
+		if got != c.expected {
+			t.Errorf("state[%q] = %v (%T), want %v (%T)", c.field, got, got, c.expected, c.expected)
+		}
+	}
+}
+
+func TestResourceBuildStructBgpFieldsIncludedInRequest(t *testing.T) {
+	attrs := map[string]string{
+		"bgp_measurements":     "false",
+		"use_public_bgp":       "false",
+		"mtu_measurements":     "true",
+		"num_path_traces":      "3",
+		"network_measurements": "true",
+	}
+	d := getReferenceData(schemas.CommonSchema, attrs)
+	req := tests.HttpServerTestRequest{}
+	ResourceBuildStruct(d, &req)
+
+	if req.BgpMeasurements == nil {
+		t.Fatal("BgpMeasurements nil in request struct; would be omitted from API payload")
+	}
+	if *req.BgpMeasurements != false {
+		t.Errorf("BgpMeasurements = %v, want false", *req.BgpMeasurements)
+	}
+
+	if req.UsePublicBgp == nil {
+		t.Fatal("UsePublicBgp nil in request struct; would be omitted from API payload")
+	}
+
+	if req.MtuMeasurements == nil {
+		t.Fatal("MtuMeasurements nil in request struct; would be omitted from API payload")
+	}
+	if *req.MtuMeasurements != true {
+		t.Errorf("MtuMeasurements = %v, want true", *req.MtuMeasurements)
+	}
+
+	if req.NumPathTraces == nil {
+		t.Fatal("NumPathTraces nil in request struct; would be omitted from API payload")
+	}
+	if *req.NumPathTraces != 3 {
+		t.Errorf("NumPathTraces = %v, want 3", *req.NumPathTraces)
+	}
+}
+
 func TestFixReadValuesTagBuiltInSupported(t *testing.T) {
 	ctx := context.WithValue(context.Background(), tagsKey, struct{}{})
 	name := "built_in"

@@ -339,34 +339,6 @@ func FixReadValues(ctx context.Context, targetMaps map[string]map[string]interfa
 			return nil, nil
 		}
 
-	// Ignore BGP measurements if it wasn't set, prevents API side effects from being saved to state
-	case "bgp_measurements":
-		if isSet, _ := ctx.Value(setInConfigKey).(bool); !isSet {
-			*name = ""
-			return nil, nil
-		}
-
-	// Ignore use public bgp if it wasn't set, prevents API side effects (bgp_measurements) from being saved to state
-	case "use_public_bgp":
-		if isSet, _ := ctx.Value(setInConfigKey).(bool); !isSet {
-			*name = ""
-			return nil, nil
-		}
-
-	// Ignore MTU measurements if it wasn't set, prevents API side effects (network_measurements) from being saved to state
-	case "mtu_measurements":
-		if isSet, _ := ctx.Value(setInConfigKey).(bool); !isSet {
-			*name = ""
-			return nil, nil
-		}
-
-	// Ignore num path traces if it wasn't set, prevents API side effects (network_measurements) from being saved to state
-	case "num_path_traces":
-		if isSet, _ := ctx.Value(setInConfigKey).(bool); !isSet {
-			*name = ""
-			return nil, nil
-		}
-
 	// Normalize header order so API reordering does not cause drift.
 	case "headers":
 		if headers, ok := normalizeStringInterfaceSlice(m); ok {

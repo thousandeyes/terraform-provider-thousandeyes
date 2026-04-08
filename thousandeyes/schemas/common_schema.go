@@ -172,6 +172,7 @@ var CommonSchema = map[string]*schema.Schema{
 		Type:        schema.TypeBool,
 		Description: "Enable to automatically add all available Public BGP Monitors to the test.",
 		Optional:    true,
+		Computed:    true,
 	},
 	// monitors (ex. bgp_monitors)
 	"monitors": {
@@ -211,7 +212,7 @@ var CommonSchema = map[string]*schema.Schema{
 		Type:         schema.TypeInt,
 		Description:  "The number of path traces.",
 		Optional:     true,
-		Required:     false,
+		Computed:     true,
 		ValidateFunc: validation.IntBetween(1, 10),
 	},
 	// pathTraceMode
@@ -250,7 +251,7 @@ var CommonSchema = map[string]*schema.Schema{
 		Type:        schema.TypeBool,
 		Description: "Enable BGP measurements. Set to true for enabled, false for disabled.",
 		Optional:    true,
-		Required:    false,
+		Computed:    true,
 	},
 
 	// AGENT TO AGENT
@@ -336,7 +337,7 @@ var CommonSchema = map[string]*schema.Schema{
 		Type:        schema.TypeBool,
 		Description: "Measure MTU sizes on the network from agents to the target.",
 		Optional:    true,
-		Required:    false,
+		Computed:    true,
 	},
 	// probeMode
 	"probe_mode": {
