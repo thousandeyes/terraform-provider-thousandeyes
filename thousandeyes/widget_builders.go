@@ -83,8 +83,10 @@ func buildAlertListWidget(data map[string]interface{}) dashboards.ApiWidget {
 	if configList := getListValue(data, "alert_list_config"); len(configList) > 0 {
 		config := configList[0].(map[string]interface{})
 		setAlertTypesFromConfig(config, "alert_types", widget.SetAlertTypes)
-		if v := getIntValue(config, "limit_to"); v != 0 {
-			widget.SetLimitTo(int32(v))
+		if rawLimit, exists := config["limit_to"]; exists {
+			if limit, ok := rawLimit.(int); ok {
+				widget.SetLimitTo(int32(limit))
+			}
 		}
 		if activeWithin := buildActiveWithinFromConfig(config); activeWithin != nil {
 			widget.SetActiveWithin(*activeWithin)

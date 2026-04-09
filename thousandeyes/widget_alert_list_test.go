@@ -41,6 +41,28 @@ func TestBuildAlertListWidget(t *testing.T) {
 	assert.Equal(t, dashboards.LegacyDurationUnit("Days"), (&activeWithin).GetUnit())
 }
 
+func TestBuildAlertListWidgetPreservesZeroLimit(t *testing.T) {
+	widget := buildAlertListWidget(map[string]interface{}{
+		"type":        "Alert List",
+		"title":       "Zero Limit Alert List",
+		"visual_mode": "Full",
+		"data_source": "ALERTS",
+		"alert_list_config": []interface{}{
+			map[string]interface{}{
+				"limit_to": 0,
+			},
+		},
+	})
+
+	w := widget.ApiAlertListWidget
+	assert.NotNil(t, w)
+
+	limit, ok := w.GetLimitToOk()
+	assert.True(t, ok)
+	assert.NotNil(t, limit)
+	assert.Equal(t, int32(0), *limit)
+}
+
 func TestMapAlertListWidget(t *testing.T) {
 	w := dashboards.NewApiAlertListWidget("Alert List")
 	w.SetId("widget-123")
