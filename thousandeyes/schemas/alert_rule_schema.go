@@ -151,6 +151,7 @@ var AlertRuleSchema = map[string]*schema.Schema{
 		Type:        schema.TypeString,
 		Required:    false,
 		Optional:    true,
+		Computed:    true,
 		ValidateFunc: validation.StringInSlice([]string{
 			"high",
 			"medium",
