@@ -3,6 +3,7 @@ package thousandeyes
 import (
 	"fmt"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -895,6 +896,104 @@ func TestAccThousandEyesDashboard_preserveUnmanagedWidgets(t *testing.T) {
 	})
 }
 
+func TestAccThousandEyesDashboard_testTableDatasourceBehavior(t *testing.T) {
+	if os.Getenv("TF_ACC") == "" {
+		t.Skip("set TF_ACC=1 to run acceptance tests")
+	}
+
+	testAccPreCheck(t)
+
+	api := (*dashboards.DashboardsAPIService)(&testClient.Common)
+	ctx := testClient.GetConfig().Context
+	results := make(map[string]string, len(dashboards.AllowedTestTableDatasourceEnumValues))
+
+	ignoredCount := 0
+	preservedCount := 0
+	unsupportedCount := 0
+
+	for _, dataSource := range dashboards.AllowedTestTableDatasourceEnumValues {
+		if dataSource == dashboards.TestTableDatasource("unknown") {
+			continue
+		}
+
+		dashboard := dashboards.NewDashboard()
+		dashboard.SetTitle(fmt.Sprintf("Test Table Datasource Probe %s", dataSource))
+		dashboard.SetDescription("Acceptance test for Test Table datasource behavior")
+		dashboard.SetIsPrivate(true)
+		dashboard.SetWidgets([]dashboards.ApiWidget{dashboards.ApiTestTableWidgetAsApiWidget(newAcceptanceTestTableWidget(dataSource))})
+
+		createReq := api.CreateDashboard().Dashboard(*dashboard)
+		createReq = SetAidFromContext(ctx, createReq)
+		created, _, err := createReq.Execute()
+		if err != nil {
+			if strings.Contains(err.Error(), "Invalid combination of DataSource - MetricGroup - Direction - Metric") {
+				results[string(dataSource)] = "unsupported"
+				unsupportedCount++
+				continue
+			}
+			results[string(dataSource)] = fmt.Sprintf("create_error: %v", err)
+			continue
+		}
+
+		dashboardID := created.GetDashboardId()
+		t.Cleanup(func() {
+			deleteReq := api.DeleteDashboard(dashboardID)
+			deleteReq = SetAidFromContext(ctx, deleteReq)
+			if _, err := deleteReq.Execute(); err != nil {
+				t.Logf("failed to delete datasource probe dashboard %s: %v", dashboardID, err)
+			}
+		})
+
+		getReq := api.GetDashboard(dashboardID)
+		getReq = SetAidFromContext(ctx, getReq)
+		fetched, _, err := getReq.Execute()
+		if err != nil {
+			results[string(dataSource)] = fmt.Sprintf("get_error: %v", err)
+			continue
+		}
+
+		widgets := fetched.GetWidgets()
+		if len(widgets) != 1 || widgets[0].ApiTestTableWidget == nil {
+			results[string(dataSource)] = "unexpected_widget_payload"
+			continue
+		}
+
+		returnedDataSource, ok := widgets[0].ApiTestTableWidget.GetDataSourceOk()
+		switch {
+		case !ok || returnedDataSource == nil || *returnedDataSource == "":
+			results[string(dataSource)] = "ignored"
+			ignoredCount++
+		case *returnedDataSource == dataSource:
+			results[string(dataSource)] = "preserved"
+			preservedCount++
+		default:
+			results[string(dataSource)] = fmt.Sprintf("mismatched:%s", *returnedDataSource)
+		}
+	}
+
+	totalTested := ignoredCount + preservedCount
+	for _, outcome := range results {
+		if outcome != "ignored" && outcome != "preserved" && outcome != "unsupported" {
+			t.Fatalf("Test Table datasource behavior is not uniform: %#v", results)
+		}
+	}
+
+	if totalTested == 0 {
+		t.Fatalf("Test Table datasource probe produced no successful results: %#v", results)
+	}
+
+	if ignoredCount > 0 && preservedCount > 0 {
+		t.Fatalf("Test Table datasource behavior is mixed: %#v", results)
+	}
+
+	if ignoredCount == totalTested {
+		t.Logf("API ignored all %d supported Test Table datasource values and rejected %d unsupported values: %#v", totalTested, unsupportedCount, results)
+		return
+	}
+
+	t.Logf("API preserved all %d supported Test Table datasource values and rejected %d unsupported values: %#v", totalTested, unsupportedCount, results)
+}
+
 // addUnmanagedWidgetViaDashboardAPI adds a Multi Metric Table widget (unsupported by the provider)
 // directly to the dashboard via the API, simulating a widget created outside Terraform.
 func addUnmanagedWidgetViaDashboardAPI(t *testing.T, dashboardID string) {
@@ -928,6 +1027,39 @@ func addUnmanagedWidgetViaDashboardAPI(t *testing.T, dashboardID string) {
 	if _, _, err := updateReq.Execute(); err != nil {
 		t.Fatalf("failed to add unmanaged widget to dashboard %s: %v", dashboardID, err)
 	}
+}
+
+func newAcceptanceTestTableWidget(dataSource dashboards.TestTableDatasource) *dashboards.ApiTestTableWidget {
+	widget := dashboards.NewApiTestTableWidget("Test Table")
+	widget.SetTitle("Datasource Probe")
+	widget.SetVisualMode(dashboards.VisualMode("Full"))
+	widget.SetDataSource(dataSource)
+
+	filter := dashboards.NewApiWidgetFilterApiTestTableFilterKey()
+	filter.SetType(dashboards.TestTableFilterType("all"))
+	filter.SetFilters([]dashboards.ApiMultiSearchFilterApiTestTableFilterKey{
+		func() dashboards.ApiMultiSearchFilterApiTestTableFilterKey {
+			item := dashboards.NewApiMultiSearchFilterApiTestTableFilterKey()
+			item.SetKey(dashboards.TestTableFilterKey("Test Name"))
+			item.SetValue("API")
+			return *item
+		}(),
+	})
+	widget.SetFilter(*filter)
+
+	exclude := dashboards.NewApiWidgetFilterApiTestTableFilterKey()
+	exclude.SetType(dashboards.TestTableFilterType("any"))
+	exclude.SetFilters([]dashboards.ApiMultiSearchFilterApiTestTableFilterKey{
+		func() dashboards.ApiMultiSearchFilterApiTestTableFilterKey {
+			item := dashboards.NewApiMultiSearchFilterApiTestTableFilterKey()
+			item.SetKey(dashboards.TestTableFilterKey("Test ID"))
+			item.SetValue("123")
+			return *item
+		}(),
+	})
+	widget.SetExclude(*exclude)
+
+	return widget
 }
 
 // checkDashboardTotalWidgetCount verifies the dashboard has exactly the expected

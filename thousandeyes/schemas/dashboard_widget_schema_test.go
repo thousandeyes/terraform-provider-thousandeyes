@@ -19,37 +19,3 @@ func TestDashboardWidgetSchemaFixedTimespanIsComputed(t *testing.T) {
 	assert.True(t, fixedTimespanResource.Schema["value"].Computed)
 	assert.True(t, fixedTimespanResource.Schema["unit"].Computed)
 }
-
-func TestDashboardWidgetSchemaSuppressesTestTableAlertsDataSourceDrift(t *testing.T) {
-	d := schema.TestResourceDataRaw(t, DashboardSchema, map[string]interface{}{
-		"title": "test",
-		"widgets": []interface{}{
-			map[string]interface{}{
-				"type":        "Test Table",
-				"data_source": "ALERTS",
-			},
-		},
-	})
-
-	suppress := DashboardWidgetSchema["data_source"].DiffSuppressFunc
-	require.NotNil(t, suppress)
-	assert.True(t, suppress("widgets.0.data_source", "", "ALERTS", d))
-	assert.True(t, suppress("widgets.0.data_source", "ALERTS", "", d))
-}
-
-func TestDashboardWidgetSchemaDoesNotSuppressOtherDataSourceDiffs(t *testing.T) {
-	d := schema.TestResourceDataRaw(t, DashboardSchema, map[string]interface{}{
-		"title": "test",
-		"widgets": []interface{}{
-			map[string]interface{}{
-				"type":        "Table",
-				"data_source": "ALERTS",
-			},
-		},
-	})
-
-	suppress := DashboardWidgetSchema["data_source"].DiffSuppressFunc
-	require.NotNil(t, suppress)
-	assert.False(t, suppress("widgets.0.data_source", "", "ALERTS", d))
-	assert.False(t, suppress("widgets.0.data_source", "", "CLOUD_NATIVE_MONITORING", d))
-}

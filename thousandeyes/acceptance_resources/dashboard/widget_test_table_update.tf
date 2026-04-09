@@ -11,7 +11,6 @@ resource "thousandeyes_dashboard" "test_dashboard_test_table_widget" {
     type        = "Test Table"
     title       = "Test Table Widget (Updated)"
     visual_mode = "Full"
-    data_source = "ALERTS"
 
     test_table_config {
       filter {

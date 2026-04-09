@@ -913,7 +913,6 @@ var NumberCardSchema = map[string]*schema.Schema{
 		},
 	},
 }
-
 var MultiMetricColumnSchema = map[string]*schema.Schema{
 	"id": {
 		Type:        schema.TypeString,
