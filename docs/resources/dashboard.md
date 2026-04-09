@@ -274,11 +274,14 @@ Required:
 Optional:
 
 - `agent_status_config` (Block List, Max: 1) Configuration for Agent Status widgets. (see [below for nested schema](#nestedblock--widgets--agent_status_config))
+- `alert_list_config` (Block List, Max: 1) Configuration for Alert List widgets. (see [below for nested schema](#nestedblock--widgets--alert_list_config))
 - `box_and_whiskers_config` (Block List, Max: 1) Configuration for Box and Whiskers widgets. (see [below for nested schema](#nestedblock--widgets--box_and_whiskers_config))
+- `color_grid_config` (Block List, Max: 1) Configuration for Color Grid widgets. (see [below for nested schema](#nestedblock--widgets--color_grid_config))
 - `data_source` (String) Data source for the widget.
 - `filter` (Block List) Filters applied to the widget. Each filter specifies a property and list of values. (see [below for nested schema](#nestedblock--widgets--filter))
 - `fixed_timespan` (Block List, Max: 1) Fixed timespan for the widget. (see [below for nested schema](#nestedblock--widgets--fixed_timespan))
 - `geo_map_config` (Block List, Max: 1) Configuration for Map widgets. (see [below for nested schema](#nestedblock--widgets--geo_map_config))
+- `grouped_bar_chart_config` (Block List, Max: 1) Configuration for Bar Chart: Grouped widgets. (see [below for nested schema](#nestedblock--widgets--grouped_bar_chart_config))
 - `list_config` (Block List, Max: 1) Configuration for List widgets. (see [below for nested schema](#nestedblock--widgets--list_config))
 - `measure` (Block List, Max: 1) Measure configuration for the widget. (see [below for nested schema](#nestedblock--widgets--measure))
 - `metric` (String) Metric for the widget.
@@ -289,6 +292,9 @@ Optional:
 - `pie_chart_config` (Block List, Max: 1) Configuration for Pie Chart widgets. (see [below for nested schema](#nestedblock--widgets--pie_chart_config))
 - `should_exclude_alert_suppression_windows` (Boolean) Excludes alert suppression window data if set to true.
 - `stacked_area_config` (Block List, Max: 1) Configuration for Time Series: Stacked Area widgets. (see [below for nested schema](#nestedblock--widgets--stacked_area_config))
+- `stacked_bar_chart_config` (Block List, Max: 1) Configuration for Bar Chart: Stacked widgets. (see [below for nested schema](#nestedblock--widgets--stacked_bar_chart_config))
+- `table_config` (Block List, Max: 1) Configuration for Table widgets. (see [below for nested schema](#nestedblock--widgets--table_config))
+- `test_table_config` (Block List, Max: 1) Configuration for Test Table widgets. (see [below for nested schema](#nestedblock--widgets--test_table_config))
 - `timeseries_config` (Block List, Max: 1) Configuration for Time Series: Line widgets. (see [below for nested schema](#nestedblock--widgets--timeseries_config))
 - `title` (String) Title of the widget.
 - `visual_mode` (String) Visual mode of the widget (e.g., 'Full', 'Half screen').
@@ -309,6 +315,17 @@ Optional:
 - `show` (String) What to show (e.g., 'All Agents', 'Online Agents', 'Offline Agents').
 
 
+<a id="nestedblock--widgets--alert_list_config"></a>
+### Nested Schema for `widgets.alert_list_config`
+
+Optional:
+
+- `active_within_unit` (String) Timespan unit for active within filter.
+- `active_within_value` (Number) Timespan value for active within filter.
+- `alert_types` (Set of String) Alert types to include. Empty means all alert types.
+- `limit_to` (Number) Maximum number of alerts to display.
+
+
 <a id="nestedblock--widgets--box_and_whiskers_config"></a>
 ### Nested Schema for `widgets.box_and_whiskers_config`
 
@@ -318,6 +335,24 @@ Optional:
 - `max_scale` (Number) Maximum scale value for the Y-axis.
 - `min_scale` (Number) Minimum scale value for the Y-axis.
 - `unit` (String) Unit for the Y-axis scale.
+
+
+<a id="nestedblock--widgets--color_grid_config"></a>
+### Nested Schema for `widgets.color_grid_config`
+
+Optional:
+
+- `cards` (String) Aggregate property used for cards.
+- `columns` (Number) Number of columns.
+- `group_cards_by` (String) Aggregate property used to group cards.
+- `limit` (Number) Maximum number of cards to display.
+- `max_scale` (Number) Maximum scale value.
+- `min_scale` (Number) Minimum scale value.
+- `sort_by` (String) Card sorting criterion.
+- `sort_direction` (String) Card sorting direction.
+- `sort_group_by` (String) Group sorting criterion.
+- `sort_group_direction` (String) Group sorting direction.
+- `unit` (String) Unit for the scale.
 
 
 <a id="nestedblock--widgets--filter"></a>
@@ -348,6 +383,20 @@ Optional:
 - `max_scale` (Number) Maximum scale value.
 - `min_scale` (Number) Minimum scale value.
 - `unit` (String) Unit for the scale.
+
+
+<a id="nestedblock--widgets--grouped_bar_chart_config"></a>
+### Nested Schema for `widgets.grouped_bar_chart_config`
+
+Optional:
+
+- `axis_group_by` (String) Axis grouping property.
+- `group_by` (String) Group bars by property.
+- `is_horizontal_bar_chart` (Boolean) Displays bars horizontally when set to true.
+- `limit` (Number) Maximum number of bars to display.
+- `show_labels` (Boolean) Displays labels on each bar.
+- `sort_by` (String) Sorting criterion.
+- `sort_direction` (String) Sorting direction.
 
 
 <a id="nestedblock--widgets--list_config"></a>
@@ -484,6 +533,77 @@ Optional:
 - `max_scale` (Number) Maximum scale value for the Y-axis.
 - `min_scale` (Number) Minimum scale value for the Y-axis.
 - `unit` (String) Unit for the Y-axis scale.
+
+
+<a id="nestedblock--widgets--stacked_bar_chart_config"></a>
+### Nested Schema for `widgets.stacked_bar_chart_config`
+
+Optional:
+
+- `axis_group_by` (String) Axis grouping property.
+- `is_horizontal_bar_chart` (Boolean) Displays bars horizontally when set to true.
+- `limit` (Number) Maximum number of bars to display.
+- `show_labels` (Boolean) Displays labels on each bar.
+- `sort_by` (String) Sorting criterion.
+- `sort_direction` (String) Sorting direction.
+
+
+<a id="nestedblock--widgets--table_config"></a>
+### Nested Schema for `widgets.table_config`
+
+Optional:
+
+- `column_group_by` (String) Group columns by property.
+- `compare_to_previous_value` (Boolean) Enables comparison of the current metric value with the previous value.
+- `limit` (Number) Maximum number of rows to display.
+- `row_group_by` (String) Group rows by property.
+- `sort_by` (String) Sorting criterion.
+- `sort_direction` (String) Sorting direction.
+
+
+<a id="nestedblock--widgets--test_table_config"></a>
+### Nested Schema for `widgets.test_table_config`
+
+Optional:
+
+- `exclude` (Block List, Max: 1) Exclude filter configuration. (see [below for nested schema](#nestedblock--widgets--test_table_config--exclude))
+- `filter` (Block List, Max: 1) Include filter configuration. (see [below for nested schema](#nestedblock--widgets--test_table_config--filter))
+
+<a id="nestedblock--widgets--test_table_config--exclude"></a>
+### Nested Schema for `widgets.test_table_config.exclude`
+
+Optional:
+
+- `filters` (Block List) Filter terms. (see [below for nested schema](#nestedblock--widgets--test_table_config--exclude--filters))
+- `type` (String) How to combine the filters.
+
+<a id="nestedblock--widgets--test_table_config--exclude--filters"></a>
+### Nested Schema for `widgets.test_table_config.exclude.filters`
+
+Required:
+
+- `key` (String) Filter key.
+- `value` (String) Filter value.
+
+
+
+<a id="nestedblock--widgets--test_table_config--filter"></a>
+### Nested Schema for `widgets.test_table_config.filter`
+
+Optional:
+
+- `filters` (Block List) Filter terms. (see [below for nested schema](#nestedblock--widgets--test_table_config--filter--filters))
+- `type` (String) How to combine the filters.
+
+<a id="nestedblock--widgets--test_table_config--filter--filters"></a>
+### Nested Schema for `widgets.test_table_config.filter.filters`
+
+Required:
+
+- `key` (String) Filter key.
+- `value` (String) Filter value.
+
+
 
 
 <a id="nestedblock--widgets--timeseries_config"></a>
