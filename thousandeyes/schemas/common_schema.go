@@ -654,7 +654,7 @@ var CommonSchema = map[string]*schema.Schema{
 		Type:        schema.TypeBool,
 		Description: "Set to 'true' to capture response headers for objects loaded by the test.",
 		Optional:    true,
-		Default:     true,
+		Computed:    true,
 	},
 	// oAuth
 	"oauth": oauth,
