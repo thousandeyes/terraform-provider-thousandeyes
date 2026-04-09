@@ -278,6 +278,8 @@ func mapNumberWidget(widget dashboards.ApiWidget) (map[string]interface{}, error
 
 	if cards := w.GetNumberCards(); len(cards) > 0 {
 		data["number_cards"] = mapNumberCards(cards)
+	} else {
+		data["number_cards"] = []interface{}{}
 	}
 
 	return data, nil
