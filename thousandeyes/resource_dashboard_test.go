@@ -25,6 +25,12 @@ func TestAccThousandEyesDashboard(t *testing.T) {
 	var resourceNamePieChartWidget = "thousandeyes_dashboard.test_dashboard_pie_chart_widget"
 	var resourceNameBoxAndWhiskersDefaults = "thousandeyes_dashboard.test_dashboard_box_and_whiskers_defaults"
 	var resourceNameBoxAndWhiskersWidget = "thousandeyes_dashboard.test_dashboard_box_and_whiskers_widget"
+	var resourceNameTableWidget = "thousandeyes_dashboard.test_dashboard_table_widget"
+	var resourceNameTestTableWidget = "thousandeyes_dashboard.test_dashboard_test_table_widget"
+	var resourceNameStackedBarChartWidget = "thousandeyes_dashboard.test_dashboard_stacked_bar_chart_widget"
+	var resourceNameGroupedBarChartWidget = "thousandeyes_dashboard.test_dashboard_grouped_bar_chart_widget"
+	var resourceNameColorGridWidget = "thousandeyes_dashboard.test_dashboard_color_grid_widget"
+	var resourceNameAlertListWidget = "thousandeyes_dashboard.test_dashboard_alert_list_widget"
 	var resourceNameFilterWidget = "thousandeyes_dashboard.test_dashboard_filter_widget"
 	var resourceNameNumberDefaults = "thousandeyes_dashboard.test_dashboard_number_defaults"
 	var resourceNameNumberWidget = "thousandeyes_dashboard.test_dashboard_number_widget"
@@ -388,6 +394,206 @@ func TestAccThousandEyesDashboard(t *testing.T) {
 			},
 		},
 		{
+			name:                 "create_update_delete_dashboard_table_widget_test",
+			createResourceFile:   "acceptance_resources/dashboard/widget_table_basic.tf",
+			updateResourceFile:   "acceptance_resources/dashboard/widget_table_update.tf",
+			resourceName:         resourceNameTableWidget,
+			checkDestroyFunction: testAccCheckDashboardResourceDestroy,
+			checkCreateFunc: []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(resourceNameTableWidget, "title", "Test Dashboard Table Widget"),
+				resource.TestCheckResourceAttr(resourceNameTableWidget, "description", "Test Dashboard with Table Widget"),
+				resource.TestCheckResourceAttr(resourceNameTableWidget, "widgets.0.type", "Table"),
+				resource.TestCheckResourceAttr(resourceNameTableWidget, "widgets.0.title", "Test Table Widget"),
+				resource.TestCheckResourceAttr(resourceNameTableWidget, "widgets.0.data_source", "ALERTS"),
+				resource.TestCheckResourceAttr(resourceNameTableWidget, "widgets.0.table_config.0.compare_to_previous_value", "true"),
+				resource.TestCheckResourceAttr(resourceNameTableWidget, "widgets.0.table_config.0.row_group_by", "AGENT"),
+				resource.TestCheckResourceAttr(resourceNameTableWidget, "widgets.0.table_config.0.column_group_by", "TEST"),
+				resource.TestCheckResourceAttr(resourceNameTableWidget, "widgets.0.table_config.0.sort_by", "Alphabetical"),
+				resource.TestCheckResourceAttr(resourceNameTableWidget, "widgets.0.table_config.0.sort_direction", "Ascending"),
+				resource.TestCheckResourceAttr(resourceNameTableWidget, "widgets.0.table_config.0.limit", "10"),
+			},
+			checkUpdateFunc: []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(resourceNameTableWidget, "title", "Test Dashboard Table Widget (Updated)"),
+				resource.TestCheckResourceAttr(resourceNameTableWidget, "description", "Test Dashboard with Table Widget (Updated)"),
+				resource.TestCheckResourceAttr(resourceNameTableWidget, "widgets.0.type", "Table"),
+				resource.TestCheckResourceAttr(resourceNameTableWidget, "widgets.0.title", "Test Table Widget (Updated)"),
+				resource.TestCheckResourceAttr(resourceNameTableWidget, "widgets.0.table_config.0.compare_to_previous_value", "false"),
+				resource.TestCheckResourceAttr(resourceNameTableWidget, "widgets.0.table_config.0.row_group_by", "TEST"),
+				resource.TestCheckResourceAttr(resourceNameTableWidget, "widgets.0.table_config.0.column_group_by", "AGENT"),
+				resource.TestCheckResourceAttr(resourceNameTableWidget, "widgets.0.table_config.0.sort_by", "Value"),
+				resource.TestCheckResourceAttr(resourceNameTableWidget, "widgets.0.table_config.0.sort_direction", "Descending"),
+				resource.TestCheckResourceAttr(resourceNameTableWidget, "widgets.0.table_config.0.limit", "20"),
+			},
+		},
+		{
+			name:                 "create_update_delete_dashboard_test_table_widget_test",
+			createResourceFile:   "acceptance_resources/dashboard/widget_test_table_basic.tf",
+			updateResourceFile:   "acceptance_resources/dashboard/widget_test_table_update.tf",
+			resourceName:         resourceNameTestTableWidget,
+			checkDestroyFunction: testAccCheckDashboardResourceDestroy,
+			checkCreateFunc: []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(resourceNameTestTableWidget, "title", "Test Dashboard Test Table Widget"),
+				resource.TestCheckResourceAttr(resourceNameTestTableWidget, "description", "Test Dashboard with Test Table Widget"),
+				resource.TestCheckResourceAttr(resourceNameTestTableWidget, "widgets.0.type", "Test Table"),
+				resource.TestCheckResourceAttr(resourceNameTestTableWidget, "widgets.0.title", "Test Table Widget"),
+				resource.TestCheckResourceAttr(resourceNameTestTableWidget, "widgets.0.test_table_config.0.filter.0.type", "all"),
+				resource.TestCheckResourceAttr(resourceNameTestTableWidget, "widgets.0.test_table_config.0.filter.0.filters.0.key", "Test Name"),
+				resource.TestCheckResourceAttr(resourceNameTestTableWidget, "widgets.0.test_table_config.0.filter.0.filters.0.value", "API"),
+				resource.TestCheckResourceAttr(resourceNameTestTableWidget, "widgets.0.test_table_config.0.exclude.0.type", "any"),
+				resource.TestCheckResourceAttr(resourceNameTestTableWidget, "widgets.0.test_table_config.0.exclude.0.filters.0.key", "Test ID"),
+				resource.TestCheckResourceAttr(resourceNameTestTableWidget, "widgets.0.test_table_config.0.exclude.0.filters.0.value", "123"),
+			},
+			checkUpdateFunc: []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(resourceNameTestTableWidget, "title", "Test Dashboard Test Table Widget (Updated)"),
+				resource.TestCheckResourceAttr(resourceNameTestTableWidget, "description", "Test Dashboard with Test Table Widget (Updated)"),
+				resource.TestCheckResourceAttr(resourceNameTestTableWidget, "widgets.0.type", "Test Table"),
+				resource.TestCheckResourceAttr(resourceNameTestTableWidget, "widgets.0.title", "Test Table Widget (Updated)"),
+				resource.TestCheckResourceAttr(resourceNameTestTableWidget, "widgets.0.test_table_config.0.filter.0.type", "any"),
+				resource.TestCheckResourceAttr(resourceNameTestTableWidget, "widgets.0.test_table_config.0.filter.0.filters.0.key", "Target"),
+				resource.TestCheckResourceAttr(resourceNameTestTableWidget, "widgets.0.test_table_config.0.filter.0.filters.0.value", "example.com"),
+				resource.TestCheckResourceAttr(resourceNameTestTableWidget, "widgets.0.test_table_config.0.exclude.0.type", "all"),
+				resource.TestCheckResourceAttr(resourceNameTestTableWidget, "widgets.0.test_table_config.0.exclude.0.filters.0.key", "Test ID"),
+				resource.TestCheckResourceAttr(resourceNameTestTableWidget, "widgets.0.test_table_config.0.exclude.0.filters.0.value", "456"),
+			},
+		},
+		{
+			name:                 "create_update_delete_dashboard_stacked_bar_chart_widget_test",
+			createResourceFile:   "acceptance_resources/dashboard/widget_stacked_bar_chart_basic.tf",
+			updateResourceFile:   "acceptance_resources/dashboard/widget_stacked_bar_chart_update.tf",
+			resourceName:         resourceNameStackedBarChartWidget,
+			checkDestroyFunction: testAccCheckDashboardResourceDestroy,
+			checkCreateFunc: []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(resourceNameStackedBarChartWidget, "title", "Test Dashboard Stacked Bar Chart Widget"),
+				resource.TestCheckResourceAttr(resourceNameStackedBarChartWidget, "description", "Test Dashboard with Stacked Bar Chart Widget"),
+				resource.TestCheckResourceAttr(resourceNameStackedBarChartWidget, "widgets.0.type", "Bar Chart: Stacked"),
+				resource.TestCheckResourceAttr(resourceNameStackedBarChartWidget, "widgets.0.title", "Stacked Bar Chart Widget"),
+				resource.TestCheckResourceAttr(resourceNameStackedBarChartWidget, "widgets.0.data_source", "CLOUD_NATIVE_MONITORING"),
+				resource.TestCheckResourceAttr(resourceNameStackedBarChartWidget, "widgets.0.stacked_bar_chart_config.0.axis_group_by", "CLOUD_NATIVE_MONITORING-REGION"),
+				resource.TestCheckResourceAttr(resourceNameStackedBarChartWidget, "widgets.0.stacked_bar_chart_config.0.sort_by", "Value"),
+				resource.TestCheckResourceAttr(resourceNameStackedBarChartWidget, "widgets.0.stacked_bar_chart_config.0.sort_direction", "Descending"),
+				resource.TestCheckResourceAttr(resourceNameStackedBarChartWidget, "widgets.0.stacked_bar_chart_config.0.limit", "8"),
+				resource.TestCheckResourceAttr(resourceNameStackedBarChartWidget, "widgets.0.stacked_bar_chart_config.0.show_labels", "true"),
+				resource.TestCheckResourceAttr(resourceNameStackedBarChartWidget, "widgets.0.stacked_bar_chart_config.0.is_horizontal_bar_chart", "true"),
+			},
+			checkUpdateFunc: []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(resourceNameStackedBarChartWidget, "title", "Test Dashboard Stacked Bar Chart Widget (Updated)"),
+				resource.TestCheckResourceAttr(resourceNameStackedBarChartWidget, "description", "Test Dashboard with Stacked Bar Chart Widget (Updated)"),
+				resource.TestCheckResourceAttr(resourceNameStackedBarChartWidget, "widgets.0.type", "Bar Chart: Stacked"),
+				resource.TestCheckResourceAttr(resourceNameStackedBarChartWidget, "widgets.0.title", "Stacked Bar Chart Widget (Updated)"),
+				resource.TestCheckResourceAttr(resourceNameStackedBarChartWidget, "widgets.0.stacked_bar_chart_config.0.axis_group_by", "CLOUD_NATIVE_MONITORING-ACCOUNT"),
+				resource.TestCheckResourceAttr(resourceNameStackedBarChartWidget, "widgets.0.stacked_bar_chart_config.0.sort_by", "Alphabetical"),
+				resource.TestCheckResourceAttr(resourceNameStackedBarChartWidget, "widgets.0.stacked_bar_chart_config.0.sort_direction", "Ascending"),
+				resource.TestCheckResourceAttr(resourceNameStackedBarChartWidget, "widgets.0.stacked_bar_chart_config.0.limit", "5"),
+				resource.TestCheckResourceAttr(resourceNameStackedBarChartWidget, "widgets.0.stacked_bar_chart_config.0.show_labels", "false"),
+				resource.TestCheckResourceAttr(resourceNameStackedBarChartWidget, "widgets.0.stacked_bar_chart_config.0.is_horizontal_bar_chart", "false"),
+			},
+		},
+		{
+			name:                 "create_update_delete_dashboard_grouped_bar_chart_widget_test",
+			createResourceFile:   "acceptance_resources/dashboard/widget_grouped_bar_chart_basic.tf",
+			updateResourceFile:   "acceptance_resources/dashboard/widget_grouped_bar_chart_update.tf",
+			resourceName:         resourceNameGroupedBarChartWidget,
+			checkDestroyFunction: testAccCheckDashboardResourceDestroy,
+			checkCreateFunc: []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(resourceNameGroupedBarChartWidget, "title", "Test Dashboard Grouped Bar Chart Widget"),
+				resource.TestCheckResourceAttr(resourceNameGroupedBarChartWidget, "description", "Test Dashboard with Grouped Bar Chart Widget"),
+				resource.TestCheckResourceAttr(resourceNameGroupedBarChartWidget, "widgets.0.type", "Bar Chart: Grouped"),
+				resource.TestCheckResourceAttr(resourceNameGroupedBarChartWidget, "widgets.0.title", "Grouped Bar Chart Widget"),
+				resource.TestCheckResourceAttr(resourceNameGroupedBarChartWidget, "widgets.0.data_source", "ALERTS"),
+				resource.TestCheckResourceAttr(resourceNameGroupedBarChartWidget, "widgets.0.grouped_bar_chart_config.0.group_by", "COUNTRY"),
+				resource.TestCheckResourceAttr(resourceNameGroupedBarChartWidget, "widgets.0.grouped_bar_chart_config.0.axis_group_by", "TEST"),
+				resource.TestCheckResourceAttr(resourceNameGroupedBarChartWidget, "widgets.0.grouped_bar_chart_config.0.sort_by", "Alphabetical"),
+				resource.TestCheckResourceAttr(resourceNameGroupedBarChartWidget, "widgets.0.grouped_bar_chart_config.0.sort_direction", "Ascending"),
+				resource.TestCheckResourceAttr(resourceNameGroupedBarChartWidget, "widgets.0.grouped_bar_chart_config.0.limit", "12"),
+				resource.TestCheckResourceAttr(resourceNameGroupedBarChartWidget, "widgets.0.grouped_bar_chart_config.0.show_labels", "true"),
+				resource.TestCheckResourceAttr(resourceNameGroupedBarChartWidget, "widgets.0.grouped_bar_chart_config.0.is_horizontal_bar_chart", "false"),
+			},
+			checkUpdateFunc: []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(resourceNameGroupedBarChartWidget, "title", "Test Dashboard Grouped Bar Chart Widget (Updated)"),
+				resource.TestCheckResourceAttr(resourceNameGroupedBarChartWidget, "description", "Test Dashboard with Grouped Bar Chart Widget (Updated)"),
+				resource.TestCheckResourceAttr(resourceNameGroupedBarChartWidget, "widgets.0.type", "Bar Chart: Grouped"),
+				resource.TestCheckResourceAttr(resourceNameGroupedBarChartWidget, "widgets.0.title", "Grouped Bar Chart Widget (Updated)"),
+				resource.TestCheckResourceAttr(resourceNameGroupedBarChartWidget, "widgets.0.grouped_bar_chart_config.0.group_by", "CONTINENT"),
+				resource.TestCheckResourceAttr(resourceNameGroupedBarChartWidget, "widgets.0.grouped_bar_chart_config.0.axis_group_by", "AGENT"),
+				resource.TestCheckResourceAttr(resourceNameGroupedBarChartWidget, "widgets.0.grouped_bar_chart_config.0.sort_by", "Value"),
+				resource.TestCheckResourceAttr(resourceNameGroupedBarChartWidget, "widgets.0.grouped_bar_chart_config.0.sort_direction", "Descending"),
+				resource.TestCheckResourceAttr(resourceNameGroupedBarChartWidget, "widgets.0.grouped_bar_chart_config.0.limit", "7"),
+				resource.TestCheckResourceAttr(resourceNameGroupedBarChartWidget, "widgets.0.grouped_bar_chart_config.0.show_labels", "false"),
+				resource.TestCheckResourceAttr(resourceNameGroupedBarChartWidget, "widgets.0.grouped_bar_chart_config.0.is_horizontal_bar_chart", "true"),
+			},
+		},
+		{
+			name:                 "create_update_delete_dashboard_color_grid_widget_test",
+			createResourceFile:   "acceptance_resources/dashboard/widget_color_grid_basic.tf",
+			updateResourceFile:   "acceptance_resources/dashboard/widget_color_grid_update.tf",
+			resourceName:         resourceNameColorGridWidget,
+			checkDestroyFunction: testAccCheckDashboardResourceDestroy,
+			checkCreateFunc: []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(resourceNameColorGridWidget, "title", "Test Dashboard Color Grid Widget"),
+				resource.TestCheckResourceAttr(resourceNameColorGridWidget, "description", "Test Dashboard with Color Grid Widget"),
+				resource.TestCheckResourceAttr(resourceNameColorGridWidget, "widgets.0.type", "Color Grid"),
+				resource.TestCheckResourceAttr(resourceNameColorGridWidget, "widgets.0.title", "Color Grid Widget"),
+				resource.TestCheckResourceAttr(resourceNameColorGridWidget, "widgets.0.data_source", "ALERTS"),
+				resource.TestCheckResourceAttr(resourceNameColorGridWidget, "widgets.0.color_grid_config.0.min_scale", "0"),
+				resource.TestCheckResourceAttr(resourceNameColorGridWidget, "widgets.0.color_grid_config.0.max_scale", "100"),
+				resource.TestCheckResourceAttr(resourceNameColorGridWidget, "widgets.0.color_grid_config.0.cards", "COUNTRY"),
+				resource.TestCheckResourceAttr(resourceNameColorGridWidget, "widgets.0.color_grid_config.0.group_cards_by", "TEST"),
+				resource.TestCheckResourceAttr(resourceNameColorGridWidget, "widgets.0.color_grid_config.0.columns", "2"),
+				resource.TestCheckResourceAttr(resourceNameColorGridWidget, "widgets.0.color_grid_config.0.limit", "6"),
+				resource.TestCheckResourceAttr(resourceNameColorGridWidget, "widgets.0.color_grid_config.0.sort_by", "Value"),
+				resource.TestCheckResourceAttr(resourceNameColorGridWidget, "widgets.0.color_grid_config.0.sort_direction", "Descending"),
+				resource.TestCheckResourceAttr(resourceNameColorGridWidget, "widgets.0.color_grid_config.0.sort_group_by", "Alphabetical"),
+				resource.TestCheckResourceAttr(resourceNameColorGridWidget, "widgets.0.color_grid_config.0.sort_group_direction", "Ascending"),
+			},
+			checkUpdateFunc: []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(resourceNameColorGridWidget, "title", "Test Dashboard Color Grid Widget (Updated)"),
+				resource.TestCheckResourceAttr(resourceNameColorGridWidget, "description", "Test Dashboard with Color Grid Widget (Updated)"),
+				resource.TestCheckResourceAttr(resourceNameColorGridWidget, "widgets.0.type", "Color Grid"),
+				resource.TestCheckResourceAttr(resourceNameColorGridWidget, "widgets.0.title", "Color Grid Widget (Updated)"),
+				resource.TestCheckResourceAttr(resourceNameColorGridWidget, "widgets.0.color_grid_config.0.min_scale", "10"),
+				resource.TestCheckResourceAttr(resourceNameColorGridWidget, "widgets.0.color_grid_config.0.max_scale", "200"),
+				resource.TestCheckResourceAttr(resourceNameColorGridWidget, "widgets.0.color_grid_config.0.cards", "CONTINENT"),
+				resource.TestCheckResourceAttr(resourceNameColorGridWidget, "widgets.0.color_grid_config.0.group_cards_by", "AGENT"),
+				resource.TestCheckResourceAttr(resourceNameColorGridWidget, "widgets.0.color_grid_config.0.columns", "1"),
+				resource.TestCheckResourceAttr(resourceNameColorGridWidget, "widgets.0.color_grid_config.0.limit", "4"),
+				resource.TestCheckResourceAttr(resourceNameColorGridWidget, "widgets.0.color_grid_config.0.sort_by", "Alphabetical"),
+				resource.TestCheckResourceAttr(resourceNameColorGridWidget, "widgets.0.color_grid_config.0.sort_direction", "Ascending"),
+				resource.TestCheckResourceAttr(resourceNameColorGridWidget, "widgets.0.color_grid_config.0.sort_group_by", "Value"),
+				resource.TestCheckResourceAttr(resourceNameColorGridWidget, "widgets.0.color_grid_config.0.sort_group_direction", "Descending"),
+			},
+		},
+		{
+			name:                 "create_update_delete_dashboard_alert_list_widget_test",
+			createResourceFile:   "acceptance_resources/dashboard/widget_alert_list_basic.tf",
+			updateResourceFile:   "acceptance_resources/dashboard/widget_alert_list_update.tf",
+			resourceName:         resourceNameAlertListWidget,
+			checkDestroyFunction: testAccCheckDashboardResourceDestroy,
+			checkCreateFunc: []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(resourceNameAlertListWidget, "title", "Test Dashboard Alert List Widget"),
+				resource.TestCheckResourceAttr(resourceNameAlertListWidget, "description", "Test Dashboard with Alert List Widget"),
+				resource.TestCheckResourceAttr(resourceNameAlertListWidget, "widgets.0.type", "Alert List"),
+				resource.TestCheckResourceAttr(resourceNameAlertListWidget, "widgets.0.title", "Alert List Widget"),
+				resource.TestCheckResourceAttr(resourceNameAlertListWidget, "widgets.0.data_source", "ALERTS"),
+				resource.TestCheckResourceAttr(resourceNameAlertListWidget, "widgets.0.alert_list_config.0.limit_to", "15"),
+				resource.TestCheckResourceAttr(resourceNameAlertListWidget, "widgets.0.alert_list_config.0.active_within_value", "7"),
+				resource.TestCheckResourceAttr(resourceNameAlertListWidget, "widgets.0.alert_list_config.0.active_within_unit", "Days"),
+				resource.TestCheckResourceAttr(resourceNameAlertListWidget, "widgets.0.alert_list_config.0.alert_types.#", "2"),
+				resource.TestCheckTypeSetElemAttr(resourceNameAlertListWidget, "widgets.0.alert_list_config.0.alert_types.*", "API"),
+				resource.TestCheckTypeSetElemAttr(resourceNameAlertListWidget, "widgets.0.alert_list_config.0.alert_types.*", "DNS Server"),
+			},
+			checkUpdateFunc: []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(resourceNameAlertListWidget, "title", "Test Dashboard Alert List Widget (Updated)"),
+				resource.TestCheckResourceAttr(resourceNameAlertListWidget, "description", "Test Dashboard with Alert List Widget (Updated)"),
+				resource.TestCheckResourceAttr(resourceNameAlertListWidget, "widgets.0.type", "Alert List"),
+				resource.TestCheckResourceAttr(resourceNameAlertListWidget, "widgets.0.title", "Alert List Widget (Updated)"),
+				resource.TestCheckResourceAttr(resourceNameAlertListWidget, "widgets.0.alert_list_config.0.limit_to", "20"),
+				resource.TestCheckResourceAttr(resourceNameAlertListWidget, "widgets.0.alert_list_config.0.active_within_value", "14"),
+				resource.TestCheckResourceAttr(resourceNameAlertListWidget, "widgets.0.alert_list_config.0.active_within_unit", "Days"),
+				resource.TestCheckResourceAttr(resourceNameAlertListWidget, "widgets.0.alert_list_config.0.alert_types.#", "1"),
+				resource.TestCheckTypeSetElemAttr(resourceNameAlertListWidget, "widgets.0.alert_list_config.0.alert_types.*", "Web - HTTP Server"),
+			},
+		},
+		{
 			name:                 "create_update_delete_dashboard_filter_widget_test",
 			createResourceFile:   "acceptance_resources/dashboard/widget_filter_basic.tf",
 			updateResourceFile:   "acceptance_resources/dashboard/widget_filter_update.tf",
@@ -689,7 +895,7 @@ func TestAccThousandEyesDashboard_preserveUnmanagedWidgets(t *testing.T) {
 	})
 }
 
-// addUnmanagedWidgetViaDashboardAPI adds a Color Grid widget (unsupported by the provider)
+// addUnmanagedWidgetViaDashboardAPI adds a Multi Metric Table widget (unsupported by the provider)
 // directly to the dashboard via the API, simulating a widget created outside Terraform.
 func addUnmanagedWidgetViaDashboardAPI(t *testing.T, dashboardID string) {
 	t.Helper()
@@ -704,9 +910,9 @@ func addUnmanagedWidgetViaDashboardAPI(t *testing.T, dashboardID string) {
 	}
 
 	widgets := existing.GetWidgets()
-	colorGrid := dashboards.NewApiColorGridWidget("Color Grid")
-	colorGrid.SetTitle("Unmanaged Color Grid Widget")
-	widgets = append(widgets, dashboards.ApiColorGridWidgetAsApiWidget(colorGrid))
+	multiMetricTable := dashboards.NewApiMultiMetricTableWidget("Multi Metric Table")
+	multiMetricTable.SetTitle("Unmanaged Multi Metric Table Widget")
+	widgets = append(widgets, dashboards.ApiMultiMetricTableWidgetAsApiWidget(multiMetricTable))
 
 	update := dashboards.Dashboard{}
 	update.SetTitle(existing.GetTitle())

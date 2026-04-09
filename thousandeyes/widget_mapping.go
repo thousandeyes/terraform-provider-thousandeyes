@@ -12,10 +12,16 @@ import (
 const (
 	WidgetTypeMap              = "Map"
 	WidgetTypeAgentStatus      = "Agent Status"
+	WidgetTypeAlertList        = "Alert List"
 	WidgetTypeTimeseriesLine   = "Time Series: Line"
 	WidgetTypeStackedArea      = "Time Series: Stacked Area"
+	WidgetTypeStackedBar       = "Bar Chart: Stacked"
+	WidgetTypeGroupedBar       = "Bar Chart: Grouped"
 	WidgetTypePieChart         = "Pie Chart"
 	WidgetTypeBoxAndWhiskers   = "Box and Whiskers"
+	WidgetTypeColorGrid        = "Color Grid"
+	WidgetTypeTable            = "Table"
+	WidgetTypeTestTable        = "Test Table"
 	WidgetTypeList             = "List"
 	WidgetTypeNumber           = "Number"
 	WidgetTypeMultiMetricTable = "Multi Metric Table"
@@ -39,10 +45,16 @@ type WidgetTypeRegistry struct {
 var widgetRegistry = map[string]WidgetTypeRegistry{
 	WidgetTypeMap:              {Builder: buildGeoMapWidget, Mapper: mapGeoMapWidget},
 	WidgetTypeAgentStatus:      {Builder: buildAgentStatusWidget, Mapper: mapAgentStatusWidget},
+	WidgetTypeAlertList:        {Builder: buildAlertListWidget, Mapper: mapAlertListWidget},
 	WidgetTypeTimeseriesLine:   {Builder: buildTimeseriesWidget, Mapper: mapTimeseriesWidget},
 	WidgetTypeStackedArea:      {Builder: buildStackedAreaWidget, Mapper: mapStackedAreaWidget},
+	WidgetTypeStackedBar:       {Builder: buildStackedBarChartWidget, Mapper: mapStackedBarChartWidget},
+	WidgetTypeGroupedBar:       {Builder: buildGroupedBarChartWidget, Mapper: mapGroupedBarChartWidget},
 	WidgetTypePieChart:         {Builder: buildPieChartWidget, Mapper: mapPieChartWidget},
 	WidgetTypeBoxAndWhiskers:   {Builder: buildBoxAndWhiskersWidget, Mapper: mapBoxAndWhiskersWidget},
+	WidgetTypeColorGrid:        {Builder: buildColorGridWidget, Mapper: mapColorGridWidget},
+	WidgetTypeTable:            {Builder: buildTableWidget, Mapper: mapTableWidget},
+	WidgetTypeTestTable:        {Builder: buildTestTableWidget, Mapper: mapTestTableWidget},
 	WidgetTypeList:             {Builder: buildListWidget, Mapper: mapListWidget},
 	WidgetTypeNumber:           {Builder: buildNumberWidget, Mapper: mapNumberWidget},
 	WidgetTypeMultiMetricTable: {Builder: buildMultiMetricTableWidget, Mapper: mapMultiMetricTableWidget},
@@ -70,14 +82,26 @@ func widgetTypeFromInstance(instance interface{}) (string, error) {
 		return WidgetTypeMap, nil
 	case *dashboards.ApiAgentStatusWidget:
 		return WidgetTypeAgentStatus, nil
+	case *dashboards.ApiAlertListWidget:
+		return WidgetTypeAlertList, nil
 	case *dashboards.ApiTimeseriesWidget:
 		return WidgetTypeTimeseriesLine, nil
 	case *dashboards.ApiStackedAreaChartWidget:
 		return WidgetTypeStackedArea, nil
+	case *dashboards.ApiStackedBarchartWidget:
+		return WidgetTypeStackedBar, nil
+	case *dashboards.ApiGroupedBarchartWidget:
+		return WidgetTypeGroupedBar, nil
 	case *dashboards.ApiPieChartWidget:
 		return WidgetTypePieChart, nil
 	case *dashboards.ApiBoxAndWhiskersWidget:
 		return WidgetTypeBoxAndWhiskers, nil
+	case *dashboards.ApiColorGridWidget:
+		return WidgetTypeColorGrid, nil
+	case *dashboards.ApiTableWidget:
+		return WidgetTypeTable, nil
+	case *dashboards.ApiTestTableWidget:
+		return WidgetTypeTestTable, nil
 	case *dashboards.ApiListWidget:
 		return WidgetTypeList, nil
 	case *dashboards.ApiNumbersCardWidget:

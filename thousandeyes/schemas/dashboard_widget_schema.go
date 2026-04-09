@@ -19,6 +19,12 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 			"Time Series: Stacked Area",
 			"Pie Chart",
 			"Box and Whiskers",
+			"Table",
+			"Test Table",
+			"Bar Chart: Stacked",
+			"Bar Chart: Grouped",
+			"Color Grid",
+			"Alert List",
 			"List",
 			"Number",
 			"Multi Metric Table",
@@ -95,6 +101,7 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 		Type:        schema.TypeList,
 		Description: "Fixed timespan for the widget.",
 		Optional:    true,
+		Computed:    true,
 		MaxItems:    1,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
@@ -102,11 +109,13 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 					Type:        schema.TypeInt,
 					Description: "Time value.",
 					Optional:    true,
+					Computed:    true,
 				},
 				"unit": {
 					Type:        schema.TypeString,
 					Description: "Time unit.",
 					Optional:    true,
+					Computed:    true,
 				},
 			},
 		},
@@ -344,6 +353,381 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 		MaxItems:    1,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
+				"active_within_value": {
+					Type:        schema.TypeInt,
+					Description: "Timespan value for active within filter.",
+					Optional:    true,
+				},
+				"active_within_unit": {
+					Type:        schema.TypeString,
+					Description: "Timespan unit for active within filter.",
+					Optional:    true,
+				},
+			},
+		},
+	},
+
+	"table_config": {
+		Type:        schema.TypeList,
+		Description: "Configuration for Table widgets.",
+		Optional:    true,
+		Computed:    true,
+		MaxItems:    1,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"compare_to_previous_value": {
+					Type:        schema.TypeBool,
+					Description: "Enables comparison of the current metric value with the previous value.",
+					Optional:    true,
+				},
+				"row_group_by": {
+					Type:        schema.TypeString,
+					Description: "Group rows by property.",
+					Optional:    true,
+				},
+				"column_group_by": {
+					Type:        schema.TypeString,
+					Description: "Group columns by property.",
+					Optional:    true,
+				},
+				"sort_by": {
+					Type:        schema.TypeString,
+					Description: "Sorting criterion.",
+					Optional:    true,
+					ValidateFunc: validation.StringInSlice([]string{
+						"Alphabetical",
+						"Value",
+					}, false),
+				},
+				"sort_direction": {
+					Type:        schema.TypeString,
+					Description: "Sorting direction.",
+					Optional:    true,
+					ValidateFunc: validation.StringInSlice([]string{
+						"Ascending",
+						"Descending",
+					}, false),
+				},
+				"limit": {
+					Type:        schema.TypeInt,
+					Description: "Maximum number of rows to display.",
+					Optional:    true,
+				},
+			},
+		},
+	},
+
+	"test_table_config": {
+		Type:        schema.TypeList,
+		Description: "Configuration for Test Table widgets.",
+		Optional:    true,
+		Computed:    true,
+		MaxItems:    1,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"filter": {
+					Type:        schema.TypeList,
+					Description: "Include filter configuration.",
+					Optional:    true,
+					MaxItems:    1,
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"type": {
+								Type:        schema.TypeString,
+								Description: "How to combine the filters.",
+								Optional:    true,
+								ValidateFunc: validation.StringInSlice([]string{
+									"all",
+									"any",
+								}, false),
+							},
+							"filters": {
+								Type:        schema.TypeList,
+								Description: "Filter terms.",
+								Optional:    true,
+								Elem: &schema.Resource{
+									Schema: map[string]*schema.Schema{
+										"key": {
+											Type:        schema.TypeString,
+											Description: "Filter key.",
+											Required:    true,
+											ValidateFunc: validation.StringInSlice([]string{
+												"Anything",
+												"Test Name",
+												"Target",
+												"Test ID",
+												"Test type",
+												"Label ID",
+											}, false),
+										},
+										"value": {
+											Type:        schema.TypeString,
+											Description: "Filter value.",
+											Required:    true,
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+				"exclude": {
+					Type:        schema.TypeList,
+					Description: "Exclude filter configuration.",
+					Optional:    true,
+					MaxItems:    1,
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"type": {
+								Type:        schema.TypeString,
+								Description: "How to combine the filters.",
+								Optional:    true,
+								ValidateFunc: validation.StringInSlice([]string{
+									"all",
+									"any",
+								}, false),
+							},
+							"filters": {
+								Type:        schema.TypeList,
+								Description: "Filter terms.",
+								Optional:    true,
+								Elem: &schema.Resource{
+									Schema: map[string]*schema.Schema{
+										"key": {
+											Type:        schema.TypeString,
+											Description: "Filter key.",
+											Required:    true,
+											ValidateFunc: validation.StringInSlice([]string{
+												"Anything",
+												"Test Name",
+												"Target",
+												"Test ID",
+												"Test type",
+												"Label ID",
+											}, false),
+										},
+										"value": {
+											Type:        schema.TypeString,
+											Description: "Filter value.",
+											Required:    true,
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	},
+
+	"stacked_bar_chart_config": {
+		Type:        schema.TypeList,
+		Description: "Configuration for Bar Chart: Stacked widgets.",
+		Optional:    true,
+		Computed:    true,
+		MaxItems:    1,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"axis_group_by": {
+					Type:        schema.TypeString,
+					Description: "Axis grouping property.",
+					Optional:    true,
+				},
+				"sort_by": {
+					Type:        schema.TypeString,
+					Description: "Sorting criterion.",
+					Optional:    true,
+					ValidateFunc: validation.StringInSlice([]string{
+						"Alphabetical",
+						"Value",
+					}, false),
+				},
+				"sort_direction": {
+					Type:        schema.TypeString,
+					Description: "Sorting direction.",
+					Optional:    true,
+					ValidateFunc: validation.StringInSlice([]string{
+						"Ascending",
+						"Descending",
+					}, false),
+				},
+				"limit": {
+					Type:        schema.TypeInt,
+					Description: "Maximum number of bars to display.",
+					Optional:    true,
+				},
+				"show_labels": {
+					Type:        schema.TypeBool,
+					Description: "Displays labels on each bar.",
+					Optional:    true,
+				},
+				"is_horizontal_bar_chart": {
+					Type:        schema.TypeBool,
+					Description: "Displays bars horizontally when set to true.",
+					Optional:    true,
+				},
+			},
+		},
+	},
+
+	"grouped_bar_chart_config": {
+		Type:        schema.TypeList,
+		Description: "Configuration for Bar Chart: Grouped widgets.",
+		Optional:    true,
+		Computed:    true,
+		MaxItems:    1,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"group_by": {
+					Type:        schema.TypeString,
+					Description: "Group bars by property.",
+					Optional:    true,
+				},
+				"axis_group_by": {
+					Type:        schema.TypeString,
+					Description: "Axis grouping property.",
+					Optional:    true,
+				},
+				"sort_by": {
+					Type:        schema.TypeString,
+					Description: "Sorting criterion.",
+					Optional:    true,
+					ValidateFunc: validation.StringInSlice([]string{
+						"Alphabetical",
+						"Value",
+					}, false),
+				},
+				"sort_direction": {
+					Type:        schema.TypeString,
+					Description: "Sorting direction.",
+					Optional:    true,
+					ValidateFunc: validation.StringInSlice([]string{
+						"Ascending",
+						"Descending",
+					}, false),
+				},
+				"limit": {
+					Type:        schema.TypeInt,
+					Description: "Maximum number of bars to display.",
+					Optional:    true,
+				},
+				"show_labels": {
+					Type:        schema.TypeBool,
+					Description: "Displays labels on each bar.",
+					Optional:    true,
+				},
+				"is_horizontal_bar_chart": {
+					Type:        schema.TypeBool,
+					Description: "Displays bars horizontally when set to true.",
+					Optional:    true,
+				},
+			},
+		},
+	},
+
+	"color_grid_config": {
+		Type:        schema.TypeList,
+		Description: "Configuration for Color Grid widgets.",
+		Optional:    true,
+		Computed:    true,
+		MaxItems:    1,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"min_scale": {
+					Type:        schema.TypeFloat,
+					Description: "Minimum scale value.",
+					Optional:    true,
+				},
+				"max_scale": {
+					Type:        schema.TypeFloat,
+					Description: "Maximum scale value.",
+					Optional:    true,
+				},
+				"unit": {
+					Type:        schema.TypeString,
+					Description: "Unit for the scale.",
+					Optional:    true,
+				},
+				"cards": {
+					Type:        schema.TypeString,
+					Description: "Aggregate property used for cards.",
+					Optional:    true,
+				},
+				"group_cards_by": {
+					Type:        schema.TypeString,
+					Description: "Aggregate property used to group cards.",
+					Optional:    true,
+				},
+				"columns": {
+					Type:        schema.TypeInt,
+					Description: "Number of columns.",
+					Optional:    true,
+				},
+				"limit": {
+					Type:        schema.TypeInt,
+					Description: "Maximum number of cards to display.",
+					Optional:    true,
+				},
+				"sort_by": {
+					Type:        schema.TypeString,
+					Description: "Card sorting criterion.",
+					Optional:    true,
+					ValidateFunc: validation.StringInSlice([]string{
+						"Alphabetical",
+						"Value",
+					}, false),
+				},
+				"sort_direction": {
+					Type:        schema.TypeString,
+					Description: "Card sorting direction.",
+					Optional:    true,
+					ValidateFunc: validation.StringInSlice([]string{
+						"Ascending",
+						"Descending",
+					}, false),
+				},
+				"sort_group_by": {
+					Type:        schema.TypeString,
+					Description: "Group sorting criterion.",
+					Optional:    true,
+					ValidateFunc: validation.StringInSlice([]string{
+						"Alphabetical",
+						"Value",
+					}, false),
+				},
+				"sort_group_direction": {
+					Type:        schema.TypeString,
+					Description: "Group sorting direction.",
+					Optional:    true,
+					ValidateFunc: validation.StringInSlice([]string{
+						"Ascending",
+						"Descending",
+					}, false),
+				},
+			},
+		},
+	},
+
+	"alert_list_config": {
+		Type:        schema.TypeList,
+		Description: "Configuration for Alert List widgets.",
+		Optional:    true,
+		Computed:    true,
+		MaxItems:    1,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"alert_types": {
+					Type:        schema.TypeSet,
+					Description: "Alert types to include. Empty means all alert types.",
+					Optional:    true,
+					Elem:        &schema.Schema{Type: schema.TypeString},
+				},
+				"limit_to": {
+					Type:        schema.TypeInt,
+					Description: "Maximum number of alerts to display.",
+					Optional:    true,
+				},
 				"active_within_value": {
 					Type:        schema.TypeInt,
 					Description: "Timespan value for active within filter.",
