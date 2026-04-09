@@ -68,7 +68,7 @@ func TestBuildWidgetRequiresType(t *testing.T) {
 }
 
 func TestBuildWidgetUnsupportedType(t *testing.T) {
-	_, err := BuildWidget(map[string]interface{}{"type": "Color Grid"})
+	_, err := BuildWidget(map[string]interface{}{"type": "Unsupported Widget"})
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "unsupported widget type")
 }
@@ -131,7 +131,7 @@ func newManagedWidget(title string) dashboards.ApiWidget {
 
 func newUnmanagedWidget() dashboards.ApiWidget {
 	return dashboards.ApiWidget{
-		ApiColorGridWidget: &dashboards.ApiColorGridWidget{},
+		ApiMultiMetricTableWidget: &dashboards.ApiMultiMetricTableWidget{},
 	}
 }
 
@@ -147,9 +147,9 @@ func TestMergeUnmanagedWidgets_preservesOrder(t *testing.T) {
 	merged := mergeUnmanagedWidgets(config, current)
 	require.Len(t, merged, 4)
 	assert.Equal(t, "A'", merged[0].ApiTimeseriesWidget.GetTitle())
-	assert.NotNil(t, merged[1].ApiColorGridWidget)
+	assert.NotNil(t, merged[1].ApiMultiMetricTableWidget)
 	assert.Equal(t, "B'", merged[2].ApiTimeseriesWidget.GetTitle())
-	assert.NotNil(t, merged[3].ApiColorGridWidget)
+	assert.NotNil(t, merged[3].ApiMultiMetricTableWidget)
 }
 
 func TestMergeUnmanagedWidgets_deleteManaged(t *testing.T) {
@@ -163,7 +163,7 @@ func TestMergeUnmanagedWidgets_deleteManaged(t *testing.T) {
 	merged := mergeUnmanagedWidgets(config, current)
 	require.Len(t, merged, 2)
 	assert.Equal(t, "A'", merged[0].ApiTimeseriesWidget.GetTitle())
-	assert.NotNil(t, merged[1].ApiColorGridWidget)
+	assert.NotNil(t, merged[1].ApiMultiMetricTableWidget)
 }
 
 func TestMergeUnmanagedWidgets_addManaged(t *testing.T) {
@@ -176,7 +176,7 @@ func TestMergeUnmanagedWidgets_addManaged(t *testing.T) {
 	merged := mergeUnmanagedWidgets(config, current)
 	require.Len(t, merged, 3)
 	assert.Equal(t, "A'", merged[0].ApiTimeseriesWidget.GetTitle())
-	assert.NotNil(t, merged[1].ApiColorGridWidget)
+	assert.NotNil(t, merged[1].ApiMultiMetricTableWidget)
 	assert.Equal(t, "NEW", merged[2].ApiTimeseriesWidget.GetTitle())
 }
 
@@ -188,8 +188,8 @@ func TestMergeUnmanagedWidgets_emptyConfig(t *testing.T) {
 	current := []dashboards.ApiWidget{uX, mA, uY}
 	merged := mergeUnmanagedWidgets(nil, current)
 	require.Len(t, merged, 2)
-	assert.NotNil(t, merged[0].ApiColorGridWidget)
-	assert.NotNil(t, merged[1].ApiColorGridWidget)
+	assert.NotNil(t, merged[0].ApiMultiMetricTableWidget)
+	assert.NotNil(t, merged[1].ApiMultiMetricTableWidget)
 }
 
 func TestMergeUnmanagedWidgets_noUnmanaged(t *testing.T) {
