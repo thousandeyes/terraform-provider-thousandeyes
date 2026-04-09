@@ -79,7 +79,7 @@ var DashboardSchema = map[string]*schema.Schema{
 	// defaultTimespan
 	"default_timespan": {
 		Type:        schema.TypeList,
-		Description: "Defines the default time range displayed by the dashboard.",
+		Description: "Default time range for the dashboard. Optional and computed: omit this block to use the default returned on read; Terraform stores that value in state to avoid perpetual drift when omitted. If you set a custom timespan, removing this block from configuration does not clear it—set an explicit duration or start/end to change it.",
 		Optional:    true,
 		Computed:    true,
 		MaxItems:    1,

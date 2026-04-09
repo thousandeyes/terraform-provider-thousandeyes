@@ -478,6 +478,32 @@ func TestAccThousandEyesDashboard(t *testing.T) {
 	}
 }
 
+// TestAccThousandEyesDashboard_omitDefaultTimespanStablePlan checks CP-4085: when default_timespan
+// is omitted from HCL but the API returns a default on GET, a second plan with the same config
+// must be empty (no perpetual drift).
+func TestAccThousandEyesDashboard_omitDefaultTimespanStablePlan(t *testing.T) {
+	resourceName := "thousandeyes_dashboard.test_omit_default_timespan"
+	cfg := testAccThousandEyesDashboardConfig("acceptance_resources/dashboard/omit_default_timespan.tf")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: providerFactories,
+		CheckDestroy:      testAccCheckDashboardResourceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: cfg,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "title", "Test Dashboard Omit Default Timespan"),
+				),
+			},
+			{
+				Config:   cfg,
+				PlanOnly: true,
+			},
+		},
+	})
+}
+
 // TestAccThousandEyesDashboard_removeAllWidgets is a dedicated test for the bug where removing
 // all widget blocks from config produced no diff and left widgets unchanged on the API.
 func TestAccThousandEyesDashboard_removeAllWidgets(t *testing.T) {
