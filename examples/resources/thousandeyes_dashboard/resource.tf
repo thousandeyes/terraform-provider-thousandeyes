@@ -127,4 +127,37 @@ resource "thousandeyes_dashboard" "example" {
       group_by = "COUNTRY"
     }
   }
+
+  widgets {
+    type        = "Number"
+    title       = "Number Widget"
+    visual_mode = "Full"
+
+    number_cards {
+      description  = "CEA Availability"
+      data_source  = "CLOUD_AND_ENTERPRISE_AGENTS"
+      metric_group = "HTTP_SERVER"
+      metric       = "WEB_AVAILABILITY"
+
+      measure {
+        type = "MEAN"
+      }
+
+      fixed_timespan {
+        value = 1
+        unit  = "Days"
+      }
+    }
+
+    number_cards {
+      description  = "Agent Alerts"
+      data_source  = "ALERTS"
+      metric_group = "ALERTS"
+      metric       = "ALERT_COUNT_AGENT"
+
+      measure {
+        type = "TOTAL"
+      }
+    }
+  }
 }

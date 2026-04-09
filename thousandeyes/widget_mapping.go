@@ -16,6 +16,7 @@ const (
 	WidgetTypePieChart       = "Pie Chart"
 	WidgetTypeBoxAndWhiskers = "Box and Whiskers"
 	WidgetTypeList           = "List"
+	WidgetTypeNumber         = "Number"
 )
 
 // WidgetBuilder builds an API widget from Terraform resource data (map)
@@ -41,6 +42,7 @@ var widgetRegistry = map[string]WidgetTypeRegistry{
 	WidgetTypePieChart:       {Builder: buildPieChartWidget, Mapper: mapPieChartWidget},
 	WidgetTypeBoxAndWhiskers: {Builder: buildBoxAndWhiskersWidget, Mapper: mapBoxAndWhiskersWidget},
 	WidgetTypeList:           {Builder: buildListWidget, Mapper: mapListWidget},
+	WidgetTypeNumber:         {Builder: buildNumberWidget, Mapper: mapNumberWidget},
 }
 
 // BuildWidget builds an API widget from Terraform data using the appropriate builder
@@ -75,6 +77,8 @@ func widgetTypeFromInstance(instance interface{}) (string, error) {
 		return WidgetTypeBoxAndWhiskers, nil
 	case *dashboards.ApiListWidget:
 		return WidgetTypeList, nil
+	case *dashboards.ApiNumbersCardWidget:
+		return WidgetTypeNumber, nil
 	default:
 		return "", nil
 	}
