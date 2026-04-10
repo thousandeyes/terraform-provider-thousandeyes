@@ -315,10 +315,6 @@ func buildMultiMetricTableWidget(data map[string]interface{}) dashboards.ApiWidg
 	widget := dashboards.NewApiMultiMetricTableWidget("Multi Metric Table")
 	setCommonBuilderFields(widget, data)
 
-	if dataSource := getStringValue(data, "data_source"); dataSource != "" {
-		widget.SetDataSource(dashboards.MultiMetricsTableDatasource(dataSource))
-	}
-
 	if configList := getListValue(data, "multi_metric_table_config"); len(configList) > 0 {
 		config := configList[0].(map[string]interface{})
 		if v, ok := boolFromMapIfPresent(config, "compare_to_previous_value"); ok {

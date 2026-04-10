@@ -372,10 +372,6 @@ func mapMultiMetricTableWidget(widget dashboards.ApiWidget) (map[string]interfac
 	setCommonWidgetFields(data, w.GetId(), w.GetTitle(), w.GetEmbedUrl(), w.GetIsEmbedded(), string(w.GetVisualMode()))
 	setCommonMapperFields(data, w)
 
-	if v := w.GetDataSource(); v != "" {
-		data["data_source"] = string(v)
-	}
-
 	config := map[string]interface{}{}
 	if v, ok := w.GetCompareToPreviousValueOk(); ok && v != nil {
 		config["compare_to_previous_value"] = *v
@@ -392,6 +388,8 @@ func mapMultiMetricTableWidget(widget dashboards.ApiWidget) (map[string]interfac
 
 	if columns := w.GetMultiMetricColumns(); len(columns) > 0 {
 		data["multi_metric_columns"] = mapMultiMetricColumns(columns)
+	} else {
+		data["multi_metric_columns"] = []interface{}{}
 	}
 
 	return data, nil

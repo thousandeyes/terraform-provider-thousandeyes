@@ -16,16 +16,14 @@ func TestBuildMultiMetricTableWidget(t *testing.T) {
 		{
 			name: "basic multi metric table widget",
 			input: map[string]interface{}{
-				"type":        "Multi Metric Table",
-				"title":       "Test Table",
-				"data_source": "CLOUD_AND_ENTERPRISE_AGENTS",
+				"type":  "Multi Metric Table",
+				"title": "Test Table",
 			},
 			validate: func(t *testing.T, widget dashboards.ApiWidget) {
 				w := widget.ApiMultiMetricTableWidget
 				assert.NotNil(t, w)
 				assert.Equal(t, "Multi Metric Table", w.GetType())
 				assert.Equal(t, "Test Table", w.GetTitle())
-				assert.Equal(t, dashboards.MultiMetricsTableDatasource("CLOUD_AND_ENTERPRISE_AGENTS"), w.GetDataSource())
 				cols, ok := w.GetMultiMetricColumnsOk()
 				assert.True(t, ok)
 				assert.Empty(t, cols)
@@ -34,9 +32,8 @@ func TestBuildMultiMetricTableWidget(t *testing.T) {
 		{
 			name: "multi metric table with config",
 			input: map[string]interface{}{
-				"type":        "Multi Metric Table",
-				"title":       "Table With Config",
-				"data_source": "ALERTS",
+				"type":  "Multi Metric Table",
+				"title": "Table With Config",
 				"multi_metric_table_config": []interface{}{
 					map[string]interface{}{
 						"compare_to_previous_value": true,
@@ -56,9 +53,8 @@ func TestBuildMultiMetricTableWidget(t *testing.T) {
 		{
 			name: "multi metric table with columns",
 			input: map[string]interface{}{
-				"type":        "Multi Metric Table",
-				"title":       "Table With Columns",
-				"data_source": "ALERTS",
+				"type":  "Multi Metric Table",
+				"title": "Table With Columns",
 				"multi_metric_columns": []interface{}{
 					map[string]interface{}{
 						"data_source":  "ALERTS",
@@ -95,9 +91,8 @@ func TestBuildMultiMetricTableWidget(t *testing.T) {
 		{
 			name: "column with filters",
 			input: map[string]interface{}{
-				"type":        "Multi Metric Table",
-				"title":       "Filtered Table",
-				"data_source": "ALERTS",
+				"type":  "Multi Metric Table",
+				"title": "Filtered Table",
 				"multi_metric_columns": []interface{}{
 					map[string]interface{}{
 						"data_source":  "ALERTS",
@@ -125,9 +120,8 @@ func TestBuildMultiMetricTableWidget(t *testing.T) {
 		{
 			name: "column with percentile measure",
 			input: map[string]interface{}{
-				"type":        "Multi Metric Table",
-				"title":       "Percentile Table",
-				"data_source": "ALERTS",
+				"type":  "Multi Metric Table",
+				"title": "Percentile Table",
 				"multi_metric_columns": []interface{}{
 					map[string]interface{}{
 						"data_source":  "ALERTS",
@@ -155,9 +149,8 @@ func TestBuildMultiMetricTableWidget(t *testing.T) {
 		{
 			name: "removing all columns sends empty array",
 			input: map[string]interface{}{
-				"type":        "Multi Metric Table",
-				"title":       "Empty Columns",
-				"data_source": "ALERTS",
+				"type":  "Multi Metric Table",
+				"title": "Empty Columns",
 			},
 			validate: func(t *testing.T, widget dashboards.ApiWidget) {
 				w := widget.ApiMultiMetricTableWidget
@@ -190,15 +183,13 @@ func TestMapMultiMetricTableWidget(t *testing.T) {
 				w.SetId("widget-mmt-1")
 				w.SetTitle("Test Table")
 				w.SetVisualMode(dashboards.VisualMode("Full"))
-				w.SetDataSource(dashboards.MultiMetricsTableDatasource("ALERTS"))
-				return dashboards.ApiMultiMetricTableWidgetAsApiWidget(w)
+			return dashboards.ApiMultiMetricTableWidgetAsApiWidget(w)
 			},
 			validate: func(t *testing.T, data map[string]interface{}) {
 				assert.Equal(t, "Multi Metric Table", data["type"])
 				assert.Equal(t, "widget-mmt-1", data["id"])
 				assert.Equal(t, "Test Table", data["title"])
 				assert.Equal(t, "Full", data["visual_mode"])
-				assert.Equal(t, "ALERTS", data["data_source"])
 			},
 		},
 		{
