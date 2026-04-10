@@ -333,13 +333,7 @@ func setCommonBuilderFields(widget interface{}, data map[string]interface{}) {
 			w.SetMetricGroup(dashboards.MetricGroup(metricGroup))
 		}
 	}
-	if direction := getStringValue(data, "direction"); direction != "" {
-		if w, ok := widget.(interface {
-			SetDirection(dashboards.DashboardMetricDirection)
-		}); ok {
-			w.SetDirection(dashboards.DashboardMetricDirection(direction))
-		}
-	}
+	// direction is read-only in the API; it is populated on refresh from the metric.
 	if metric := getStringValue(data, "metric"); metric != "" {
 		if w, ok := widget.(interface {
 			SetMetric(dashboards.DashboardMetric)

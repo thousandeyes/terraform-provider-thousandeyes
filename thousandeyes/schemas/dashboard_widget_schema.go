@@ -63,7 +63,6 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 	"direction": {
 		Type:        schema.TypeString,
 		Description: "Direction for the metric (e.g., 'To Target', 'From Target', 'Bidirectional').",
-		Optional:    true,
 		Computed:    true,
 	},
 	"metric": {

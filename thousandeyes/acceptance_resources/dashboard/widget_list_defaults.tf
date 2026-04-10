@@ -9,7 +9,6 @@ resource "thousandeyes_dashboard" "test_dashboard_list_defaults" {
     type        = "List"
     title       = "List With Defaults"
     data_source = "EVENT_DETECTION"
-    direction   = "TO_TARGET"
     measure {
       type = "MEAN"
     }
