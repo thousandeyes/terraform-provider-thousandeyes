@@ -141,8 +141,6 @@ func buildTableWidget(data map[string]interface{}) dashboards.ApiWidget {
 		if v := getStringValue(config, "column_group_by"); v != "" {
 			widget.SetColumnGroupBy(dashboards.ApiAggregateProperty(v))
 		}
-		setLegacySortByFromMapIfPresent(config, "sort_by", widget.SetSortBy)
-		setLegacySortDirectionFromMapIfPresent(config, "sort_direction", widget.SetSortDirection)
 		if v := getIntValue(config, "limit"); v != 0 {
 			widget.SetLimit(int32(v))
 		}
@@ -207,8 +205,6 @@ func buildStackedBarChartWidget(data map[string]interface{}) dashboards.ApiWidge
 		if v := getStringValue(config, "axis_group_by"); v != "" {
 			widget.SetAxisGroupBy(dashboards.ApiAggregateProperty(v))
 		}
-		setLegacySortByFromMapIfPresent(config, "sort_by", widget.SetSortBy)
-		setLegacySortDirectionFromMapIfPresent(config, "sort_direction", widget.SetSortDirection)
 		if v := getIntValue(config, "limit"); v != 0 {
 			widget.SetLimit(int32(v))
 		}
@@ -240,8 +236,6 @@ func buildGroupedBarChartWidget(data map[string]interface{}) dashboards.ApiWidge
 		if v := getStringValue(config, "axis_group_by"); v != "" {
 			widget.SetAxisGroupBy(dashboards.ApiAggregateProperty(v))
 		}
-		setLegacySortByFromMapIfPresent(config, "sort_by", widget.SetSortBy)
-		setLegacySortDirectionFromMapIfPresent(config, "sort_direction", widget.SetSortDirection)
 		if v := getIntValue(config, "limit"); v != 0 {
 			widget.SetLimit(int32(v))
 		}
@@ -309,10 +303,6 @@ func buildColorGridWidget(data map[string]interface{}) dashboards.ApiWidget {
 		if v := getIntValue(config, "limit"); v != 0 {
 			widget.SetLimit(int32(v))
 		}
-		setLegacySortByFromMapIfPresent(config, "sort_by", widget.SetSortBy)
-		setLegacySortDirectionFromMapIfPresent(config, "sort_direction", widget.SetSortDirection)
-		setLegacySortByFromMapIfPresent(config, "sort_group_by", widget.SetSortGroupBy)
-		setLegacySortDirectionFromMapIfPresent(config, "sort_group_direction", widget.SetSortGroupDirection)
 	}
 
 	return dashboards.ApiColorGridWidgetAsApiWidget(widget)
@@ -710,18 +700,6 @@ func buildActiveWithinFromConfig(config map[string]interface{}) *dashboards.Acti
 		activeWithin.SetUnit(dashboards.LegacyDurationUnit(activeWithinUnit))
 	}
 	return activeWithin
-}
-
-func setLegacySortByFromMapIfPresent(m map[string]interface{}, key string, set func(dashboards.LegacyWidgetSortProperty)) {
-	if v := getStringValue(m, key); v != "" {
-		set(dashboards.LegacyWidgetSortProperty(v))
-	}
-}
-
-func setLegacySortDirectionFromMapIfPresent(m map[string]interface{}, key string, set func(dashboards.LegacyWidgetSortDirection)) {
-	if v := getStringValue(m, key); v != "" {
-		set(dashboards.LegacyWidgetSortDirection(v))
-	}
 }
 
 func setAlertTypesFromConfig(m map[string]interface{}, key string, set func([]dashboards.LegacyAlertListAlertType)) {

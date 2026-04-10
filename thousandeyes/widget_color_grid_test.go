@@ -15,17 +15,13 @@ func TestBuildColorGridWidget(t *testing.T) {
 		"data_source": "ALERTS",
 		"color_grid_config": []interface{}{
 			map[string]interface{}{
-				"min_scale":            float64(0),
-				"max_scale":            float64(100),
-				"unit":                 "Mbps",
-				"cards":                "COUNTRY",
-				"group_cards_by":       "TEST",
-				"columns":              2,
-				"limit":                6,
-				"sort_by":              "Value",
-				"sort_direction":       "Descending",
-				"sort_group_by":        "Alphabetical",
-				"sort_group_direction": "Ascending",
+				"min_scale":      float64(0),
+				"max_scale":      float64(100),
+				"unit":           "Mbps",
+				"cards":          "COUNTRY",
+				"group_cards_by": "TEST",
+				"columns":        2,
+				"limit":          6,
 			},
 		},
 	})
@@ -41,10 +37,6 @@ func TestBuildColorGridWidget(t *testing.T) {
 	assert.Equal(t, dashboards.ApiAggregateProperty("TEST"), w.GetGroupCardsBy())
 	assert.Equal(t, int32(2), w.GetColumns())
 	assert.Equal(t, int32(6), w.GetLimit())
-	assert.Equal(t, dashboards.LegacyWidgetSortProperty("Value"), w.GetSortBy())
-	assert.Equal(t, dashboards.LegacyWidgetSortDirection("Descending"), w.GetSortDirection())
-	assert.Equal(t, dashboards.LegacyWidgetSortProperty("Alphabetical"), w.GetSortGroupBy())
-	assert.Equal(t, dashboards.LegacyWidgetSortDirection("Ascending"), w.GetSortGroupDirection())
 }
 
 func TestMapColorGridWidget(t *testing.T) {
@@ -78,8 +70,8 @@ func TestMapColorGridWidget(t *testing.T) {
 	assert.Equal(t, "TEST", config["group_cards_by"])
 	assert.Equal(t, 2, config["columns"])
 	assert.Equal(t, 6, config["limit"])
-	assert.Equal(t, "Value", config["sort_by"])
-	assert.Equal(t, "Descending", config["sort_direction"])
-	assert.Equal(t, "Alphabetical", config["sort_group_by"])
-	assert.Equal(t, "Ascending", config["sort_group_direction"])
+	assert.NotContains(t, config, "sort_by")
+	assert.NotContains(t, config, "sort_direction")
+	assert.NotContains(t, config, "sort_group_by")
+	assert.NotContains(t, config, "sort_group_direction")
 }

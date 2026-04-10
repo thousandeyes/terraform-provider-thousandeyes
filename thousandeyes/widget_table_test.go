@@ -18,8 +18,6 @@ func TestBuildTableWidget(t *testing.T) {
 				"compare_to_previous_value": true,
 				"row_group_by":              "AGENT",
 				"column_group_by":           "TEST",
-				"sort_by":                   "Alphabetical",
-				"sort_direction":            "Ascending",
 				"limit":                     10,
 			},
 		},
@@ -32,8 +30,6 @@ func TestBuildTableWidget(t *testing.T) {
 	assert.True(t, w.GetCompareToPreviousValue())
 	assert.Equal(t, dashboards.ApiAggregateProperty("AGENT"), w.GetRowGroupBy())
 	assert.Equal(t, dashboards.ApiAggregateProperty("TEST"), w.GetColumnGroupBy())
-	assert.Equal(t, dashboards.LegacyWidgetSortProperty("Alphabetical"), w.GetSortBy())
-	assert.Equal(t, dashboards.LegacyWidgetSortDirection("Ascending"), w.GetSortDirection())
 	assert.Equal(t, int32(10), w.GetLimit())
 }
 
@@ -60,7 +56,7 @@ func TestMapTableWidget(t *testing.T) {
 	assert.Equal(t, true, config["compare_to_previous_value"])
 	assert.Equal(t, "AGENT", config["row_group_by"])
 	assert.Equal(t, "TEST", config["column_group_by"])
-	assert.Equal(t, "Alphabetical", config["sort_by"])
-	assert.Equal(t, "Ascending", config["sort_direction"])
+	assert.NotContains(t, config, "sort_by")
+	assert.NotContains(t, config, "sort_direction")
 	assert.Equal(t, 10, config["limit"])
 }

@@ -17,8 +17,6 @@ func TestBuildGroupedBarChartWidget(t *testing.T) {
 			map[string]interface{}{
 				"group_by":                "COUNTRY",
 				"axis_group_by":           "TEST",
-				"sort_by":                 "Alphabetical",
-				"sort_direction":          "Ascending",
 				"limit":                   12,
 				"show_labels":             true,
 				"is_horizontal_bar_chart": false,
@@ -32,8 +30,6 @@ func TestBuildGroupedBarChartWidget(t *testing.T) {
 	assert.Equal(t, dashboards.GroupedBarChartDatasource("ALERTS"), w.GetDataSource())
 	assert.Equal(t, dashboards.ApiAggregateProperty("COUNTRY"), w.GetGroupBy())
 	assert.Equal(t, dashboards.ApiAggregateProperty("TEST"), w.GetAxisGroupBy())
-	assert.Equal(t, dashboards.LegacyWidgetSortProperty("Alphabetical"), w.GetSortBy())
-	assert.Equal(t, dashboards.LegacyWidgetSortDirection("Ascending"), w.GetSortDirection())
 	assert.Equal(t, int32(12), w.GetLimit())
 	assert.True(t, w.GetShowLabels())
 	assert.False(t, w.GetIsHorizontalBarChart())
@@ -61,8 +57,8 @@ func TestMapGroupedBarChartWidget(t *testing.T) {
 	config := data["grouped_bar_chart_config"].([]interface{})[0].(map[string]interface{})
 	assert.Equal(t, "COUNTRY", config["group_by"])
 	assert.Equal(t, "TEST", config["axis_group_by"])
-	assert.Equal(t, "Alphabetical", config["sort_by"])
-	assert.Equal(t, "Ascending", config["sort_direction"])
+	assert.NotContains(t, config, "sort_by")
+	assert.NotContains(t, config, "sort_direction")
 	assert.Equal(t, 12, config["limit"])
 	assert.Equal(t, true, config["show_labels"])
 	assert.Equal(t, false, config["is_horizontal_bar_chart"])

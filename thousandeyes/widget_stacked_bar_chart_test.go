@@ -16,8 +16,6 @@ func TestBuildStackedBarChartWidget(t *testing.T) {
 		"stacked_bar_chart_config": []interface{}{
 			map[string]interface{}{
 				"axis_group_by":           "CLOUD_NATIVE_MONITORING-REGION",
-				"sort_by":                 "Value",
-				"sort_direction":          "Descending",
 				"limit":                   8,
 				"show_labels":             true,
 				"is_horizontal_bar_chart": true,
@@ -30,8 +28,6 @@ func TestBuildStackedBarChartWidget(t *testing.T) {
 	assert.Equal(t, "Bar Chart: Stacked", w.GetType())
 	assert.Equal(t, dashboards.StackedBarChartDatasource("CLOUD_NATIVE_MONITORING"), w.GetDataSource())
 	assert.Equal(t, dashboards.ApiAggregateProperty("CLOUD_NATIVE_MONITORING-REGION"), w.GetAxisGroupBy())
-	assert.Equal(t, dashboards.LegacyWidgetSortProperty("Value"), w.GetSortBy())
-	assert.Equal(t, dashboards.LegacyWidgetSortDirection("Descending"), w.GetSortDirection())
 	assert.Equal(t, int32(8), w.GetLimit())
 	assert.True(t, w.GetShowLabels())
 	assert.True(t, w.GetIsHorizontalBarChart())
@@ -57,8 +53,8 @@ func TestMapStackedBarChartWidget(t *testing.T) {
 
 	config := data["stacked_bar_chart_config"].([]interface{})[0].(map[string]interface{})
 	assert.Equal(t, "CLOUD_NATIVE_MONITORING-REGION", config["axis_group_by"])
-	assert.Equal(t, "Value", config["sort_by"])
-	assert.Equal(t, "Descending", config["sort_direction"])
+	assert.NotContains(t, config, "sort_by")
+	assert.NotContains(t, config, "sort_direction")
 	assert.Equal(t, 8, config["limit"])
 	assert.Equal(t, true, config["show_labels"])
 	assert.Equal(t, true, config["is_horizontal_bar_chart"])

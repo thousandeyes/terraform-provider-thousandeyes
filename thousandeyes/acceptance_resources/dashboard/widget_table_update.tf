@@ -28,8 +28,6 @@ resource "thousandeyes_dashboard" "test_dashboard_table_widget" {
       compare_to_previous_value = false
       row_group_by              = "TEST"
       column_group_by           = "AGENT"
-      sort_by                   = "Value"
-      sort_direction            = "Descending"
       limit                     = 20
     }
   }

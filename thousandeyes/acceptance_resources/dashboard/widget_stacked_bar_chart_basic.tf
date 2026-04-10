@@ -26,8 +26,6 @@ resource "thousandeyes_dashboard" "test_dashboard_stacked_bar_chart_widget" {
 
     stacked_bar_chart_config {
       axis_group_by           = "CLOUD_NATIVE_MONITORING-REGION"
-      sort_by                 = "Value"
-      sort_direction          = "Descending"
       limit                   = 8
       show_labels             = true
       is_horizontal_bar_chart = true

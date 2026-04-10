@@ -25,16 +25,12 @@ resource "thousandeyes_dashboard" "test_dashboard_color_grid_widget" {
     }
 
     color_grid_config {
-      min_scale            = 0
-      max_scale            = 100
-      cards                = "COUNTRY"
-      group_cards_by       = "TEST"
-      columns              = 2
-      limit                = 6
-      sort_by              = "Value"
-      sort_direction       = "Descending"
-      sort_group_by        = "Alphabetical"
-      sort_group_direction = "Ascending"
+      min_scale      = 0
+      max_scale      = 100
+      cards          = "COUNTRY"
+      group_cards_by = "TEST"
+      columns        = 2
+      limit          = 6
     }
   }
 }

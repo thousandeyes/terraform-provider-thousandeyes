@@ -348,10 +348,6 @@ Optional:
 - `limit` (Number) Maximum number of cards to display.
 - `max_scale` (Number) Maximum scale value.
 - `min_scale` (Number) Minimum scale value.
-- `sort_by` (String) Card sorting criterion.
-- `sort_direction` (String) Card sorting direction.
-- `sort_group_by` (String) Group sorting criterion.
-- `sort_group_direction` (String) Group sorting direction.
 - `unit` (String) Unit for the scale.
 
 
@@ -395,8 +391,6 @@ Optional:
 - `is_horizontal_bar_chart` (Boolean) Displays bars horizontally when set to true.
 - `limit` (Number) Maximum number of bars to display.
 - `show_labels` (Boolean) Displays labels on each bar.
-- `sort_by` (String) Sorting criterion.
-- `sort_direction` (String) Sorting direction.
 
 
 <a id="nestedblock--widgets--list_config"></a>
@@ -544,8 +538,6 @@ Optional:
 - `is_horizontal_bar_chart` (Boolean) Displays bars horizontally when set to true.
 - `limit` (Number) Maximum number of bars to display.
 - `show_labels` (Boolean) Displays labels on each bar.
-- `sort_by` (String) Sorting criterion.
-- `sort_direction` (String) Sorting direction.
 
 
 <a id="nestedblock--widgets--table_config"></a>
@@ -557,8 +549,6 @@ Optional:
 - `compare_to_previous_value` (Boolean) Enables comparison of the current metric value with the previous value.
 - `limit` (Number) Maximum number of rows to display.
 - `row_group_by` (String) Group rows by property.
-- `sort_by` (String) Sorting criterion.
-- `sort_direction` (String) Sorting direction.
 
 
 <a id="nestedblock--widgets--test_table_config"></a>

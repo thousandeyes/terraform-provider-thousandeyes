@@ -180,9 +180,6 @@ func mapTableWidget(widget dashboards.ApiWidget) (map[string]interface{}, error)
 	if v, ok := w.GetColumnGroupByOk(); ok && v != nil {
 		config["column_group_by"] = string(*v)
 	}
-	sortBy, sortByOk := w.GetSortByOk()
-	sortDirection, sortDirectionOk := w.GetSortDirectionOk()
-	setLegacySortFields(config, sortBy, sortByOk, sortDirection, sortDirectionOk)
 	if v, ok := w.GetLimitOk(); ok && v != nil {
 		config["limit"] = int(*v)
 	}
@@ -212,12 +209,20 @@ func mapTestTableWidget(widget dashboards.ApiWidget) (map[string]interface{}, er
 
 	config := map[string]interface{}{}
 	if filter, ok := w.GetFilterOk(); ok && filter != nil {
-		if mapped := mapTestTableFilterConfig(*filter); len(mapped) > 0 {
+		mapped, err := mapTestTableFilterConfig(*filter)
+		if err != nil {
+			return nil, err
+		}
+		if len(mapped) > 0 {
 			config["filter"] = []interface{}{mapped}
 		}
 	}
 	if exclude, ok := w.GetExcludeOk(); ok && exclude != nil {
-		if mapped := mapTestTableFilterConfig(*exclude); len(mapped) > 0 {
+		mapped, err := mapTestTableFilterConfig(*exclude)
+		if err != nil {
+			return nil, err
+		}
+		if len(mapped) > 0 {
 			config["exclude"] = []interface{}{mapped}
 		}
 	}
@@ -278,9 +283,6 @@ func mapStackedBarChartWidget(widget dashboards.ApiWidget) (map[string]interface
 	if v, ok := w.GetAxisGroupByOk(); ok && v != nil {
 		config["axis_group_by"] = string(*v)
 	}
-	sortBy, sortByOk := w.GetSortByOk()
-	sortDirection, sortDirectionOk := w.GetSortDirectionOk()
-	setLegacySortFields(config, sortBy, sortByOk, sortDirection, sortDirectionOk)
 	if v, ok := w.GetLimitOk(); ok && v != nil {
 		config["limit"] = int(*v)
 	}
@@ -321,9 +323,6 @@ func mapGroupedBarChartWidget(widget dashboards.ApiWidget) (map[string]interface
 	if v, ok := w.GetAxisGroupByOk(); ok && v != nil {
 		config["axis_group_by"] = string(*v)
 	}
-	sortBy, sortByOk := w.GetSortByOk()
-	sortDirection, sortDirectionOk := w.GetSortDirectionOk()
-	setLegacySortFields(config, sortBy, sortByOk, sortDirection, sortDirectionOk)
 	if v, ok := w.GetLimitOk(); ok && v != nil {
 		config["limit"] = int(*v)
 	}
@@ -416,15 +415,6 @@ func mapColorGridWidget(widget dashboards.ApiWidget) (map[string]interface{}, er
 	}
 	if v, ok := w.GetLimitOk(); ok && v != nil {
 		config["limit"] = int(*v)
-	}
-	sortBy, sortByOk := w.GetSortByOk()
-	sortDirection, sortDirectionOk := w.GetSortDirectionOk()
-	setLegacySortFields(config, sortBy, sortByOk, sortDirection, sortDirectionOk)
-	if v, ok := w.GetSortGroupByOk(); ok && v != nil {
-		config["sort_group_by"] = string(*v)
-	}
-	if v, ok := w.GetSortGroupDirectionOk(); ok && v != nil {
-		config["sort_group_direction"] = string(*v)
 	}
 	if len(config) > 0 {
 		data["color_grid_config"] = []interface{}{config}
@@ -792,19 +782,6 @@ func setCommonMapperFields(data map[string]interface{}, widget interface{}) {
 	}
 }
 
-func setLegacySortFields(
-	config map[string]interface{},
-	sortBy *dashboards.LegacyWidgetSortProperty, sortByOk bool,
-	sortDirection *dashboards.LegacyWidgetSortDirection, sortDirectionOk bool,
-) {
-	if sortByOk && sortBy != nil {
-		config["sort_by"] = string(*sortBy)
-	}
-	if sortDirectionOk && sortDirection != nil {
-		config["sort_direction"] = string(*sortDirection)
-	}
-}
-
 func setActiveWithinFields(config map[string]interface{}, activeWithin *dashboards.ActiveWithin, ok bool) {
 	if !ok || activeWithin == nil {
 		return
@@ -831,7 +808,7 @@ func legacyAlertTypesToInterfaces(values []dashboards.LegacyAlertListAlertType) 
 	return result
 }
 
-func mapTestTableFilterConfig(filter dashboards.ApiWidgetFilterApiTestTableFilterKey) map[string]interface{} {
+func mapTestTableFilterConfig(filter dashboards.ApiWidgetFilterApiTestTableFilterKey) (map[string]interface{}, error) {
 	result := map[string]interface{}{}
 	if v, ok := filter.GetTypeOk(); ok && v != nil {
 		result["type"] = string(*v)
@@ -840,20 +817,22 @@ func mapTestTableFilterConfig(filter dashboards.ApiWidgetFilterApiTestTableFilte
 	if filters, ok := filter.GetFiltersOk(); ok && len(filters) > 0 {
 		blocks := make([]interface{}, 0, len(filters))
 		for _, item := range filters {
-			block := map[string]interface{}{}
-			if v, ok := item.GetKeyOk(); ok && v != nil {
-				block["key"] = string(*v)
+			key, ok := item.GetKeyOk()
+			if !ok || key == nil || *key == "" {
+				return nil, fmt.Errorf("test table filter item missing required key")
 			}
-			if v, ok := item.GetValueOk(); ok && v != nil {
-				block["value"] = *v
+			value, ok := item.GetValueOk()
+			if !ok || value == nil {
+				return nil, fmt.Errorf("test table filter item missing required value")
 			}
-			if len(block) > 0 {
-				blocks = append(blocks, block)
-			}
+			blocks = append(blocks, map[string]interface{}{
+				"key":   string(*key),
+				"value": *value,
+			})
 		}
 		if len(blocks) > 0 {
 			result["filters"] = blocks
 		}
 	}
-	return result
+	return result, nil
 }

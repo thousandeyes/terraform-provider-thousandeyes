@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/thousandeyes/thousandeyes-sdk-go/v3/dashboards"
 )
 
@@ -95,4 +96,22 @@ func TestMapTestTableWidget(t *testing.T) {
 	excludeBlock := config["exclude"].([]interface{})[0].(map[string]interface{})
 	assert.Equal(t, "any", excludeBlock["type"])
 	assert.Equal(t, []interface{}{map[string]interface{}{"key": "Label ID", "value": "123"}}, excludeBlock["filters"])
+}
+
+func TestMapTestTableWidgetReturnsErrorWhenFilterKeyMissing(t *testing.T) {
+	w := dashboards.NewApiTestTableWidget("Test Table")
+	filter := dashboards.NewApiWidgetFilterApiTestTableFilterKey()
+	filter.SetType(dashboards.TestTableFilterType("all"))
+	filter.SetFilters([]dashboards.ApiMultiSearchFilterApiTestTableFilterKey{
+		func() dashboards.ApiMultiSearchFilterApiTestTableFilterKey {
+			item := dashboards.NewApiMultiSearchFilterApiTestTableFilterKey()
+			item.SetValue("API")
+			return *item
+		}(),
+	})
+	w.SetFilter(*filter)
+
+	_, err := mapTestTableWidget(dashboards.ApiTestTableWidgetAsApiWidget(w))
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "missing required key")
 }

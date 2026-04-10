@@ -390,24 +390,6 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 					Description: "Group columns by property.",
 					Optional:    true,
 				},
-				"sort_by": {
-					Type:        schema.TypeString,
-					Description: "Sorting criterion.",
-					Optional:    true,
-					ValidateFunc: validation.StringInSlice([]string{
-						"Alphabetical",
-						"Value",
-					}, false),
-				},
-				"sort_direction": {
-					Type:        schema.TypeString,
-					Description: "Sorting direction.",
-					Optional:    true,
-					ValidateFunc: validation.StringInSlice([]string{
-						"Ascending",
-						"Descending",
-					}, false),
-				},
 				"limit": {
 					Type:        schema.TypeInt,
 					Description: "Maximum number of rows to display.",
@@ -534,24 +516,6 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 					Description: "Axis grouping property.",
 					Optional:    true,
 				},
-				"sort_by": {
-					Type:        schema.TypeString,
-					Description: "Sorting criterion.",
-					Optional:    true,
-					ValidateFunc: validation.StringInSlice([]string{
-						"Alphabetical",
-						"Value",
-					}, false),
-				},
-				"sort_direction": {
-					Type:        schema.TypeString,
-					Description: "Sorting direction.",
-					Optional:    true,
-					ValidateFunc: validation.StringInSlice([]string{
-						"Ascending",
-						"Descending",
-					}, false),
-				},
 				"limit": {
 					Type:        schema.TypeInt,
 					Description: "Maximum number of bars to display.",
@@ -588,24 +552,6 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 					Type:        schema.TypeString,
 					Description: "Axis grouping property.",
 					Optional:    true,
-				},
-				"sort_by": {
-					Type:        schema.TypeString,
-					Description: "Sorting criterion.",
-					Optional:    true,
-					ValidateFunc: validation.StringInSlice([]string{
-						"Alphabetical",
-						"Value",
-					}, false),
-				},
-				"sort_direction": {
-					Type:        schema.TypeString,
-					Description: "Sorting direction.",
-					Optional:    true,
-					ValidateFunc: validation.StringInSlice([]string{
-						"Ascending",
-						"Descending",
-					}, false),
 				},
 				"limit": {
 					Type:        schema.TypeInt,
@@ -668,42 +614,6 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 					Type:        schema.TypeInt,
 					Description: "Maximum number of cards to display.",
 					Optional:    true,
-				},
-				"sort_by": {
-					Type:        schema.TypeString,
-					Description: "Card sorting criterion.",
-					Optional:    true,
-					ValidateFunc: validation.StringInSlice([]string{
-						"Alphabetical",
-						"Value",
-					}, false),
-				},
-				"sort_direction": {
-					Type:        schema.TypeString,
-					Description: "Card sorting direction.",
-					Optional:    true,
-					ValidateFunc: validation.StringInSlice([]string{
-						"Ascending",
-						"Descending",
-					}, false),
-				},
-				"sort_group_by": {
-					Type:        schema.TypeString,
-					Description: "Group sorting criterion.",
-					Optional:    true,
-					ValidateFunc: validation.StringInSlice([]string{
-						"Alphabetical",
-						"Value",
-					}, false),
-				},
-				"sort_group_direction": {
-					Type:        schema.TypeString,
-					Description: "Group sorting direction.",
-					Optional:    true,
-					ValidateFunc: validation.StringInSlice([]string{
-						"Ascending",
-						"Descending",
-					}, false),
 				},
 			},
 		},

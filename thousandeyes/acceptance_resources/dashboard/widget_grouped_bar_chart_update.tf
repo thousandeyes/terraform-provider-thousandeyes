@@ -27,8 +27,6 @@ resource "thousandeyes_dashboard" "test_dashboard_grouped_bar_chart_widget" {
     grouped_bar_chart_config {
       group_by                = "CONTINENT"
       axis_group_by           = "AGENT"
-      sort_by                 = "Value"
-      sort_direction          = "Descending"
       limit                   = 7
       show_labels             = false
       is_horizontal_bar_chart = true

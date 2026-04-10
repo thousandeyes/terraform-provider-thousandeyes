@@ -25,16 +25,12 @@ resource "thousandeyes_dashboard" "test_dashboard_color_grid_widget" {
     }
 
     color_grid_config {
-      min_scale            = 10
-      max_scale            = 200
-      cards                = "CONTINENT"
-      group_cards_by       = "AGENT"
-      columns              = 1
-      limit                = 4
-      sort_by              = "Alphabetical"
-      sort_direction       = "Ascending"
-      sort_group_by        = "Value"
-      sort_group_direction = "Descending"
+      min_scale      = 10
+      max_scale      = 200
+      cards          = "CONTINENT"
+      group_cards_by = "AGENT"
+      columns        = 1
+      limit          = 4
     }
   }
 }
