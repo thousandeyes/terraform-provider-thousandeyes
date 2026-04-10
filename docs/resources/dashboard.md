@@ -246,7 +246,6 @@ Optional:
 - `agent_status_config` (Block List, Max: 1) Configuration for Agent Status widgets. (see [below for nested schema](#nestedblock--widgets--agent_status_config))
 - `box_and_whiskers_config` (Block List, Max: 1) Configuration for Box and Whiskers widgets. (see [below for nested schema](#nestedblock--widgets--box_and_whiskers_config))
 - `data_source` (String) Data source for the widget.
-- `direction` (String) Direction for the metric (e.g., 'To Target', 'From Target', 'Bidirectional').
 - `filter` (Block List) Filters applied to the widget. Each filter specifies a property and list of values. (see [below for nested schema](#nestedblock--widgets--filter))
 - `fixed_timespan` (Block List, Max: 1) Fixed timespan for the widget. (see [below for nested schema](#nestedblock--widgets--fixed_timespan))
 - `geo_map_config` (Block List, Max: 1) Configuration for Map widgets. (see [below for nested schema](#nestedblock--widgets--geo_map_config))
@@ -264,6 +263,7 @@ Optional:
 
 Read-Only:
 
+- `direction` (String) Direction for the metric (e.g., 'To Target', 'From Target', 'Bidirectional').
 - `embed_url` (String) When isEmbedded is set to true, an embedUrl is provided.
 - `id` (String) Identifier of the widget.
 - `is_embedded` (Boolean) Indicates whether the widget is marked as embedded.
