@@ -12,6 +12,13 @@ description: |-
 
 {{ tffile .ExampleFile }}
 
+<a id="default_timespan-behavior"></a>
+
+## `default_timespan` behavior
+
+- The block is **optional and computed**. If you omit it, Terraform still records the **default returned on read** in state so plans stay stable.
+- If you **set** a custom `default_timespan` and later **remove** the block from configuration, Terraform typically shows **no change** and the dashboard keeps the previous timespan. To change it again, set an explicit `default_timespan` in configuration.
+
 {{ .SchemaMarkdown | trimspace }}
 
 {{ if .HasImport -}}
