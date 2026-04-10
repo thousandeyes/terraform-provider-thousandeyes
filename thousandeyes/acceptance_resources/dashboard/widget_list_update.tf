@@ -9,16 +9,10 @@ resource "thousandeyes_dashboard" "test_dashboard_list_widget" {
     type        = "List"
     title       = "Test List Widget (Updated)"
     visual_mode = "Full"
-    data_source = "ALERTS"
-    direction   = "TO_TARGET"
+    data_source = "EVENT_DETECTION"
 
     measure {
       type = "MEAN"
-    }
-
-    fixed_timespan {
-      value = 1
-      unit = "Days"
     }
 
     list_config {

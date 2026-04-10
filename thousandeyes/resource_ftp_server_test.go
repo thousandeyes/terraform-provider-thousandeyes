@@ -98,7 +98,7 @@ func testAccThousandEyesFTPServerConfig(testResource string) string {
 
 func getFTPServer(id string) (interface{}, error) {
 	api := (*tests.FTPServerTestsAPIService)(&testClient.Common)
-	req := api.GetFtpServerTest(id).Expand(tests.AllowedExpandTestOptionsEnumValues)
+	req := api.GetFtpServerTest(id).Expand(knownExpandTestOptions())
 	req = SetAidFromContext(testClient.GetConfig().Context, req)
 	resp, _, err := req.Execute()
 	return resp, err

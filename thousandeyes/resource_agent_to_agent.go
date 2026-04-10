@@ -49,7 +49,7 @@ func resourceAgentAgentRead(d *schema.ResourceData, m interface{}) error {
 	return GetResource(context.Background(), d, m, func(apiClient *client.APIClient, id string) (interface{}, error) {
 		api := (*tests.AgentToAgentTestsAPIService)(&apiClient.Common)
 
-		req := api.GetAgentToAgentTest(id).Expand(tests.AllowedExpandTestOptionsEnumValues)
+		req := api.GetAgentToAgentTest(id).Expand(knownExpandTestOptions())
 		req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 		resp, _, err := req.Execute()
@@ -64,7 +64,7 @@ func resourceAgentAgentUpdate(d *schema.ResourceData, m interface{}) error {
 	log.Printf("[INFO] Updating ThousandEyes Test %s", d.Id())
 	update := buildAgentAgentStruct(d)
 
-	req := api.UpdateAgentToAgentTest(d.Id()).AgentToAgentTestRequest(*update).Expand(tests.AllowedExpandTestOptionsEnumValues)
+	req := api.UpdateAgentToAgentTest(d.Id()).AgentToAgentTestRequest(*update).Expand(knownExpandTestOptions())
 	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 	_, _, err := req.Execute()
@@ -98,7 +98,7 @@ func resourceAgentAgentCreate(d *schema.ResourceData, m interface{}) error {
 	log.Printf("[INFO] Creating ThousandEyes Test %s", d.Id())
 	local := buildAgentAgentStruct(d)
 
-	req := api.CreateAgentToAgentTest().AgentToAgentTestRequest(*local).Expand(tests.AllowedExpandTestOptionsEnumValues)
+	req := api.CreateAgentToAgentTest().AgentToAgentTestRequest(*local).Expand(knownExpandTestOptions())
 	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 	resp, _, err := req.Execute()

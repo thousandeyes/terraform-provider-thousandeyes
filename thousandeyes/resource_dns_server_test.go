@@ -90,7 +90,7 @@ func testAccThousandEyesDNSServerConfig(testResource string) string {
 
 func getDNSServer(id string) (interface{}, error) {
 	api := (*tests.DNSServerTestsAPIService)(&testClient.Common)
-	req := api.GetDnsServerTest(id).Expand(tests.AllowedExpandTestOptionsEnumValues)
+	req := api.GetDnsServerTest(id).Expand(knownExpandTestOptions())
 	req = SetAidFromContext(testClient.GetConfig().Context, req)
 	resp, _, err := req.Execute()
 	return resp, err

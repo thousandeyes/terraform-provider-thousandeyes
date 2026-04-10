@@ -93,7 +93,7 @@ func testAccThousandEyesWebTransactionsConfig(testResource string) string {
 
 func getWebTransactions(id string) (interface{}, error) {
 	api := (*tests.WebTransactionTestsAPIService)(&testClient.Common)
-	req := api.GetWebTransactionsTest(id).Expand(tests.AllowedExpandTestOptionsEnumValues)
+	req := api.GetWebTransactionsTest(id).Expand(knownExpandTestOptions())
 	req = SetAidFromContext(testClient.GetConfig().Context, req)
 	resp, _, err := req.Execute()
 	return resp, err

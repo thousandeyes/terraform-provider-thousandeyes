@@ -39,7 +39,7 @@ func resourceDNSTraceRead(d *schema.ResourceData, m interface{}) error {
 	return GetResource(context.Background(), d, m, func(apiClient *client.APIClient, id string) (interface{}, error) {
 		api := (*tests.DNSTraceTestsAPIService)(&apiClient.Common)
 
-		req := api.GetDnsTraceTest(id).Expand(tests.AllowedExpandTestOptionsEnumValues)
+		req := api.GetDnsTraceTest(id).Expand(knownExpandTestOptions())
 		req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 		resp, _, err := req.Execute()
@@ -58,7 +58,7 @@ func resourceDNSTraceUpdate(d *schema.ResourceData, m interface{}) error {
 		update.Domain = fmt.Sprintf("%s ANY", update.Domain)
 	}
 
-	req := api.UpdateDnsTraceTest(d.Id()).DnsTraceTestRequest(*update).Expand(tests.AllowedExpandTestOptionsEnumValues)
+	req := api.UpdateDnsTraceTest(d.Id()).DnsTraceTestRequest(*update).Expand(knownExpandTestOptions())
 	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 	_, _, err := req.Execute()
@@ -91,7 +91,7 @@ func resourceDNSTraceCreate(d *schema.ResourceData, m interface{}) error {
 	log.Printf("[INFO] Creating ThousandEyes Test %s", d.Id())
 	local := buildDNSTraceStruct(d)
 
-	req := api.CreateDnsTraceTest().DnsTraceTestRequest(*local).Expand(tests.AllowedExpandTestOptionsEnumValues)
+	req := api.CreateDnsTraceTest().DnsTraceTestRequest(*local).Expand(knownExpandTestOptions())
 	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 	resp, _, err := req.Execute()

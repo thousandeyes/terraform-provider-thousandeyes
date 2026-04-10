@@ -164,7 +164,7 @@ func testAccThousandEyesTagConfig(testResource string) string {
 
 func getTag(id string) (*tags.Tag, error) {
 	api := (*tags.TagsAPIService)(&testClient.Common)
-	req := api.GetTag(id).Expand(tags.AllowedExpandTagsOptionsEnumValues)
+	req := api.GetTag(id).Expand(knownExpandTagsOptions())
 	req = SetAidFromContext(testClient.GetConfig().Context, req)
 	resp, _, err := req.Execute()
 	return resp, err

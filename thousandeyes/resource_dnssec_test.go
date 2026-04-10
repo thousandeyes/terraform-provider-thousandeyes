@@ -85,7 +85,7 @@ func testAccThousandEyesDNSSECConfig(testResource string) string {
 
 func getDNSSEC(id string) (interface{}, error) {
 	api := (*tests.DNSSECTestsAPIService)(&testClient.Common)
-	req := api.GetDnsSecTest(id).Expand(tests.AllowedExpandTestOptionsEnumValues)
+	req := api.GetDnsSecTest(id).Expand(knownExpandTestOptions())
 	req = SetAidFromContext(testClient.GetConfig().Context, req)
 	resp, _, err := req.Execute()
 	return resp, err

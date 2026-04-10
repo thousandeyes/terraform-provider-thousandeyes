@@ -38,7 +38,7 @@ func resourceBGPRead(d *schema.ResourceData, m interface{}) error {
 	return GetResource(context.Background(), d, m, func(apiClient *client.APIClient, id string) (interface{}, error) {
 		api := (*tests.BGPTestsAPIService)(&apiClient.Common)
 
-		req := api.GetBgpTest(id).Expand(tests.AllowedExpandBgpTestOptionsEnumValues)
+		req := api.GetBgpTest(id).Expand(knownExpandBgpTestOptions())
 		req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 		resp, _, err := req.Execute()
@@ -53,7 +53,7 @@ func resourceBGPUpdate(d *schema.ResourceData, m interface{}) error {
 	log.Printf("[INFO] Updating ThousandEyes Test %s", d.Id())
 	update := buildUpdateBGPStruct(d)
 
-	req := api.UpdateBgpTest(d.Id()).UpdateBgpTestRequest(*update).Expand(tests.AllowedExpandBgpTestOptionsEnumValues)
+	req := api.UpdateBgpTest(d.Id()).UpdateBgpTestRequest(*update).Expand(knownExpandBgpTestOptions())
 	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 	_, _, err := req.Execute()
@@ -88,7 +88,7 @@ func resourceBGPCreate(d *schema.ResourceData, m interface{}) error {
 	log.Printf("[INFO] Creating ThousandEyes Test %s", d.Id())
 	local := buildBGPStruct(d)
 
-	req := api.CreateBgpTest().BgpTestRequest(*local).Expand(tests.AllowedExpandBgpTestOptionsEnumValues)
+	req := api.CreateBgpTest().BgpTestRequest(*local).Expand(knownExpandBgpTestOptions())
 	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 	resp, _, err := req.Execute()
