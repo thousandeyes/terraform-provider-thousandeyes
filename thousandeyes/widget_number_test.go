@@ -33,8 +33,8 @@ func TestBuildNumberWidget(t *testing.T) {
 		{
 			name: "number widget with cards",
 			input: map[string]interface{}{
-				"type":        "Number",
-				"title":       "Multi-Card Number",
+				"type":  "Number",
+				"title": "Multi-Card Number",
 				"number_cards": []interface{}{
 					map[string]interface{}{
 						"description":  "Card 1",
@@ -48,10 +48,10 @@ func TestBuildNumberWidget(t *testing.T) {
 						},
 					},
 					map[string]interface{}{
-						"description": "Card 2",
-						"data_source": "CLOUD_AND_ENTERPRISE_AGENTS",
+						"description":  "Card 2",
+						"data_source":  "CLOUD_AND_ENTERPRISE_AGENTS",
 						"metric_group": "HTTP_SERVER",
-						"metric":      "WEB_AVAILABILITY",
+						"metric":       "WEB_AVAILABILITY",
 						"measure": []interface{}{
 							map[string]interface{}{
 								"type": "MEAN",
@@ -84,10 +84,10 @@ func TestBuildNumberWidget(t *testing.T) {
 				"title": "Detailed Card",
 				"number_cards": []interface{}{
 					map[string]interface{}{
-						"min_scale":                  0.0,
-						"max_scale":                  100.0,
-						"unit":                       "Kilo",
-						"compare_to_previous_value":  true,
+						"min_scale":                 0.0,
+						"max_scale":                 100.0,
+						"unit":                      "Kilo",
+						"compare_to_previous_value": true,
 						"should_exclude_alert_suppression_windows": true,
 						"fixed_timespan": []interface{}{
 							map[string]interface{}{
@@ -95,12 +95,10 @@ func TestBuildNumberWidget(t *testing.T) {
 								"unit":  "Hours",
 							},
 						},
-						"filter": []interface{}{
-							map[string]interface{}{
-								"property": "TEST",
-								"values":   []interface{}{"12345"},
-							},
-						},
+						"filter": testFilterSet(map[string]interface{}{
+							"property": "TEST",
+							"values":   []interface{}{"12345"},
+						}),
 					},
 				},
 			},

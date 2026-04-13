@@ -98,12 +98,10 @@ func TestBuildMultiMetricTableWidget(t *testing.T) {
 						"data_source":  "ALERTS",
 						"metric_group": "ALERTS",
 						"metric":       "ALERT_COUNT_AGENT",
-						"filter": []interface{}{
-							map[string]interface{}{
-								"property": "TEST",
-								"values":   []interface{}{"12345"},
-							},
-						},
+						"filter": testFilterSet(map[string]interface{}{
+							"property": "TEST",
+							"values":   []interface{}{"12345"},
+						}),
 					},
 				},
 			},
@@ -183,7 +181,7 @@ func TestMapMultiMetricTableWidget(t *testing.T) {
 				w.SetId("widget-mmt-1")
 				w.SetTitle("Test Table")
 				w.SetVisualMode(dashboards.VisualMode("Full"))
-			return dashboards.ApiMultiMetricTableWidgetAsApiWidget(w)
+				return dashboards.ApiMultiMetricTableWidgetAsApiWidget(w)
 			},
 			validate: func(t *testing.T, data map[string]interface{}) {
 				assert.Equal(t, "Multi Metric Table", data["type"])

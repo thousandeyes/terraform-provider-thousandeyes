@@ -509,8 +509,8 @@ var NumberCardSchema = map[string]*schema.Schema{
 		},
 	},
 	"filter": {
-		Type:        schema.TypeList,
-		Description: "Filters applied to the card.",
+		Type:        schema.TypeSet,
+		Description: "Filters applied to the card. Order is not significant.",
 		Optional:    true,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
@@ -579,8 +579,8 @@ var MultiMetricColumnSchema = map[string]*schema.Schema{
 		},
 	},
 	"filter": {
-		Type:        schema.TypeList,
-		Description: "Filters applied to the column.",
+		Type:        schema.TypeSet,
+		Description: "Filters applied to the column. Order is not significant.",
 		Optional:    true,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{

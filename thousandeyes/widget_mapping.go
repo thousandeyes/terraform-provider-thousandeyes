@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/thousandeyes/thousandeyes-sdk-go/v3/dashboards"
 )
 
@@ -261,6 +262,13 @@ func setFloat32FromMapIfPresent(m map[string]interface{}, key string, set func(f
 func getListValue(data map[string]interface{}, key string) []interface{} {
 	if v, ok := data[key].([]interface{}); ok {
 		return v
+	}
+	return nil
+}
+
+func getSetValue(data map[string]interface{}, key string) []interface{} {
+	if v, ok := data[key].(*schema.Set); ok {
+		return v.List()
 	}
 	return nil
 }
