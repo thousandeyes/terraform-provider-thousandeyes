@@ -70,7 +70,6 @@ var AlertRuleSchema = map[string]*schema.Schema{
 			"path-trace",
 			"ftp",
 			"sip-server",
-			"transactions",
 			"web-transactions",
 			"agent",
 			"network-outage",
