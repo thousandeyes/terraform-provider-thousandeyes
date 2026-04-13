@@ -375,7 +375,7 @@ Optional:
 
 - `data_source` (String) Data source for the column.
 - `direction` (String) Direction for the metric (e.g., TO_TARGET, FROM_TARGET). Only applicable to certain data sources.
-- `filter` (Block List) Filters applied to the column. (see [below for nested schema](#nestedblock--widgets--multi_metric_columns--filter))
+- `filter` (Block Set) Filters applied to the column. Order is not significant. (see [below for nested schema](#nestedblock--widgets--multi_metric_columns--filter))
 - `measure` (Block List, Max: 1) Measure configuration for the column. (see [below for nested schema](#nestedblock--widgets--multi_metric_columns--measure))
 - `metric` (String) Metric for the column.
 - `metric_group` (String) Metric group for the column.
@@ -422,7 +422,7 @@ Optional:
 - `data_source` (String) Data source for the card.
 - `description` (String) Description of the number card.
 - `direction` (String) Direction for the metric.
-- `filter` (Block List) Filters applied to the card. (see [below for nested schema](#nestedblock--widgets--number_cards--filter))
+- `filter` (Block Set) Filters applied to the card. Order is not significant. (see [below for nested schema](#nestedblock--widgets--number_cards--filter))
 - `fixed_timespan` (Block List, Max: 1) Fixed timespan for the card. (see [below for nested schema](#nestedblock--widgets--number_cards--fixed_timespan))
 - `max_scale` (Number) Maximum scale configured for the card.
 - `measure` (Block List, Max: 1) Measure configuration for the card. (see [below for nested schema](#nestedblock--widgets--number_cards--measure))

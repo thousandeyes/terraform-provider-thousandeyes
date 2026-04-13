@@ -261,7 +261,7 @@ func buildNumberCards(cardsList []interface{}) []dashboards.ApiNumbersCard {
 			card.SetMeasure(*m)
 		}
 
-		if filterList := getListValue(cardData, "filter"); len(filterList) > 0 {
+		if filterList := getSetValue(cardData, "filter"); len(filterList) > 0 {
 			apiFilters := make(map[string][]interface{})
 			for _, f := range filterList {
 				filterData := f.(map[string]interface{})
@@ -375,7 +375,7 @@ func buildMultiMetricColumns(columnsList []interface{}) []dashboards.ApiMultiMet
 			col.SetMeasure(*m)
 		}
 
-		if filterList := getListValue(colData, "filter"); len(filterList) > 0 {
+		if filterList := getSetValue(colData, "filter"); len(filterList) > 0 {
 			apiFilters := make(map[string][]interface{})
 			for _, f := range filterList {
 				filterData := f.(map[string]interface{})
@@ -411,7 +411,6 @@ func buildMultiMetricColumns(columnsList []interface{}) []dashboards.ApiMultiMet
 	}
 	return columns
 }
-
 
 // setCommonBuilderFields sets common fields on any widget
 func setCommonBuilderFields(widget interface{}, data map[string]interface{}) {
