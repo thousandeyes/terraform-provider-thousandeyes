@@ -632,7 +632,7 @@ func setCommonBuilderFields(widget interface{}, data map[string]interface{}) {
 	}
 
 	// Handle filter blocks - SDK uses map[string][]interface{}
-	if filterList := getListValue(data, "filter"); len(filterList) > 0 {
+	if filterList := getSetValue(data, "filter"); len(filterList) > 0 {
 		apiFilters := make(map[string][]interface{})
 		for _, f := range filterList {
 			filterData := f.(map[string]interface{})

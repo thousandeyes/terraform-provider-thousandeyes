@@ -133,8 +133,8 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 		Computed:    true,
 	},
 	"filter": {
-		Type:        schema.TypeList,
-		Description: "Filters applied to the widget. Each filter specifies a property and list of values.",
+		Type:        schema.TypeSet,
+		Description: "Filters applied to the widget. Each filter specifies a property and list of values. Order is not significant.",
 		Optional:    true,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
