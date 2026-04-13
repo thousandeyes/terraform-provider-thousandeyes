@@ -278,7 +278,7 @@ Optional:
 - `box_and_whiskers_config` (Block List, Max: 1) Configuration for Box and Whiskers widgets. (see [below for nested schema](#nestedblock--widgets--box_and_whiskers_config))
 - `color_grid_config` (Block List, Max: 1) Configuration for Color Grid widgets. (see [below for nested schema](#nestedblock--widgets--color_grid_config))
 - `data_source` (String) Data source for the widget.
-- `filter` (Block List) Filters applied to the widget. Each filter specifies a property and list of values. (see [below for nested schema](#nestedblock--widgets--filter))
+- `filter` (Block Set) Filters applied to the widget. Each filter specifies a property and list of values. Order is not significant. (see [below for nested schema](#nestedblock--widgets--filter))
 - `fixed_timespan` (Block List, Max: 1) Fixed timespan for the widget. (see [below for nested schema](#nestedblock--widgets--fixed_timespan))
 - `geo_map_config` (Block List, Max: 1) Configuration for Map widgets. (see [below for nested schema](#nestedblock--widgets--geo_map_config))
 - `grouped_bar_chart_config` (Block List, Max: 1) Configuration for Bar Chart: Grouped widgets. (see [below for nested schema](#nestedblock--widgets--grouped_bar_chart_config))
