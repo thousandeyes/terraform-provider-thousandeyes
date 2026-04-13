@@ -82,6 +82,39 @@ func mapListWidget(widget dashboards.ApiWidget) (map[string]interface{}, error) 
 	return data, nil
 }
 
+// mapAlertListWidget maps an Alert List widget to Terraform data
+func mapAlertListWidget(widget dashboards.ApiWidget) (map[string]interface{}, error) {
+	w := widget.ApiAlertListWidget
+	if w == nil {
+		return nil, nil
+	}
+
+	data := map[string]interface{}{
+		"type": "Alert List",
+	}
+	setCommonWidgetFields(data, w.GetId(), w.GetTitle(), w.GetEmbedUrl(), w.GetIsEmbedded(), string(w.GetVisualMode()))
+	setCommonMapperFields(data, w)
+
+	if v := w.GetDataSource(); v != "" {
+		data["data_source"] = string(v)
+	}
+
+	config := map[string]interface{}{}
+	if alertTypes, ok := w.GetAlertTypesOk(); ok && len(alertTypes) > 0 {
+		config["alert_types"] = legacyAlertTypesToInterfaces(alertTypes)
+	}
+	if v, ok := w.GetLimitToOk(); ok && v != nil {
+		config["limit_to"] = int(*v)
+	}
+	activeWithin, activeWithinOk := w.GetActiveWithinOk()
+	setActiveWithinFields(config, activeWithin, activeWithinOk)
+	if len(config) > 0 {
+		data["alert_list_config"] = []interface{}{config}
+	}
+
+	return data, nil
+}
+
 // mapBoxAndWhiskersWidget maps a Box and Whiskers widget to Terraform data
 func mapBoxAndWhiskersWidget(widget dashboards.ApiWidget) (map[string]interface{}, error) {
 	w := widget.ApiBoxAndWhiskersWidget
@@ -120,6 +153,86 @@ func mapBoxAndWhiskersWidget(widget dashboards.ApiWidget) (map[string]interface{
 	return data, nil
 }
 
+// mapTableWidget maps a Table widget to Terraform data
+func mapTableWidget(widget dashboards.ApiWidget) (map[string]interface{}, error) {
+	w := widget.ApiTableWidget
+	if w == nil {
+		return nil, nil
+	}
+
+	data := map[string]interface{}{
+		"type": "Table",
+	}
+	setCommonWidgetFields(data, w.GetId(), w.GetTitle(), w.GetEmbedUrl(), w.GetIsEmbedded(), string(w.GetVisualMode()))
+	setCommonMapperFields(data, w)
+
+	if v := w.GetDataSource(); v != "" {
+		data["data_source"] = string(v)
+	}
+
+	config := map[string]interface{}{}
+	if v, ok := w.GetCompareToPreviousValueOk(); ok && v != nil {
+		config["compare_to_previous_value"] = *v
+	}
+	if v, ok := w.GetRowGroupByOk(); ok && v != nil {
+		config["row_group_by"] = string(*v)
+	}
+	if v, ok := w.GetColumnGroupByOk(); ok && v != nil {
+		config["column_group_by"] = string(*v)
+	}
+	if v, ok := w.GetLimitOk(); ok && v != nil {
+		config["limit"] = int(*v)
+	}
+	if len(config) > 0 {
+		data["table_config"] = []interface{}{config}
+	}
+
+	return data, nil
+}
+
+// mapTestTableWidget maps a Test Table widget to Terraform data
+func mapTestTableWidget(widget dashboards.ApiWidget) (map[string]interface{}, error) {
+	w := widget.ApiTestTableWidget
+	if w == nil {
+		return nil, nil
+	}
+
+	data := map[string]interface{}{
+		"type": "Test Table",
+	}
+	setCommonWidgetFields(data, w.GetId(), w.GetTitle(), w.GetEmbedUrl(), w.GetIsEmbedded(), string(w.GetVisualMode()))
+	setCommonMapperFields(data, w)
+
+	if v := w.GetDataSource(); v != "" {
+		data["data_source"] = string(v)
+	}
+
+	config := map[string]interface{}{}
+	if filter, ok := w.GetFilterOk(); ok && filter != nil {
+		mapped, err := mapTestTableFilterConfig(*filter)
+		if err != nil {
+			return nil, err
+		}
+		if len(mapped) > 0 {
+			config["filter"] = []interface{}{mapped}
+		}
+	}
+	if exclude, ok := w.GetExcludeOk(); ok && exclude != nil {
+		mapped, err := mapTestTableFilterConfig(*exclude)
+		if err != nil {
+			return nil, err
+		}
+		if len(mapped) > 0 {
+			config["exclude"] = []interface{}{mapped}
+		}
+	}
+	if len(config) > 0 {
+		data["test_table_config"] = []interface{}{config}
+	}
+
+	return data, nil
+}
+
 // mapPieChartWidget maps a Pie Chart widget to Terraform data
 func mapPieChartWidget(widget dashboards.ApiWidget) (map[string]interface{}, error) {
 	w := widget.ApiPieChartWidget
@@ -144,6 +257,83 @@ func mapPieChartWidget(widget dashboards.ApiWidget) (map[string]interface{}, err
 	}
 	if len(config) > 0 {
 		data["pie_chart_config"] = []interface{}{config}
+	}
+
+	return data, nil
+}
+
+// mapStackedBarChartWidget maps a Stacked Bar Chart widget to Terraform data
+func mapStackedBarChartWidget(widget dashboards.ApiWidget) (map[string]interface{}, error) {
+	w := widget.ApiStackedBarchartWidget
+	if w == nil {
+		return nil, nil
+	}
+
+	data := map[string]interface{}{
+		"type": "Bar Chart: Stacked",
+	}
+	setCommonWidgetFields(data, w.GetId(), w.GetTitle(), w.GetEmbedUrl(), w.GetIsEmbedded(), string(w.GetVisualMode()))
+	setCommonMapperFields(data, w)
+
+	if v := w.GetDataSource(); v != "" {
+		data["data_source"] = string(v)
+	}
+
+	config := map[string]interface{}{}
+	if v, ok := w.GetAxisGroupByOk(); ok && v != nil {
+		config["axis_group_by"] = string(*v)
+	}
+	if v, ok := w.GetLimitOk(); ok && v != nil {
+		config["limit"] = int(*v)
+	}
+	if v, ok := w.GetShowLabelsOk(); ok && v != nil {
+		config["show_labels"] = *v
+	}
+	if v, ok := w.GetIsHorizontalBarChartOk(); ok && v != nil {
+		config["is_horizontal_bar_chart"] = *v
+	}
+	if len(config) > 0 {
+		data["stacked_bar_chart_config"] = []interface{}{config}
+	}
+
+	return data, nil
+}
+
+// mapGroupedBarChartWidget maps a Grouped Bar Chart widget to Terraform data
+func mapGroupedBarChartWidget(widget dashboards.ApiWidget) (map[string]interface{}, error) {
+	w := widget.ApiGroupedBarchartWidget
+	if w == nil {
+		return nil, nil
+	}
+
+	data := map[string]interface{}{
+		"type": "Bar Chart: Grouped",
+	}
+	setCommonWidgetFields(data, w.GetId(), w.GetTitle(), w.GetEmbedUrl(), w.GetIsEmbedded(), string(w.GetVisualMode()))
+	setCommonMapperFields(data, w)
+
+	if v := w.GetDataSource(); v != "" {
+		data["data_source"] = string(v)
+	}
+
+	config := map[string]interface{}{}
+	if v, ok := w.GetGroupByOk(); ok && v != nil {
+		config["group_by"] = string(*v)
+	}
+	if v, ok := w.GetAxisGroupByOk(); ok && v != nil {
+		config["axis_group_by"] = string(*v)
+	}
+	if v, ok := w.GetLimitOk(); ok && v != nil {
+		config["limit"] = int(*v)
+	}
+	if v, ok := w.GetShowLabelsOk(); ok && v != nil {
+		config["show_labels"] = *v
+	}
+	if v, ok := w.GetIsHorizontalBarChartOk(); ok && v != nil {
+		config["is_horizontal_bar_chart"] = *v
+	}
+	if len(config) > 0 {
+		data["grouped_bar_chart_config"] = []interface{}{config}
 	}
 
 	return data, nil
@@ -182,6 +372,52 @@ func mapStackedAreaWidget(widget dashboards.ApiWidget) (map[string]interface{}, 
 	}
 	if len(config) > 0 {
 		data["stacked_area_config"] = []interface{}{config}
+	}
+
+	return data, nil
+}
+
+// mapColorGridWidget maps a Color Grid widget to Terraform data
+func mapColorGridWidget(widget dashboards.ApiWidget) (map[string]interface{}, error) {
+	w := widget.ApiColorGridWidget
+	if w == nil {
+		return nil, nil
+	}
+
+	data := map[string]interface{}{
+		"type": "Color Grid",
+	}
+	setCommonWidgetFields(data, w.GetId(), w.GetTitle(), w.GetEmbedUrl(), w.GetIsEmbedded(), string(w.GetVisualMode()))
+	setCommonMapperFields(data, w)
+
+	if v := w.GetDataSource(); v != "" {
+		data["data_source"] = string(v)
+	}
+
+	config := map[string]interface{}{}
+	if v, ok := w.GetMinScaleOk(); ok && v != nil {
+		config["min_scale"] = float64(*v)
+	}
+	if v, ok := w.GetMaxScaleOk(); ok && v != nil {
+		config["max_scale"] = float64(*v)
+	}
+	if v := w.GetUnit(); v != "" {
+		config["unit"] = string(v)
+	}
+	if v, ok := w.GetCardsOk(); ok && v != nil {
+		config["cards"] = string(*v)
+	}
+	if v, ok := w.GetGroupCardsByOk(); ok && v != nil {
+		config["group_cards_by"] = string(*v)
+	}
+	if v, ok := w.GetColumnsOk(); ok && v != nil {
+		config["columns"] = int(*v)
+	}
+	if v, ok := w.GetLimitOk(); ok && v != nil {
+		config["limit"] = int(*v)
+	}
+	if len(config) > 0 {
+		data["color_grid_config"] = []interface{}{config}
 	}
 
 	return data, nil
@@ -544,4 +780,59 @@ func setCommonMapperFields(data map[string]interface{}, widget interface{}) {
 			}
 		}
 	}
+}
+
+func setActiveWithinFields(config map[string]interface{}, activeWithin *dashboards.ActiveWithin, ok bool) {
+	if !ok || activeWithin == nil {
+		return
+	}
+	if v := activeWithin.GetValue(); v != 0 {
+		config["active_within_value"] = int(v)
+	}
+	if v := activeWithin.GetUnit(); v != "" {
+		config["active_within_unit"] = string(v)
+	}
+}
+
+func legacyAlertTypesToInterfaces(values []dashboards.LegacyAlertListAlertType) []interface{} {
+	sorted := make([]string, 0, len(values))
+	for _, value := range values {
+		sorted = append(sorted, string(value))
+	}
+	sort.Strings(sorted)
+
+	result := make([]interface{}, len(sorted))
+	for i, value := range sorted {
+		result[i] = value
+	}
+	return result
+}
+
+func mapTestTableFilterConfig(filter dashboards.ApiWidgetFilterApiTestTableFilterKey) (map[string]interface{}, error) {
+	result := map[string]interface{}{}
+	if v, ok := filter.GetTypeOk(); ok && v != nil {
+		result["type"] = string(*v)
+	}
+
+	if filters, ok := filter.GetFiltersOk(); ok && len(filters) > 0 {
+		blocks := make([]interface{}, 0, len(filters))
+		for _, item := range filters {
+			key, ok := item.GetKeyOk()
+			if !ok || key == nil || *key == "" {
+				return nil, fmt.Errorf("test table filter item missing required key")
+			}
+			value, ok := item.GetValueOk()
+			if !ok || value == nil {
+				return nil, fmt.Errorf("test table filter item missing required value")
+			}
+			blocks = append(blocks, map[string]interface{}{
+				"key":   string(*key),
+				"value": *value,
+			})
+		}
+		if len(blocks) > 0 {
+			result["filters"] = blocks
+		}
+	}
+	return result, nil
 }

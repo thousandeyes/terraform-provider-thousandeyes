@@ -71,6 +71,31 @@ func buildListWidget(data map[string]interface{}) dashboards.ApiWidget {
 	return dashboards.ApiListWidgetAsApiWidget(widget)
 }
 
+// buildAlertListWidget builds an Alert List widget from Terraform data
+func buildAlertListWidget(data map[string]interface{}) dashboards.ApiWidget {
+	widget := dashboards.NewApiAlertListWidget("Alert List")
+	setCommonBuilderFields(widget, data)
+
+	if dataSource := getStringValue(data, "data_source"); dataSource != "" {
+		widget.SetDataSource(dashboards.AlertListDatasource(dataSource))
+	}
+
+	if configList := getListValue(data, "alert_list_config"); len(configList) > 0 {
+		config := configList[0].(map[string]interface{})
+		setAlertTypesFromConfig(config, "alert_types", widget.SetAlertTypes)
+		if rawLimit, exists := config["limit_to"]; exists {
+			if limit, ok := rawLimit.(int); ok {
+				widget.SetLimitTo(int32(limit))
+			}
+		}
+		if activeWithin := buildActiveWithinFromConfig(config); activeWithin != nil {
+			widget.SetActiveWithin(*activeWithin)
+		}
+	}
+
+	return dashboards.ApiAlertListWidgetAsApiWidget(widget)
+}
+
 // buildBoxAndWhiskersWidget builds a Box and Whiskers widget from Terraform data
 func buildBoxAndWhiskersWidget(data map[string]interface{}) dashboards.ApiWidget {
 	widget := dashboards.NewApiBoxAndWhiskersWidget("Box and Whiskers")
@@ -96,6 +121,56 @@ func buildBoxAndWhiskersWidget(data map[string]interface{}) dashboards.ApiWidget
 	return dashboards.ApiBoxAndWhiskersWidgetAsApiWidget(widget)
 }
 
+// buildTableWidget builds a Table widget from Terraform data
+func buildTableWidget(data map[string]interface{}) dashboards.ApiWidget {
+	widget := dashboards.NewApiTableWidget("Table")
+	setCommonBuilderFields(widget, data)
+
+	if dataSource := getStringValue(data, "data_source"); dataSource != "" {
+		widget.SetDataSource(dashboards.TableDatasource(dataSource))
+	}
+
+	if configList := getListValue(data, "table_config"); len(configList) > 0 {
+		config := configList[0].(map[string]interface{})
+		if v, ok := config["compare_to_previous_value"].(bool); ok {
+			widget.SetCompareToPreviousValue(v)
+		}
+		if v := getStringValue(config, "row_group_by"); v != "" {
+			widget.SetRowGroupBy(dashboards.ApiAggregateProperty(v))
+		}
+		if v := getStringValue(config, "column_group_by"); v != "" {
+			widget.SetColumnGroupBy(dashboards.ApiAggregateProperty(v))
+		}
+		if v := getIntValue(config, "limit"); v != 0 {
+			widget.SetLimit(int32(v))
+		}
+	}
+
+	return dashboards.ApiTableWidgetAsApiWidget(widget)
+}
+
+// buildTestTableWidget builds a Test Table widget from Terraform data
+func buildTestTableWidget(data map[string]interface{}) dashboards.ApiWidget {
+	widget := dashboards.NewApiTestTableWidget("Test Table")
+	setCommonBuilderFields(widget, data)
+
+	if dataSource := getStringValue(data, "data_source"); dataSource != "" {
+		widget.SetDataSource(dashboards.TestTableDatasource(dataSource))
+	}
+
+	if configList := getListValue(data, "test_table_config"); len(configList) > 0 {
+		config := configList[0].(map[string]interface{})
+		if filter := buildTestTableFilterConfig(config, "filter"); filter != nil {
+			widget.SetFilter(*filter)
+		}
+		if exclude := buildTestTableFilterConfig(config, "exclude"); exclude != nil {
+			widget.SetExclude(*exclude)
+		}
+	}
+
+	return dashboards.ApiTestTableWidgetAsApiWidget(widget)
+}
+
 // buildPieChartWidget builds a Pie Chart widget from Terraform data
 func buildPieChartWidget(data map[string]interface{}) dashboards.ApiWidget {
 	widget := dashboards.NewApiPieChartWidget("Pie Chart")
@@ -114,6 +189,65 @@ func buildPieChartWidget(data map[string]interface{}) dashboards.ApiWidget {
 	}
 
 	return dashboards.ApiPieChartWidgetAsApiWidget(widget)
+}
+
+// buildStackedBarChartWidget builds a Stacked Bar Chart widget from Terraform data
+func buildStackedBarChartWidget(data map[string]interface{}) dashboards.ApiWidget {
+	widget := dashboards.NewApiStackedBarchartWidget("Bar Chart: Stacked")
+	setCommonBuilderFields(widget, data)
+
+	if dataSource := getStringValue(data, "data_source"); dataSource != "" {
+		widget.SetDataSource(dashboards.StackedBarChartDatasource(dataSource))
+	}
+
+	if configList := getListValue(data, "stacked_bar_chart_config"); len(configList) > 0 {
+		config := configList[0].(map[string]interface{})
+		if v := getStringValue(config, "axis_group_by"); v != "" {
+			widget.SetAxisGroupBy(dashboards.ApiAggregateProperty(v))
+		}
+		if v := getIntValue(config, "limit"); v != 0 {
+			widget.SetLimit(int32(v))
+		}
+		if v, ok := config["show_labels"].(bool); ok {
+			widget.SetShowLabels(v)
+		}
+		if v, ok := config["is_horizontal_bar_chart"].(bool); ok {
+			widget.SetIsHorizontalBarChart(v)
+		}
+	}
+
+	return dashboards.ApiStackedBarchartWidgetAsApiWidget(widget)
+}
+
+// buildGroupedBarChartWidget builds a Grouped Bar Chart widget from Terraform data
+func buildGroupedBarChartWidget(data map[string]interface{}) dashboards.ApiWidget {
+	widget := dashboards.NewApiGroupedBarchartWidget("Bar Chart: Grouped")
+	setCommonBuilderFields(widget, data)
+
+	if dataSource := getStringValue(data, "data_source"); dataSource != "" {
+		widget.SetDataSource(dashboards.GroupedBarChartDatasource(dataSource))
+	}
+
+	if configList := getListValue(data, "grouped_bar_chart_config"); len(configList) > 0 {
+		config := configList[0].(map[string]interface{})
+		if v := getStringValue(config, "group_by"); v != "" {
+			widget.SetGroupBy(dashboards.ApiAggregateProperty(v))
+		}
+		if v := getStringValue(config, "axis_group_by"); v != "" {
+			widget.SetAxisGroupBy(dashboards.ApiAggregateProperty(v))
+		}
+		if v := getIntValue(config, "limit"); v != 0 {
+			widget.SetLimit(int32(v))
+		}
+		if v, ok := config["show_labels"].(bool); ok {
+			widget.SetShowLabels(v)
+		}
+		if v, ok := config["is_horizontal_bar_chart"].(bool); ok {
+			widget.SetIsHorizontalBarChart(v)
+		}
+	}
+
+	return dashboards.ApiGroupedBarchartWidgetAsApiWidget(widget)
 }
 
 // buildStackedAreaWidget builds a Stacked Area Chart widget from Terraform data
@@ -139,6 +273,39 @@ func buildStackedAreaWidget(data map[string]interface{}) dashboards.ApiWidget {
 	}
 
 	return dashboards.ApiStackedAreaChartWidgetAsApiWidget(widget)
+}
+
+// buildColorGridWidget builds a Color Grid widget from Terraform data
+func buildColorGridWidget(data map[string]interface{}) dashboards.ApiWidget {
+	widget := dashboards.NewApiColorGridWidget("Color Grid")
+	setCommonBuilderFields(widget, data)
+
+	if dataSource := getStringValue(data, "data_source"); dataSource != "" {
+		widget.SetDataSource(dashboards.ColorGridDatasource(dataSource))
+	}
+
+	if configList := getListValue(data, "color_grid_config"); len(configList) > 0 {
+		config := configList[0].(map[string]interface{})
+		setFloat32FromMapIfPresent(config, "min_scale", widget.SetMinScale)
+		setFloat32FromMapIfPresent(config, "max_scale", widget.SetMaxScale)
+		if v := getStringValue(config, "unit"); v != "" {
+			widget.SetUnit(dashboards.ApiWidgetFixedYScalePrefix(v))
+		}
+		if v := getStringValue(config, "cards"); v != "" {
+			widget.SetCards(dashboards.ApiAggregateProperty(v))
+		}
+		if v := getStringValue(config, "group_cards_by"); v != "" {
+			widget.SetGroupCardsBy(dashboards.ApiAggregateProperty(v))
+		}
+		if v := getIntValue(config, "columns"); v != 0 {
+			widget.SetColumns(int32(v))
+		}
+		if v := getIntValue(config, "limit"); v != 0 {
+			widget.SetLimit(int32(v))
+		}
+	}
+
+	return dashboards.ApiColorGridWidgetAsApiWidget(widget)
 }
 
 // buildTimeseriesWidget builds a Timeseries widget from Terraform data
@@ -465,7 +632,7 @@ func setCommonBuilderFields(widget interface{}, data map[string]interface{}) {
 	}
 
 	// Handle filter blocks - SDK uses map[string][]interface{}
-	if filterList := getListValue(data, "filter"); len(filterList) > 0 {
+	if filterList := getSetValue(data, "filter"); len(filterList) > 0 {
 		apiFilters := make(map[string][]interface{})
 		for _, f := range filterList {
 			filterData := f.(map[string]interface{})
@@ -510,4 +677,91 @@ func setCommonBuilderFields(widget interface{}, data map[string]interface{}) {
 			w.SetFixedTimespan(*duration)
 		}
 	}
+}
+
+func buildActiveWithinFromConfig(config map[string]interface{}) *dashboards.ActiveWithin {
+	activeWithinValue := 0
+	activeWithinUnit := ""
+	if v, ok := config["active_within_value"].(int); ok && v != 0 {
+		activeWithinValue = v
+	}
+	if v := getStringValue(config, "active_within_unit"); v != "" {
+		activeWithinUnit = v
+	}
+	if activeWithinValue == 0 && activeWithinUnit == "" {
+		return nil
+	}
+
+	activeWithin := dashboards.NewActiveWithin()
+	if activeWithinValue != 0 {
+		activeWithin.SetValue(int32(activeWithinValue))
+	}
+	if activeWithinUnit != "" {
+		activeWithin.SetUnit(dashboards.LegacyDurationUnit(activeWithinUnit))
+	}
+	return activeWithin
+}
+
+func setAlertTypesFromConfig(m map[string]interface{}, key string, set func([]dashboards.LegacyAlertListAlertType)) {
+	raw, ok := m[key].(*schema.Set)
+	if !ok || raw.Len() == 0 {
+		return
+	}
+
+	values := make([]string, 0, raw.Len())
+	for _, v := range raw.List() {
+		values = append(values, v.(string))
+	}
+	sort.Strings(values)
+
+	alertTypes := make([]dashboards.LegacyAlertListAlertType, len(values))
+	for i, v := range values {
+		alertTypes[i] = dashboards.LegacyAlertListAlertType(v)
+	}
+	set(alertTypes)
+}
+
+func buildTestTableFilterConfig(config map[string]interface{}, key string) *dashboards.ApiWidgetFilterApiTestTableFilterKey {
+	blocks := getListValue(config, key)
+	if len(blocks) == 0 {
+		return nil
+	}
+
+	block, ok := blocks[0].(map[string]interface{})
+	if !ok || block == nil {
+		return nil
+	}
+
+	filter := dashboards.NewApiWidgetFilterApiTestTableFilterKey()
+	if v := getStringValue(block, "type"); v != "" {
+		filter.SetType(dashboards.TestTableFilterType(v))
+	}
+
+	terms := getListValue(block, "filters")
+	if len(terms) > 0 {
+		items := make([]dashboards.ApiMultiSearchFilterApiTestTableFilterKey, 0, len(terms))
+		for _, rawTerm := range terms {
+			term, ok := rawTerm.(map[string]interface{})
+			if !ok || term == nil {
+				continue
+			}
+			keyValue := getStringValue(term, "key")
+			value := getStringValue(term, "value")
+			if keyValue == "" || value == "" {
+				continue
+			}
+			item := dashboards.NewApiMultiSearchFilterApiTestTableFilterKey()
+			item.SetKey(dashboards.TestTableFilterKey(keyValue))
+			item.SetValue(value)
+			items = append(items, *item)
+		}
+		if len(items) > 0 {
+			filter.SetFilters(items)
+		}
+	}
+
+	if !filter.HasType() && !filter.HasFilters() {
+		return nil
+	}
+	return filter
 }
