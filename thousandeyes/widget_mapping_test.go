@@ -129,67 +129,69 @@ func newManagedWidget(title string) dashboards.ApiWidget {
 	return dashboards.ApiTimeseriesWidgetAsApiWidget(w)
 }
 
-func newUnmanagedWidget() dashboards.ApiWidget {
-	return dashboards.ApiWidget{
-		ApiMultiMetricTableWidget: &dashboards.ApiMultiMetricTableWidget{},
-	}
+func newUnmanagedWidget(title string) dashboards.ApiWidget {
+	return newManagedWidget("unmanaged:" + title)
+}
+
+func isTestUnmanagedWidget(w dashboards.ApiWidget) bool {
+	return w.ApiTimeseriesWidget != nil && len(w.ApiTimeseriesWidget.GetTitle()) > len("unmanaged:") && w.ApiTimeseriesWidget.GetTitle()[:len("unmanaged:")] == "unmanaged:"
 }
 
 func TestMergeUnmanagedWidgets_preservesOrder(t *testing.T) {
 	mA := newManagedWidget("A")
 	mB := newManagedWidget("B")
-	uX := newUnmanagedWidget()
-	uY := newUnmanagedWidget()
+	uX := newUnmanagedWidget("X")
+	uY := newUnmanagedWidget("Y")
 
 	current := []dashboards.ApiWidget{mA, uX, mB, uY}
 	config := []dashboards.ApiWidget{newManagedWidget("A'"), newManagedWidget("B'")}
 
-	merged := mergeUnmanagedWidgets(config, current)
+	merged := mergeWidgetsWithPredicate(config, current, isTestUnmanagedWidget)
 	require.Len(t, merged, 4)
 	assert.Equal(t, "A'", merged[0].ApiTimeseriesWidget.GetTitle())
-	assert.NotNil(t, merged[1].ApiMultiMetricTableWidget)
+	assert.Equal(t, "unmanaged:X", merged[1].ApiTimeseriesWidget.GetTitle())
 	assert.Equal(t, "B'", merged[2].ApiTimeseriesWidget.GetTitle())
-	assert.NotNil(t, merged[3].ApiMultiMetricTableWidget)
+	assert.Equal(t, "unmanaged:Y", merged[3].ApiTimeseriesWidget.GetTitle())
 }
 
 func TestMergeUnmanagedWidgets_deleteManaged(t *testing.T) {
 	mA := newManagedWidget("A")
 	mB := newManagedWidget("B")
-	uX := newUnmanagedWidget()
+	uX := newUnmanagedWidget("X")
 
 	current := []dashboards.ApiWidget{mA, uX, mB}
 	config := []dashboards.ApiWidget{newManagedWidget("A'")}
 
-	merged := mergeUnmanagedWidgets(config, current)
+	merged := mergeWidgetsWithPredicate(config, current, isTestUnmanagedWidget)
 	require.Len(t, merged, 2)
 	assert.Equal(t, "A'", merged[0].ApiTimeseriesWidget.GetTitle())
-	assert.NotNil(t, merged[1].ApiMultiMetricTableWidget)
+	assert.Equal(t, "unmanaged:X", merged[1].ApiTimeseriesWidget.GetTitle())
 }
 
 func TestMergeUnmanagedWidgets_addManaged(t *testing.T) {
 	mA := newManagedWidget("A")
-	uX := newUnmanagedWidget()
+	uX := newUnmanagedWidget("X")
 
 	current := []dashboards.ApiWidget{mA, uX}
 	config := []dashboards.ApiWidget{newManagedWidget("A'"), newManagedWidget("NEW")}
 
-	merged := mergeUnmanagedWidgets(config, current)
+	merged := mergeWidgetsWithPredicate(config, current, isTestUnmanagedWidget)
 	require.Len(t, merged, 3)
 	assert.Equal(t, "A'", merged[0].ApiTimeseriesWidget.GetTitle())
-	assert.NotNil(t, merged[1].ApiMultiMetricTableWidget)
+	assert.Equal(t, "unmanaged:X", merged[1].ApiTimeseriesWidget.GetTitle())
 	assert.Equal(t, "NEW", merged[2].ApiTimeseriesWidget.GetTitle())
 }
 
 func TestMergeUnmanagedWidgets_emptyConfig(t *testing.T) {
 	mA := newManagedWidget("A")
-	uX := newUnmanagedWidget()
-	uY := newUnmanagedWidget()
+	uX := newUnmanagedWidget("X")
+	uY := newUnmanagedWidget("Y")
 
 	current := []dashboards.ApiWidget{uX, mA, uY}
-	merged := mergeUnmanagedWidgets(nil, current)
+	merged := mergeWidgetsWithPredicate(nil, current, isTestUnmanagedWidget)
 	require.Len(t, merged, 2)
-	assert.NotNil(t, merged[0].ApiMultiMetricTableWidget)
-	assert.NotNil(t, merged[1].ApiMultiMetricTableWidget)
+	assert.Equal(t, "unmanaged:X", merged[0].ApiTimeseriesWidget.GetTitle())
+	assert.Equal(t, "unmanaged:Y", merged[1].ApiTimeseriesWidget.GetTitle())
 }
 
 func TestMergeUnmanagedWidgets_noUnmanaged(t *testing.T) {

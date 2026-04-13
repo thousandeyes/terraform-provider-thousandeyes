@@ -205,11 +205,15 @@ func isUnmanagedWidget(w dashboards.ApiWidget) bool {
 // current positions; managed slots are filled in config order. Extra config
 // widgets (newly added) are appended at the end.
 func mergeUnmanagedWidgets(configWidgets, currentAPIWidgets []dashboards.ApiWidget) []dashboards.ApiWidget {
+	return mergeWidgetsWithPredicate(configWidgets, currentAPIWidgets, isUnmanagedWidget)
+}
+
+func mergeWidgetsWithPredicate(configWidgets, currentAPIWidgets []dashboards.ApiWidget, isUnmanaged func(dashboards.ApiWidget) bool) []dashboards.ApiWidget {
 	merged := make([]dashboards.ApiWidget, 0, len(currentAPIWidgets)+len(configWidgets))
 	mi := 0
 
 	for _, apiWidget := range currentAPIWidgets {
-		if isUnmanagedWidget(apiWidget) {
+		if isUnmanaged(apiWidget) {
 			merged = append(merged, apiWidget)
 		} else if mi < len(configWidgets) {
 			merged = append(merged, configWidgets[mi])

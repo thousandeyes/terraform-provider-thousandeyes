@@ -834,6 +834,8 @@ func TestAccThousandEyesDashboard_removeAllWidgets(t *testing.T) {
 // contains widget types not supported by the provider, those widgets are preserved
 // across Terraform updates rather than being silently dropped.
 func TestAccThousandEyesDashboard_preserveUnmanagedWidgets(t *testing.T) {
+	t.Skip("provider now manages all dashboard widget types exposed by the SDK")
+
 	resourceName := "thousandeyes_dashboard.test_dashboard_preserve_unmanaged"
 	var dashboardID string
 
