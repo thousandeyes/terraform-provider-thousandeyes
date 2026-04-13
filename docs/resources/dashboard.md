@@ -189,6 +189,36 @@ resource "thousandeyes_dashboard" "example" {
       active_within_unit  = "Days"
     }
   }
+
+  widgets {
+    type        = "Multi Metric Table"
+    title       = "Multi Metric Table Widget"
+    visual_mode = "Full"
+
+    multi_metric_table_config {
+      compare_to_previous_value = true
+      row_group_by              = "COUNTRY"
+      limit                     = 10
+    }
+
+    multi_metric_columns {
+      data_source  = "ALERTS"
+      metric_group = "ALERTS"
+      metric       = "ALERT_COUNT"
+      measure {
+        type = "MEAN"
+      }
+    }
+
+    multi_metric_columns {
+      data_source  = "CLOUD_AND_ENTERPRISE_AGENTS"
+      metric_group = "HTTP_SERVER"
+      metric       = "WEB_FETCH"
+      measure {
+        type = "MEAN"
+      }
+    }
+  }
 }
 ```
 
@@ -253,6 +283,8 @@ Optional:
 - `measure` (Block List, Max: 1) Measure configuration for the widget. (see [below for nested schema](#nestedblock--widgets--measure))
 - `metric` (String) Metric for the widget.
 - `metric_group` (String) Metric group for the widget.
+- `multi_metric_columns` (Block List) List of columns within a Multi Metric Table widget. Each column has its own data source, metric, and measure. (see [below for nested schema](#nestedblock--widgets--multi_metric_columns))
+- `multi_metric_table_config` (Block List, Max: 1) Configuration for Multi Metric Table widgets. (see [below for nested schema](#nestedblock--widgets--multi_metric_table_config))
 - `number_cards` (Block List) List of number cards within a Number widget. Each card can have its own data source, metric, and measure. (see [below for nested schema](#nestedblock--widgets--number_cards))
 - `pie_chart_config` (Block List, Max: 1) Configuration for Pie Chart widgets. (see [below for nested schema](#nestedblock--widgets--pie_chart_config))
 - `should_exclude_alert_suppression_windows` (Boolean) Excludes alert suppression window data if set to true.
@@ -334,6 +366,51 @@ Optional:
 
 - `percentile_value` (Number) The percentile value to use when type is NTH_PERCENTILE.
 - `type` (String) Measure type (e.g., 'MEAN', 'MEDIAN', 'MAXIMUM', 'MINIMUM', 'NTH_PERCENTILE').
+
+
+<a id="nestedblock--widgets--multi_metric_columns"></a>
+### Nested Schema for `widgets.multi_metric_columns`
+
+Optional:
+
+- `data_source` (String) Data source for the column.
+- `direction` (String) Direction for the metric (e.g., TO_TARGET, FROM_TARGET). Only applicable to certain data sources.
+- `filter` (Block List) Filters applied to the column. (see [below for nested schema](#nestedblock--widgets--multi_metric_columns--filter))
+- `measure` (Block List, Max: 1) Measure configuration for the column. (see [below for nested schema](#nestedblock--widgets--multi_metric_columns--measure))
+- `metric` (String) Metric for the column.
+- `metric_group` (String) Metric group for the column.
+
+Read-Only:
+
+- `id` (String) Identifier of the column.
+
+<a id="nestedblock--widgets--multi_metric_columns--filter"></a>
+### Nested Schema for `widgets.multi_metric_columns.filter`
+
+Required:
+
+- `property` (String) Filter property.
+- `values` (Set of String) Set of filter values (IDs). Order is not significant.
+
+
+<a id="nestedblock--widgets--multi_metric_columns--measure"></a>
+### Nested Schema for `widgets.multi_metric_columns.measure`
+
+Optional:
+
+- `percentile_value` (Number) Percentile value when type is NTH_PERCENTILE.
+- `type` (String) Measure type.
+
+
+
+<a id="nestedblock--widgets--multi_metric_table_config"></a>
+### Nested Schema for `widgets.multi_metric_table_config`
+
+Optional:
+
+- `compare_to_previous_value` (Boolean) Enables comparison of the current metric value with the previous value.
+- `limit` (Number) Maximum number of rows displayed.
+- `row_group_by` (String) Property to group rows by.
 
 
 <a id="nestedblock--widgets--number_cards"></a>

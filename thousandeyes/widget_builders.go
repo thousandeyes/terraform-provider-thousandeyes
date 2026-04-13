@@ -310,6 +310,109 @@ func buildNumberCards(cardsList []interface{}) []dashboards.ApiNumbersCard {
 	return cards
 }
 
+// buildMultiMetricTableWidget builds a Multi Metric Table widget from Terraform data
+func buildMultiMetricTableWidget(data map[string]interface{}) dashboards.ApiWidget {
+	widget := dashboards.NewApiMultiMetricTableWidget("Multi Metric Table")
+	setCommonBuilderFields(widget, data)
+
+	if configList := getListValue(data, "multi_metric_table_config"); len(configList) > 0 {
+		config := configList[0].(map[string]interface{})
+		if v, ok := boolFromMapIfPresent(config, "compare_to_previous_value"); ok {
+			widget.SetCompareToPreviousValue(v)
+		}
+		if v := getStringValue(config, "row_group_by"); v != "" {
+			widget.SetRowGroupBy(dashboards.ApiAggregateProperty(v))
+		}
+		if v := getIntValue(config, "limit"); v != 0 {
+			widget.SetLimit(int32(v))
+		}
+	}
+
+	columnsList := getListValue(data, "multi_metric_columns")
+	if len(columnsList) > 0 {
+		widget.SetMultiMetricColumns(buildMultiMetricColumns(columnsList))
+	} else {
+		widget.SetMultiMetricColumns([]dashboards.ApiMultiMetricColumn{})
+	}
+
+	return dashboards.ApiMultiMetricTableWidgetAsApiWidget(widget)
+}
+
+func buildMultiMetricColumns(columnsList []interface{}) []dashboards.ApiMultiMetricColumn {
+	columns := make([]dashboards.ApiMultiMetricColumn, 0, len(columnsList))
+	for _, c := range columnsList {
+		colData, ok := c.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		col := dashboards.NewApiMultiMetricColumn()
+
+		if v := getStringValue(colData, "id"); v != "" {
+			col.SetId(v)
+		}
+		if dataSource := getStringValue(colData, "data_source"); dataSource != "" {
+			col.SetDataSource(dashboards.MultiMetricsTableDatasource(dataSource))
+		}
+		if v := getStringValue(colData, "metric_group"); v != "" {
+			col.SetMetricGroup(dashboards.MetricGroup(v))
+		}
+		if v := getStringValue(colData, "direction"); v != "" {
+			col.SetDirection(dashboards.DashboardMetricDirection(v))
+		}
+		if v := getStringValue(colData, "metric"); v != "" {
+			col.SetMetric(dashboards.DashboardMetric(v))
+		}
+
+		if measureList := getListValue(colData, "measure"); len(measureList) > 0 {
+			measureData := measureList[0].(map[string]interface{})
+			m := dashboards.NewApiWidgetMeasure()
+			if v := getStringValue(measureData, "type"); v != "" {
+				m.SetType(dashboards.WidgetMeasureType(v))
+			}
+			if v := getFloat64Value(measureData, "percentile_value"); v != 0 {
+				m.SetPercentileValue(float32(v))
+			}
+			col.SetMeasure(*m)
+		}
+
+		if filterList := getListValue(colData, "filter"); len(filterList) > 0 {
+			apiFilters := make(map[string][]interface{})
+			for _, f := range filterList {
+				filterData := f.(map[string]interface{})
+				property := getStringValue(filterData, "property")
+				if property == "" {
+					continue
+				}
+				var values []interface{}
+				switch v := filterData["values"].(type) {
+				case *schema.Set:
+					strs := make([]string, 0, v.Len())
+					for _, item := range v.List() {
+						strs = append(strs, item.(string))
+					}
+					sort.Strings(strs)
+					values = make([]interface{}, len(strs))
+					for i, s := range strs {
+						values[i] = s
+					}
+				case []interface{}:
+					values = v
+				}
+				if len(values) > 0 {
+					apiFilters[property] = values
+				}
+			}
+			if len(apiFilters) > 0 {
+				col.SetFilters(apiFilters)
+			}
+		}
+
+		columns = append(columns, *col)
+	}
+	return columns
+}
+
+
 // setCommonBuilderFields sets common fields on any widget
 func setCommonBuilderFields(widget interface{}, data map[string]interface{}) {
 	// Set widget ID if present (important for updates)

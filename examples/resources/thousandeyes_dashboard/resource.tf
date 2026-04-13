@@ -176,4 +176,34 @@ resource "thousandeyes_dashboard" "example" {
       active_within_unit  = "Days"
     }
   }
+
+  widgets {
+    type        = "Multi Metric Table"
+    title       = "Multi Metric Table Widget"
+    visual_mode = "Full"
+
+    multi_metric_table_config {
+      compare_to_previous_value = true
+      row_group_by              = "COUNTRY"
+      limit                     = 10
+    }
+
+    multi_metric_columns {
+      data_source  = "ALERTS"
+      metric_group = "ALERTS"
+      metric       = "ALERT_COUNT"
+      measure {
+        type = "MEAN"
+      }
+    }
+
+    multi_metric_columns {
+      data_source  = "CLOUD_AND_ENTERPRISE_AGENTS"
+      metric_group = "HTTP_SERVER"
+      metric       = "WEB_FETCH"
+      measure {
+        type = "MEAN"
+      }
+    }
+  }
 }
