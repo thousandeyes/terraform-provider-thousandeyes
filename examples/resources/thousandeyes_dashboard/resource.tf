@@ -1,46 +1,33 @@
+data "thousandeyes_dashboard_filter" "operations_core_services" {
+  name = "Operations - Core Services"
+}
+
 resource "thousandeyes_dashboard" "example" {
-  description      = "Example Dashboard description"
-  title            = "Example Dashboard"
-  is_private       = true
+  title              = "Operations Overview"
+  description        = "Terraform-managed dashboard for shared service health views"
+  is_private         = false
+  global_filter_id   = data.thousandeyes_dashboard_filter.operations_core_services.filter_id
+  is_global_override = true
+
   default_timespan {
     duration = 7200
   }
 
   widgets {
     type        = "Agent Status"
-    title       = "Agent Status Widget"
+    title       = "Enterprise Agent Status"
     visual_mode = "Full"
     data_source = "CLOUD_AND_ENTERPRISE_AGENTS"
 
     agent_status_config {
-      show       = "All Assigned Agents"
+      show       = "Owned Agents"
       agent_type = "Enterprise Agents"
     }
   }
 
   widgets {
-    type         = "Map"
-    title        = "Map Widget"
-    visual_mode  = "Full"
-    metric_group = "ALERTS"
-    metric       = "ALERT_COUNT_BGP"
-    data_source  = "ALERTS"
-
-    measure {
-      type = "MEAN"
-    }
-
-    geo_map_config {
-      min_scale           = 0
-      max_scale           = 100
-      group_by            = "COUNTRY"
-      is_geo_map_per_test = true
-    }
-  }
-
-  widgets {
     type         = "Time Series: Line"
-    title        = "Timeseries Line Widget"
+    title        = "Active Agent Alerts"
     visual_mode  = "Full"
     data_source  = "ALERTS"
     metric_group = "ALERTS"
@@ -56,151 +43,21 @@ resource "thousandeyes_dashboard" "example" {
     }
 
     timeseries_config {
-      group_by                         = "AGENT"
-      show_timeseries_overall_baseline = true
-      is_timeseries_one_chart_per_line = true
-    }
-  }
-
-  widgets {
-    type         = "Time Series: Stacked Area"
-    title        = "Stacked Area Widget"
-    visual_mode  = "Full"
-    data_source  = "CLOUD_NATIVE_MONITORING"
-    metric_group = "CLOUD_NATIVE_MONITORING-EVENTS"
-    metric       = "CLOUD_NATIVE_MONITORING-ALL_EVENTS"
-
-    measure {
-      type = "CLOUD_NATIVE_MONITORING-SUM"
-    }
-
-    fixed_timespan {
-      value = 1
-      unit  = "Days"
-    }
-
-    stacked_area_config {
-      group_by = "CLOUD_NATIVE_MONITORING-REGION"
-    }
-  }
-
-  widgets {
-    type         = "Pie Chart"
-    title        = "Pie Chart Widget"
-    visual_mode  = "Full"
-    data_source  = "CLOUD_NATIVE_MONITORING"
-    metric_group = "CLOUD_NATIVE_MONITORING-EVENTS"
-    metric       = "CLOUD_NATIVE_MONITORING-ALL_EVENTS"
-
-    measure {
-      type = "CLOUD_NATIVE_MONITORING-SUM"
-    }
-
-    fixed_timespan {
-      value = 1
-      unit  = "Days"
-    }
-
-    pie_chart_config {
-      group_by = "CLOUD_NATIVE_MONITORING-REGION"
-    }
-  }
-
-  widgets {
-    type         = "Box and Whiskers"
-    title        = "Box and Whiskers Widget"
-    visual_mode  = "Full"
-    data_source  = "ALERTS"
-    metric_group = "ALERTS"
-    metric       = "ALERT_COUNT_AGENT"
-
-    measure {
-      type = "MEAN"
-    }
-
-    fixed_timespan {
-      value = 1
-      unit  = "Days"
-    }
-
-    box_and_whiskers_config {
-      group_by = "COUNTRY"
+      group_by = "AGENT"
     }
   }
 
   widgets {
     type        = "Number"
-    title       = "Number Widget"
+    title       = "Service Summary"
     visual_mode = "Full"
 
     number_cards {
-      description  = "CEA Availability"
+      description  = "HTTP availability"
       data_source  = "CLOUD_AND_ENTERPRISE_AGENTS"
       metric_group = "HTTP_SERVER"
       metric       = "WEB_AVAILABILITY"
 
-      measure {
-        type = "MEAN"
-      }
-
-      fixed_timespan {
-        value = 1
-        unit  = "Days"
-      }
-    }
-
-    number_cards {
-      description  = "Agent Alerts"
-      data_source  = "ALERTS"
-      metric_group = "ALERTS"
-      metric       = "ALERT_COUNT_AGENT"
-
-      measure {
-        type = "TOTAL"
-      }
-    }
-  }
-
-  widgets {
-    type        = "List"
-    title       = "List Widget"
-    visual_mode = "Full"
-    data_source = "EVENT_DETECTION"
-
-    measure {
-      type = "MEAN"
-    }
-
-    list_config {
-      active_within_value = 7
-      active_within_unit  = "Days"
-    }
-  }
-
-  widgets {
-    type        = "Multi Metric Table"
-    title       = "Multi Metric Table Widget"
-    visual_mode = "Full"
-
-    multi_metric_table_config {
-      compare_to_previous_value = true
-      row_group_by              = "COUNTRY"
-      limit                     = 10
-    }
-
-    multi_metric_columns {
-      data_source  = "ALERTS"
-      metric_group = "ALERTS"
-      metric       = "ALERT_COUNT"
-      measure {
-        type = "MEAN"
-      }
-    }
-
-    multi_metric_columns {
-      data_source  = "CLOUD_AND_ENTERPRISE_AGENTS"
-      metric_group = "HTTP_SERVER"
-      metric       = "WEB_FETCH"
       measure {
         type = "MEAN"
       }

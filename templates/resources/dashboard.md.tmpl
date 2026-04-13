@@ -8,9 +8,21 @@ description: |-
 
 {{ .Description | trimspace }}
 
+## When to use this resource
+
+Use `thousandeyes_dashboard` when you want Terraform to manage the dashboard shell itself: its title, privacy, default timespan, saved dashboard filter, and any widgets that the provider supports.
+
+Keep this page for the resource lifecycle and schema reference. Use the guides below for widget recipes and for the distinction between dashboard-wide saved filters and widget-level filter blocks.
+
 ## Example Usage
 
 {{ tffile .ExampleFile }}
+
+## Dashboard filters and timespans
+
+- `global_filter_id` attaches a saved dashboard filter set to the dashboard. Use [`thousandeyes_dashboard_filter`](../data-sources/dashboard_filter.md) to look up an existing filter by name and pass its `filter_id` here.
+- `default_timespan` sets the dashboard's default time range. This is the timespan the dashboard opens with unless a compatible widget keeps using its own `fixed_timespan`.
+- `is_global_override` controls that interaction. Set it to `true` when the dashboard-level `default_timespan` should override widget-level timespans. Set it to `false` when widgets should continue using their own `fixed_timespan` blocks.
 
 <a id="default_timespan-behavior"></a>
 
@@ -18,6 +30,13 @@ description: |-
 
 - The block is **optional and computed**. If you omit it, Terraform still records the **default returned on read** in state so plans stay stable.
 - If you **set** a custom `default_timespan` and later **remove** the block from configuration, Terraform typically shows **no change** and the dashboard keeps the previous timespan. To change it again, set an explicit `default_timespan` in configuration.
+
+## Related guides
+
+- [Dashboard filters and timespans](../guides/dashboard-filters-and-timespans.md)
+- [Dashboard widgets: status and summary](../guides/dashboard-widgets-status-and-summary.md)
+- [Dashboard widgets: charts and maps](../guides/dashboard-widgets-charts-and-maps.md)
+- [Dashboard filter data source](../data-sources/dashboard_filter.md)
 
 {{ .SchemaMarkdown | trimspace }}
 
