@@ -356,9 +356,6 @@ func buildMultiMetricColumns(columnsList []interface{}) []dashboards.ApiMultiMet
 		if v := getStringValue(colData, "metric_group"); v != "" {
 			col.SetMetricGroup(dashboards.MetricGroup(v))
 		}
-		if v := getStringValue(colData, "direction"); v != "" {
-			col.SetDirection(dashboards.DashboardMetricDirection(v))
-		}
 		if v := getStringValue(colData, "metric"); v != "" {
 			col.SetMetric(dashboards.DashboardMetric(v))
 		}
@@ -373,38 +370,6 @@ func buildMultiMetricColumns(columnsList []interface{}) []dashboards.ApiMultiMet
 				m.SetPercentileValue(float32(v))
 			}
 			col.SetMeasure(*m)
-		}
-
-		if filterList := getSetValue(colData, "filter"); len(filterList) > 0 {
-			apiFilters := make(map[string][]interface{})
-			for _, f := range filterList {
-				filterData := f.(map[string]interface{})
-				property := getStringValue(filterData, "property")
-				if property == "" {
-					continue
-				}
-				var values []interface{}
-				switch v := filterData["values"].(type) {
-				case *schema.Set:
-					strs := make([]string, 0, v.Len())
-					for _, item := range v.List() {
-						strs = append(strs, item.(string))
-					}
-					sort.Strings(strs)
-					values = make([]interface{}, len(strs))
-					for i, s := range strs {
-						values[i] = s
-					}
-				case []interface{}:
-					values = v
-				}
-				if len(values) > 0 {
-					apiFilters[property] = values
-				}
-			}
-			if len(apiFilters) > 0 {
-				col.SetFilters(apiFilters)
-			}
 		}
 
 		columns = append(columns, *col)
