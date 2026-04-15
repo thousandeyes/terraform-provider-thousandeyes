@@ -417,8 +417,6 @@ Optional:
 Optional:
 
 - `data_source` (String) Data source for the column.
-- `direction` (String) Direction for the metric (e.g., TO_TARGET, FROM_TARGET). Only applicable to certain data sources.
-- `filter` (Block Set) Filters applied to the column. Order is not significant. (see [below for nested schema](#nestedblock--widgets--multi_metric_columns--filter))
 - `measure` (Block List, Max: 1) Measure configuration for the column. (see [below for nested schema](#nestedblock--widgets--multi_metric_columns--measure))
 - `metric` (String) Metric for the column.
 - `metric_group` (String) Metric group for the column.
@@ -426,15 +424,6 @@ Optional:
 Read-Only:
 
 - `id` (String) Identifier of the column.
-
-<a id="nestedblock--widgets--multi_metric_columns--filter"></a>
-### Nested Schema for `widgets.multi_metric_columns.filter`
-
-Required:
-
-- `property` (String) Filter property.
-- `values` (Set of String) Set of filter values (IDs). Order is not significant.
-
 
 <a id="nestedblock--widgets--multi_metric_columns--measure"></a>
 ### Nested Schema for `widgets.multi_metric_columns.measure`

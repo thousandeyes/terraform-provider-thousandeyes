@@ -840,12 +840,6 @@ var MultiMetricColumnSchema = map[string]*schema.Schema{
 		Description: "Metric group for the column.",
 		Optional:    true,
 	},
-	"direction": {
-		Type:        schema.TypeString,
-		Description: "Direction for the metric (e.g., TO_TARGET, FROM_TARGET). Only applicable to certain data sources.",
-		Optional:    true,
-		Computed:    true,
-	},
 	"metric": {
 		Type:        schema.TypeString,
 		Description: "Metric for the column.",
@@ -867,26 +861,6 @@ var MultiMetricColumnSchema = map[string]*schema.Schema{
 					Type:        schema.TypeFloat,
 					Description: "Percentile value when type is NTH_PERCENTILE.",
 					Optional:    true,
-				},
-			},
-		},
-	},
-	"filter": {
-		Type:        schema.TypeSet,
-		Description: "Filters applied to the column. Order is not significant.",
-		Optional:    true,
-		Elem: &schema.Resource{
-			Schema: map[string]*schema.Schema{
-				"property": {
-					Type:        schema.TypeString,
-					Description: "Filter property.",
-					Required:    true,
-				},
-				"values": {
-					Type:        schema.TypeSet,
-					Description: "Set of filter values (IDs). Order is not significant.",
-					Required:    true,
-					Elem:        &schema.Schema{Type: schema.TypeString},
 				},
 			},
 		},

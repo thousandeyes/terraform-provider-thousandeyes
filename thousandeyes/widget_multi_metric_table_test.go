@@ -89,33 +89,6 @@ func TestBuildMultiMetricTableWidget(t *testing.T) {
 			},
 		},
 		{
-			name: "column with filters",
-			input: map[string]interface{}{
-				"type":  "Multi Metric Table",
-				"title": "Filtered Table",
-				"multi_metric_columns": []interface{}{
-					map[string]interface{}{
-						"data_source":  "ALERTS",
-						"metric_group": "ALERTS",
-						"metric":       "ALERT_COUNT_AGENT",
-						"filter": testFilterSet(map[string]interface{}{
-							"property": "TEST",
-							"values":   []interface{}{"12345"},
-						}),
-					},
-				},
-			},
-			validate: func(t *testing.T, widget dashboards.ApiWidget) {
-				w := widget.ApiMultiMetricTableWidget
-				assert.NotNil(t, w)
-				cols := w.GetMultiMetricColumns()
-				assert.Len(t, cols, 1)
-				filters := cols[0].GetFilters()
-				assert.Contains(t, filters, "TEST")
-				assert.Equal(t, []interface{}{"12345"}, filters["TEST"])
-			},
-		},
-		{
 			name: "column with percentile measure",
 			input: map[string]interface{}{
 				"type":  "Multi Metric Table",
@@ -245,30 +218,6 @@ func TestMapMultiMetricTableWidget(t *testing.T) {
 				col2 := cols[1].(map[string]interface{})
 				assert.Equal(t, "col-2", col2["id"])
 				assert.Equal(t, "ACTIVE_ALERT_COUNT", col2["metric"])
-			},
-		},
-		{
-			name: "column with filters",
-			input: func() dashboards.ApiWidget {
-				w := dashboards.NewApiMultiMetricTableWidget("Multi Metric Table")
-				w.SetTitle("Filtered Table")
-				col := dashboards.NewApiMultiMetricColumn()
-				col.SetId("col-f")
-				col.SetFilters(map[string][]interface{}{
-					"TEST": {"12345"},
-				})
-				w.SetMultiMetricColumns([]dashboards.ApiMultiMetricColumn{*col})
-				return dashboards.ApiMultiMetricTableWidgetAsApiWidget(w)
-			},
-			validate: func(t *testing.T, data map[string]interface{}) {
-				cols := data["multi_metric_columns"].([]interface{})
-				assert.Len(t, cols, 1)
-				col := cols[0].(map[string]interface{})
-				filters := col["filter"].([]interface{})
-				assert.Len(t, filters, 1)
-				f := filters[0].(map[string]interface{})
-				assert.Equal(t, "TEST", f["property"])
-				assert.Equal(t, []interface{}{"12345"}, f["values"])
 			},
 		},
 		{

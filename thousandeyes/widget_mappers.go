@@ -645,9 +645,6 @@ func mapMultiMetricColumns(columns []dashboards.ApiMultiMetricColumn) []interfac
 		if v := col.GetMetricGroup(); v != "" {
 			colData["metric_group"] = string(v)
 		}
-		if v := col.GetDirection(); v != "" {
-			colData["direction"] = string(v)
-		}
 		if v := col.GetMetric(); v != "" {
 			colData["metric"] = string(v)
 		}
@@ -663,10 +660,6 @@ func mapMultiMetricColumns(columns []dashboards.ApiMultiMetricColumn) []interfac
 			if len(measureMap) > 0 {
 				colData["measure"] = []interface{}{measureMap}
 			}
-		}
-
-		if filters, ok := col.GetFiltersOk(); ok && filters != nil && len(*filters) > 0 {
-			colData["filter"] = mapFilterBlocks(*filters)
 		}
 
 		result = append(result, colData)
