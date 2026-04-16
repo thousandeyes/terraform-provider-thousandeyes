@@ -118,6 +118,34 @@ func TestBuildMultiMetricTableWidget(t *testing.T) {
 			},
 		},
 		{
+			name: "column with direction",
+			input: map[string]interface{}{
+				"type":  "Multi Metric Table",
+				"title": "Table With Direction",
+				"multi_metric_columns": []interface{}{
+					map[string]interface{}{
+						"data_source":  "CLOUD_AND_ENTERPRISE_AGENTS",
+						"metric_group": "AGENT_TO_AGENT",
+						"direction":    "TO_TARGET",
+						"metric":       "NET_LATENCY",
+						"measure": []interface{}{
+							map[string]interface{}{
+								"type": "MEAN",
+							},
+						},
+					},
+				},
+			},
+			validate: func(t *testing.T, widget dashboards.ApiWidget) {
+				w := widget.ApiMultiMetricTableWidget
+				assert.NotNil(t, w)
+				cols := w.GetMultiMetricColumns()
+				assert.Len(t, cols, 1)
+				assert.Equal(t, dashboards.DashboardMetricDirection("TO_TARGET"), cols[0].GetDirection())
+				assert.Equal(t, dashboards.DashboardMetric("NET_LATENCY"), cols[0].GetMetric())
+			},
+		},
+		{
 			name: "removing all columns sends empty array",
 			input: map[string]interface{}{
 				"type":  "Multi Metric Table",
@@ -218,6 +246,27 @@ func TestMapMultiMetricTableWidget(t *testing.T) {
 				col2 := cols[1].(map[string]interface{})
 				assert.Equal(t, "col-2", col2["id"])
 				assert.Equal(t, "ACTIVE_ALERT_COUNT", col2["metric"])
+			},
+		},
+		{
+			name: "column with direction",
+			input: func() dashboards.ApiWidget {
+				w := dashboards.NewApiMultiMetricTableWidget("Multi Metric Table")
+				w.SetTitle("Direction Table")
+				col := dashboards.NewApiMultiMetricColumn()
+				col.SetId("col-d")
+				col.SetDataSource(dashboards.MultiMetricsTableDatasource("CLOUD_AND_ENTERPRISE_AGENTS"))
+				col.SetMetricGroup(dashboards.MetricGroup("AGENT_TO_AGENT"))
+				col.SetDirection(dashboards.DashboardMetricDirection("TO_TARGET"))
+				col.SetMetric(dashboards.DashboardMetric("NET_LATENCY"))
+				w.SetMultiMetricColumns([]dashboards.ApiMultiMetricColumn{*col})
+				return dashboards.ApiMultiMetricTableWidgetAsApiWidget(w)
+			},
+			validate: func(t *testing.T, data map[string]interface{}) {
+				cols := data["multi_metric_columns"].([]interface{})
+				col := cols[0].(map[string]interface{})
+				assert.Equal(t, "TO_TARGET", col["direction"])
+				assert.Equal(t, "NET_LATENCY", col["metric"])
 			},
 		},
 		{

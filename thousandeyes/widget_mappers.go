@@ -645,6 +645,9 @@ func mapMultiMetricColumns(columns []dashboards.ApiMultiMetricColumn) []interfac
 		if v := col.GetMetricGroup(); v != "" {
 			colData["metric_group"] = string(v)
 		}
+		if v := col.GetDirection(); v != "" {
+			colData["direction"] = string(v)
+		}
 		if v := col.GetMetric(); v != "" {
 			colData["metric"] = string(v)
 		}
