@@ -523,6 +523,9 @@ func buildMultiMetricColumns(columnsList []interface{}) []dashboards.ApiMultiMet
 		if v := getStringValue(colData, "metric_group"); v != "" {
 			col.SetMetricGroup(dashboards.MetricGroup(v))
 		}
+		if v := getStringValue(colData, "direction"); v != "" {
+			col.SetDirection(dashboards.DashboardMetricDirection(v))
+		}
 		if v := getStringValue(colData, "metric"); v != "" {
 			col.SetMetric(dashboards.DashboardMetric(v))
 		}
