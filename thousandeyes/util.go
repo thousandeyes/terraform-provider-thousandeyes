@@ -609,7 +609,8 @@ func FixReadValues(ctx context.Context, targetMaps map[string]map[string]interfa
 		}
 
 	// Ignore nullable fields (already set); skip assignments for Tags (used in Tags Assignments).
-	case "icon", "description", "legacy_id", "assignments":
+	// Tag filters are not exposed by the provider schema.
+	case "icon", "description", "legacy_id", "assignments", "filters":
 		isTags := ctx.Value(tagsKey)
 		if isTags != nil {
 			*name = ""

@@ -72,36 +72,50 @@ func TestTerraformHTTPServerOAuthValue_zeroValueReturnsEmpty(t *testing.T) {
 }
 
 func TestTerraformHTTPServerOAuthValue_preservesConfiguredFields(t *testing.T) {
-	configID := "2660950"
 	testURL := "https://auth.example.com/oauth/token"
-	requestMethod := tests.REQUESTMETHOD_GET
 	header := "Authorization: Basic test-client"
 	username := "oauth-user"
-	authType := tests.TESTAUTHTYPE_BASIC
+	oauth := tests.NewOAuth()
+	oauth.TestUrl = &testURL
+	oauth.Headers = &header
+	oauth.Username = &username
+	setOAuthNamedStringField(t, oauth, "RequestMethod", "get")
+	setOAuthNamedStringField(t, oauth, "AuthType", "basic")
 
-	got := terraformHTTPServerOAuthValue(&tests.OAuth{
-		ConfigId:      &configID,
-		TestUrl:       &testURL,
-		RequestMethod: &requestMethod,
-		Headers:       &header,
-		Username:      &username,
-		AuthType:      &authType,
-	})
+	got := terraformHTTPServerOAuthValue(oauth)
 
 	want := []interface{}{
 		map[string]interface{}{
-			"config_id":      configID,
 			"test_url":       testURL,
-			"request_method": string(requestMethod),
+			"request_method": "get",
 			"headers":        header,
 			"username":       username,
-			"auth_type":      string(authType),
+			"auth_type":      "basic",
 		},
 	}
 
 	if !reflect.DeepEqual(got, want) {
 		t.Fatalf("unexpected terraform oauth value: got %#v want %#v", got, want)
 	}
+}
+
+func setOAuthNamedStringField(t *testing.T, oauth *tests.OAuth, fieldName string, value string) {
+	t.Helper()
+
+	field := reflect.ValueOf(oauth).Elem().FieldByName(fieldName)
+	if !field.IsValid() {
+		t.Fatalf("oauth field %q does not exist", fieldName)
+	}
+	if field.Kind() != reflect.Pointer {
+		t.Fatalf("oauth field %q is not a pointer: %s", fieldName, field.Kind())
+	}
+	if field.Type().Elem().Kind() != reflect.String {
+		t.Fatalf("oauth field %q does not point to a string-like type: %s", fieldName, field.Type().Elem().Kind())
+	}
+
+	ptr := reflect.New(field.Type().Elem())
+	ptr.Elem().SetString(value)
+	field.Set(ptr)
 }
 
 func TestRawConfigCustomHeadersAllowsEmptyBlock(t *testing.T) {

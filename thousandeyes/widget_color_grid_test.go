@@ -75,3 +75,14 @@ func TestMapColorGridWidget(t *testing.T) {
 	assert.NotContains(t, config, "sort_group_by")
 	assert.NotContains(t, config, "sort_group_direction")
 }
+
+func TestMapColorGridWidgetIncludesDefaultColumns(t *testing.T) {
+	w := dashboards.NewApiColorGridWidget("Color Grid")
+	w.SetColumns(1)
+
+	data, err := mapColorGridWidget(dashboards.ApiColorGridWidgetAsApiWidget(w))
+	assert.NoError(t, err)
+
+	config := data["color_grid_config"].([]interface{})[0].(map[string]interface{})
+	assert.Equal(t, 1, config["columns"])
+}

@@ -164,16 +164,15 @@ Optional:
 
 Required:
 
-- `config_id` (String) The ID of the OAuth configuration.
 - `test_url` (String) Target for the test.
 
 Optional:
 
-- `auth_type` (String) [none, basic, ntlm, kerberos, oauth] The HTTP authentication type. Defaults to 'none'.
+- `auth_type` (String) [none, basic, ntlm] The HTTP authentication type. Defaults to 'none'.
 - `headers` (String, Sensitive) Request headers used for OAuth.
 - `password` (String, Sensitive) OAuth password
 - `post_body` (String) Enter the OAuth body for the HTTP POST request in this field when using OAuth as the authentication mechanism. No special escaping is required. If content is provided in the post body, the `requestMethod` is automatically set to POST.
-- `request_method` (String) [get, post, put, delete, patch, options, trace] Request method.
+- `request_method` (String) [get, post] Request method.
 - `username` (String) OAuth username
 
 ## Import

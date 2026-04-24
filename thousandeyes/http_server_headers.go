@@ -146,9 +146,6 @@ func terraformHTTPServerOAuthValue(oauth *tests.OAuth) []interface{} {
 	}
 
 	value := map[string]interface{}{}
-	if oauth.ConfigId != nil && *oauth.ConfigId != "" {
-		value["config_id"] = *oauth.ConfigId
-	}
 	if oauth.TestUrl != nil && *oauth.TestUrl != "" {
 		value["test_url"] = *oauth.TestUrl
 	}
@@ -161,7 +158,7 @@ func terraformHTTPServerOAuthValue(oauth *tests.OAuth) []interface{} {
 	if oauth.Headers != nil && *oauth.Headers != "" {
 		value["headers"] = *oauth.Headers
 	}
-	if oauth.AuthType != nil && *oauth.AuthType != "" && *oauth.AuthType != tests.TESTAUTHTYPE_NONE {
+	if oauth.AuthType != nil && string(*oauth.AuthType) != "" && string(*oauth.AuthType) != "none" {
 		value["auth_type"] = string(*oauth.AuthType)
 	}
 	if oauth.Username != nil && *oauth.Username != "" {

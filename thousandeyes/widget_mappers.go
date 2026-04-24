@@ -806,12 +806,9 @@ func legacyAlertTypesToInterfaces(values []dashboards.LegacyAlertListAlertType) 
 
 func mapTestTableFilterConfig(filter dashboards.ApiWidgetFilterApiTestTableFilterKey) (map[string]interface{}, error) {
 	result := map[string]interface{}{}
-	if v, ok := filter.GetTypeOk(); ok && v != nil {
-		result["type"] = string(*v)
-	}
-
+	blocks := []interface{}{}
 	if filters, ok := filter.GetFiltersOk(); ok && len(filters) > 0 {
-		blocks := make([]interface{}, 0, len(filters))
+		blocks = make([]interface{}, 0, len(filters))
 		for _, item := range filters {
 			key, ok := item.GetKeyOk()
 			if !ok || key == nil || *key == "" {
@@ -829,6 +826,12 @@ func mapTestTableFilterConfig(filter dashboards.ApiWidgetFilterApiTestTableFilte
 		if len(blocks) > 0 {
 			result["filters"] = blocks
 		}
+	}
+	if len(blocks) == 0 {
+		return result, nil
+	}
+	if v, ok := filter.GetTypeOk(); ok && v != nil {
+		result["type"] = string(*v)
 	}
 	return result, nil
 }

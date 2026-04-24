@@ -73,9 +73,9 @@ func resourceAgentServerUpdate(d *schema.ResourceData, m interface{}) error {
 	api := (*tests.AgentToServerTestsAPIService)(&apiClient.Common)
 
 	log.Printf("[INFO] Updating ThousandEyes Test %s", d.Id())
-	update := buildAgentServerStruct(d)
+	update := buildAgentServerUpdateStruct(d)
 
-	req := api.UpdateAgentToServerTest(d.Id()).AgentToServerTestRequest(*update).Expand(knownExpandTestOptions())
+	req := api.UpdateAgentToServerTest(d.Id()).UpdateAgentToServerTestRequest(*update).Expand(knownExpandTestOptions())
 	req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 	_, _, err := req.Execute()
@@ -123,4 +123,8 @@ func resourceAgentServerCreate(d *schema.ResourceData, m interface{}) error {
 
 func buildAgentServerStruct(d *schema.ResourceData) *tests.AgentToServerTestRequest {
 	return ResourceBuildStruct(d, &tests.AgentToServerTestRequest{})
+}
+
+func buildAgentServerUpdateStruct(d *schema.ResourceData) *tests.UpdateAgentToServerTestRequest {
+	return ResourceBuildStruct(d, &tests.UpdateAgentToServerTestRequest{})
 }
