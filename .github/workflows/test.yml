@@ -18,6 +18,11 @@ jobs:
           args: build --snapshot
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: '1.5.*'
+          terraform_wrapper: false
       - name: Run go generate
         run: go generate
       - name: Check differences after go generate
