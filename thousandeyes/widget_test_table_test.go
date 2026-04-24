@@ -28,7 +28,7 @@ func TestBuildTestTableWidget(t *testing.T) {
 					map[string]interface{}{
 						"type": "any",
 						"filters": []interface{}{
-							map[string]interface{}{"key": "Label ID", "value": "123"},
+							map[string]interface{}{"key": "Tag ID", "value": "123"},
 						},
 					},
 				},
@@ -48,7 +48,7 @@ func TestBuildTestTableWidget(t *testing.T) {
 	exclude := w.GetExclude()
 	assert.Equal(t, dashboards.TestTableFilterType("any"), (&exclude).GetType())
 	assert.Len(t, (&exclude).GetFilters(), 1)
-	assert.Equal(t, dashboards.TestTableFilterKey("Label ID"), (&exclude).GetFilters()[0].GetKey())
+	assert.Equal(t, dashboards.TestTableFilterKey("Tag ID"), (&exclude).GetFilters()[0].GetKey())
 	assert.Equal(t, "123", (&exclude).GetFilters()[0].GetValue())
 }
 
@@ -76,7 +76,7 @@ func TestMapTestTableWidget(t *testing.T) {
 	exclude.SetFilters([]dashboards.ApiMultiSearchFilterApiTestTableFilterKey{
 		func() dashboards.ApiMultiSearchFilterApiTestTableFilterKey {
 			item := dashboards.NewApiMultiSearchFilterApiTestTableFilterKey()
-			item.SetKey(dashboards.TestTableFilterKey("Label ID"))
+			item.SetKey(dashboards.TESTTABLEFILTERKEY_TAG_ID)
 			item.SetValue("123")
 			return *item
 		}(),
@@ -95,7 +95,7 @@ func TestMapTestTableWidget(t *testing.T) {
 	assert.Equal(t, []interface{}{map[string]interface{}{"key": "Test Name", "value": "API"}}, filterBlock["filters"])
 	excludeBlock := config["exclude"].([]interface{})[0].(map[string]interface{})
 	assert.Equal(t, "any", excludeBlock["type"])
-	assert.Equal(t, []interface{}{map[string]interface{}{"key": "Label ID", "value": "123"}}, excludeBlock["filters"])
+	assert.Equal(t, []interface{}{map[string]interface{}{"key": "Tag ID", "value": "123"}}, excludeBlock["filters"])
 }
 
 func TestMapTestTableWidgetReturnsErrorWhenFilterKeyMissing(t *testing.T) {
@@ -114,4 +114,13 @@ func TestMapTestTableWidgetReturnsErrorWhenFilterKeyMissing(t *testing.T) {
 	_, err := mapTestTableWidget(dashboards.ApiTestTableWidgetAsApiWidget(w))
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "missing required key")
+}
+
+func TestMapTestTableFilterConfigOmitsEmptyDefaultBlock(t *testing.T) {
+	filter := dashboards.NewApiWidgetFilterApiTestTableFilterKey()
+	filter.SetType(dashboards.TestTableFilterType("all"))
+
+	data, err := mapTestTableFilterConfig(*filter)
+	require.NoError(t, err)
+	assert.Empty(t, data)
 }

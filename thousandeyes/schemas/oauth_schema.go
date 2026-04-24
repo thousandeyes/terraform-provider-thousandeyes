@@ -15,11 +15,6 @@ var oauth = &schema.Schema{
 	Optional:    true,
 	Elem: &schema.Resource{
 		Schema: map[string]*schema.Schema{
-			"config_id": {
-				Type:        schema.TypeString,
-				Description: "The ID of the OAuth configuration.",
-				Required:    true,
-			},
 			"test_url": {
 				Type:        schema.TypeString,
 				Description: "Target for the test.",
@@ -27,16 +22,11 @@ var oauth = &schema.Schema{
 			},
 			"request_method": {
 				Type:        schema.TypeString,
-				Description: "[get, post, put, delete, patch, options, trace] Request method.",
+				Description: "[get, post] Request method.",
 				Optional:    true,
 				ValidateFunc: validation.StringInSlice([]string{
 					"get",
 					"post",
-					"put",
-					"delete",
-					"patch",
-					"options",
-					"trace",
 				}, false),
 			},
 			"post_body": {
@@ -52,15 +42,13 @@ var oauth = &schema.Schema{
 			},
 			"auth_type": {
 				Type:        schema.TypeString,
-				Description: "[none, basic, ntlm, kerberos, oauth] The HTTP authentication type. Defaults to 'none'.",
+				Description: "[none, basic, ntlm] The HTTP authentication type. Defaults to 'none'.",
 				Optional:    true,
 				Default:     "none",
 				ValidateFunc: validation.StringInSlice([]string{
 					"none",
 					"basic",
 					"ntlm",
-					"kerberos",
-					"oauth",
 				}, false),
 			},
 			"username": {

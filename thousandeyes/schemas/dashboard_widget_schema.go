@@ -439,7 +439,7 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 												"Target",
 												"Test ID",
 												"Test type",
-												"Label ID",
+												"Tag ID",
 											}, false),
 										},
 										"value": {
@@ -485,7 +485,7 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 												"Target",
 												"Test ID",
 												"Test type",
-												"Label ID",
+												"Tag ID",
 											}, false),
 										},
 										"value": {

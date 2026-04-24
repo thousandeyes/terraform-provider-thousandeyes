@@ -26,7 +26,7 @@ resource "thousandeyes_dashboard" "test_dashboard_test_table_widget" {
         type = "all"
 
         filters {
-          key   = "Test ID"
+          key   = "Tag ID"
           value = "456"
         }
       }

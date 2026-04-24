@@ -437,7 +437,7 @@ func TestAccThousandEyesDashboard(t *testing.T) {
 				resource.TestCheckResourceAttr(resourceNameTestTableWidget, "widgets.0.test_table_config.0.filter.0.filters.0.key", "Test Name"),
 				resource.TestCheckResourceAttr(resourceNameTestTableWidget, "widgets.0.test_table_config.0.filter.0.filters.0.value", "API"),
 				resource.TestCheckResourceAttr(resourceNameTestTableWidget, "widgets.0.test_table_config.0.exclude.0.type", "any"),
-				resource.TestCheckResourceAttr(resourceNameTestTableWidget, "widgets.0.test_table_config.0.exclude.0.filters.0.key", "Test ID"),
+				resource.TestCheckResourceAttr(resourceNameTestTableWidget, "widgets.0.test_table_config.0.exclude.0.filters.0.key", "Tag ID"),
 				resource.TestCheckResourceAttr(resourceNameTestTableWidget, "widgets.0.test_table_config.0.exclude.0.filters.0.value", "123"),
 			},
 			checkUpdateFunc: []resource.TestCheckFunc{
@@ -449,7 +449,7 @@ func TestAccThousandEyesDashboard(t *testing.T) {
 				resource.TestCheckResourceAttr(resourceNameTestTableWidget, "widgets.0.test_table_config.0.filter.0.filters.0.key", "Target"),
 				resource.TestCheckResourceAttr(resourceNameTestTableWidget, "widgets.0.test_table_config.0.filter.0.filters.0.value", "example.com"),
 				resource.TestCheckResourceAttr(resourceNameTestTableWidget, "widgets.0.test_table_config.0.exclude.0.type", "all"),
-				resource.TestCheckResourceAttr(resourceNameTestTableWidget, "widgets.0.test_table_config.0.exclude.0.filters.0.key", "Test ID"),
+				resource.TestCheckResourceAttr(resourceNameTestTableWidget, "widgets.0.test_table_config.0.exclude.0.filters.0.key", "Tag ID"),
 				resource.TestCheckResourceAttr(resourceNameTestTableWidget, "widgets.0.test_table_config.0.exclude.0.filters.0.value", "456"),
 			},
 		},
@@ -783,6 +783,29 @@ func TestAccThousandEyesDashboard_omitDefaultTimespanStablePlan(t *testing.T) {
 				Config: cfg,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "title", "Test Dashboard Omit Default Timespan"),
+				),
+			},
+			{
+				Config:   cfg,
+				PlanOnly: true,
+			},
+		},
+	})
+}
+
+func TestAccThousandEyesDashboard_testTableTagIDStablePlan(t *testing.T) {
+	resourceName := "thousandeyes_dashboard.test_dashboard_test_table_tag_id_stable_plan"
+	cfg := testAccThousandEyesDashboardConfig("acceptance_resources/dashboard/widget_test_table_tag_id_stable_plan.tf")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: providerFactories,
+		CheckDestroy:      testAccCheckDashboardResourceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: cfg,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "widgets.0.test_table_config.0.filter.0.filters.0.key", "Tag ID"),
 				),
 			},
 			{
