@@ -59,3 +59,59 @@ func TestDashboardWidgetSchemaTestTableFilterKeyUsesTagIDOnly(t *testing.T) {
 	_, errs = validate("Label ID", "widgets.0.test_table_config.0.filter.0.filters.0.key")
 	assert.NotEmpty(t, errs)
 }
+
+func TestDashboardWidgetSchemaRejectsDeprecatedCommonFilterProperties(t *testing.T) {
+	propertySchema := getNestedSchemaProperty(t, DashboardWidgetSchema["filter"], "property")
+
+	assertDashboardFilterPropertyValidation(t, propertySchema, "TEST", true)
+	assertDashboardFilterPropertyValidation(t, propertySchema, "AGENT", true)
+	assertDashboardFilterPropertyValidation(t, propertySchema, "ENDPOINT_LABEL", true)
+	assertDashboardFilterPropertyValidation(t, propertySchema, "TEST_LABEL", false)
+	assertDashboardFilterPropertyValidation(t, propertySchema, "AGENT_LABEL", false)
+	assertDashboardFilterPropertyValidation(t, propertySchema, "ENDPOINT_TEST_LABEL", false)
+	assertDashboardFilterPropertyValidation(t, propertySchema, "Test Labels", true)
+	assertDashboardFilterPropertyValidation(t, propertySchema, "Agent Labels", true)
+}
+
+func TestDashboardWidgetSchemaRejectsDeprecatedNumberCardFilterProperties(t *testing.T) {
+	propertySchema := getNestedSchemaProperty(t, &schema.Schema{
+		Elem: &schema.Resource{Schema: NumberCardSchema},
+	}, "filter", "property")
+
+	assertDashboardFilterPropertyValidation(t, propertySchema, "TEST", true)
+	assertDashboardFilterPropertyValidation(t, propertySchema, "AGENT", true)
+	assertDashboardFilterPropertyValidation(t, propertySchema, "ENDPOINT_LABEL", true)
+	assertDashboardFilterPropertyValidation(t, propertySchema, "TEST_LABEL", false)
+	assertDashboardFilterPropertyValidation(t, propertySchema, "AGENT_LABEL", false)
+	assertDashboardFilterPropertyValidation(t, propertySchema, "ENDPOINT_TEST_LABEL", false)
+}
+
+func getNestedSchemaProperty(t *testing.T, root *schema.Schema, keys ...string) *schema.Schema {
+	t.Helper()
+
+	current := root
+	for _, key := range keys {
+		resource, ok := current.Elem.(*schema.Resource)
+		require.True(t, ok)
+
+		current = resource.Schema[key]
+		require.NotNil(t, current)
+	}
+
+	return current
+}
+
+func assertDashboardFilterPropertyValidation(t *testing.T, propertySchema *schema.Schema, value string, valid bool) {
+	t.Helper()
+
+	require.NotNil(t, propertySchema.ValidateFunc)
+
+	_, errs := propertySchema.ValidateFunc(value, "widgets.0.filter.0.property")
+	if valid {
+		assert.Empty(t, errs)
+		return
+	}
+
+	require.NotEmpty(t, errs)
+	assert.ErrorContains(t, errs[0], "deprecated label filter property")
+}

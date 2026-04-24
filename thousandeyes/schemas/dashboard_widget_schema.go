@@ -1,11 +1,32 @@
 package schemas
 
 import (
+	"fmt"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 type DashboardWidgetSchemaType map[string]*schema.Schema
+
+var deprecatedDashboardFilterProperties = map[string]struct{}{
+	"TEST_LABEL":          {},
+	"AGENT_LABEL":         {},
+	"ENDPOINT_TEST_LABEL": {},
+}
+
+func validateDashboardFilterProperty(v interface{}, path string) ([]string, []error) {
+	value, ok := v.(string)
+	if !ok {
+		return nil, []error{fmt.Errorf("expected %s to be a string", path)}
+	}
+
+	if _, isDeprecated := deprecatedDashboardFilterProperties[value]; isDeprecated {
+		return nil, []error{fmt.Errorf("%s must not use deprecated label filter property %q", path, value)}
+	}
+
+	return nil, nil
+}
 
 var DashboardWidgetSchema = DashboardWidgetSchemaType{
 	"type": {
@@ -142,6 +163,7 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 					Type:        schema.TypeString,
 					Description: "Filter property (e.g., 'TEST', 'AGENT', 'ENDPOINT_MACHINE_ID', 'MONITOR').",
 					Required:    true,
+					ValidateFunc: validateDashboardFilterProperty,
 				},
 				"values": {
 					Type:        schema.TypeSet,
@@ -812,6 +834,7 @@ var NumberCardSchema = map[string]*schema.Schema{
 					Type:        schema.TypeString,
 					Description: "Filter property.",
 					Required:    true,
+					ValidateFunc: validateDashboardFilterProperty,
 				},
 				"values": {
 					Type:        schema.TypeSet,
