@@ -631,6 +631,7 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 					Type:        schema.TypeInt,
 					Description: "Number of columns.",
 					Optional:    true,
+					Computed:    true,
 				},
 				"limit": {
 					Type:        schema.TypeInt,
@@ -653,6 +654,7 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 					Type:        schema.TypeSet,
 					Description: "Alert types to include. Empty means all alert types.",
 					Optional:    true,
+					Computed:    true,
 					Elem:        &schema.Schema{Type: schema.TypeString},
 				},
 				"limit_to": {

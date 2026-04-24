@@ -21,6 +21,37 @@ func TestDashboardWidgetSchemaFixedTimespanIsComputed(t *testing.T) {
 	assert.True(t, fixedTimespanResource.Schema["unit"].Computed)
 }
 
+func TestDashboardWidgetSchemaColorGridColumnsIsComputed(t *testing.T) {
+	colorGridSchema := DashboardWidgetSchema["color_grid_config"]
+	require.NotNil(t, colorGridSchema)
+
+	colorGridResource, ok := colorGridSchema.Elem.(*schema.Resource)
+	require.True(t, ok)
+
+	columnsSchema := colorGridResource.Schema["columns"]
+	require.NotNil(t, columnsSchema)
+	assert.True(t, columnsSchema.Optional)
+	assert.True(t, columnsSchema.Computed)
+
+	unitSchema := colorGridResource.Schema["unit"]
+	require.NotNil(t, unitSchema)
+	assert.True(t, unitSchema.Optional)
+	assert.False(t, unitSchema.Computed)
+}
+
+func TestDashboardWidgetSchemaAlertListAlertTypesIsComputed(t *testing.T) {
+	alertListSchema := DashboardWidgetSchema["alert_list_config"]
+	require.NotNil(t, alertListSchema)
+
+	alertListResource, ok := alertListSchema.Elem.(*schema.Resource)
+	require.True(t, ok)
+
+	alertTypesSchema := alertListResource.Schema["alert_types"]
+	require.NotNil(t, alertTypesSchema)
+	assert.True(t, alertTypesSchema.Optional)
+	assert.True(t, alertTypesSchema.Computed)
+}
+
 func TestDashboardWidgetSchemaTestTableFilterKeyUsesTagIDOnly(t *testing.T) {
 	testTableSchema := DashboardWidgetSchema["test_table_config"]
 	require.NotNil(t, testTableSchema)

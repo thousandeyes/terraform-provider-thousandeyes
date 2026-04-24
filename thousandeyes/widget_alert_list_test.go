@@ -91,3 +91,17 @@ func TestMapAlertListWidget(t *testing.T) {
 	assert.Equal(t, 7, config["active_within_value"])
 	assert.Equal(t, "Days", config["active_within_unit"])
 }
+
+func TestMapAlertListWidgetIncludesDefaultAlertTypes(t *testing.T) {
+	w := dashboards.NewApiAlertListWidget("Alert List")
+	w.SetAlertTypes([]dashboards.LegacyAlertListAlertType{
+		dashboards.LegacyAlertListAlertType("API"),
+		dashboards.LegacyAlertListAlertType("DNS Server"),
+	})
+
+	data, err := mapAlertListWidget(dashboards.ApiAlertListWidgetAsApiWidget(w))
+	assert.NoError(t, err)
+
+	config := data["alert_list_config"].([]interface{})[0].(map[string]interface{})
+	assert.ElementsMatch(t, []interface{}{"API", "DNS Server"}, config["alert_types"].([]interface{}))
+}

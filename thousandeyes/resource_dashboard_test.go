@@ -816,6 +816,55 @@ func TestAccThousandEyesDashboard_testTableTagIDStablePlan(t *testing.T) {
 	})
 }
 
+func TestAccThousandEyesDashboard_colorGridDefaultColumnsStablePlan(t *testing.T) {
+	resourceName := "thousandeyes_dashboard.test_dashboard_color_grid_defaults"
+	cfg := testAccThousandEyesDashboardConfig("acceptance_resources/dashboard/widget_color_grid_defaults.tf")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: providerFactories,
+		CheckDestroy:      testAccCheckDashboardResourceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: cfg,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "widgets.0.color_grid_config.0.columns", "1"),
+				),
+			},
+			{
+				Config:   cfg,
+				PlanOnly: true,
+			},
+		},
+	})
+}
+
+func TestAccThousandEyesDashboard_alertListDefaultAlertTypesStablePlan(t *testing.T) {
+	resourceName := "thousandeyes_dashboard.test_dashboard_alert_list_defaults"
+	cfg := testAccThousandEyesDashboardConfig("acceptance_resources/dashboard/widget_alert_list_defaults.tf")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: providerFactories,
+		CheckDestroy:      testAccCheckDashboardResourceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: cfg,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "widgets.0.alert_list_config.0.limit_to", "15"),
+					resource.TestCheckResourceAttr(resourceName, "widgets.0.alert_list_config.0.active_within_value", "7"),
+					resource.TestCheckResourceAttr(resourceName, "widgets.0.alert_list_config.0.active_within_unit", "Days"),
+					resource.TestCheckResourceAttrSet(resourceName, "widgets.0.alert_list_config.0.alert_types.#"),
+				),
+			},
+			{
+				Config:   cfg,
+				PlanOnly: true,
+			},
+		},
+	})
+}
+
 // TestAccThousandEyesDashboard_removeAllWidgets is a dedicated test for the bug where removing
 // all widget blocks from config produced no diff and left widgets unchanged on the API.
 func TestAccThousandEyesDashboard_removeAllWidgets(t *testing.T) {
