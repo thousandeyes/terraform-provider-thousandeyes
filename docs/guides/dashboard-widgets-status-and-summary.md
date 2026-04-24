@@ -63,10 +63,7 @@ resource "thousandeyes_dashboard" "agent_status" {
 }
 ```
 
-Provider notes:
-
-- This widget does not use `metric_group`, `metric`, or `measure`.
-- Product documentation notes that dashboard-wide saved filters do not currently affect `Agent Status` widgets.
+This widget does not use `metric_group`, `metric`, or `measure`. Product documentation notes that dashboard-wide saved filters do not currently affect `Agent Status` widgets.
 
 ## Alert List
 
@@ -101,10 +98,7 @@ resource "thousandeyes_dashboard" "alert_list" {
 }
 ```
 
-Provider notes:
-
-- Use `alert_list_config` for `alert_types`, `limit_to`, and the active-within window.
-- Product documentation notes that dashboard-wide saved filters do not currently affect `Alert List` widgets.
+Use `alert_list_config` for `alert_types`, `limit_to`, and the active-within window. Product documentation notes that dashboard-wide saved filters do not currently affect `Alert List` widgets.
 
 ## List
 
@@ -141,10 +135,7 @@ resource "thousandeyes_dashboard" "event_list" {
 }
 ```
 
-Provider notes:
-
-- `list_config` controls the active-within window shown by the widget.
-- When the API returns default widget settings, the provider stores them in state even if the block is omitted from configuration.
+`list_config` controls the active-within window shown by the widget. When the API returns default widget settings, the provider stores them in state even if the block is omitted from configuration.
 
 ## Number
 
@@ -197,10 +188,7 @@ resource "thousandeyes_dashboard" "kpis" {
 }
 ```
 
-Provider notes:
-
-- Set `data_source` on each `number_cards` block, not on the parent `widgets` block.
-- Use `number_cards.filter` when different cards need different IDs or labels.
+Set `data_source` on each `number_cards` block, not on the parent `widgets` block. Use `number_cards.filter` when different cards need different IDs or labels.
 
 ## Table
 
@@ -248,10 +236,7 @@ resource "thousandeyes_dashboard" "table_summary" {
 }
 ```
 
-Provider notes:
-
-- Use `table_config` to control grouping and the row limit.
-- `row_group_by` and `column_group_by` follow the dashboard API aggregate-property values.
+Use `table_config` to control grouping and the row limit. `row_group_by` and `column_group_by` follow the dashboard API aggregate-property values.
 
 ## Multi Metric Table
 
@@ -304,10 +289,7 @@ resource "thousandeyes_dashboard" "multi_metric" {
 }
 ```
 
-Provider notes:
-
-- Each `multi_metric_columns` block has its own `data_source`, `metric_group`, `metric`, and `measure`.
-- Some data sources also support column-level `direction`, such as `TO_TARGET` and `FROM_TARGET` for directional metrics.
+Each `multi_metric_columns` block has its own `data_source`, `metric_group`, `metric`, and `measure`. Some data sources also support column-level `direction`, such as `TO_TARGET` and `FROM_TARGET` for directional metrics.
 
 ## Test Table
 
@@ -353,10 +335,7 @@ resource "thousandeyes_dashboard" "test_table" {
 }
 ```
 
-Provider notes:
-
-- `Test Table` does not use the generic widget `filter` block. It uses `test_table_config.filter` and `test_table_config.exclude`, each containing `filters { key, value }` items.
-- Product documentation notes that dashboard-wide saved filters do not currently affect `Test Table` widgets.
+`Test Table` does not use the generic widget `filter` block. It uses `test_table_config.filter` and `test_table_config.exclude`, each containing `filters { key, value }` items. Product documentation notes that dashboard-wide saved filters do not currently affect `Test Table` widgets.
 
 ## Next step
 

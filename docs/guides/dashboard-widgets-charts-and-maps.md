@@ -75,10 +75,7 @@ resource "thousandeyes_dashboard" "timeseries" {
 }
 ```
 
-Provider notes:
-
-- Use `timeseries_config.group_by` to define the aggregation dimension.
-- `show_timeseries_overall_baseline` and `is_timeseries_one_chart_per_line` are optional display controls.
+Use `timeseries_config.group_by` to define the aggregation dimension. `show_timeseries_overall_baseline` and `is_timeseries_one_chart_per_line` are optional display controls.
 
 ## Time Series: Stacked Area
 
@@ -114,10 +111,7 @@ resource "thousandeyes_dashboard" "stacked_area" {
 }
 ```
 
-Provider notes:
-
-- `stacked_area_config.group_by` is required for usable configurations.
-- This widget is a good fit when the same metric needs to be split by region, account, or other aggregate property.
+Set `stacked_area_config.group_by` to the dimension you want to stack, such as region, account, or another aggregate property. Without it, the widget has no grouping to render.
 
 ## Pie Chart
 
@@ -153,10 +147,7 @@ resource "thousandeyes_dashboard" "pie" {
 }
 ```
 
-Provider notes:
-
-- `pie_chart_config.group_by` is required for a useful pie chart configuration.
-- Keep the chosen metric and grouping aligned so the chart represents a meaningful share-of-total view.
+Set `pie_chart_config.group_by` to the property that defines each slice. Keep the chosen metric and grouping aligned so the chart represents a meaningful share-of-total view.
 
 ## Box and Whiskers
 
@@ -192,10 +183,7 @@ resource "thousandeyes_dashboard" "box_and_whiskers" {
 }
 ```
 
-Provider notes:
-
-- Use `box_and_whiskers_config.group_by` to choose the comparison dimension.
-- Scale settings are optional and can be added when a fixed axis improves readability.
+Use `box_and_whiskers_config.group_by` to choose the comparison dimension. Scale settings are optional and can be added when a fixed axis improves readability.
 
 ## Bar Chart: Grouped
 
@@ -235,10 +223,7 @@ resource "thousandeyes_dashboard" "grouped_bar" {
 }
 ```
 
-Provider notes:
-
-- `group_by` defines the grouped series and `axis_group_by` defines the axis split.
-- Use `limit` to keep grouped charts readable.
+In `grouped_bar_chart_config`, `group_by` defines the grouped series and `axis_group_by` defines the axis split. Use `limit` to keep grouped charts readable.
 
 ## Bar Chart: Stacked
 
@@ -277,10 +262,7 @@ resource "thousandeyes_dashboard" "stacked_bar" {
 }
 ```
 
-Provider notes:
-
-- Use `axis_group_by` to control the bar segmentation dimension.
-- `is_horizontal_bar_chart` switches between horizontal bars and vertical columns.
+Use `stacked_bar_chart_config.axis_group_by` to control the bar segmentation dimension. `is_horizontal_bar_chart` switches between horizontal bars and vertical columns.
 
 ## Color Grid
 
@@ -321,10 +303,7 @@ resource "thousandeyes_dashboard" "color_grid" {
 }
 ```
 
-Provider notes:
-
-- `cards` defines what each card represents.
-- `group_cards_by` controls the secondary grouping within the grid.
+In `color_grid_config`, `cards` defines what each card represents and `group_cards_by` controls the secondary grouping within the grid.
 
 ## Map
 
@@ -358,10 +337,7 @@ resource "thousandeyes_dashboard" "map" {
 }
 ```
 
-Provider notes:
-
-- `geo_map_config.group_by` controls whether the map aggregates by country, continent, agent, or another supported geography-aware property.
-- `is_geo_map_per_test` can be used to split the map by test when the data source supports that view.
+Use `geo_map_config.group_by` to choose the geography-aware aggregation, such as country, continent, or agent. `is_geo_map_per_test` can split the map by test when the data source supports that view.
 
 ## Choosing between chart widgets
 
