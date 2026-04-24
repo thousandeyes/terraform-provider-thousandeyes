@@ -306,8 +306,8 @@ resource "thousandeyes_dashboard" "multi_metric" {
 
 Provider notes:
 
-- Each `multi_metric_columns` block has its own `data_source`, `metric_group`, `metric`, `measure`, and optional `filter`.
-- Use column-level filters when each metric should follow a different scope.
+- Each `multi_metric_columns` block has its own `data_source`, `metric_group`, `metric`, and `measure`.
+- Some data sources also support column-level `direction`, such as `TO_TARGET` and `FROM_TARGET` for directional metrics.
 
 ## Test Table
 

@@ -39,7 +39,7 @@ resource "thousandeyes_dashboard" "operations_overview" {
 }
 ```
 
-Use `global_filter_id` for a saved dashboard-wide starting view. Use widget `filter` blocks when you need a widget, number card, or multi-metric column to stay scoped to specific IDs in configuration.
+Use `global_filter_id` for a saved dashboard-wide starting view. Use widget `filter` blocks when you need a widget or number card to stay scoped to specific IDs in configuration.
 
 ## Dashboard filters versus widget filters
 
@@ -48,9 +48,8 @@ These are different mechanisms:
 - `global_filter_id` references a saved dashboard filter set.
 - `widgets.filter` stores widget-specific filter criteria directly in Terraform.
 - `widgets.number_cards.filter` stores card-specific filter criteria for `Number` widgets.
-- `widgets.multi_metric_columns.filter` stores per-column filter criteria for `Multi Metric Table` widgets.
 
-The API models widget filters as a property-to-ID map. The provider exposes that map as repeated blocks with a `property` and a set of string `values`.
+The API models widget and number-card filters as a property-to-ID map. The provider exposes that map as repeated blocks with a `property` and a set of string `values`.
 
 ```terraform
 data "thousandeyes_agent" "singapore" {
@@ -156,9 +155,9 @@ resource "thousandeyes_dashboard" "latency_overview" {
 
 If you explicitly set `default_timespan` and later remove the block from configuration, the provider typically shows no change and the previous timespan stays in place. To change the value again, set a new explicit `default_timespan`.
 
-## Card and column filters
+## Card filters and column direction
 
-Use `number_cards.filter` and `multi_metric_columns.filter` when the parent widget needs different scopes for different cards or columns.
+Use `number_cards.filter` when cards inside the same `Number` widget need different scopes.
 
 Card example:
 
@@ -205,15 +204,15 @@ resource "thousandeyes_dashboard" "regional_summary" {
 }
 ```
 
-Column example:
+`Multi Metric Table` columns do not support per-column `filter` blocks. Each column does support its own metric fields, measure, and, for certain data sources, `direction`.
 
 ```terraform
-resource "thousandeyes_dashboard" "column_scoped_summary" {
-  title = "Column Scoped Summary"
+resource "thousandeyes_dashboard" "directional_summary" {
+  title = "Directional Summary"
 
   widgets {
     type  = "Multi Metric Table"
-    title = "Availability and alerts"
+    title = "Directional latency summary"
 
     multi_metric_table_config {
       row_group_by = "COUNTRY"
@@ -222,23 +221,20 @@ resource "thousandeyes_dashboard" "column_scoped_summary" {
 
     multi_metric_columns {
       data_source  = "CLOUD_AND_ENTERPRISE_AGENTS"
-      metric_group = "HTTP_SERVER"
-      metric       = "WEB_AVAILABILITY"
+      metric_group = "AGENT_TO_AGENT"
+      direction    = "TO_TARGET"
+      metric       = "NET_LATENCY"
 
       measure {
         type = "MEAN"
       }
-
-      filter {
-        property = "TEST"
-        values   = ["123456"]
-      }
     }
 
     multi_metric_columns {
-      data_source  = "ALERTS"
-      metric_group = "ALERTS"
-      metric       = "ALERT_COUNT"
+      data_source  = "CLOUD_AND_ENTERPRISE_AGENTS"
+      metric_group = "AGENT_TO_AGENT"
+      direction    = "FROM_TARGET"
+      metric       = "NET_LATENCY"
 
       measure {
         type = "MEAN"
