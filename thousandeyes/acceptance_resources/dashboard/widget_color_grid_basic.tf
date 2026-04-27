@@ -25,8 +25,6 @@ resource "thousandeyes_dashboard" "test_dashboard_color_grid_widget" {
     }
 
     color_grid_config {
-      min_scale      = 0
-      max_scale      = 100
       cards          = "COUNTRY"
       group_cards_by = "TEST"
       columns        = 2

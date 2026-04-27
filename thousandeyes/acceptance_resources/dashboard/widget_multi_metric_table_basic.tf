@@ -11,7 +11,6 @@ resource "thousandeyes_dashboard" "test_dashboard_multi_metric_table_widget" {
     visual_mode = "Full"
 
     multi_metric_table_config {
-      compare_to_previous_value = true
       row_group_by              = "COUNTRY"
     }
 
