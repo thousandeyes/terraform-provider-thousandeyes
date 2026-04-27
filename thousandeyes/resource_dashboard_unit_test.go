@@ -446,3 +446,15 @@ func TestResourceDataApiDashboardMapper(t *testing.T) {
 		})
 	}
 }
+
+func TestMapNumberCards_omitsUnsetScales(t *testing.T) {
+	card := dashboards.NewApiNumbersCard()
+	card.SetDescription("No scales")
+
+	cards := mapNumberCards([]dashboards.ApiNumbersCard{*card})
+	require.Len(t, cards, 1)
+
+	cardData := cards[0].(map[string]interface{})
+	assert.NotContains(t, cardData, "min_scale")
+	assert.NotContains(t, cardData, "max_scale")
+}
