@@ -214,6 +214,7 @@ func TestNormalizeConfiguredWidgets_PrunesOtherPresenceSensitiveFields(t *testin
 	widgetList := []interface{}{
 		map[string]interface{}{
 			"type": "Alert List",
+			"should_exclude_alert_suppression_windows": false,
 			"alert_list_config": []interface{}{
 				map[string]interface{}{
 					"limit_to": 0,
@@ -225,8 +226,42 @@ func TestNormalizeConfiguredWidgets_PrunesOtherPresenceSensitiveFields(t *testin
 			"number_cards": []interface{}{
 				map[string]interface{}{
 					"description":                              "card",
-					"compare_to_previous_value":                 false,
+					"compare_to_previous_value":                false,
 					"should_exclude_alert_suppression_windows": false,
+				},
+			},
+		},
+		map[string]interface{}{
+			"type": "Table",
+			"table_config": []interface{}{
+				map[string]interface{}{
+					"compare_to_previous_value": false,
+				},
+			},
+		},
+		map[string]interface{}{
+			"type": "Bar Chart: Stacked",
+			"stacked_bar_chart_config": []interface{}{
+				map[string]interface{}{
+					"show_labels":             false,
+					"is_horizontal_bar_chart": false,
+				},
+			},
+		},
+		map[string]interface{}{
+			"type": "Bar Chart: Grouped",
+			"grouped_bar_chart_config": []interface{}{
+				map[string]interface{}{
+					"show_labels":             false,
+					"is_horizontal_bar_chart": false,
+				},
+			},
+		},
+		map[string]interface{}{
+			"type": "Multi Metric Table",
+			"multi_metric_table_config": []interface{}{
+				map[string]interface{}{
+					"compare_to_previous_value": false,
 				},
 			},
 		},
@@ -247,10 +282,36 @@ func TestNormalizeConfiguredWidgets_PrunesOtherPresenceSensitiveFields(t *testin
 					}),
 				}),
 			}),
+			cty.ObjectVal(map[string]cty.Value{
+				"type": cty.StringVal("Table"),
+				"table_config": cty.TupleVal([]cty.Value{
+					cty.ObjectVal(map[string]cty.Value{}),
+				}),
+			}),
+			cty.ObjectVal(map[string]cty.Value{
+				"type": cty.StringVal("Bar Chart: Stacked"),
+				"stacked_bar_chart_config": cty.TupleVal([]cty.Value{
+					cty.ObjectVal(map[string]cty.Value{}),
+				}),
+			}),
+			cty.ObjectVal(map[string]cty.Value{
+				"type": cty.StringVal("Bar Chart: Grouped"),
+				"grouped_bar_chart_config": cty.TupleVal([]cty.Value{
+					cty.ObjectVal(map[string]cty.Value{}),
+				}),
+			}),
+			cty.ObjectVal(map[string]cty.Value{
+				"type": cty.StringVal("Multi Metric Table"),
+				"multi_metric_table_config": cty.TupleVal([]cty.Value{
+					cty.ObjectVal(map[string]cty.Value{}),
+				}),
+			}),
 		}),
 	})
 
 	normalized := normalizeConfiguredWidgets(widgetList, rawConfig)
+
+	assert.NotContains(t, normalized[0].(map[string]interface{}), "should_exclude_alert_suppression_windows")
 
 	alertConfig := normalized[0].(map[string]interface{})["alert_list_config"].([]interface{})[0].(map[string]interface{})
 	assert.NotContains(t, alertConfig, "limit_to")
@@ -258,12 +319,41 @@ func TestNormalizeConfiguredWidgets_PrunesOtherPresenceSensitiveFields(t *testin
 	card := normalized[1].(map[string]interface{})["number_cards"].([]interface{})[0].(map[string]interface{})
 	assert.NotContains(t, card, "compare_to_previous_value")
 	assert.NotContains(t, card, "should_exclude_alert_suppression_windows")
+
+	tableConfig := normalized[2].(map[string]interface{})["table_config"].([]interface{})[0].(map[string]interface{})
+	assert.NotContains(t, tableConfig, "compare_to_previous_value")
+
+	stackedBarConfig := normalized[3].(map[string]interface{})["stacked_bar_chart_config"].([]interface{})[0].(map[string]interface{})
+	assert.NotContains(t, stackedBarConfig, "show_labels")
+	assert.NotContains(t, stackedBarConfig, "is_horizontal_bar_chart")
+
+	groupedBarConfig := normalized[4].(map[string]interface{})["grouped_bar_chart_config"].([]interface{})[0].(map[string]interface{})
+	assert.NotContains(t, groupedBarConfig, "show_labels")
+	assert.NotContains(t, groupedBarConfig, "is_horizontal_bar_chart")
+
+	multiMetricTableConfig := normalized[5].(map[string]interface{})["multi_metric_table_config"].([]interface{})[0].(map[string]interface{})
+	assert.NotContains(t, multiMetricTableConfig, "compare_to_previous_value")
+
+	widgets, err := BuildWidgets(normalized)
+	require.NoError(t, err)
+	require.Len(t, widgets, 6)
+
+	_, limitSet := widgets[0].ApiAlertListWidget.GetLimitToOk()
+	assert.False(t, limitSet)
+
+	numberCards := widgets[1].ApiNumbersCardWidget.GetNumberCards()
+	require.Len(t, numberCards, 1)
+	_, compareSet := numberCards[0].GetCompareToPreviousValueOk()
+	_, cardShouldExcludeSet := numberCards[0].GetShouldExcludeAlertSuppressionWindowsOk()
+	assert.False(t, compareSet)
+	assert.False(t, cardShouldExcludeSet)
 }
 
 func TestNormalizeConfiguredWidgets_PreservesExplicitFalseAndLimitZero(t *testing.T) {
 	widgetList := []interface{}{
 		map[string]interface{}{
 			"type": "Alert List",
+			"should_exclude_alert_suppression_windows": false,
 			"alert_list_config": []interface{}{
 				map[string]interface{}{
 					"limit_to": 0,
@@ -275,8 +365,42 @@ func TestNormalizeConfiguredWidgets_PreservesExplicitFalseAndLimitZero(t *testin
 			"number_cards": []interface{}{
 				map[string]interface{}{
 					"description":                              "card",
-					"compare_to_previous_value":                 false,
+					"compare_to_previous_value":                false,
 					"should_exclude_alert_suppression_windows": false,
+				},
+			},
+		},
+		map[string]interface{}{
+			"type": "Table",
+			"table_config": []interface{}{
+				map[string]interface{}{
+					"compare_to_previous_value": false,
+				},
+			},
+		},
+		map[string]interface{}{
+			"type": "Bar Chart: Stacked",
+			"stacked_bar_chart_config": []interface{}{
+				map[string]interface{}{
+					"show_labels":             false,
+					"is_horizontal_bar_chart": false,
+				},
+			},
+		},
+		map[string]interface{}{
+			"type": "Bar Chart: Grouped",
+			"grouped_bar_chart_config": []interface{}{
+				map[string]interface{}{
+					"show_labels":             false,
+					"is_horizontal_bar_chart": false,
+				},
+			},
+		},
+		map[string]interface{}{
+			"type": "Multi Metric Table",
+			"multi_metric_table_config": []interface{}{
+				map[string]interface{}{
+					"compare_to_previous_value": false,
 				},
 			},
 		},
@@ -285,6 +409,7 @@ func TestNormalizeConfiguredWidgets_PreservesExplicitFalseAndLimitZero(t *testin
 		"widgets": cty.TupleVal([]cty.Value{
 			cty.ObjectVal(map[string]cty.Value{
 				"type": cty.StringVal("Alert List"),
+				"should_exclude_alert_suppression_windows": cty.False,
 				"alert_list_config": cty.TupleVal([]cty.Value{
 					cty.ObjectVal(map[string]cty.Value{
 						"limit_to": cty.NumberIntVal(0),
@@ -296,8 +421,42 @@ func TestNormalizeConfiguredWidgets_PreservesExplicitFalseAndLimitZero(t *testin
 				"number_cards": cty.TupleVal([]cty.Value{
 					cty.ObjectVal(map[string]cty.Value{
 						"description":                              cty.StringVal("card"),
-						"compare_to_previous_value":                 cty.False,
+						"compare_to_previous_value":                cty.False,
 						"should_exclude_alert_suppression_windows": cty.False,
+					}),
+				}),
+			}),
+			cty.ObjectVal(map[string]cty.Value{
+				"type": cty.StringVal("Table"),
+				"table_config": cty.TupleVal([]cty.Value{
+					cty.ObjectVal(map[string]cty.Value{
+						"compare_to_previous_value": cty.False,
+					}),
+				}),
+			}),
+			cty.ObjectVal(map[string]cty.Value{
+				"type": cty.StringVal("Bar Chart: Stacked"),
+				"stacked_bar_chart_config": cty.TupleVal([]cty.Value{
+					cty.ObjectVal(map[string]cty.Value{
+						"show_labels":             cty.False,
+						"is_horizontal_bar_chart": cty.False,
+					}),
+				}),
+			}),
+			cty.ObjectVal(map[string]cty.Value{
+				"type": cty.StringVal("Bar Chart: Grouped"),
+				"grouped_bar_chart_config": cty.TupleVal([]cty.Value{
+					cty.ObjectVal(map[string]cty.Value{
+						"show_labels":             cty.False,
+						"is_horizontal_bar_chart": cty.False,
+					}),
+				}),
+			}),
+			cty.ObjectVal(map[string]cty.Value{
+				"type": cty.StringVal("Multi Metric Table"),
+				"multi_metric_table_config": cty.TupleVal([]cty.Value{
+					cty.ObjectVal(map[string]cty.Value{
+						"compare_to_previous_value": cty.False,
 					}),
 				}),
 			}),
@@ -306,12 +465,48 @@ func TestNormalizeConfiguredWidgets_PreservesExplicitFalseAndLimitZero(t *testin
 
 	normalized := normalizeConfiguredWidgets(widgetList, rawConfig)
 
+	assert.Contains(t, normalized[0].(map[string]interface{}), "should_exclude_alert_suppression_windows")
+
 	alertConfig := normalized[0].(map[string]interface{})["alert_list_config"].([]interface{})[0].(map[string]interface{})
 	assert.Contains(t, alertConfig, "limit_to")
 
 	card := normalized[1].(map[string]interface{})["number_cards"].([]interface{})[0].(map[string]interface{})
 	assert.Contains(t, card, "compare_to_previous_value")
 	assert.Contains(t, card, "should_exclude_alert_suppression_windows")
+
+	tableConfig := normalized[2].(map[string]interface{})["table_config"].([]interface{})[0].(map[string]interface{})
+	assert.Contains(t, tableConfig, "compare_to_previous_value")
+
+	stackedBarConfig := normalized[3].(map[string]interface{})["stacked_bar_chart_config"].([]interface{})[0].(map[string]interface{})
+	assert.Contains(t, stackedBarConfig, "show_labels")
+	assert.Contains(t, stackedBarConfig, "is_horizontal_bar_chart")
+
+	groupedBarConfig := normalized[4].(map[string]interface{})["grouped_bar_chart_config"].([]interface{})[0].(map[string]interface{})
+	assert.Contains(t, groupedBarConfig, "show_labels")
+	assert.Contains(t, groupedBarConfig, "is_horizontal_bar_chart")
+
+	multiMetricTableConfig := normalized[5].(map[string]interface{})["multi_metric_table_config"].([]interface{})[0].(map[string]interface{})
+	assert.Contains(t, multiMetricTableConfig, "compare_to_previous_value")
+
+	widgets, err := BuildWidgets(normalized)
+	require.NoError(t, err)
+	require.Len(t, widgets, 6)
+
+	limit, limitSet := widgets[0].ApiAlertListWidget.GetLimitToOk()
+	require.True(t, limitSet)
+	require.NotNil(t, limit)
+	assert.Equal(t, int32(0), *limit)
+
+	numberCards := widgets[1].ApiNumbersCardWidget.GetNumberCards()
+	require.Len(t, numberCards, 1)
+	compare, compareSet := numberCards[0].GetCompareToPreviousValueOk()
+	cardShouldExclude, cardShouldExcludeSet := numberCards[0].GetShouldExcludeAlertSuppressionWindowsOk()
+	require.True(t, compareSet)
+	require.True(t, cardShouldExcludeSet)
+	require.NotNil(t, compare)
+	require.NotNil(t, cardShouldExclude)
+	assert.False(t, *compare)
+	assert.False(t, *cardShouldExclude)
 }
 
 func TestNormalizeConfiguredWidgets_FallbackKeepsOriginalShape(t *testing.T) {
