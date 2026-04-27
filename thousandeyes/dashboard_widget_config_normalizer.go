@@ -2,12 +2,17 @@ package thousandeyes
 
 import "github.com/hashicorp/go-cty/cty"
 
+var dashboardWidgetPresenceSensitiveTopLevelFields = []string{
+	"should_exclude_alert_suppression_windows",
+}
+
 var dashboardWidgetPresenceSensitiveConfigBlocks = map[string][]string{
 	"geo_map_config":            {"min_scale", "max_scale", "is_geo_map_per_test"},
 	"timeseries_config":         {"min_scale", "max_scale", "show_timeseries_overall_baseline", "is_timeseries_one_chart_per_line"},
 	"stacked_area_config":       {"min_scale", "max_scale"},
 	"box_and_whiskers_config":   {"min_scale", "max_scale"},
 	"color_grid_config":         {"min_scale", "max_scale"},
+	"number_cards":              {"min_scale", "max_scale", "compare_to_previous_value", "should_exclude_alert_suppression_windows"},
 	"alert_list_config":         {"limit_to"},
 	"table_config":              {"compare_to_previous_value"},
 	"stacked_bar_chart_config":  {"show_labels", "is_horizontal_bar_chart"},
@@ -36,18 +41,10 @@ func normalizeConfiguredWidgets(widgetList []interface{}, rawConfig cty.Value) [
 }
 
 func normalizeConfiguredWidget(widget map[string]interface{}, rawWidget cty.Value) {
-	pruneConfiguredFields(widget, rawWidget, []string{
-		"should_exclude_alert_suppression_windows",
-	})
+	pruneConfiguredFields(widget, rawWidget, dashboardWidgetPresenceSensitiveTopLevelFields)
 	for blockName, fieldNames := range dashboardWidgetPresenceSensitiveConfigBlocks {
 		pruneConfiguredBlockFields(widget, rawWidget, blockName, fieldNames)
 	}
-	pruneConfiguredBlockFields(widget, rawWidget, "number_cards", []string{
-		"min_scale",
-		"max_scale",
-		"compare_to_previous_value",
-		"should_exclude_alert_suppression_windows",
-	})
 }
 
 func pruneConfiguredFields(parent map[string]interface{}, rawParent cty.Value, fieldNames []string) {

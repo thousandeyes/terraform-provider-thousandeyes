@@ -8,6 +8,15 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestNormalizeConfiguredWidgets_FieldConfiguration(t *testing.T) {
+	assert.Contains(t, dashboardWidgetPresenceSensitiveTopLevelFields, "should_exclude_alert_suppression_windows")
+	assert.Contains(t, dashboardWidgetPresenceSensitiveConfigBlocks, "number_cards")
+	assert.ElementsMatch(t,
+		[]string{"min_scale", "max_scale", "compare_to_previous_value", "should_exclude_alert_suppression_windows"},
+		dashboardWidgetPresenceSensitiveConfigBlocks["number_cards"],
+	)
+}
+
 func TestNormalizeConfiguredWidgets_NumberCardScales(t *testing.T) {
 	widgetList := []interface{}{
 		map[string]interface{}{
