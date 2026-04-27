@@ -8,9 +8,26 @@ description: |-
 
 {{ .Description | trimspace }}
 
+## When to use this data source
+
+Use `thousandeyes_dashboard_filter` when a saved dashboard filter already exists in ThousandEyes and you want Terraform to attach that filter to a dashboard by name.
+
+This data source does an exact name match and returns the saved filter's `filter_id`. It does not manage the filter itself, and it is different from widget `filter` blocks inside `thousandeyes_dashboard`.
+
 ## Example Usage
 
 {{ tffile "examples/data-sources/thousandeyes_dashboard_filter/data-source.tf" }}
+
+## Using `filter_id` with dashboards
+
+- Pass `filter_id` to [`thousandeyes_dashboard.global_filter_id`](../resources/dashboard.md) to set the dashboard's saved default filter.
+- Saved dashboard filters are dashboard-wide filter sets created in the ThousandEyes UI or API. They are not the same as widget-level `filter` blocks, `number_cards.filter`, or `multi_metric_columns.filter`.
+- Use widget-level filters when you want to pin a specific widget or column to a set of IDs. Use `global_filter_id` when you want the dashboard to open with a reusable saved filter set.
+
+## Related guides
+
+- [Dashboard resource](../resources/dashboard.md)
+- [Dashboard filters and timespans](../guides/dashboard-filters-and-timespans.md)
 
 {{ .SchemaMarkdown | trimspace }}
 
