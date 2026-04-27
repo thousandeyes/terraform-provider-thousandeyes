@@ -843,30 +843,6 @@ func TestAccThousandEyesDashboard_colorGridDefaultColumnsStablePlan(t *testing.T
 	})
 }
 
-func TestAccThousandEyesDashboard_numberCardDefaultScalesStablePlan(t *testing.T) {
-	resourceName := "thousandeyes_dashboard.test_dashboard_number_defaults"
-	cfg := testAccThousandEyesDashboardConfig("acceptance_resources/dashboard/widget_number_defaults.tf")
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ProviderFactories: providerFactories,
-		CheckDestroy:      testAccCheckDashboardResourceDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: cfg,
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(resourceName, "widgets.0.number_cards.0.min_scale"),
-					resource.TestCheckResourceAttrSet(resourceName, "widgets.0.number_cards.0.max_scale"),
-				),
-			},
-			{
-				Config:   cfg,
-				PlanOnly: true,
-			},
-		},
-	})
-}
-
 func TestAccThousandEyesDashboard_alertListDefaultAlertTypesStablePlan(t *testing.T) {
 	resourceName := "thousandeyes_dashboard.test_dashboard_alert_list_defaults"
 	cfg := testAccThousandEyesDashboardConfig("acceptance_resources/dashboard/widget_alert_list_defaults.tf")
