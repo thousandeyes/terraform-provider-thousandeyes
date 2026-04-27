@@ -73,7 +73,11 @@ func rawWidgetsFromConfig(rawConfig cty.Value) ([]cty.Value, bool) {
 		return nil, false
 	}
 	widgets := rawConfig.GetAttr("widgets")
-	return ctyListValues(widgets)
+	rawWidgets, ok := ctyListValues(widgets)
+	if !ok || len(rawWidgets) == 0 {
+		return nil, false
+	}
+	return rawWidgets, true
 }
 
 func rawBlockValues(rawParent cty.Value, blockName string) ([]cty.Value, bool) {
@@ -92,7 +96,7 @@ func rawObjectHasConfiguredAttr(rawObject cty.Value, attrName string) bool {
 		return false
 	}
 	attr := rawObject.GetAttr(attrName)
-	return attr.IsKnown() && !attr.IsNull()
+	return !attr.IsNull()
 }
 
 func ctyListValues(value cty.Value) ([]cty.Value, bool) {

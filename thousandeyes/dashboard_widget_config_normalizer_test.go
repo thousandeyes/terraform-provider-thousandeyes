@@ -178,6 +178,38 @@ func TestNormalizeConfiguredWidgets_WidgetConfigExplicitZeroScales(t *testing.T)
 	assert.Contains(t, block, "max_scale")
 }
 
+func TestNormalizeConfiguredWidgets_WidgetConfigUnknownScaleIsConfigured(t *testing.T) {
+	widgetList := []interface{}{
+		map[string]interface{}{
+			"type": "Color Grid",
+			"color_grid_config": []interface{}{
+				map[string]interface{}{
+					"min_scale": 0.0,
+					"max_scale": 0.0,
+				},
+			},
+		},
+	}
+	rawConfig := cty.ObjectVal(map[string]cty.Value{
+		"widgets": cty.TupleVal([]cty.Value{
+			cty.ObjectVal(map[string]cty.Value{
+				"type": cty.StringVal("Color Grid"),
+				"color_grid_config": cty.TupleVal([]cty.Value{
+					cty.ObjectVal(map[string]cty.Value{
+						"min_scale": cty.UnknownVal(cty.Number),
+					}),
+				}),
+			}),
+		}),
+	})
+
+	normalized := normalizeConfiguredWidgets(widgetList, rawConfig)
+	block := normalized[0].(map[string]interface{})["color_grid_config"].([]interface{})[0].(map[string]interface{})
+
+	assert.Contains(t, block, "min_scale")
+	assert.NotContains(t, block, "max_scale")
+}
+
 func TestNormalizeConfiguredWidgets_FallbackKeepsOriginalShape(t *testing.T) {
 	widgetList := []interface{}{
 		map[string]interface{}{
@@ -194,4 +226,26 @@ func TestNormalizeConfiguredWidgets_FallbackKeepsOriginalShape(t *testing.T) {
 	normalized := normalizeConfiguredWidgets(widgetList, cty.NilVal)
 
 	assert.Equal(t, widgetList, normalized)
+}
+
+func TestNormalizeConfiguredWidgets_FallbackKeepsOriginalListWhenRawWidgetsEmpty(t *testing.T) {
+	widgetList := []interface{}{
+		map[string]interface{}{
+			"type": "Number",
+			"number_cards": []interface{}{
+				map[string]interface{}{
+					"min_scale": 0.0,
+					"max_scale": 0.0,
+				},
+			},
+		},
+	}
+	rawConfig := cty.ObjectVal(map[string]cty.Value{
+		"widgets": cty.EmptyTupleVal,
+	})
+
+	normalized := normalizeConfiguredWidgets(widgetList, rawConfig)
+	normalized[0].(map[string]interface{})["sentinel"] = true
+
+	assert.Contains(t, widgetList[0].(map[string]interface{}), "sentinel")
 }
