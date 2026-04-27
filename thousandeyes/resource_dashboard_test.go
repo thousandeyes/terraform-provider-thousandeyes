@@ -616,10 +616,14 @@ func TestAccThousandEyesDashboard(t *testing.T) {
 				resource.TestCheckResourceAttr(resourceNameNumberDefaults, "widgets.0.type", "Number"),
 				resource.TestCheckResourceAttr(resourceNameNumberDefaults, "widgets.0.title", "Number With Defaults"),
 				resource.TestCheckResourceAttr(resourceNameNumberDefaults, "widgets.0.number_cards.0.metric", "ALERT_COUNT_AGENT"),
+				resource.TestCheckNoResourceAttr(resourceNameNumberDefaults, "widgets.0.number_cards.0.min_scale"),
+				resource.TestCheckNoResourceAttr(resourceNameNumberDefaults, "widgets.0.number_cards.0.max_scale"),
 			},
 			checkUpdateFunc: []resource.TestCheckFunc{
 				resource.TestCheckResourceAttr(resourceNameNumberDefaults, "title", "Test Dashboard Number Defaults"),
 				resource.TestCheckResourceAttr(resourceNameNumberDefaults, "widgets.0.type", "Number"),
+				resource.TestCheckNoResourceAttr(resourceNameNumberDefaults, "widgets.0.number_cards.0.min_scale"),
+				resource.TestCheckNoResourceAttr(resourceNameNumberDefaults, "widgets.0.number_cards.0.max_scale"),
 			},
 		},
 		{
