@@ -210,6 +210,110 @@ func TestNormalizeConfiguredWidgets_WidgetConfigUnknownScaleIsConfigured(t *test
 	assert.NotContains(t, block, "max_scale")
 }
 
+func TestNormalizeConfiguredWidgets_PrunesOtherPresenceSensitiveFields(t *testing.T) {
+	widgetList := []interface{}{
+		map[string]interface{}{
+			"type": "Alert List",
+			"alert_list_config": []interface{}{
+				map[string]interface{}{
+					"limit_to": 0,
+				},
+			},
+		},
+		map[string]interface{}{
+			"type": "Number",
+			"number_cards": []interface{}{
+				map[string]interface{}{
+					"description":                              "card",
+					"compare_to_previous_value":                 false,
+					"should_exclude_alert_suppression_windows": false,
+				},
+			},
+		},
+	}
+	rawConfig := cty.ObjectVal(map[string]cty.Value{
+		"widgets": cty.TupleVal([]cty.Value{
+			cty.ObjectVal(map[string]cty.Value{
+				"type": cty.StringVal("Alert List"),
+				"alert_list_config": cty.TupleVal([]cty.Value{
+					cty.ObjectVal(map[string]cty.Value{}),
+				}),
+			}),
+			cty.ObjectVal(map[string]cty.Value{
+				"type": cty.StringVal("Number"),
+				"number_cards": cty.TupleVal([]cty.Value{
+					cty.ObjectVal(map[string]cty.Value{
+						"description": cty.StringVal("card"),
+					}),
+				}),
+			}),
+		}),
+	})
+
+	normalized := normalizeConfiguredWidgets(widgetList, rawConfig)
+
+	alertConfig := normalized[0].(map[string]interface{})["alert_list_config"].([]interface{})[0].(map[string]interface{})
+	assert.NotContains(t, alertConfig, "limit_to")
+
+	card := normalized[1].(map[string]interface{})["number_cards"].([]interface{})[0].(map[string]interface{})
+	assert.NotContains(t, card, "compare_to_previous_value")
+	assert.NotContains(t, card, "should_exclude_alert_suppression_windows")
+}
+
+func TestNormalizeConfiguredWidgets_PreservesExplicitFalseAndLimitZero(t *testing.T) {
+	widgetList := []interface{}{
+		map[string]interface{}{
+			"type": "Alert List",
+			"alert_list_config": []interface{}{
+				map[string]interface{}{
+					"limit_to": 0,
+				},
+			},
+		},
+		map[string]interface{}{
+			"type": "Number",
+			"number_cards": []interface{}{
+				map[string]interface{}{
+					"description":                              "card",
+					"compare_to_previous_value":                 false,
+					"should_exclude_alert_suppression_windows": false,
+				},
+			},
+		},
+	}
+	rawConfig := cty.ObjectVal(map[string]cty.Value{
+		"widgets": cty.TupleVal([]cty.Value{
+			cty.ObjectVal(map[string]cty.Value{
+				"type": cty.StringVal("Alert List"),
+				"alert_list_config": cty.TupleVal([]cty.Value{
+					cty.ObjectVal(map[string]cty.Value{
+						"limit_to": cty.NumberIntVal(0),
+					}),
+				}),
+			}),
+			cty.ObjectVal(map[string]cty.Value{
+				"type": cty.StringVal("Number"),
+				"number_cards": cty.TupleVal([]cty.Value{
+					cty.ObjectVal(map[string]cty.Value{
+						"description":                              cty.StringVal("card"),
+						"compare_to_previous_value":                 cty.False,
+						"should_exclude_alert_suppression_windows": cty.False,
+					}),
+				}),
+			}),
+		}),
+	})
+
+	normalized := normalizeConfiguredWidgets(widgetList, rawConfig)
+
+	alertConfig := normalized[0].(map[string]interface{})["alert_list_config"].([]interface{})[0].(map[string]interface{})
+	assert.Contains(t, alertConfig, "limit_to")
+
+	card := normalized[1].(map[string]interface{})["number_cards"].([]interface{})[0].(map[string]interface{})
+	assert.Contains(t, card, "compare_to_previous_value")
+	assert.Contains(t, card, "should_exclude_alert_suppression_windows")
+}
+
 func TestNormalizeConfiguredWidgets_FallbackKeepsOriginalShape(t *testing.T) {
 	widgetList := []interface{}{
 		map[string]interface{}{

@@ -2,12 +2,13 @@ package thousandeyes
 
 import "github.com/hashicorp/go-cty/cty"
 
-var dashboardWidgetScaleConfigBlocks = map[string][]string{
-	"geo_map_config":          {"min_scale", "max_scale"},
-	"timeseries_config":       {"min_scale", "max_scale"},
+var dashboardWidgetPresenceSensitiveConfigBlocks = map[string][]string{
+	"geo_map_config":          {"min_scale", "max_scale", "is_geo_map_per_test"},
+	"timeseries_config":       {"min_scale", "max_scale", "show_timeseries_overall_baseline", "is_timeseries_one_chart_per_line"},
 	"stacked_area_config":     {"min_scale", "max_scale"},
 	"box_and_whiskers_config": {"min_scale", "max_scale"},
 	"color_grid_config":       {"min_scale", "max_scale"},
+	"alert_list_config":       {"limit_to"},
 }
 
 func normalizeConfiguredWidgets(widgetList []interface{}, rawConfig cty.Value) []interface{} {
@@ -31,10 +32,15 @@ func normalizeConfiguredWidgets(widgetList []interface{}, rawConfig cty.Value) [
 }
 
 func normalizeConfiguredWidget(widget map[string]interface{}, rawWidget cty.Value) {
-	for blockName, fieldNames := range dashboardWidgetScaleConfigBlocks {
+	for blockName, fieldNames := range dashboardWidgetPresenceSensitiveConfigBlocks {
 		pruneConfiguredBlockFields(widget, rawWidget, blockName, fieldNames)
 	}
-	pruneConfiguredBlockFields(widget, rawWidget, "number_cards", []string{"min_scale", "max_scale"})
+	pruneConfiguredBlockFields(widget, rawWidget, "number_cards", []string{
+		"min_scale",
+		"max_scale",
+		"compare_to_previous_value",
+		"should_exclude_alert_suppression_windows",
+	})
 }
 
 func pruneConfiguredBlockFields(parent map[string]interface{}, rawParent cty.Value, blockName string, fieldNames []string) {
