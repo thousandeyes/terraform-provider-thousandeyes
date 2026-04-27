@@ -616,14 +616,14 @@ func TestAccThousandEyesDashboard(t *testing.T) {
 				resource.TestCheckResourceAttr(resourceNameNumberDefaults, "widgets.0.type", "Number"),
 				resource.TestCheckResourceAttr(resourceNameNumberDefaults, "widgets.0.title", "Number With Defaults"),
 				resource.TestCheckResourceAttr(resourceNameNumberDefaults, "widgets.0.number_cards.0.metric", "ALERT_COUNT_AGENT"),
-				resource.TestCheckNoResourceAttr(resourceNameNumberDefaults, "widgets.0.number_cards.0.min_scale"),
-				resource.TestCheckNoResourceAttr(resourceNameNumberDefaults, "widgets.0.number_cards.0.max_scale"),
+				resource.TestCheckResourceAttrSet(resourceNameNumberDefaults, "widgets.0.number_cards.0.min_scale"),
+				resource.TestCheckResourceAttrSet(resourceNameNumberDefaults, "widgets.0.number_cards.0.max_scale"),
 			},
 			checkUpdateFunc: []resource.TestCheckFunc{
 				resource.TestCheckResourceAttr(resourceNameNumberDefaults, "title", "Test Dashboard Number Defaults"),
 				resource.TestCheckResourceAttr(resourceNameNumberDefaults, "widgets.0.type", "Number"),
-				resource.TestCheckNoResourceAttr(resourceNameNumberDefaults, "widgets.0.number_cards.0.min_scale"),
-				resource.TestCheckNoResourceAttr(resourceNameNumberDefaults, "widgets.0.number_cards.0.max_scale"),
+				resource.TestCheckResourceAttrSet(resourceNameNumberDefaults, "widgets.0.number_cards.0.min_scale"),
+				resource.TestCheckResourceAttrSet(resourceNameNumberDefaults, "widgets.0.number_cards.0.max_scale"),
 			},
 		},
 		{
@@ -833,6 +833,30 @@ func TestAccThousandEyesDashboard_colorGridDefaultColumnsStablePlan(t *testing.T
 				Config: cfg,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "widgets.0.color_grid_config.0.columns", "1"),
+				),
+			},
+			{
+				Config:   cfg,
+				PlanOnly: true,
+			},
+		},
+	})
+}
+
+func TestAccThousandEyesDashboard_numberCardDefaultScalesStablePlan(t *testing.T) {
+	resourceName := "thousandeyes_dashboard.test_dashboard_number_defaults"
+	cfg := testAccThousandEyesDashboardConfig("acceptance_resources/dashboard/widget_number_defaults.tf")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: providerFactories,
+		CheckDestroy:      testAccCheckDashboardResourceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: cfg,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(resourceName, "widgets.0.number_cards.0.min_scale"),
+					resource.TestCheckResourceAttrSet(resourceName, "widgets.0.number_cards.0.max_scale"),
 				),
 			},
 			{

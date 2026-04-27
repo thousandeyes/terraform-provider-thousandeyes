@@ -160,9 +160,9 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"property": {
-					Type:        schema.TypeString,
-					Description: "Filter property (e.g., 'TEST', 'AGENT', 'ENDPOINT_MACHINE_ID', 'MONITOR').",
-					Required:    true,
+					Type:         schema.TypeString,
+					Description:  "Filter property (e.g., 'TEST', 'AGENT', 'ENDPOINT_MACHINE_ID', 'MONITOR').",
+					Required:     true,
 					ValidateFunc: validateDashboardFilterProperty,
 				},
 				"values": {
@@ -743,11 +743,13 @@ var NumberCardSchema = map[string]*schema.Schema{
 		Type:        schema.TypeFloat,
 		Description: "Minimum scale configured for the card.",
 		Optional:    true,
+		Computed:    true,
 	},
 	"max_scale": {
 		Type:        schema.TypeFloat,
 		Description: "Maximum scale configured for the card.",
 		Optional:    true,
+		Computed:    true,
 	},
 	"unit": {
 		Type:        schema.TypeString,
@@ -833,9 +835,9 @@ var NumberCardSchema = map[string]*schema.Schema{
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"property": {
-					Type:        schema.TypeString,
-					Description: "Filter property.",
-					Required:    true,
+					Type:         schema.TypeString,
+					Description:  "Filter property.",
+					Required:     true,
 					ValidateFunc: validateDashboardFilterProperty,
 				},
 				"values": {
