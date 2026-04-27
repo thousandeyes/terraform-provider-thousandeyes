@@ -300,6 +300,7 @@ func buildDashboardStruct(d *schema.ResourceData) (*dashboards.Dashboard, error)
 		widgetList = []interface{}{}
 	} else {
 		widgetList, _ = d.Get("widgets").([]interface{})
+		widgetList = normalizeConfiguredWidgets(widgetList, d.GetRawConfig())
 	}
 	widgets, err := BuildWidgets(widgetList)
 	if err != nil {
