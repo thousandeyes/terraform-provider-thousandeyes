@@ -160,9 +160,9 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"property": {
-					Type:        schema.TypeString,
-					Description: "Filter property (e.g., 'TEST', 'AGENT', 'ENDPOINT_MACHINE_ID', 'MONITOR').",
-					Required:    true,
+					Type:         schema.TypeString,
+					Description:  "Filter property (e.g., 'TEST', 'AGENT', 'ENDPOINT_MACHINE_ID', 'MONITOR').",
+					Required:     true,
 					ValidateFunc: validateDashboardFilterProperty,
 				},
 				"values": {
@@ -188,11 +188,13 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 					Type:        schema.TypeFloat,
 					Description: "Minimum scale value.",
 					Optional:    true,
+					Computed:    true,
 				},
 				"max_scale": {
 					Type:        schema.TypeFloat,
 					Description: "Maximum scale value.",
 					Optional:    true,
+					Computed:    true,
 				},
 				"unit": {
 					Type:        schema.TypeString,
@@ -209,6 +211,7 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 					Type:        schema.TypeBool,
 					Description: "Show one map per test.",
 					Optional:    true,
+					Computed:    true,
 				},
 			},
 		},
@@ -250,11 +253,13 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 					Type:        schema.TypeFloat,
 					Description: "Minimum scale value for the Y-axis.",
 					Optional:    true,
+					Computed:    true,
 				},
 				"max_scale": {
 					Type:        schema.TypeFloat,
 					Description: "Maximum scale value for the Y-axis.",
 					Optional:    true,
+					Computed:    true,
 				},
 				"unit": {
 					Type:        schema.TypeString,
@@ -271,11 +276,13 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 					Type:        schema.TypeBool,
 					Description: "Displays the overall baseline if set to true.",
 					Optional:    true,
+					Computed:    true,
 				},
 				"is_timeseries_one_chart_per_line": {
 					Type:        schema.TypeBool,
 					Description: "Displays a separate chart for each line if set to true.",
 					Optional:    true,
+					Computed:    true,
 				},
 			},
 		},
@@ -294,11 +301,13 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 					Type:        schema.TypeFloat,
 					Description: "Minimum scale value for the Y-axis.",
 					Optional:    true,
+					Computed:    true,
 				},
 				"max_scale": {
 					Type:        schema.TypeFloat,
 					Description: "Maximum scale value for the Y-axis.",
 					Optional:    true,
+					Computed:    true,
 				},
 				"unit": {
 					Type:        schema.TypeString,
@@ -345,11 +354,13 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 					Type:        schema.TypeFloat,
 					Description: "Minimum scale value for the Y-axis.",
 					Optional:    true,
+					Computed:    true,
 				},
 				"max_scale": {
 					Type:        schema.TypeFloat,
 					Description: "Maximum scale value for the Y-axis.",
 					Optional:    true,
+					Computed:    true,
 				},
 				"unit": {
 					Type:        schema.TypeString,
@@ -401,6 +412,7 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 					Type:        schema.TypeBool,
 					Description: "Enables comparison of the current metric value with the previous value.",
 					Optional:    true,
+					Computed:    true,
 				},
 				"row_group_by": {
 					Type:        schema.TypeString,
@@ -547,11 +559,13 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 					Type:        schema.TypeBool,
 					Description: "Displays labels on each bar.",
 					Optional:    true,
+					Computed:    true,
 				},
 				"is_horizontal_bar_chart": {
 					Type:        schema.TypeBool,
 					Description: "Displays bars horizontally when set to true.",
 					Optional:    true,
+					Computed:    true,
 				},
 			},
 		},
@@ -584,11 +598,13 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 					Type:        schema.TypeBool,
 					Description: "Displays labels on each bar.",
 					Optional:    true,
+					Computed:    true,
 				},
 				"is_horizontal_bar_chart": {
 					Type:        schema.TypeBool,
 					Description: "Displays bars horizontally when set to true.",
 					Optional:    true,
+					Computed:    true,
 				},
 			},
 		},
@@ -606,11 +622,13 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 					Type:        schema.TypeFloat,
 					Description: "Minimum scale value.",
 					Optional:    true,
+					Computed:    true,
 				},
 				"max_scale": {
 					Type:        schema.TypeFloat,
 					Description: "Maximum scale value.",
 					Optional:    true,
+					Computed:    true,
 				},
 				"unit": {
 					Type:        schema.TypeString,
@@ -661,6 +679,7 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 					Type:        schema.TypeInt,
 					Description: "Maximum number of alerts to display.",
 					Optional:    true,
+					Computed:    true,
 				},
 				"active_within_value": {
 					Type:        schema.TypeInt,
@@ -700,6 +719,7 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 					Type:        schema.TypeBool,
 					Description: "Enables comparison of the current metric value with the previous value.",
 					Optional:    true,
+					Computed:    true,
 				},
 				"row_group_by": {
 					Type:        schema.TypeString,
@@ -743,11 +763,13 @@ var NumberCardSchema = map[string]*schema.Schema{
 		Type:        schema.TypeFloat,
 		Description: "Minimum scale configured for the card.",
 		Optional:    true,
+		Computed:    true,
 	},
 	"max_scale": {
 		Type:        schema.TypeFloat,
 		Description: "Maximum scale configured for the card.",
 		Optional:    true,
+		Computed:    true,
 	},
 	"unit": {
 		Type:        schema.TypeString,
@@ -758,6 +780,7 @@ var NumberCardSchema = map[string]*schema.Schema{
 		Type:        schema.TypeBool,
 		Description: "Enables comparison with the previous metric value.",
 		Optional:    true,
+		Computed:    true,
 	},
 	"fixed_timespan": {
 		Type:        schema.TypeList,
@@ -783,6 +806,7 @@ var NumberCardSchema = map[string]*schema.Schema{
 		Type:        schema.TypeBool,
 		Description: "Excludes alert suppression window data if set to true.",
 		Optional:    true,
+		Computed:    true,
 	},
 	"data_source": {
 		Type:        schema.TypeString,
@@ -833,9 +857,9 @@ var NumberCardSchema = map[string]*schema.Schema{
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"property": {
-					Type:        schema.TypeString,
-					Description: "Filter property.",
-					Required:    true,
+					Type:         schema.TypeString,
+					Description:  "Filter property.",
+					Required:     true,
 					ValidateFunc: validateDashboardFilterProperty,
 				},
 				"values": {

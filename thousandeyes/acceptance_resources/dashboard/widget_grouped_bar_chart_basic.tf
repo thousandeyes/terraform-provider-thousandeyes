@@ -28,8 +28,6 @@ resource "thousandeyes_dashboard" "test_dashboard_grouped_bar_chart_widget" {
       group_by                = "COUNTRY"
       axis_group_by           = "TEST"
       limit                   = 12
-      show_labels             = true
-      is_horizontal_bar_chart = false
     }
   }
 }

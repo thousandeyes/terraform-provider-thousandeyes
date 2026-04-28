@@ -15,7 +15,6 @@ resource "thousandeyes_dashboard" "test_dashboard_alert_list_widget" {
 
     alert_list_config {
       alert_types = ["API", "DNS Server"]
-      limit_to    = 15
 
       active_within_value = 7
       active_within_unit  = "Days"

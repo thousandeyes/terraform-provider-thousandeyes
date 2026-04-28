@@ -25,7 +25,6 @@ resource "thousandeyes_dashboard" "test_dashboard_table_widget" {
     }
 
     table_config {
-      compare_to_previous_value = true
       row_group_by              = "AGENT"
       column_group_by           = "TEST"
       limit                     = 10
