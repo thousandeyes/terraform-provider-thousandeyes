@@ -110,41 +110,6 @@ func rawConfigOAuthConfigured(d rawConfigReader) bool {
 	return !diags.HasError() && raw.IsKnown() && !raw.IsNull() && raw.LengthInt() != 0
 }
 
-func rawConfigOAuthValue(d rawConfigReader) ([]interface{}, bool) {
-	raw, diags := d.GetRawConfigAt(cty.Path{cty.GetAttrStep{Name: "oauth"}})
-	if diags.HasError() || !raw.IsKnown() || raw.IsNull() || raw.LengthInt() == 0 {
-		return nil, false
-	}
-
-	it := raw.ElementIterator()
-	if !it.Next() {
-		return []interface{}{}, true
-	}
-	_, first := it.Element()
-	if !first.IsKnown() || first.IsNull() {
-		return []interface{}{}, true
-	}
-
-	value := map[string]interface{}{}
-	for _, attr := range []string{
-		"test_url",
-		"request_method",
-		"post_body",
-		"headers",
-		"auth_type",
-		"username",
-		"password",
-	} {
-		if v, ok := ctyStringAttr(first, attr); ok {
-			value[attr] = v
-		}
-	}
-	if len(value) == 0 {
-		return []interface{}{}, true
-	}
-	return []interface{}{value}, true
-}
-
 func stringSliceToInterfaceSlice(v []string) []interface{} {
 	out := make([]interface{}, 0, len(v))
 	for _, item := range v {
@@ -209,15 +174,11 @@ func terraformHTTPServerOAuthValue(oauth *tests.OAuth) []interface{} {
 
 func terraformHTTPServerOAuthStateValue(d rawConfigReader, existing []interface{}, oauth *tests.OAuth) []interface{} {
 	remote := terraformHTTPServerOAuthValue(oauth)
-	configured, ok := rawConfigOAuthValue(d)
-	if !ok || len(configured) == 0 {
-		configured = existing
-	}
 	if len(remote) == 0 {
-		return configured
+		return existing
 	}
 
-	return mergeHTTPServerOAuthValues(remote, configured)
+	return mergeHTTPServerOAuthValues(remote, existing)
 }
 
 func currentHTTPServerOAuthStateValue(d *schema.ResourceData) []interface{} {
@@ -291,18 +252,6 @@ func ctyObjectToNestedStringMap(v cty.Value, attr string) map[string]map[string]
 		}
 	}
 	return out
-}
-
-func ctyStringAttr(v cty.Value, attr string) (string, bool) {
-	if !v.Type().HasAttribute(attr) {
-		return "", false
-	}
-	field := v.GetAttr(attr)
-	if !field.IsKnown() || field.IsNull() {
-		return "", false
-	}
-	field, _ = field.Unmark()
-	return field.AsString(), true
 }
 
 func ctyMapToStringMap(v cty.Value) map[string]string {

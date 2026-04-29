@@ -155,41 +155,6 @@ func TestRawConfigOAuthConfigured(t *testing.T) {
 	}
 }
 
-func TestRawConfigOAuthValuePreservesConfiguredFields(t *testing.T) {
-	reader := &mockRawConfigReader{
-		values: map[string]mockRawConfigValue{
-			"oauth": {
-				present: true,
-				block: map[string]mockRawConfigValue{
-					"test_url":       {present: true, str: "https://auth.example.com/oauth/token"},
-					"request_method": {present: true, str: "post"},
-					"auth_type":      {present: true, str: "basic"},
-					"username":       {present: true, str: "oauth-user"},
-					"password":       {present: true, str: "oauth-pass"},
-				},
-			},
-		},
-	}
-
-	got, ok := rawConfigOAuthValue(reader)
-	if !ok {
-		t.Fatalf("expected oauth config to be available")
-	}
-
-	want := []interface{}{
-		map[string]interface{}{
-			"test_url":       "https://auth.example.com/oauth/token",
-			"request_method": "post",
-			"auth_type":      "basic",
-			"username":       "oauth-user",
-			"password":       "oauth-pass",
-		},
-	}
-	if !reflect.DeepEqual(got, want) {
-		t.Fatalf("unexpected raw oauth config: got %#v want %#v", got, want)
-	}
-}
-
 func TestTerraformHTTPServerOAuthStateValueFallsBackToConfigWhenAPIOmitsOAuth(t *testing.T) {
 	reader := &mockRawConfigReader{
 		values: map[string]mockRawConfigValue{
@@ -205,10 +170,7 @@ func TestTerraformHTTPServerOAuthStateValueFallsBackToConfigWhenAPIOmitsOAuth(t 
 			},
 		},
 	}
-
-	got := terraformHTTPServerOAuthStateValue(reader, nil, nil)
-
-	want := []interface{}{
+	existing := []interface{}{
 		map[string]interface{}{
 			"test_url":       "https://auth.example.com/oauth/token",
 			"request_method": "post",
@@ -217,8 +179,11 @@ func TestTerraformHTTPServerOAuthStateValueFallsBackToConfigWhenAPIOmitsOAuth(t 
 			"password":       "oauth-pass",
 		},
 	}
-	if !reflect.DeepEqual(got, want) {
-		t.Fatalf("unexpected oauth state fallback: got %#v want %#v", got, want)
+
+	got := terraformHTTPServerOAuthStateValue(reader, existing, nil)
+
+	if !reflect.DeepEqual(got, existing) {
+		t.Fatalf("unexpected oauth state fallback: got %#v want %#v", got, existing)
 	}
 }
 
@@ -237,6 +202,15 @@ func TestTerraformHTTPServerOAuthStateValuePreservesConfigOnlySecret(t *testing.
 			},
 		},
 	}
+	existing := []interface{}{
+		map[string]interface{}{
+			"test_url":       "https://configured.example.com/oauth/token",
+			"request_method": "post",
+			"auth_type":      "basic",
+			"username":       "oauth-user",
+			"password":       "oauth-pass",
+		},
+	}
 
 	remoteURL := "https://remote.example.com/oauth/token"
 	oauth := tests.NewOAuth()
@@ -244,7 +218,7 @@ func TestTerraformHTTPServerOAuthStateValuePreservesConfigOnlySecret(t *testing.
 	setOAuthNamedStringField(t, oauth, "RequestMethod", "post")
 	setOAuthNamedStringField(t, oauth, "AuthType", "basic")
 
-	got := terraformHTTPServerOAuthStateValue(reader, nil, oauth)
+	got := terraformHTTPServerOAuthStateValue(reader, existing, oauth)
 
 	want := []interface{}{
 		map[string]interface{}{
@@ -276,6 +250,38 @@ func TestTerraformHTTPServerOAuthStateValueFallsBackToExistingState(t *testing.T
 
 	if !reflect.DeepEqual(got, existing) {
 		t.Fatalf("expected existing oauth state fallback: got %#v want %#v", got, existing)
+	}
+}
+
+func TestTerraformHTTPServerOAuthStateValueDoesNotSwallowConfigChanges(t *testing.T) {
+	reader := &mockRawConfigReader{
+		values: map[string]mockRawConfigValue{
+			"oauth": {
+				present: true,
+				block: map[string]mockRawConfigValue{
+					"test_url":       {present: true, str: "https://auth.example.com/oauth/token"},
+					"request_method": {present: true, str: "post"},
+					"auth_type":      {present: true, str: "basic"},
+					"username":       {present: true, str: "new-user"},
+					"password":       {present: true, str: "new-pass"},
+				},
+			},
+		},
+	}
+	existing := []interface{}{
+		map[string]interface{}{
+			"test_url":       "https://auth.example.com/oauth/token",
+			"request_method": "post",
+			"auth_type":      "basic",
+			"username":       "old-user",
+			"password":       "old-pass",
+		},
+	}
+
+	got := terraformHTTPServerOAuthStateValue(reader, existing, nil)
+
+	if !reflect.DeepEqual(got, existing) {
+		t.Fatalf("expected read state to preserve prior oauth state, got %#v want %#v", got, existing)
 	}
 }
 
