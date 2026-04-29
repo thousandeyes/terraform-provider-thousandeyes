@@ -61,12 +61,13 @@ func resourceHTTPServerRead(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
+	existingOAuth := currentHTTPServerOAuthStateValue(d)
 	if err := ResourceRead(context.Background(), d, resp); err != nil {
 		return err
 	}
 
-	if rawConfigOAuthConfigured(d) {
-		if err := d.Set("oauth", terraformHTTPServerOAuthValue(resp.OAuth)); err != nil {
+	if rawConfigOAuthConfigured(d) || len(existingOAuth) > 0 {
+		if err := d.Set("oauth", terraformHTTPServerOAuthStateValue(d, existingOAuth, resp.OAuth)); err != nil {
 			return err
 		}
 	} else if err := d.Set("oauth", nil); err != nil {

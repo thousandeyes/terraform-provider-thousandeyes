@@ -110,6 +110,41 @@ func rawConfigOAuthConfigured(d rawConfigReader) bool {
 	return !diags.HasError() && raw.IsKnown() && !raw.IsNull() && raw.LengthInt() != 0
 }
 
+func rawConfigOAuthValue(d rawConfigReader) ([]interface{}, bool) {
+	raw, diags := d.GetRawConfigAt(cty.Path{cty.GetAttrStep{Name: "oauth"}})
+	if diags.HasError() || !raw.IsKnown() || raw.IsNull() || raw.LengthInt() == 0 {
+		return nil, false
+	}
+
+	it := raw.ElementIterator()
+	if !it.Next() {
+		return []interface{}{}, true
+	}
+	_, first := it.Element()
+	if !first.IsKnown() || first.IsNull() {
+		return []interface{}{}, true
+	}
+
+	value := map[string]interface{}{}
+	for _, attr := range []string{
+		"test_url",
+		"request_method",
+		"post_body",
+		"headers",
+		"auth_type",
+		"username",
+		"password",
+	} {
+		if v, ok := ctyStringAttr(first, attr); ok {
+			value[attr] = v
+		}
+	}
+	if len(value) == 0 {
+		return []interface{}{}, true
+	}
+	return []interface{}{value}, true
+}
+
 func stringSliceToInterfaceSlice(v []string) []interface{} {
 	out := make([]interface{}, 0, len(v))
 	for _, item := range v {
@@ -172,6 +207,51 @@ func terraformHTTPServerOAuthValue(oauth *tests.OAuth) []interface{} {
 	return []interface{}{value}
 }
 
+func terraformHTTPServerOAuthStateValue(d rawConfigReader, existing []interface{}, oauth *tests.OAuth) []interface{} {
+	remote := terraformHTTPServerOAuthValue(oauth)
+	configured, ok := rawConfigOAuthValue(d)
+	if !ok || len(configured) == 0 {
+		configured = existing
+	}
+	if len(remote) == 0 {
+		return configured
+	}
+
+	return mergeHTTPServerOAuthValues(remote, configured)
+}
+
+func currentHTTPServerOAuthStateValue(d *schema.ResourceData) []interface{} {
+	oauth, ok := d.Get("oauth").(*schema.Set)
+	if !ok || oauth.Len() == 0 {
+		return nil
+	}
+	return oauth.List()
+}
+
+func mergeHTTPServerOAuthValues(remote, configured []interface{}) []interface{} {
+	if len(remote) == 0 || len(configured) == 0 {
+		return remote
+	}
+
+	remoteMap, ok := remote[0].(map[string]interface{})
+	if !ok {
+		return remote
+	}
+	configuredMap, ok := configured[0].(map[string]interface{})
+	if !ok {
+		return remote
+	}
+
+	merged := make(map[string]interface{}, len(remoteMap)+len(configuredMap))
+	for k, v := range configuredMap {
+		merged[k] = v
+	}
+	for k, v := range remoteMap {
+		merged[k] = v
+	}
+	return []interface{}{merged}
+}
+
 func ctyObjectToStringMap(v cty.Value, attr string) map[string]string {
 	if !v.Type().HasAttribute(attr) {
 		return nil
@@ -211,6 +291,18 @@ func ctyObjectToNestedStringMap(v cty.Value, attr string) map[string]map[string]
 		}
 	}
 	return out
+}
+
+func ctyStringAttr(v cty.Value, attr string) (string, bool) {
+	if !v.Type().HasAttribute(attr) {
+		return "", false
+	}
+	field := v.GetAttr(attr)
+	if !field.IsKnown() || field.IsNull() {
+		return "", false
+	}
+	field, _ = field.Unmark()
+	return field.AsString(), true
 }
 
 func ctyMapToStringMap(v cty.Value) map[string]string {

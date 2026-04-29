@@ -155,6 +155,130 @@ func TestRawConfigOAuthConfigured(t *testing.T) {
 	}
 }
 
+func TestRawConfigOAuthValuePreservesConfiguredFields(t *testing.T) {
+	reader := &mockRawConfigReader{
+		values: map[string]mockRawConfigValue{
+			"oauth": {
+				present: true,
+				block: map[string]mockRawConfigValue{
+					"test_url":       {present: true, str: "https://auth.example.com/oauth/token"},
+					"request_method": {present: true, str: "post"},
+					"auth_type":      {present: true, str: "basic"},
+					"username":       {present: true, str: "oauth-user"},
+					"password":       {present: true, str: "oauth-pass"},
+				},
+			},
+		},
+	}
+
+	got, ok := rawConfigOAuthValue(reader)
+	if !ok {
+		t.Fatalf("expected oauth config to be available")
+	}
+
+	want := []interface{}{
+		map[string]interface{}{
+			"test_url":       "https://auth.example.com/oauth/token",
+			"request_method": "post",
+			"auth_type":      "basic",
+			"username":       "oauth-user",
+			"password":       "oauth-pass",
+		},
+	}
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("unexpected raw oauth config: got %#v want %#v", got, want)
+	}
+}
+
+func TestTerraformHTTPServerOAuthStateValueFallsBackToConfigWhenAPIOmitsOAuth(t *testing.T) {
+	reader := &mockRawConfigReader{
+		values: map[string]mockRawConfigValue{
+			"oauth": {
+				present: true,
+				block: map[string]mockRawConfigValue{
+					"test_url":       {present: true, str: "https://auth.example.com/oauth/token"},
+					"request_method": {present: true, str: "post"},
+					"auth_type":      {present: true, str: "basic"},
+					"username":       {present: true, str: "oauth-user"},
+					"password":       {present: true, str: "oauth-pass"},
+				},
+			},
+		},
+	}
+
+	got := terraformHTTPServerOAuthStateValue(reader, nil, nil)
+
+	want := []interface{}{
+		map[string]interface{}{
+			"test_url":       "https://auth.example.com/oauth/token",
+			"request_method": "post",
+			"auth_type":      "basic",
+			"username":       "oauth-user",
+			"password":       "oauth-pass",
+		},
+	}
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("unexpected oauth state fallback: got %#v want %#v", got, want)
+	}
+}
+
+func TestTerraformHTTPServerOAuthStateValuePreservesConfigOnlySecret(t *testing.T) {
+	reader := &mockRawConfigReader{
+		values: map[string]mockRawConfigValue{
+			"oauth": {
+				present: true,
+				block: map[string]mockRawConfigValue{
+					"test_url":       {present: true, str: "https://configured.example.com/oauth/token"},
+					"request_method": {present: true, str: "post"},
+					"auth_type":      {present: true, str: "basic"},
+					"username":       {present: true, str: "oauth-user"},
+					"password":       {present: true, str: "oauth-pass"},
+				},
+			},
+		},
+	}
+
+	remoteURL := "https://remote.example.com/oauth/token"
+	oauth := tests.NewOAuth()
+	oauth.TestUrl = &remoteURL
+	setOAuthNamedStringField(t, oauth, "RequestMethod", "post")
+	setOAuthNamedStringField(t, oauth, "AuthType", "basic")
+
+	got := terraformHTTPServerOAuthStateValue(reader, nil, oauth)
+
+	want := []interface{}{
+		map[string]interface{}{
+			"test_url":       remoteURL,
+			"request_method": "post",
+			"auth_type":      "basic",
+			"username":       "oauth-user",
+			"password":       "oauth-pass",
+		},
+	}
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("unexpected merged oauth state: got %#v want %#v", got, want)
+	}
+}
+
+func TestTerraformHTTPServerOAuthStateValueFallsBackToExistingState(t *testing.T) {
+	reader := &mockRawConfigReader{values: map[string]mockRawConfigValue{}}
+	existing := []interface{}{
+		map[string]interface{}{
+			"test_url":       "https://auth.example.com/oauth/token",
+			"request_method": "post",
+			"auth_type":      "basic",
+			"username":       "oauth-user",
+			"password":       "oauth-pass",
+		},
+	}
+
+	got := terraformHTTPServerOAuthStateValue(reader, existing, nil)
+
+	if !reflect.DeepEqual(got, existing) {
+		t.Fatalf("expected existing oauth state fallback: got %#v want %#v", got, existing)
+	}
+}
+
 func TestRawConfigOAuthNotConfigured(t *testing.T) {
 	reader := &mockRawConfigReader{values: map[string]mockRawConfigValue{}}
 
@@ -267,6 +391,7 @@ type mockRawConfigReader struct {
 
 type mockRawConfigValue struct {
 	present bool
+	str     string
 	list    []string
 	block   map[string]mockRawConfigValue
 }
@@ -290,6 +415,10 @@ func (m *mockRawConfigReader) GetRawConfigAt(path cty.Path) (cty.Value, diag.Dia
 }
 
 func (m mockRawConfigValue) toCty() cty.Value {
+	if m.str != "" {
+		return cty.StringVal(m.str)
+	}
+
 	if m.block != nil {
 		obj := make(map[string]cty.Value, len(m.block))
 		for k, v := range m.block {
