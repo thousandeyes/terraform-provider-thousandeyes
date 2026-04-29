@@ -172,6 +172,47 @@ func terraformHTTPServerOAuthValue(oauth *tests.OAuth) []interface{} {
 	return []interface{}{value}
 }
 
+func terraformHTTPServerOAuthStateValue(d rawConfigReader, existing []interface{}, oauth *tests.OAuth) []interface{} {
+	remote := terraformHTTPServerOAuthValue(oauth)
+	if len(remote) == 0 {
+		return existing
+	}
+
+	return mergeHTTPServerOAuthValues(remote, existing)
+}
+
+func currentHTTPServerOAuthStateValue(d *schema.ResourceData) []interface{} {
+	oauth, ok := d.Get("oauth").(*schema.Set)
+	if !ok || oauth.Len() == 0 {
+		return nil
+	}
+	return oauth.List()
+}
+
+func mergeHTTPServerOAuthValues(remote, configured []interface{}) []interface{} {
+	if len(remote) == 0 || len(configured) == 0 {
+		return remote
+	}
+
+	remoteMap, ok := remote[0].(map[string]interface{})
+	if !ok {
+		return remote
+	}
+	configuredMap, ok := configured[0].(map[string]interface{})
+	if !ok {
+		return remote
+	}
+
+	merged := make(map[string]interface{}, len(remoteMap)+len(configuredMap))
+	for k, v := range configuredMap {
+		merged[k] = v
+	}
+	for k, v := range remoteMap {
+		merged[k] = v
+	}
+	return []interface{}{merged}
+}
+
 func ctyObjectToStringMap(v cty.Value, attr string) map[string]string {
 	if !v.Type().HasAttribute(attr) {
 		return nil
