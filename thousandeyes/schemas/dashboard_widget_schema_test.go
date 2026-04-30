@@ -94,14 +94,14 @@ func TestDashboardWidgetSchemaTestTableFilterKeyUsesTagIDOnly(t *testing.T) {
 func TestDashboardWidgetSchemaRejectsDeprecatedCommonFilterProperties(t *testing.T) {
 	propertySchema := getNestedSchemaProperty(t, DashboardWidgetSchema["filter"], "property")
 
-	assertDashboardFilterPropertyValidation(t, propertySchema, "TEST", true)
-	assertDashboardFilterPropertyValidation(t, propertySchema, "AGENT", true)
-	assertDashboardFilterPropertyValidation(t, propertySchema, "ENDPOINT_LABEL", true)
-	assertDashboardFilterPropertyValidation(t, propertySchema, "TEST_LABEL", false)
-	assertDashboardFilterPropertyValidation(t, propertySchema, "AGENT_LABEL", false)
-	assertDashboardFilterPropertyValidation(t, propertySchema, "ENDPOINT_TEST_LABEL", false)
-	assertDashboardFilterPropertyValidation(t, propertySchema, "Test Labels", true)
-	assertDashboardFilterPropertyValidation(t, propertySchema, "Agent Labels", true)
+	assertDashboardLabelValidation(t, propertySchema, "widgets.0.filter.0.property", "TEST", true)
+	assertDashboardLabelValidation(t, propertySchema, "widgets.0.filter.0.property", "AGENT", true)
+	assertDashboardLabelValidation(t, propertySchema, "widgets.0.filter.0.property", "ENDPOINT_LABEL", true)
+	assertDashboardLabelValidation(t, propertySchema, "widgets.0.filter.0.property", "TEST_LABEL", false)
+	assertDashboardLabelValidation(t, propertySchema, "widgets.0.filter.0.property", "AGENT_LABEL", false)
+	assertDashboardLabelValidation(t, propertySchema, "widgets.0.filter.0.property", "ENDPOINT_TEST_LABEL", false)
+	assertDashboardLabelValidation(t, propertySchema, "widgets.0.filter.0.property", "Test Labels", true)
+	assertDashboardLabelValidation(t, propertySchema, "widgets.0.filter.0.property", "Agent Labels", true)
 }
 
 func TestDashboardWidgetSchemaRejectsDeprecatedNumberCardFilterProperties(t *testing.T) {
@@ -109,12 +109,99 @@ func TestDashboardWidgetSchemaRejectsDeprecatedNumberCardFilterProperties(t *tes
 		Elem: &schema.Resource{Schema: NumberCardSchema},
 	}, "filter", "property")
 
-	assertDashboardFilterPropertyValidation(t, propertySchema, "TEST", true)
-	assertDashboardFilterPropertyValidation(t, propertySchema, "AGENT", true)
-	assertDashboardFilterPropertyValidation(t, propertySchema, "ENDPOINT_LABEL", true)
-	assertDashboardFilterPropertyValidation(t, propertySchema, "TEST_LABEL", false)
-	assertDashboardFilterPropertyValidation(t, propertySchema, "AGENT_LABEL", false)
-	assertDashboardFilterPropertyValidation(t, propertySchema, "ENDPOINT_TEST_LABEL", false)
+	assertDashboardLabelValidation(t, propertySchema, "widgets.0.number_card_config.0.filter.0.property", "TEST", true)
+	assertDashboardLabelValidation(t, propertySchema, "widgets.0.number_card_config.0.filter.0.property", "AGENT", true)
+	assertDashboardLabelValidation(t, propertySchema, "widgets.0.number_card_config.0.filter.0.property", "ENDPOINT_LABEL", true)
+	assertDashboardLabelValidation(t, propertySchema, "widgets.0.number_card_config.0.filter.0.property", "TEST_LABEL", false)
+	assertDashboardLabelValidation(t, propertySchema, "widgets.0.number_card_config.0.filter.0.property", "AGENT_LABEL", false)
+	assertDashboardLabelValidation(t, propertySchema, "widgets.0.number_card_config.0.filter.0.property", "ENDPOINT_TEST_LABEL", false)
+}
+
+func TestDashboardWidgetSchemaRejectsDeprecatedGroupByLabelProperties(t *testing.T) {
+	testCases := []struct {
+		name      string
+		root      *schema.Schema
+		keys      []string
+		fieldPath string
+	}{
+		{
+			name:      "timeseries group_by",
+			root:      DashboardWidgetSchema["timeseries_config"],
+			keys:      []string{"group_by"},
+			fieldPath: "widgets.0.timeseries_config.0.group_by",
+		},
+		{
+			name:      "stacked area group_by",
+			root:      DashboardWidgetSchema["stacked_area_config"],
+			keys:      []string{"group_by"},
+			fieldPath: "widgets.0.stacked_area_config.0.group_by",
+		},
+		{
+			name:      "pie chart group_by",
+			root:      DashboardWidgetSchema["pie_chart_config"],
+			keys:      []string{"group_by"},
+			fieldPath: "widgets.0.pie_chart_config.0.group_by",
+		},
+		{
+			name:      "box and whiskers group_by",
+			root:      DashboardWidgetSchema["box_and_whiskers_config"],
+			keys:      []string{"group_by"},
+			fieldPath: "widgets.0.box_and_whiskers_config.0.group_by",
+		},
+		{
+			name:      "geo map group_by",
+			root:      DashboardWidgetSchema["geo_map_config"],
+			keys:      []string{"group_by"},
+			fieldPath: "widgets.0.geo_map_config.0.group_by",
+		},
+		{
+			name:      "table row_group_by",
+			root:      DashboardWidgetSchema["table_config"],
+			keys:      []string{"row_group_by"},
+			fieldPath: "widgets.0.table_config.0.row_group_by",
+		},
+		{
+			name:      "table column_group_by",
+			root:      DashboardWidgetSchema["table_config"],
+			keys:      []string{"column_group_by"},
+			fieldPath: "widgets.0.table_config.0.column_group_by",
+		},
+		{
+			name:      "stacked bar axis_group_by",
+			root:      DashboardWidgetSchema["stacked_bar_chart_config"],
+			keys:      []string{"axis_group_by"},
+			fieldPath: "widgets.0.stacked_bar_chart_config.0.axis_group_by",
+		},
+		{
+			name:      "grouped bar group_by",
+			root:      DashboardWidgetSchema["grouped_bar_chart_config"],
+			keys:      []string{"group_by"},
+			fieldPath: "widgets.0.grouped_bar_chart_config.0.group_by",
+		},
+		{
+			name:      "grouped bar axis_group_by",
+			root:      DashboardWidgetSchema["grouped_bar_chart_config"],
+			keys:      []string{"axis_group_by"},
+			fieldPath: "widgets.0.grouped_bar_chart_config.0.axis_group_by",
+		},
+		{
+			name:      "multi metric table row_group_by",
+			root:      DashboardWidgetSchema["multi_metric_table_config"],
+			keys:      []string{"row_group_by"},
+			fieldPath: "widgets.0.multi_metric_table_config.0.row_group_by",
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			propertySchema := getNestedSchemaProperty(t, testCase.root, testCase.keys...)
+			assertDashboardLabelValidation(t, propertySchema, testCase.fieldPath, "TEST", true)
+			assertDashboardLabelValidation(t, propertySchema, testCase.fieldPath, "AGENT", true)
+			assertDashboardLabelValidation(t, propertySchema, testCase.fieldPath, "TEST_LABEL", false)
+			assertDashboardLabelValidation(t, propertySchema, testCase.fieldPath, "AGENT_LABEL", false)
+			assertDashboardLabelValidation(t, propertySchema, testCase.fieldPath, "ENDPOINT_TEST_LABEL", false)
+		})
+	}
 }
 
 func getNestedSchemaProperty(t *testing.T, root *schema.Schema, keys ...string) *schema.Schema {
@@ -132,17 +219,17 @@ func getNestedSchemaProperty(t *testing.T, root *schema.Schema, keys ...string) 
 	return current
 }
 
-func assertDashboardFilterPropertyValidation(t *testing.T, propertySchema *schema.Schema, value string, valid bool) {
+func assertDashboardLabelValidation(t *testing.T, propertySchema *schema.Schema, path string, value string, valid bool) {
 	t.Helper()
 
 	require.NotNil(t, propertySchema.ValidateFunc)
 
-	_, errs := propertySchema.ValidateFunc(value, "widgets.0.filter.0.property")
+	_, errs := propertySchema.ValidateFunc(value, path)
 	if valid {
 		assert.Empty(t, errs)
 		return
 	}
 
 	require.NotEmpty(t, errs)
-	assert.ErrorContains(t, errs[0], "deprecated label filter property")
+	assert.ErrorContains(t, errs[0], "deprecated label value")
 }

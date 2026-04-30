@@ -9,20 +9,20 @@ import (
 
 type DashboardWidgetSchemaType map[string]*schema.Schema
 
-var deprecatedDashboardFilterProperties = map[string]struct{}{
+var deprecatedDashboardLabels = map[string]struct{}{
 	"TEST_LABEL":          {},
 	"AGENT_LABEL":         {},
 	"ENDPOINT_TEST_LABEL": {},
 }
 
-func validateDashboardFilterProperty(v interface{}, path string) ([]string, []error) {
+func validateDashboardLabel(v interface{}, path string) ([]string, []error) {
 	value, ok := v.(string)
 	if !ok {
 		return nil, []error{fmt.Errorf("expected %s to be a string", path)}
 	}
 
-	if _, isDeprecated := deprecatedDashboardFilterProperties[value]; isDeprecated {
-		return nil, []error{fmt.Errorf("%s must not use deprecated label filter property %q", path, value)}
+	if _, isDeprecated := deprecatedDashboardLabels[value]; isDeprecated {
+		return nil, []error{fmt.Errorf("%s must not use deprecated label value %q", path, value)}
 	}
 
 	return nil, nil
@@ -163,7 +163,7 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 					Type:         schema.TypeString,
 					Description:  "Filter property (e.g., 'TEST', 'AGENT', 'ENDPOINT_MACHINE_ID', 'MONITOR').",
 					Required:     true,
-					ValidateFunc: validateDashboardFilterProperty,
+					ValidateFunc: validateDashboardLabel,
 				},
 				"values": {
 					Type:        schema.TypeSet,
@@ -202,10 +202,11 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 					Optional:    true,
 				},
 				"group_by": {
-					Type:        schema.TypeString,
-					Description: "Group by property.",
-					Optional:    true,
-					Computed:    true,
+					Type:         schema.TypeString,
+					Description:  "Group by property.",
+					Optional:     true,
+					Computed:     true,
+					ValidateFunc: validateDashboardLabel,
 				},
 				"is_geo_map_per_test": {
 					Type:        schema.TypeBool,
@@ -267,10 +268,11 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 					Optional:    true,
 				},
 				"group_by": {
-					Type:        schema.TypeString,
-					Description: "Group by property.",
-					Optional:    true,
-					Computed:    true,
+					Type:         schema.TypeString,
+					Description:  "Group by property.",
+					Optional:     true,
+					Computed:     true,
+					ValidateFunc: validateDashboardLabel,
 				},
 				"show_timeseries_overall_baseline": {
 					Type:        schema.TypeBool,
@@ -315,9 +317,10 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 					Optional:    true,
 				},
 				"group_by": {
-					Type:        schema.TypeString,
-					Description: "Group by property.",
-					Required:    true,
+					Type:         schema.TypeString,
+					Description:  "Group by property.",
+					Required:     true,
+					ValidateFunc: validateDashboardLabel,
 				},
 			},
 		},
@@ -333,9 +336,10 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"group_by": {
-					Type:        schema.TypeString,
-					Description: "Group by property.",
-					Required:    true,
+					Type:         schema.TypeString,
+					Description:  "Group by property.",
+					Required:     true,
+					ValidateFunc: validateDashboardLabel,
 				},
 			},
 		},
@@ -368,10 +372,11 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 					Optional:    true,
 				},
 				"group_by": {
-					Type:        schema.TypeString,
-					Description: "Group by property.",
-					Optional:    true,
-					Computed:    true,
+					Type:         schema.TypeString,
+					Description:  "Group by property.",
+					Optional:     true,
+					Computed:     true,
+					ValidateFunc: validateDashboardLabel,
 				},
 			},
 		},
@@ -415,14 +420,16 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 					Computed:    true,
 				},
 				"row_group_by": {
-					Type:        schema.TypeString,
-					Description: "Group rows by property.",
-					Optional:    true,
+					Type:         schema.TypeString,
+					Description:  "Group rows by property.",
+					Optional:     true,
+					ValidateFunc: validateDashboardLabel,
 				},
 				"column_group_by": {
-					Type:        schema.TypeString,
-					Description: "Group columns by property.",
-					Optional:    true,
+					Type:         schema.TypeString,
+					Description:  "Group columns by property.",
+					Optional:     true,
+					ValidateFunc: validateDashboardLabel,
 				},
 				"limit": {
 					Type:        schema.TypeInt,
@@ -546,9 +553,10 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"axis_group_by": {
-					Type:        schema.TypeString,
-					Description: "Axis grouping property.",
-					Optional:    true,
+					Type:         schema.TypeString,
+					Description:  "Axis grouping property.",
+					Optional:     true,
+					ValidateFunc: validateDashboardLabel,
 				},
 				"limit": {
 					Type:        schema.TypeInt,
@@ -580,14 +588,16 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"group_by": {
-					Type:        schema.TypeString,
-					Description: "Group bars by property.",
-					Optional:    true,
+					Type:         schema.TypeString,
+					Description:  "Group bars by property.",
+					Optional:     true,
+					ValidateFunc: validateDashboardLabel,
 				},
 				"axis_group_by": {
-					Type:        schema.TypeString,
-					Description: "Axis grouping property.",
-					Optional:    true,
+					Type:         schema.TypeString,
+					Description:  "Axis grouping property.",
+					Optional:     true,
+					ValidateFunc: validateDashboardLabel,
 				},
 				"limit": {
 					Type:        schema.TypeInt,
@@ -722,10 +732,11 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 					Computed:    true,
 				},
 				"row_group_by": {
-					Type:        schema.TypeString,
-					Description: "Property to group rows by.",
-					Optional:    true,
-					Computed:    true,
+					Type:         schema.TypeString,
+					Description:  "Property to group rows by.",
+					Optional:     true,
+					Computed:     true,
+					ValidateFunc: validateDashboardLabel,
 				},
 				"limit": {
 					Type:        schema.TypeInt,
@@ -860,7 +871,7 @@ var NumberCardSchema = map[string]*schema.Schema{
 					Type:         schema.TypeString,
 					Description:  "Filter property.",
 					Required:     true,
-					ValidateFunc: validateDashboardFilterProperty,
+					ValidateFunc: validateDashboardLabel,
 				},
 				"values": {
 					Type:        schema.TypeSet,
