@@ -415,6 +415,7 @@ func resourceDataApiDashboardMapper(d *schema.ResourceData, dashboard dashboards
 		if err != nil {
 			return err
 		}
+		mappedWidgets = initializeConfiguredWidgetScalePresenceFromRead(mappedWidgets)
 		mappedWidgets = preserveConfiguredWidgetScalePresence(mappedWidgets, previousWidgets)
 		if err := d.Set("widgets", mappedWidgets); err != nil {
 			return err

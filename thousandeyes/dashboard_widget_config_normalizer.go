@@ -110,9 +110,45 @@ func preserveConfiguredWidgetScalePresence(widgetList []interface{}, priorWidget
 	return preserved
 }
 
+func initializeConfiguredWidgetScalePresenceFromRead(widgetList []interface{}) []interface{} {
+	initialized := cloneInterfaceSlice(widgetList)
+	for i := range initialized {
+		widget, ok := initialized[i].(map[string]interface{})
+		if !ok {
+			continue
+		}
+		initializeConfiguredWidgetScalePresenceFromReadForWidget(widget)
+	}
+	return initialized
+}
+
+func initializeConfiguredWidgetScalePresenceFromReadForWidget(widget map[string]interface{}) {
+	for _, blockName := range dashboardWidgetScaleConfigBlocks {
+		initializeConfiguredScaleBlockFieldsFromRead(widget, blockName)
+	}
+}
+
 func preserveConfiguredWidgetScalePresenceForWidget(widget map[string]interface{}, priorWidget map[string]interface{}) {
 	for _, blockName := range dashboardWidgetScaleConfigBlocks {
 		preserveConfiguredScaleBlockFields(widget, priorWidget, blockName)
+	}
+}
+
+func initializeConfiguredScaleBlockFieldsFromRead(parent map[string]interface{}, blockName string) {
+	blocks, ok := parent[blockName].([]interface{})
+	if !ok {
+		return
+	}
+
+	for _, rawBlock := range blocks {
+		block, ok := rawBlock.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		for _, fieldName := range dashboardWidgetScaleFields {
+			_, configured := block[fieldName]
+			block[fieldName+"_configured"] = configured
+		}
 	}
 }
 

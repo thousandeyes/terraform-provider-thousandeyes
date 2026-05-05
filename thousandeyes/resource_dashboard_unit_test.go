@@ -572,6 +572,18 @@ func TestResourceDataApiDashboardMapper_DoesNotMarkApiDefaultScaleAsConfigured(t
 	assert.Equal(t, false, cardData["max_scale_configured"])
 }
 
+func TestResourceDataApiDashboardMapper_InitializesScalePresenceFromReadWithoutPriorState(t *testing.T) {
+	d := schema.TestResourceDataRaw(t, schemas.DashboardSchema, map[string]interface{}{})
+	apiDashboard := apiDashboardWithZeroScaleNumberCard()
+
+	require.NoError(t, resourceDataApiDashboardMapper(d, apiDashboard))
+	cards := d.Get("widgets").([]interface{})[0].(map[string]interface{})["number_cards"].([]interface{})
+	cardData := cards[0].(map[string]interface{})
+
+	assert.Equal(t, true, cardData["min_scale_configured"])
+	assert.Equal(t, true, cardData["max_scale_configured"])
+}
+
 func TestResourceDataApiDashboardMapper_PreservesConfiguredZeroScaleFromPriorState(t *testing.T) {
 	d := resourceDataForNumberCardScaleRead(t, "true", "true")
 	apiDashboard := apiDashboardWithZeroScaleNumberCard()
