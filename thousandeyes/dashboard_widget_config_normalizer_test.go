@@ -265,6 +265,18 @@ func TestMarkConfiguredWidgetScalePresence_NumberCardScales(t *testing.T) {
 	assert.Equal(t, false, omitted["max_scale_configured"])
 	assert.Equal(t, true, explicitZero["min_scale_configured"])
 	assert.Equal(t, true, explicitZero["max_scale_configured"])
+
+	normalized := normalizeConfiguredWidgets(marked, rawConfig)
+	normalizedCards := normalized[0].(map[string]interface{})["number_cards"].([]interface{})
+	normalizedOmitted := normalizedCards[0].(map[string]interface{})
+	normalizedExplicitZero := normalizedCards[1].(map[string]interface{})
+
+	assert.NotContains(t, normalizedOmitted, "min_scale")
+	assert.NotContains(t, normalizedOmitted, "max_scale")
+	assert.Contains(t, normalizedExplicitZero, "min_scale")
+	assert.Contains(t, normalizedExplicitZero, "max_scale")
+	assert.Contains(t, normalizedOmitted, "min_scale_configured")
+	assert.Contains(t, normalizedOmitted, "max_scale_configured")
 }
 
 func TestMarkConfiguredWidgetScalePresence_WidgetConfigScales(t *testing.T) {
@@ -336,6 +348,18 @@ func TestMarkConfiguredWidgetScalePresence_WidgetConfigScales(t *testing.T) {
 			assert.Equal(t, false, omitted["max_scale_configured"])
 			assert.Equal(t, true, explicitZero["min_scale_configured"])
 			assert.Equal(t, true, explicitZero["max_scale_configured"])
+
+			normalized := normalizeConfiguredWidgets(marked, rawConfig)
+			normalizedBlocks := normalized[0].(map[string]interface{})[tc.blockName].([]interface{})
+			normalizedOmitted := normalizedBlocks[0].(map[string]interface{})
+			normalizedExplicitZero := normalizedBlocks[1].(map[string]interface{})
+
+			assert.NotContains(t, normalizedOmitted, "min_scale")
+			assert.NotContains(t, normalizedOmitted, "max_scale")
+			assert.Contains(t, normalizedExplicitZero, "min_scale")
+			assert.Contains(t, normalizedExplicitZero, "max_scale")
+			assert.Contains(t, normalizedOmitted, "min_scale_configured")
+			assert.Contains(t, normalizedOmitted, "max_scale_configured")
 		})
 	}
 }
