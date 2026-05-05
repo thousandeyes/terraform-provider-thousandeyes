@@ -219,6 +219,127 @@ func TestNormalizeConfiguredWidgets_WidgetConfigUnknownScaleIsConfigured(t *test
 	assert.NotContains(t, block, "max_scale")
 }
 
+func TestMarkConfiguredWidgetScalePresence_NumberCardScales(t *testing.T) {
+	widgetList := []interface{}{
+		map[string]interface{}{
+			"type": "Number",
+			"number_cards": []interface{}{
+				map[string]interface{}{
+					"description": "omitted scales",
+					"min_scale":   0.0,
+					"max_scale":   0.0,
+				},
+				map[string]interface{}{
+					"description": "explicit zero scales",
+					"min_scale":   0.0,
+					"max_scale":   0.0,
+				},
+			},
+		},
+	}
+
+	rawConfig := cty.ObjectVal(map[string]cty.Value{
+		"widgets": cty.TupleVal([]cty.Value{
+			cty.ObjectVal(map[string]cty.Value{
+				"type": cty.StringVal("Number"),
+				"number_cards": cty.TupleVal([]cty.Value{
+					cty.ObjectVal(map[string]cty.Value{
+						"description": cty.StringVal("omitted scales"),
+					}),
+					cty.ObjectVal(map[string]cty.Value{
+						"description": cty.StringVal("explicit zero scales"),
+						"min_scale":   cty.NumberIntVal(0),
+						"max_scale":   cty.NumberIntVal(0),
+					}),
+				}),
+			}),
+		}),
+	})
+
+	marked := markConfiguredWidgetScalePresence(widgetList, rawConfig)
+	cards := marked[0].(map[string]interface{})["number_cards"].([]interface{})
+	omitted := cards[0].(map[string]interface{})
+	explicitZero := cards[1].(map[string]interface{})
+
+	assert.Equal(t, false, omitted["min_scale_configured"])
+	assert.Equal(t, false, omitted["max_scale_configured"])
+	assert.Equal(t, true, explicitZero["min_scale_configured"])
+	assert.Equal(t, true, explicitZero["max_scale_configured"])
+}
+
+func TestMarkConfiguredWidgetScalePresence_WidgetConfigScales(t *testing.T) {
+	tests := []struct {
+		name       string
+		widgetType string
+		blockName  string
+		rawExtra   map[string]cty.Value
+	}{
+		{name: "map", widgetType: "Map", blockName: "geo_map_config"},
+		{name: "time series line", widgetType: "Time Series: Line", blockName: "timeseries_config"},
+		{
+			name:       "stacked area",
+			widgetType: "Time Series: Stacked Area",
+			blockName:  "stacked_area_config",
+			rawExtra: map[string]cty.Value{
+				"group_by": cty.StringVal("TEST"),
+			},
+		},
+		{name: "box and whiskers", widgetType: "Box and Whiskers", blockName: "box_and_whiskers_config"},
+		{name: "color grid", widgetType: "Color Grid", blockName: "color_grid_config"},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			widgetList := []interface{}{
+				map[string]interface{}{
+					"type": tc.widgetType,
+					tc.blockName: []interface{}{
+						map[string]interface{}{
+							"min_scale": 0.0,
+							"max_scale": 0.0,
+						},
+						map[string]interface{}{
+							"min_scale": 0.0,
+							"max_scale": 0.0,
+						},
+					},
+				},
+			}
+
+			firstRawBlock := map[string]cty.Value{}
+			for key, value := range tc.rawExtra {
+				firstRawBlock[key] = value
+			}
+			secondRawBlock := map[string]cty.Value{
+				"min_scale": cty.NumberIntVal(0),
+				"max_scale": cty.NumberIntVal(0),
+			}
+
+			rawConfig := cty.ObjectVal(map[string]cty.Value{
+				"widgets": cty.TupleVal([]cty.Value{
+					cty.ObjectVal(map[string]cty.Value{
+						"type": cty.StringVal(tc.widgetType),
+						tc.blockName: cty.TupleVal([]cty.Value{
+							cty.ObjectVal(firstRawBlock),
+							cty.ObjectVal(secondRawBlock),
+						}),
+					}),
+				}),
+			})
+
+			marked := markConfiguredWidgetScalePresence(widgetList, rawConfig)
+			blocks := marked[0].(map[string]interface{})[tc.blockName].([]interface{})
+			omitted := blocks[0].(map[string]interface{})
+			explicitZero := blocks[1].(map[string]interface{})
+
+			assert.Equal(t, false, omitted["min_scale_configured"])
+			assert.Equal(t, false, omitted["max_scale_configured"])
+			assert.Equal(t, true, explicitZero["min_scale_configured"])
+			assert.Equal(t, true, explicitZero["max_scale_configured"])
+		})
+	}
+}
+
 func TestNormalizeConfiguredWidgets_PrunesOtherPresenceSensitiveFields(t *testing.T) {
 	widgetList := []interface{}{
 		map[string]interface{}{
