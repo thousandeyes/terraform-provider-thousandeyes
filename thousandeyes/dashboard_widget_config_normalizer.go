@@ -87,6 +87,66 @@ func markConfiguredWidgetScalePresenceForWidget(widget map[string]interface{}, r
 	}
 }
 
+func preserveConfiguredWidgetScalePresence(widgetList []interface{}, priorWidgetList []interface{}) []interface{} {
+	if len(priorWidgetList) == 0 {
+		return widgetList
+	}
+
+	preserved := cloneInterfaceSlice(widgetList)
+	for i := range preserved {
+		if i >= len(priorWidgetList) {
+			break
+		}
+		widget, ok := preserved[i].(map[string]interface{})
+		if !ok {
+			continue
+		}
+		priorWidget, ok := priorWidgetList[i].(map[string]interface{})
+		if !ok {
+			continue
+		}
+		preserveConfiguredWidgetScalePresenceForWidget(widget, priorWidget)
+	}
+	return preserved
+}
+
+func preserveConfiguredWidgetScalePresenceForWidget(widget map[string]interface{}, priorWidget map[string]interface{}) {
+	for _, blockName := range dashboardWidgetScaleConfigBlocks {
+		preserveConfiguredScaleBlockFields(widget, priorWidget, blockName)
+	}
+}
+
+func preserveConfiguredScaleBlockFields(parent map[string]interface{}, priorParent map[string]interface{}, blockName string) {
+	blocks, ok := parent[blockName].([]interface{})
+	if !ok {
+		return
+	}
+	priorBlocks, ok := priorParent[blockName].([]interface{})
+	if !ok {
+		return
+	}
+
+	for i := range blocks {
+		if i >= len(priorBlocks) {
+			break
+		}
+		block, ok := blocks[i].(map[string]interface{})
+		if !ok {
+			continue
+		}
+		priorBlock, ok := priorBlocks[i].(map[string]interface{})
+		if !ok {
+			continue
+		}
+		for _, fieldName := range dashboardWidgetScaleFields {
+			markerName := fieldName + "_configured"
+			if priorValue, ok := priorBlock[markerName].(bool); ok {
+				block[markerName] = priorValue
+			}
+		}
+	}
+}
+
 func markConfiguredScaleBlockFields(parent map[string]interface{}, rawParent cty.Value, blockName string) {
 	rawBlocks, ok := rawBlockValues(rawParent, blockName)
 	if !ok {

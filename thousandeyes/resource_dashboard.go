@@ -410,11 +410,12 @@ func resourceDataApiDashboardMapper(d *schema.ResourceData, dashboard dashboards
 
 	// Handle widgets
 	if widgets := dashboard.GetWidgets(); len(widgets) > 0 {
+		previousWidgets, _ := d.Get("widgets").([]interface{})
 		mappedWidgets, err := MapWidgets(widgets)
 		if err != nil {
 			return err
 		}
-		mappedWidgets = markConfiguredWidgetScalePresence(mappedWidgets, d.GetRawConfig())
+		mappedWidgets = preserveConfiguredWidgetScalePresence(mappedWidgets, previousWidgets)
 		if err := d.Set("widgets", mappedWidgets); err != nil {
 			return err
 		}

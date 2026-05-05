@@ -561,7 +561,7 @@ func TestResourceDataApiDashboardMapper(t *testing.T) {
 }
 
 func TestResourceDataApiDashboardMapper_DoesNotMarkApiDefaultScaleAsConfigured(t *testing.T) {
-	d := resourceDataForNumberCardScaleRead(t, false)
+	d := resourceDataForNumberCardScaleRead(t, "false", "false")
 	apiDashboard := apiDashboardWithZeroScaleNumberCard()
 
 	require.NoError(t, resourceDataApiDashboardMapper(d, apiDashboard))
@@ -572,8 +572,8 @@ func TestResourceDataApiDashboardMapper_DoesNotMarkApiDefaultScaleAsConfigured(t
 	assert.Equal(t, false, cardData["max_scale_configured"])
 }
 
-func TestResourceDataApiDashboardMapper_MarksConfiguredZeroScaleFromRawConfig(t *testing.T) {
-	d := resourceDataForNumberCardScaleRead(t, true)
+func TestResourceDataApiDashboardMapper_PreservesConfiguredZeroScaleFromPriorState(t *testing.T) {
+	d := resourceDataForNumberCardScaleRead(t, "true", "true")
 	apiDashboard := apiDashboardWithZeroScaleNumberCard()
 
 	require.NoError(t, resourceDataApiDashboardMapper(d, apiDashboard))
@@ -584,25 +584,26 @@ func TestResourceDataApiDashboardMapper_MarksConfiguredZeroScaleFromRawConfig(t 
 	assert.Equal(t, true, cardData["max_scale_configured"])
 }
 
-func resourceDataForNumberCardScaleRead(t *testing.T, includeScales bool) *schema.ResourceData {
+func resourceDataForNumberCardScaleRead(t *testing.T, minMarker string, maxMarker string) *schema.ResourceData {
 	t.Helper()
 
-	card := map[string]interface{}{
-		"description":  "card",
-		"data_source":  "ALERTS",
-		"metric_group": "ALERTS",
-		"metric":       "ALERT_COUNT_AGENT",
-	}
-	if includeScales {
-		card["min_scale"] = 0.0
-		card["max_scale"] = 0.0
-	}
-
 	d, err := schema.InternalMap(schemas.DashboardSchema).Data(&terraform.InstanceState{
-		ID:        "dashboard-123",
-		RawConfig: rawDashboardConfigForNumberCard(card),
+		ID: "dashboard-123",
 		Attributes: map[string]string{
-			"id": "dashboard-123",
+			"id":                                            "dashboard-123",
+			"title":                                         "T",
+			"widgets.#":                                     "1",
+			"widgets.0.type":                                "Number",
+			"widgets.0.title":                               "Number",
+			"widgets.0.number_cards.#":                      "1",
+			"widgets.0.number_cards.0.description":          "card",
+			"widgets.0.number_cards.0.data_source":          "ALERTS",
+			"widgets.0.number_cards.0.metric_group":         "ALERTS",
+			"widgets.0.number_cards.0.metric":               "ALERT_COUNT_AGENT",
+			"widgets.0.number_cards.0.min_scale":            "0",
+			"widgets.0.number_cards.0.max_scale":            "0",
+			"widgets.0.number_cards.0.min_scale_configured": minMarker,
+			"widgets.0.number_cards.0.max_scale_configured": maxMarker,
 		},
 	}, nil)
 	require.NoError(t, err)
