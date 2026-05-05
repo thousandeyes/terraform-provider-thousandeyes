@@ -560,6 +560,72 @@ func TestResourceDataApiDashboardMapper(t *testing.T) {
 	}
 }
 
+func TestResourceDataApiDashboardMapper_DoesNotMarkApiDefaultScaleAsConfigured(t *testing.T) {
+	d := resourceDataForNumberCardScaleRead(t, false)
+	apiDashboard := apiDashboardWithZeroScaleNumberCard()
+
+	require.NoError(t, resourceDataApiDashboardMapper(d, apiDashboard))
+	cards := d.Get("widgets").([]interface{})[0].(map[string]interface{})["number_cards"].([]interface{})
+	cardData := cards[0].(map[string]interface{})
+
+	assert.Equal(t, false, cardData["min_scale_configured"])
+	assert.Equal(t, false, cardData["max_scale_configured"])
+}
+
+func TestResourceDataApiDashboardMapper_MarksConfiguredZeroScaleFromRawConfig(t *testing.T) {
+	d := resourceDataForNumberCardScaleRead(t, true)
+	apiDashboard := apiDashboardWithZeroScaleNumberCard()
+
+	require.NoError(t, resourceDataApiDashboardMapper(d, apiDashboard))
+	cards := d.Get("widgets").([]interface{})[0].(map[string]interface{})["number_cards"].([]interface{})
+	cardData := cards[0].(map[string]interface{})
+
+	assert.Equal(t, true, cardData["min_scale_configured"])
+	assert.Equal(t, true, cardData["max_scale_configured"])
+}
+
+func resourceDataForNumberCardScaleRead(t *testing.T, includeScales bool) *schema.ResourceData {
+	t.Helper()
+
+	card := map[string]interface{}{
+		"description":  "card",
+		"data_source":  "ALERTS",
+		"metric_group": "ALERTS",
+		"metric":       "ALERT_COUNT_AGENT",
+	}
+	if includeScales {
+		card["min_scale"] = 0.0
+		card["max_scale"] = 0.0
+	}
+
+	d, err := schema.InternalMap(schemas.DashboardSchema).Data(&terraform.InstanceState{
+		ID:        "dashboard-123",
+		RawConfig: rawDashboardConfigForNumberCard(card),
+		Attributes: map[string]string{
+			"id": "dashboard-123",
+		},
+	}, nil)
+	require.NoError(t, err)
+	return d
+}
+
+func apiDashboardWithZeroScaleNumberCard() dashboards.ApiDashboard {
+	apiDashboard := dashboards.NewApiDashboard()
+	apiDashboard.SetTitle("T")
+	widget := dashboards.NewApiNumbersCardWidget("Number")
+	widget.SetTitle("Number")
+	card := dashboards.NewApiNumbersCard()
+	card.SetDescription("card")
+	card.SetDataSource(dashboards.NumbersCardDatasource("ALERTS"))
+	card.SetMetricGroup(dashboards.MetricGroup("ALERTS"))
+	card.SetMetric(dashboards.DashboardMetric("ALERT_COUNT_AGENT"))
+	card.SetMinScale(0)
+	card.SetMaxScale(0)
+	widget.SetNumberCards([]dashboards.ApiNumbersCard{*card})
+	apiDashboard.SetWidgets([]dashboards.ApiWidget{dashboards.ApiNumbersCardWidgetAsApiWidget(widget)})
+	return *apiDashboard
+}
+
 func TestMapNumberCards_omitsUnsetScales(t *testing.T) {
 	card := dashboards.NewApiNumbersCard()
 	card.SetDescription("No scales")
