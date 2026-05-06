@@ -204,6 +204,65 @@ func TestDashboardWidgetSchemaRejectsDeprecatedGroupByLabelProperties(t *testing
 	}
 }
 
+func TestDashboardWidgetScaleFieldsUseConfiguredMarkers(t *testing.T) {
+	tests := []struct {
+		name   string
+		schema map[string]*schema.Schema
+	}{
+		{
+			name: "geo map",
+			schema: DashboardWidgetSchema["geo_map_config"].
+				Elem.(*schema.Resource).Schema,
+		},
+		{
+			name: "timeseries",
+			schema: DashboardWidgetSchema["timeseries_config"].
+				Elem.(*schema.Resource).Schema,
+		},
+		{
+			name: "stacked area",
+			schema: DashboardWidgetSchema["stacked_area_config"].
+				Elem.(*schema.Resource).Schema,
+		},
+		{
+			name: "box and whiskers",
+			schema: DashboardWidgetSchema["box_and_whiskers_config"].
+				Elem.(*schema.Resource).Schema,
+		},
+		{
+			name: "color grid",
+			schema: DashboardWidgetSchema["color_grid_config"].
+				Elem.(*schema.Resource).Schema,
+		},
+		{
+			name:   "number card",
+			schema: NumberCardSchema,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			assertScaleSchemaHasConfiguredMarker(t, tc.schema, "min_scale")
+			assertScaleSchemaHasConfiguredMarker(t, tc.schema, "max_scale")
+		})
+	}
+}
+
+func assertScaleSchemaHasConfiguredMarker(t *testing.T, blockSchema map[string]*schema.Schema, fieldName string) {
+	t.Helper()
+
+	scaleSchema := blockSchema[fieldName]
+	require.NotNil(t, scaleSchema)
+	assert.True(t, scaleSchema.Optional)
+	assert.False(t, scaleSchema.Computed)
+
+	markerSchema := blockSchema[fieldName+"_configured"]
+	require.NotNil(t, markerSchema)
+	assert.False(t, markerSchema.Optional)
+	assert.True(t, markerSchema.Computed)
+	assert.Equal(t, schema.TypeBool, markerSchema.Type)
+}
+
 func getNestedSchemaProperty(t *testing.T, root *schema.Schema, keys ...string) *schema.Schema {
 	t.Helper()
 

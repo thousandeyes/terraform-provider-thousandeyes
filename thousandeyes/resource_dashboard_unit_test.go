@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/thousandeyes/terraform-provider-thousandeyes/thousandeyes/schemas"
@@ -291,6 +292,118 @@ func TestCustomizeDiff_explicitEmptyWidgets_helperIntegration(t *testing.T) {
 	assert.Empty(t, result.GetWidgets(), "widgets slice should be empty so the API clears all widgets")
 }
 
+func TestResourceDashboardCustomizeDiff_NumberCardScalePresenceMarkers(t *testing.T) {
+	tests := []struct {
+		name             string
+		stateMinMarker   string
+		stateMaxMarker   string
+		configCard       map[string]interface{}
+		wantMinMarkerNew string
+		wantMaxMarkerNew string
+	}{
+		{
+			name:           "omitted to explicit zero",
+			stateMinMarker: "false",
+			stateMaxMarker: "false",
+			configCard: map[string]interface{}{
+				"description":  "card",
+				"data_source":  "ALERTS",
+				"metric_group": "ALERTS",
+				"metric":       "ALERT_COUNT_AGENT",
+				"min_scale":    0.0,
+				"max_scale":    0.0,
+			},
+			wantMinMarkerNew: "true",
+			wantMaxMarkerNew: "true",
+		},
+		{
+			name:           "explicit zero to omitted",
+			stateMinMarker: "true",
+			stateMaxMarker: "true",
+			configCard: map[string]interface{}{
+				"description":  "card",
+				"data_source":  "ALERTS",
+				"metric_group": "ALERTS",
+				"metric":       "ALERT_COUNT_AGENT",
+			},
+			wantMinMarkerNew: "false",
+			wantMaxMarkerNew: "false",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			state := &terraform.InstanceState{
+				ID:        "dashboard-123",
+				RawConfig: rawDashboardConfigForNumberCard(tc.configCard),
+				Attributes: map[string]string{
+					"id":                                            "dashboard-123",
+					"title":                                         "T",
+					"widgets.#":                                     "1",
+					"widgets.0.type":                                "Number",
+					"widgets.0.title":                               "Number",
+					"widgets.0.number_cards.#":                      "1",
+					"widgets.0.number_cards.0.description":          "card",
+					"widgets.0.number_cards.0.data_source":          "ALERTS",
+					"widgets.0.number_cards.0.metric_group":         "ALERTS",
+					"widgets.0.number_cards.0.metric":               "ALERT_COUNT_AGENT",
+					"widgets.0.number_cards.0.min_scale":            "0",
+					"widgets.0.number_cards.0.max_scale":            "0",
+					"widgets.0.number_cards.0.min_scale_configured": tc.stateMinMarker,
+					"widgets.0.number_cards.0.max_scale_configured": tc.stateMaxMarker,
+				},
+			}
+			cfg := terraform.NewResourceConfigRaw(map[string]interface{}{
+				"title": "T",
+				"widgets": []interface{}{
+					map[string]interface{}{
+						"type":  "Number",
+						"title": "Number",
+						"number_cards": []interface{}{
+							tc.configCard,
+						},
+					},
+				},
+			})
+
+			diff := dashboardDiff(t, state, cfg)
+			require.NotNil(t, diff)
+			require.Contains(t, diff.Attributes, "widgets.0.number_cards.0.min_scale_configured")
+			require.Contains(t, diff.Attributes, "widgets.0.number_cards.0.max_scale_configured")
+			assert.Equal(t, tc.wantMinMarkerNew, diff.Attributes["widgets.0.number_cards.0.min_scale_configured"].New)
+			assert.Equal(t, tc.wantMaxMarkerNew, diff.Attributes["widgets.0.number_cards.0.max_scale_configured"].New)
+		})
+	}
+}
+
+func rawDashboardConfigForNumberCard(card map[string]interface{}) cty.Value {
+	cardAttrs := map[string]cty.Value{
+		"description":  cty.StringVal(card["description"].(string)),
+		"data_source":  cty.StringVal(card["data_source"].(string)),
+		"metric_group": cty.StringVal(card["metric_group"].(string)),
+		"metric":       cty.StringVal(card["metric"].(string)),
+	}
+	if _, ok := card["min_scale"]; ok {
+		cardAttrs["min_scale"] = cty.NumberIntVal(0)
+	}
+	if _, ok := card["max_scale"]; ok {
+		cardAttrs["max_scale"] = cty.NumberIntVal(0)
+	}
+
+	return cty.ObjectVal(map[string]cty.Value{
+		"title": cty.StringVal("T"),
+		"widgets": cty.TupleVal([]cty.Value{
+			cty.ObjectVal(map[string]cty.Value{
+				"type":  cty.StringVal("Number"),
+				"title": cty.StringVal("Number"),
+				"number_cards": cty.TupleVal([]cty.Value{
+					cty.ObjectVal(cardAttrs),
+				}),
+			}),
+		}),
+	})
+}
+
 func TestResourceDataApiDashboardMapper(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -445,6 +558,85 @@ func TestResourceDataApiDashboardMapper(t *testing.T) {
 			tc.validate(t, d)
 		})
 	}
+}
+
+func TestResourceDataApiDashboardMapper_DoesNotMarkApiDefaultScaleAsConfigured(t *testing.T) {
+	d := resourceDataForNumberCardScaleRead(t, "false", "false")
+	apiDashboard := apiDashboardWithZeroScaleNumberCard()
+
+	require.NoError(t, resourceDataApiDashboardMapper(d, apiDashboard))
+	cards := d.Get("widgets").([]interface{})[0].(map[string]interface{})["number_cards"].([]interface{})
+	cardData := cards[0].(map[string]interface{})
+
+	assert.Equal(t, false, cardData["min_scale_configured"])
+	assert.Equal(t, false, cardData["max_scale_configured"])
+}
+
+func TestResourceDataApiDashboardMapper_InitializesScalePresenceFromReadWithoutPriorState(t *testing.T) {
+	d := schema.TestResourceDataRaw(t, schemas.DashboardSchema, map[string]interface{}{})
+	apiDashboard := apiDashboardWithZeroScaleNumberCard()
+
+	require.NoError(t, resourceDataApiDashboardMapper(d, apiDashboard))
+	cards := d.Get("widgets").([]interface{})[0].(map[string]interface{})["number_cards"].([]interface{})
+	cardData := cards[0].(map[string]interface{})
+
+	assert.Equal(t, true, cardData["min_scale_configured"])
+	assert.Equal(t, true, cardData["max_scale_configured"])
+}
+
+func TestResourceDataApiDashboardMapper_PreservesConfiguredZeroScaleFromPriorState(t *testing.T) {
+	d := resourceDataForNumberCardScaleRead(t, "true", "true")
+	apiDashboard := apiDashboardWithZeroScaleNumberCard()
+
+	require.NoError(t, resourceDataApiDashboardMapper(d, apiDashboard))
+	cards := d.Get("widgets").([]interface{})[0].(map[string]interface{})["number_cards"].([]interface{})
+	cardData := cards[0].(map[string]interface{})
+
+	assert.Equal(t, true, cardData["min_scale_configured"])
+	assert.Equal(t, true, cardData["max_scale_configured"])
+}
+
+func resourceDataForNumberCardScaleRead(t *testing.T, minMarker string, maxMarker string) *schema.ResourceData {
+	t.Helper()
+
+	d, err := schema.InternalMap(schemas.DashboardSchema).Data(&terraform.InstanceState{
+		ID: "dashboard-123",
+		Attributes: map[string]string{
+			"id":                                            "dashboard-123",
+			"title":                                         "T",
+			"widgets.#":                                     "1",
+			"widgets.0.type":                                "Number",
+			"widgets.0.title":                               "Number",
+			"widgets.0.number_cards.#":                      "1",
+			"widgets.0.number_cards.0.description":          "card",
+			"widgets.0.number_cards.0.data_source":          "ALERTS",
+			"widgets.0.number_cards.0.metric_group":         "ALERTS",
+			"widgets.0.number_cards.0.metric":               "ALERT_COUNT_AGENT",
+			"widgets.0.number_cards.0.min_scale":            "0",
+			"widgets.0.number_cards.0.max_scale":            "0",
+			"widgets.0.number_cards.0.min_scale_configured": minMarker,
+			"widgets.0.number_cards.0.max_scale_configured": maxMarker,
+		},
+	}, nil)
+	require.NoError(t, err)
+	return d
+}
+
+func apiDashboardWithZeroScaleNumberCard() dashboards.ApiDashboard {
+	apiDashboard := dashboards.NewApiDashboard()
+	apiDashboard.SetTitle("T")
+	widget := dashboards.NewApiNumbersCardWidget("Number")
+	widget.SetTitle("Number")
+	card := dashboards.NewApiNumbersCard()
+	card.SetDescription("card")
+	card.SetDataSource(dashboards.NumbersCardDatasource("ALERTS"))
+	card.SetMetricGroup(dashboards.MetricGroup("ALERTS"))
+	card.SetMetric(dashboards.DashboardMetric("ALERT_COUNT_AGENT"))
+	card.SetMinScale(0)
+	card.SetMaxScale(0)
+	widget.SetNumberCards([]dashboards.ApiNumbersCard{*card})
+	apiDashboard.SetWidgets([]dashboards.ApiWidget{dashboards.ApiNumbersCardWidgetAsApiWidget(widget)})
+	return *apiDashboard
 }
 
 func TestMapNumberCards_omitsUnsetScales(t *testing.T) {

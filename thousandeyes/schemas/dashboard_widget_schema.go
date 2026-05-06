@@ -188,12 +188,20 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 					Type:        schema.TypeFloat,
 					Description: "Minimum scale value.",
 					Optional:    true,
+				},
+				"min_scale_configured": {
+					Type:        schema.TypeBool,
+					Description: "Internal marker indicating whether min_scale was configured.",
 					Computed:    true,
 				},
 				"max_scale": {
 					Type:        schema.TypeFloat,
 					Description: "Maximum scale value.",
 					Optional:    true,
+				},
+				"max_scale_configured": {
+					Type:        schema.TypeBool,
+					Description: "Internal marker indicating whether max_scale was configured.",
 					Computed:    true,
 				},
 				"unit": {
@@ -254,12 +262,20 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 					Type:        schema.TypeFloat,
 					Description: "Minimum scale value for the Y-axis.",
 					Optional:    true,
+				},
+				"min_scale_configured": {
+					Type:        schema.TypeBool,
+					Description: "Internal marker indicating whether min_scale was configured.",
 					Computed:    true,
 				},
 				"max_scale": {
 					Type:        schema.TypeFloat,
 					Description: "Maximum scale value for the Y-axis.",
 					Optional:    true,
+				},
+				"max_scale_configured": {
+					Type:        schema.TypeBool,
+					Description: "Internal marker indicating whether max_scale was configured.",
 					Computed:    true,
 				},
 				"unit": {
@@ -303,12 +319,20 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 					Type:        schema.TypeFloat,
 					Description: "Minimum scale value for the Y-axis.",
 					Optional:    true,
+				},
+				"min_scale_configured": {
+					Type:        schema.TypeBool,
+					Description: "Internal marker indicating whether min_scale was configured.",
 					Computed:    true,
 				},
 				"max_scale": {
 					Type:        schema.TypeFloat,
 					Description: "Maximum scale value for the Y-axis.",
 					Optional:    true,
+				},
+				"max_scale_configured": {
+					Type:        schema.TypeBool,
+					Description: "Internal marker indicating whether max_scale was configured.",
 					Computed:    true,
 				},
 				"unit": {
@@ -358,12 +382,20 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 					Type:        schema.TypeFloat,
 					Description: "Minimum scale value for the Y-axis.",
 					Optional:    true,
+				},
+				"min_scale_configured": {
+					Type:        schema.TypeBool,
+					Description: "Internal marker indicating whether min_scale was configured.",
 					Computed:    true,
 				},
 				"max_scale": {
 					Type:        schema.TypeFloat,
 					Description: "Maximum scale value for the Y-axis.",
 					Optional:    true,
+				},
+				"max_scale_configured": {
+					Type:        schema.TypeBool,
+					Description: "Internal marker indicating whether max_scale was configured.",
 					Computed:    true,
 				},
 				"unit": {
@@ -632,12 +664,20 @@ var DashboardWidgetSchema = DashboardWidgetSchemaType{
 					Type:        schema.TypeFloat,
 					Description: "Minimum scale value.",
 					Optional:    true,
+				},
+				"min_scale_configured": {
+					Type:        schema.TypeBool,
+					Description: "Internal marker indicating whether min_scale was configured.",
 					Computed:    true,
 				},
 				"max_scale": {
 					Type:        schema.TypeFloat,
 					Description: "Maximum scale value.",
 					Optional:    true,
+				},
+				"max_scale_configured": {
+					Type:        schema.TypeBool,
+					Description: "Internal marker indicating whether max_scale was configured.",
 					Computed:    true,
 				},
 				"unit": {
@@ -774,12 +814,20 @@ var NumberCardSchema = map[string]*schema.Schema{
 		Type:        schema.TypeFloat,
 		Description: "Minimum scale configured for the card.",
 		Optional:    true,
+	},
+	"min_scale_configured": {
+		Type:        schema.TypeBool,
+		Description: "Internal marker indicating whether min_scale was configured.",
 		Computed:    true,
 	},
 	"max_scale": {
 		Type:        schema.TypeFloat,
 		Description: "Maximum scale configured for the card.",
 		Optional:    true,
+	},
+	"max_scale_configured": {
+		Type:        schema.TypeBool,
+		Description: "Internal marker indicating whether max_scale was configured.",
 		Computed:    true,
 	},
 	"unit": {

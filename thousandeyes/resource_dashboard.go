@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"reflect"
 	"time"
 
 	"github.com/hashicorp/go-cty/cty"
@@ -44,6 +45,10 @@ func resourceDashboardCustomizeDiff(_ context.Context, d *schema.ResourceDiff, m
 				return err
 			}
 		}
+	}
+
+	if err := setConfiguredWidgetScalePresenceMarkers(d); err != nil {
+		return err
 	}
 
 	raw := d.Get("widgets")
@@ -118,6 +123,27 @@ func resourceDashboardCustomizeDiff(_ context.Context, d *schema.ResourceDiff, m
 	}
 
 	return nil
+}
+
+func setConfiguredWidgetScalePresenceMarkers(d *schema.ResourceDiff) error {
+	raw := d.Get("widgets")
+	if raw == nil {
+		return nil
+	}
+	widgets, ok := raw.([]interface{})
+	if !ok {
+		return nil
+	}
+
+	markedWidgets := markConfiguredWidgetScalePresence(widgets, d.GetRawConfig())
+	if !interfaceSlicesEqual(widgets, markedWidgets) {
+		return d.SetNew("widgets", markedWidgets)
+	}
+	return nil
+}
+
+func interfaceSlicesEqual(left, right []interface{}) bool {
+	return reflect.DeepEqual(left, right)
 }
 
 // configWidgetsNullOrEmpty reports whether widgets is absent (null) or explicitly empty in
@@ -384,10 +410,13 @@ func resourceDataApiDashboardMapper(d *schema.ResourceData, dashboard dashboards
 
 	// Handle widgets
 	if widgets := dashboard.GetWidgets(); len(widgets) > 0 {
+		previousWidgets, _ := d.Get("widgets").([]interface{})
 		mappedWidgets, err := MapWidgets(widgets)
 		if err != nil {
 			return err
 		}
+		mappedWidgets = initializeConfiguredWidgetScalePresenceFromRead(mappedWidgets)
+		mappedWidgets = preserveConfiguredWidgetScalePresence(mappedWidgets, previousWidgets)
 		if err := d.Set("widgets", mappedWidgets); err != nil {
 			return err
 		}

@@ -212,6 +212,11 @@ Optional:
 - `min_scale` (Number) Minimum scale value for the Y-axis.
 - `unit` (String) Unit for the Y-axis scale.
 
+Read-Only:
+
+- `max_scale_configured` (Boolean) Internal marker indicating whether max_scale was configured.
+- `min_scale_configured` (Boolean) Internal marker indicating whether min_scale was configured.
+
 
 <a id="nestedblock--widgets--color_grid_config"></a>
 ### Nested Schema for `widgets.color_grid_config`
@@ -225,6 +230,11 @@ Optional:
 - `max_scale` (Number) Maximum scale value.
 - `min_scale` (Number) Minimum scale value.
 - `unit` (String) Unit for the scale.
+
+Read-Only:
+
+- `max_scale_configured` (Boolean) Internal marker indicating whether max_scale was configured.
+- `min_scale_configured` (Boolean) Internal marker indicating whether min_scale was configured.
 
 
 <a id="nestedblock--widgets--filter"></a>
@@ -255,6 +265,11 @@ Optional:
 - `max_scale` (Number) Maximum scale value.
 - `min_scale` (Number) Minimum scale value.
 - `unit` (String) Unit for the scale.
+
+Read-Only:
+
+- `max_scale_configured` (Boolean) Internal marker indicating whether max_scale was configured.
+- `min_scale_configured` (Boolean) Internal marker indicating whether min_scale was configured.
 
 
 <a id="nestedblock--widgets--grouped_bar_chart_config"></a>
@@ -344,6 +359,8 @@ Optional:
 Read-Only:
 
 - `id` (String) Identifier of the number card.
+- `max_scale_configured` (Boolean) Internal marker indicating whether max_scale was configured.
+- `min_scale_configured` (Boolean) Internal marker indicating whether min_scale was configured.
 
 <a id="nestedblock--widgets--number_cards--filter"></a>
 ### Nested Schema for `widgets.number_cards.filter`
@@ -393,6 +410,11 @@ Optional:
 - `max_scale` (Number) Maximum scale value for the Y-axis.
 - `min_scale` (Number) Minimum scale value for the Y-axis.
 - `unit` (String) Unit for the Y-axis scale.
+
+Read-Only:
+
+- `max_scale_configured` (Boolean) Internal marker indicating whether max_scale was configured.
+- `min_scale_configured` (Boolean) Internal marker indicating whether min_scale was configured.
 
 
 <a id="nestedblock--widgets--stacked_bar_chart_config"></a>
@@ -473,6 +495,11 @@ Optional:
 - `min_scale` (Number) Minimum scale value for the Y-axis.
 - `show_timeseries_overall_baseline` (Boolean) Displays the overall baseline if set to true.
 - `unit` (String) Unit for the Y-axis scale.
+
+Read-Only:
+
+- `max_scale_configured` (Boolean) Internal marker indicating whether max_scale was configured.
+- `min_scale_configured` (Boolean) Internal marker indicating whether min_scale was configured.
 
 ## Import
 In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) providing `resource_id`.
