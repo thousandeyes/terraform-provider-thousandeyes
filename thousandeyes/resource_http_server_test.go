@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
-	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/go-cty/cty"
@@ -182,29 +182,26 @@ func TestBuildHTTPServerStructPreservesConfiguredNonEmptyPostBodyOverComputedGET
 }
 
 func TestHTTPServerRequestMethodGETRejectsConfiguredPostBody(t *testing.T) {
-	resource.UnitTest(t, resource.TestCase{
-		ProviderFactories: providerFactories,
-		Steps: []resource.TestStep{
-			{
-				Config: `
-provider "thousandeyes" {
-  token = "test-token"
-}
-
-resource "thousandeyes_http_server" "test" {
-  test_name      = "http server"
-  url            = "https://www.thousandeyes.com"
-  interval       = 120
-  agents         = ["1"]
-  request_method = "GET"
-  post_body      = ""
-}
-`,
-				PlanOnly:    true,
-				ExpectError: regexp.MustCompile("post_body can only be set when request_method is POST"),
-			},
-		},
+	rawConfig := cty.ObjectVal(map[string]cty.Value{
+		"request_method": cty.StringVal(httpServerRequestMethodGET),
+		"post_body":      cty.StringVal(""),
 	})
+	conf := terraform.NewResourceConfigRaw(map[string]interface{}{
+		"test_name":      "http server",
+		"url":            "https://www.thousandeyes.com",
+		"interval":       120,
+		"agents":         []interface{}{"1"},
+		"request_method": httpServerRequestMethodGET,
+		"post_body":      "",
+	})
+
+	_, err := resourceHTTPServer().Diff(context.Background(), &terraform.InstanceState{RawConfig: rawConfig}, conf, nil)
+	if err == nil {
+		t.Fatal("expected GET request_method with configured post_body to fail")
+	}
+	if !strings.Contains(err.Error(), "post_body can only be set when request_method is POST") {
+		t.Fatalf("expected post_body incompatibility error, got %v", err)
+	}
 }
 
 func TestResourceHTTPServerReadRequestMethodFallsBackToPostBody(t *testing.T) {
