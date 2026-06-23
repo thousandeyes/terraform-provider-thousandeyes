@@ -9,6 +9,45 @@ import (
 	"github.com/thousandeyes/thousandeyes-sdk-go/v3/tests"
 )
 
+func TestBuildHTTPServerStructOmitsEmptyPostBodyFromState(t *testing.T) {
+	d := resourceHTTPServer().Data(&terraform.InstanceState{
+		ID: "test-id",
+		Attributes: map[string]string{
+			"test_name": "http server",
+			"url":       "https://www.thousandeyes.com",
+			"interval":  "120",
+			"post_body": "",
+		},
+	})
+
+	req := buildHTTPServerStruct(d)
+
+	if req.PostBody != nil {
+		t.Fatalf("expected empty post_body state to be omitted, got PostBody=%q", *req.PostBody)
+	}
+}
+
+func TestBuildHTTPServerStructPreservesNonEmptyPostBody(t *testing.T) {
+	d := resourceHTTPServer().Data(&terraform.InstanceState{
+		ID: "test-id",
+		Attributes: map[string]string{
+			"test_name": "http server",
+			"url":       "https://www.thousandeyes.com",
+			"interval":  "120",
+			"post_body": "payload",
+		},
+	})
+
+	req := buildHTTPServerStruct(d)
+
+	if req.PostBody == nil {
+		t.Fatal("expected non-empty post_body to be preserved")
+	}
+	if *req.PostBody != "payload" {
+		t.Fatalf("expected PostBody %q, got %q", "payload", *req.PostBody)
+	}
+}
+
 func TestAccThousandEyesHTTPServer(t *testing.T) {
 	var httpResourceName = "thousandeyes_http_server.test"
 	var testCases = []struct {

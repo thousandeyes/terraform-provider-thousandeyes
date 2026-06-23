@@ -162,6 +162,10 @@ func buildHTTPServerStruct(d *schema.ResourceData) *tests.HttpServerTestRequest 
 	headers, headersConfigured := rawConfigHeaderStrings(d)
 	customHeaders, customHeadersConfigured := rawConfigCustomHeaders(d)
 
+	if req.PostBody != nil && *req.PostBody == "" {
+		req.PostBody = nil
+	}
+
 	if headersConfigured {
 		req.Headers = headers
 		req.CustomHeaders = nil
