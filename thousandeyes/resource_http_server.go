@@ -2,10 +2,15 @@ package thousandeyes
 
 import (
 	"context"
+	"fmt"
 	"log"
+	"reflect"
+	"strings"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/thousandeyes/terraform-provider-thousandeyes/thousandeyes/schemas"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/thousandeyes/thousandeyes-sdk-go/v3/client"
 	"github.com/thousandeyes/thousandeyes-sdk-go/v3/tests"
@@ -14,15 +19,21 @@ import (
 const httpHeaderSourceModeField = "header_source_mode"
 const httpHeaderSourceModeHeaders = "headers"
 const httpHeaderSourceModeCustomHeaders = "custom_headers"
+const httpServerRequestMethodField = "request_method"
+const httpServerRequestMethodGET = "GET"
+const httpServerRequestMethodPOST = "POST"
 
 func resourceHTTPServer() *schema.Resource {
 	resource := schema.Resource{
-		Schema:        ResourceSchemaBuild(tests.HttpServerTestRequest{}, schemas.CommonSchema, nil),
-		Create:        resourceHTTPServerCreate,
-		Read:          resourceHTTPServerRead,
-		Update:        resourceHTTPServerUpdate,
-		Delete:        resourceHTTPServerDelete,
-		CustomizeDiff: normalizeHTTPServerHeadersDiff,
+		Schema: ResourceSchemaBuild(tests.HttpServerTestRequest{}, schemas.CommonSchema, nil),
+		Create: resourceHTTPServerCreate,
+		Read:   resourceHTTPServerRead,
+		Update: resourceHTTPServerUpdate,
+		Delete: resourceHTTPServerDelete,
+		CustomizeDiff: customdiff.All(
+			normalizeHTTPServerHeadersDiff,
+			validateHTTPServerRequestMethodDiff,
+		),
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -41,6 +52,7 @@ func resourceHTTPServer() *schema.Resource {
 		Type:     schema.TypeString,
 		Computed: true,
 	}
+	resource.Schema[httpServerRequestMethodField] = schemas.CommonSchema[httpServerRequestMethodField]
 	return &resource
 }
 
@@ -63,6 +75,9 @@ func resourceHTTPServerRead(d *schema.ResourceData, m interface{}) error {
 
 	existingOAuth := currentHTTPServerOAuthStateValue(d)
 	if err := ResourceRead(context.Background(), d, resp); err != nil {
+		return err
+	}
+	if err := setHTTPServerRequestMethodState(d, resp); err != nil {
 		return err
 	}
 
@@ -162,8 +177,30 @@ func buildHTTPServerStruct(d *schema.ResourceData) *tests.HttpServerTestRequest 
 	headers, headersConfigured := rawConfigHeaderStrings(d)
 	customHeaders, customHeadersConfigured := rawConfigCustomHeaders(d)
 
-	if req.PostBody != nil && *req.PostBody == "" {
-		req.PostBody = nil
+	if requestMethod, configured := rawConfigHTTPServerRequestMethod(d); configured {
+		switch requestMethod {
+		case httpServerRequestMethodGET:
+			req.PostBody = nil
+		case httpServerRequestMethodPOST:
+			if !rawConfigPostBodyConfigured(d) || req.PostBody == nil {
+				empty := ""
+				req.PostBody = &empty
+			}
+		}
+	} else if req.PostBody == nil || *req.PostBody == "" {
+		if requestMethod, ok := stateHTTPServerRequestMethod(d); ok {
+			switch requestMethod {
+			case httpServerRequestMethodGET:
+				req.PostBody = nil
+			case httpServerRequestMethodPOST:
+				if req.PostBody == nil {
+					empty := ""
+					req.PostBody = &empty
+				}
+			}
+		} else if req.PostBody != nil {
+			req.PostBody = nil
+		}
 	}
 
 	if headersConfigured {
@@ -177,4 +214,63 @@ func buildHTTPServerStruct(d *schema.ResourceData) *tests.HttpServerTestRequest 
 		req.CustomHeaders = nil
 	}
 	return req
+}
+
+func rawConfigPostBodyConfigured(d rawConfigReader) bool {
+	raw, diags := d.GetRawConfigAt(cty.Path{cty.GetAttrStep{Name: "post_body"}})
+	return !diags.HasError() && raw.IsKnown() && !raw.IsNull()
+}
+
+func rawConfigHTTPServerRequestMethod(d rawConfigReader) (string, bool) {
+	raw, diags := d.GetRawConfigAt(cty.Path{cty.GetAttrStep{Name: httpServerRequestMethodField}})
+	if diags.HasError() || !raw.IsKnown() || raw.IsNull() {
+		return "", false
+	}
+	return raw.AsString(), true
+}
+
+func stateHTTPServerRequestMethod(d *schema.ResourceData) (string, bool) {
+	method, ok := d.Get(httpServerRequestMethodField).(string)
+	if !ok || method == "" {
+		return "", false
+	}
+	return method, true
+}
+
+func validateHTTPServerRequestMethodDiff(_ context.Context, d *schema.ResourceDiff, _ interface{}) error {
+	method, ok := rawConfigHTTPServerRequestMethod(d)
+	if ok && method == httpServerRequestMethodGET && rawConfigPostBodyConfigured(d) {
+		return fmt.Errorf("post_body can only be set when request_method is POST")
+	}
+	return nil
+}
+
+func setHTTPServerRequestMethodState(d *schema.ResourceData, resp *tests.HttpServerTestResponse) error {
+	if method, ok := httpServerResponseRequestMethod(resp); ok {
+		return d.Set(httpServerRequestMethodField, method)
+	}
+	if resp.PostBody != nil {
+		return d.Set(httpServerRequestMethodField, httpServerRequestMethodPOST)
+	}
+	return d.Set(httpServerRequestMethodField, httpServerRequestMethodGET)
+}
+
+func httpServerResponseRequestMethod(resp *tests.HttpServerTestResponse) (string, bool) {
+	v := reflect.ValueOf(resp)
+	if v.Kind() == reflect.Pointer {
+		if v.IsNil() {
+			return "", false
+		}
+		v = v.Elem()
+	}
+	field := v.FieldByName("RequestMethod")
+	if !field.IsValid() || field.Kind() != reflect.Pointer || field.IsNil() || field.Elem().Kind() != reflect.String {
+		return "", false
+	}
+
+	method := strings.ToUpper(field.Elem().String())
+	if method != httpServerRequestMethodGET && method != httpServerRequestMethodPOST {
+		return "", false
+	}
+	return method, true
 }

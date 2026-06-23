@@ -1,11 +1,17 @@
 package thousandeyes
 
 import (
+	"context"
+	"net/http"
+	"net/http/httptest"
 	"os"
+	"regexp"
 	"testing"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/thousandeyes/thousandeyes-sdk-go/v3/client"
 	"github.com/thousandeyes/thousandeyes-sdk-go/v3/tests"
 )
 
@@ -24,6 +30,233 @@ func TestBuildHTTPServerStructOmitsEmptyPostBodyFromState(t *testing.T) {
 
 	if req.PostBody != nil {
 		t.Fatalf("expected empty post_body state to be omitted, got PostBody=%q", *req.PostBody)
+	}
+}
+
+func TestBuildHTTPServerStructOmitsConfiguredEmptyPostBodyWithoutRequestMethod(t *testing.T) {
+	d := resourceHTTPServer().Data(&terraform.InstanceState{
+		ID:        "test-id",
+		RawConfig: cty.ObjectVal(map[string]cty.Value{"post_body": cty.StringVal("")}),
+		Attributes: map[string]string{
+			"test_name": "http server",
+			"url":       "https://www.thousandeyes.com",
+			"interval":  "120",
+			"post_body": "",
+		},
+	})
+
+	req := buildHTTPServerStruct(d)
+
+	if req.PostBody != nil {
+		t.Fatalf("expected configured empty post_body without request_method to be omitted, got PostBody=%q", *req.PostBody)
+	}
+}
+
+func TestBuildHTTPServerStructRequestMethodGETOmitsPostBody(t *testing.T) {
+	d := resourceHTTPServer().Data(&terraform.InstanceState{
+		ID:        "test-id",
+		RawConfig: cty.ObjectVal(map[string]cty.Value{"request_method": cty.StringVal("GET")}),
+		Attributes: map[string]string{
+			"test_name":      "http server",
+			"url":            "https://www.thousandeyes.com",
+			"interval":       "120",
+			"request_method": "GET",
+			"post_body":      "",
+		},
+	})
+
+	req := buildHTTPServerStruct(d)
+
+	if req.PostBody != nil {
+		t.Fatalf("expected GET request_method to omit PostBody, got %q", *req.PostBody)
+	}
+}
+
+func TestBuildHTTPServerStructRequestMethodPOSTDefaultsToEmptyPostBody(t *testing.T) {
+	d := resourceHTTPServer().Data(&terraform.InstanceState{
+		ID:        "test-id",
+		RawConfig: cty.ObjectVal(map[string]cty.Value{"request_method": cty.StringVal("POST")}),
+		Attributes: map[string]string{
+			"test_name":      "http server",
+			"url":            "https://www.thousandeyes.com",
+			"interval":       "120",
+			"request_method": "POST",
+		},
+	})
+
+	req := buildHTTPServerStruct(d)
+
+	if req.PostBody == nil {
+		t.Fatal("expected POST request_method to send empty PostBody when no body is configured")
+	}
+	if *req.PostBody != "" {
+		t.Fatalf("expected empty PostBody, got %q", *req.PostBody)
+	}
+}
+
+func TestBuildHTTPServerStructRequestMethodPOSTOmitsStalePostBody(t *testing.T) {
+	for _, tc := range []struct {
+		name      string
+		rawConfig cty.Value
+	}{
+		{
+			name:      "omitted post_body",
+			rawConfig: cty.ObjectVal(map[string]cty.Value{"request_method": cty.StringVal("POST")}),
+		},
+		{
+			name: "null post_body",
+			rawConfig: cty.ObjectVal(map[string]cty.Value{
+				"request_method": cty.StringVal("POST"),
+				"post_body":      cty.NullVal(cty.String),
+			}),
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			d := resourceHTTPServer().Data(&terraform.InstanceState{
+				ID:        "test-id",
+				RawConfig: tc.rawConfig,
+				Attributes: map[string]string{
+					"test_name":      "http server",
+					"url":            "https://www.thousandeyes.com",
+					"interval":       "120",
+					"request_method": "POST",
+					"post_body":      "payload",
+				},
+			})
+
+			req := buildHTTPServerStruct(d)
+
+			if req.PostBody == nil {
+				t.Fatal("expected POST request_method to send empty PostBody")
+			}
+			if *req.PostBody != "" {
+				t.Fatalf("expected stale PostBody to be cleared, got %q", *req.PostBody)
+			}
+		})
+	}
+}
+
+func TestBuildHTTPServerStructPreservesComputedPostWithEmptyPostBody(t *testing.T) {
+	d := resourceHTTPServer().Data(&terraform.InstanceState{
+		ID: "test-id",
+		Attributes: map[string]string{
+			"test_name":      "http server",
+			"url":            "https://www.thousandeyes.com",
+			"interval":       "120",
+			"request_method": "POST",
+			"post_body":      "",
+		},
+	})
+
+	req := buildHTTPServerStruct(d)
+
+	if req.PostBody == nil {
+		t.Fatal("expected computed POST request_method to preserve empty PostBody")
+	}
+	if *req.PostBody != "" {
+		t.Fatalf("expected empty PostBody, got %q", *req.PostBody)
+	}
+}
+
+func TestBuildHTTPServerStructPreservesConfiguredNonEmptyPostBodyOverComputedGET(t *testing.T) {
+	d := resourceHTTPServer().Data(&terraform.InstanceState{
+		ID:        "test-id",
+		RawConfig: cty.ObjectVal(map[string]cty.Value{"post_body": cty.StringVal("payload")}),
+		Attributes: map[string]string{
+			"test_name":      "http server",
+			"url":            "https://www.thousandeyes.com",
+			"interval":       "120",
+			"request_method": "GET",
+			"post_body":      "payload",
+		},
+	})
+
+	req := buildHTTPServerStruct(d)
+
+	if req.PostBody == nil {
+		t.Fatal("expected configured non-empty post_body to be preserved over computed GET request_method")
+	}
+	if *req.PostBody != "payload" {
+		t.Fatalf("expected PostBody %q, got %q", "payload", *req.PostBody)
+	}
+}
+
+func TestHTTPServerRequestMethodGETRejectsConfiguredPostBody(t *testing.T) {
+	resource.UnitTest(t, resource.TestCase{
+		ProviderFactories: providerFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: `
+provider "thousandeyes" {
+  token = "test-token"
+}
+
+resource "thousandeyes_http_server" "test" {
+  test_name      = "http server"
+  url            = "https://www.thousandeyes.com"
+  interval       = 120
+  agents         = ["1"]
+  request_method = "GET"
+  post_body      = ""
+}
+`,
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile("post_body can only be set when request_method is POST"),
+			},
+		},
+	})
+}
+
+func TestResourceHTTPServerReadRequestMethodFallsBackToPostBody(t *testing.T) {
+	for _, tc := range []struct {
+		name               string
+		apiPostBody        string
+		expectedHTTPMethod string
+	}{
+		{
+			name:               "nil post body is GET",
+			expectedHTTPMethod: httpServerRequestMethodGET,
+		},
+		{
+			name:               "non-nil post body is POST",
+			apiPostBody:        `"payload"`,
+			expectedHTTPMethod: httpServerRequestMethodPOST,
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			postBody := ""
+			if tc.apiPostBody != "" {
+				postBody = `,"postBody":` + tc.apiPostBody
+			}
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.Header().Set("Content-Type", "application/json")
+				_, _ = w.Write([]byte(`{
+  "interval": 120,
+  "url": "https://www.thousandeyes.com",
+  "testId": "test-id",
+  "testName": "http server"` + postBody + `
+}`))
+			}))
+			defer server.Close()
+
+			d := resourceHTTPServer().Data(&terraform.InstanceState{
+				ID: "test-id",
+			})
+			apiClient := client.NewAPIClient(&client.Configuration{
+				AuthToken:  "test-token",
+				ServerURL:  server.URL,
+				HTTPClient: server.Client(),
+				Context:    context.Background(),
+			})
+
+			if err := resourceHTTPServerRead(d, apiClient); err != nil {
+				t.Fatalf("resourceHTTPServerRead returned error: %v", err)
+			}
+
+			if got := d.Get(httpServerRequestMethodField); got != tc.expectedHTTPMethod {
+				t.Fatalf("expected request_method %s, got %v", tc.expectedHTTPMethod, got)
+			}
+		})
 	}
 }
 
