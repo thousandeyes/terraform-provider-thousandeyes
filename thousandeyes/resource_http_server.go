@@ -20,8 +20,8 @@ const httpHeaderSourceModeField = "header_source_mode"
 const httpHeaderSourceModeHeaders = "headers"
 const httpHeaderSourceModeCustomHeaders = "custom_headers"
 const httpServerRequestMethodField = "request_method"
-const httpServerRequestMethodGET = "GET"
-const httpServerRequestMethodPOST = "POST"
+const httpServerRequestMethodGET = "get"
+const httpServerRequestMethodPOST = "post"
 
 func resourceHTTPServer() *schema.Resource {
 	resource := schema.Resource{
@@ -226,7 +226,7 @@ func rawConfigHTTPServerRequestMethod(d rawConfigReader) (string, bool) {
 	if diags.HasError() || !raw.IsKnown() || raw.IsNull() {
 		return "", false
 	}
-	return raw.AsString(), true
+	return normalizeHTTPServerRequestMethod(raw.AsString())
 }
 
 func stateHTTPServerRequestMethod(d *schema.ResourceData) (string, bool) {
@@ -234,13 +234,13 @@ func stateHTTPServerRequestMethod(d *schema.ResourceData) (string, bool) {
 	if !ok || method == "" {
 		return "", false
 	}
-	return method, true
+	return normalizeHTTPServerRequestMethod(method)
 }
 
 func validateHTTPServerRequestMethodDiff(_ context.Context, d *schema.ResourceDiff, _ interface{}) error {
 	method, ok := rawConfigHTTPServerRequestMethod(d)
 	if ok && method == httpServerRequestMethodGET && rawConfigPostBodyConfigured(d) {
-		return fmt.Errorf("post_body can only be set when request_method is POST")
+		return fmt.Errorf("post_body can only be set when request_method is post")
 	}
 	return nil
 }
@@ -268,7 +268,11 @@ func httpServerResponseRequestMethod(resp *tests.HttpServerTestResponse) (string
 		return "", false
 	}
 
-	method := strings.ToUpper(field.Elem().String())
+	return normalizeHTTPServerRequestMethod(field.Elem().String())
+}
+
+func normalizeHTTPServerRequestMethod(method string) (string, bool) {
+	method = strings.ToLower(method)
 	if method != httpServerRequestMethodGET && method != httpServerRequestMethodPOST {
 		return "", false
 	}

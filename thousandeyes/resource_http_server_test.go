@@ -52,15 +52,15 @@ func TestBuildHTTPServerStructOmitsConfiguredEmptyPostBodyWithoutRequestMethod(t
 	}
 }
 
-func TestBuildHTTPServerStructRequestMethodGETOmitsPostBody(t *testing.T) {
+func TestBuildHTTPServerStructRequestMethodGetOmitsPostBody(t *testing.T) {
 	d := resourceHTTPServer().Data(&terraform.InstanceState{
 		ID:        "test-id",
-		RawConfig: cty.ObjectVal(map[string]cty.Value{"request_method": cty.StringVal("GET")}),
+		RawConfig: cty.ObjectVal(map[string]cty.Value{"request_method": cty.StringVal("get")}),
 		Attributes: map[string]string{
 			"test_name":      "http server",
 			"url":            "https://www.thousandeyes.com",
 			"interval":       "120",
-			"request_method": "GET",
+			"request_method": "get",
 			"post_body":      "",
 		},
 	})
@@ -68,45 +68,45 @@ func TestBuildHTTPServerStructRequestMethodGETOmitsPostBody(t *testing.T) {
 	req := buildHTTPServerStruct(d)
 
 	if req.PostBody != nil {
-		t.Fatalf("expected GET request_method to omit PostBody, got %q", *req.PostBody)
+		t.Fatalf("expected get request_method to omit PostBody, got %q", *req.PostBody)
 	}
 }
 
-func TestBuildHTTPServerStructRequestMethodPOSTDefaultsToEmptyPostBody(t *testing.T) {
+func TestBuildHTTPServerStructRequestMethodPostDefaultsToEmptyPostBody(t *testing.T) {
 	d := resourceHTTPServer().Data(&terraform.InstanceState{
 		ID:        "test-id",
-		RawConfig: cty.ObjectVal(map[string]cty.Value{"request_method": cty.StringVal("POST")}),
+		RawConfig: cty.ObjectVal(map[string]cty.Value{"request_method": cty.StringVal("post")}),
 		Attributes: map[string]string{
 			"test_name":      "http server",
 			"url":            "https://www.thousandeyes.com",
 			"interval":       "120",
-			"request_method": "POST",
+			"request_method": "post",
 		},
 	})
 
 	req := buildHTTPServerStruct(d)
 
 	if req.PostBody == nil {
-		t.Fatal("expected POST request_method to send empty PostBody when no body is configured")
+		t.Fatal("expected post request_method to send empty PostBody when no body is configured")
 	}
 	if *req.PostBody != "" {
 		t.Fatalf("expected empty PostBody, got %q", *req.PostBody)
 	}
 }
 
-func TestBuildHTTPServerStructRequestMethodPOSTOmitsStalePostBody(t *testing.T) {
+func TestBuildHTTPServerStructRequestMethodPostOmitsStalePostBody(t *testing.T) {
 	for _, tc := range []struct {
 		name      string
 		rawConfig cty.Value
 	}{
 		{
 			name:      "omitted post_body",
-			rawConfig: cty.ObjectVal(map[string]cty.Value{"request_method": cty.StringVal("POST")}),
+			rawConfig: cty.ObjectVal(map[string]cty.Value{"request_method": cty.StringVal("post")}),
 		},
 		{
 			name: "null post_body",
 			rawConfig: cty.ObjectVal(map[string]cty.Value{
-				"request_method": cty.StringVal("POST"),
+				"request_method": cty.StringVal("post"),
 				"post_body":      cty.NullVal(cty.String),
 			}),
 		},
@@ -119,7 +119,7 @@ func TestBuildHTTPServerStructRequestMethodPOSTOmitsStalePostBody(t *testing.T) 
 					"test_name":      "http server",
 					"url":            "https://www.thousandeyes.com",
 					"interval":       "120",
-					"request_method": "POST",
+					"request_method": "post",
 					"post_body":      "payload",
 				},
 			})
@@ -127,7 +127,7 @@ func TestBuildHTTPServerStructRequestMethodPOSTOmitsStalePostBody(t *testing.T) 
 			req := buildHTTPServerStruct(d)
 
 			if req.PostBody == nil {
-				t.Fatal("expected POST request_method to send empty PostBody")
+				t.Fatal("expected post request_method to send empty PostBody")
 			}
 			if *req.PostBody != "" {
 				t.Fatalf("expected stale PostBody to be cleared, got %q", *req.PostBody)
@@ -143,7 +143,7 @@ func TestBuildHTTPServerStructPreservesComputedPostWithEmptyPostBody(t *testing.
 			"test_name":      "http server",
 			"url":            "https://www.thousandeyes.com",
 			"interval":       "120",
-			"request_method": "POST",
+			"request_method": "post",
 			"post_body":      "",
 		},
 	})
@@ -151,14 +151,14 @@ func TestBuildHTTPServerStructPreservesComputedPostWithEmptyPostBody(t *testing.
 	req := buildHTTPServerStruct(d)
 
 	if req.PostBody == nil {
-		t.Fatal("expected computed POST request_method to preserve empty PostBody")
+		t.Fatal("expected computed post request_method to preserve empty PostBody")
 	}
 	if *req.PostBody != "" {
 		t.Fatalf("expected empty PostBody, got %q", *req.PostBody)
 	}
 }
 
-func TestBuildHTTPServerStructPreservesConfiguredNonEmptyPostBodyOverComputedGET(t *testing.T) {
+func TestBuildHTTPServerStructPreservesConfiguredNonEmptyPostBodyOverComputedGet(t *testing.T) {
 	d := resourceHTTPServer().Data(&terraform.InstanceState{
 		ID:        "test-id",
 		RawConfig: cty.ObjectVal(map[string]cty.Value{"post_body": cty.StringVal("payload")}),
@@ -166,7 +166,7 @@ func TestBuildHTTPServerStructPreservesConfiguredNonEmptyPostBodyOverComputedGET
 			"test_name":      "http server",
 			"url":            "https://www.thousandeyes.com",
 			"interval":       "120",
-			"request_method": "GET",
+			"request_method": "get",
 			"post_body":      "payload",
 		},
 	})
@@ -174,14 +174,14 @@ func TestBuildHTTPServerStructPreservesConfiguredNonEmptyPostBodyOverComputedGET
 	req := buildHTTPServerStruct(d)
 
 	if req.PostBody == nil {
-		t.Fatal("expected configured non-empty post_body to be preserved over computed GET request_method")
+		t.Fatal("expected configured non-empty post_body to be preserved over computed get request_method")
 	}
 	if *req.PostBody != "payload" {
 		t.Fatalf("expected PostBody %q, got %q", "payload", *req.PostBody)
 	}
 }
 
-func TestHTTPServerRequestMethodGETRejectsConfiguredPostBody(t *testing.T) {
+func TestHTTPServerRequestMethodGetRejectsConfiguredPostBody(t *testing.T) {
 	rawConfig := cty.ObjectVal(map[string]cty.Value{
 		"request_method": cty.StringVal(httpServerRequestMethodGET),
 		"post_body":      cty.StringVal(""),
@@ -197,9 +197,9 @@ func TestHTTPServerRequestMethodGETRejectsConfiguredPostBody(t *testing.T) {
 
 	_, err := resourceHTTPServer().Diff(context.Background(), &terraform.InstanceState{RawConfig: rawConfig}, conf, nil)
 	if err == nil {
-		t.Fatal("expected GET request_method with configured post_body to fail")
+		t.Fatal("expected get request_method with configured post_body to fail")
 	}
-	if !strings.Contains(err.Error(), "post_body can only be set when request_method is POST") {
+	if !strings.Contains(err.Error(), "post_body can only be set when request_method is post") {
 		t.Fatalf("expected post_body incompatibility error, got %v", err)
 	}
 }
@@ -211,13 +211,13 @@ func TestResourceHTTPServerReadRequestMethodFallsBackToPostBody(t *testing.T) {
 		expectedHTTPMethod string
 	}{
 		{
-			name:               "nil post body is GET",
-			expectedHTTPMethod: httpServerRequestMethodGET,
+			name:               "nil post body is get",
+			expectedHTTPMethod: "get",
 		},
 		{
-			name:               "non-nil post body is POST",
+			name:               "non-nil post body is post",
 			apiPostBody:        `"payload"`,
-			expectedHTTPMethod: httpServerRequestMethodPOST,
+			expectedHTTPMethod: "post",
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
@@ -254,6 +254,39 @@ func TestResourceHTTPServerReadRequestMethodFallsBackToPostBody(t *testing.T) {
 				t.Fatalf("expected request_method %s, got %v", tc.expectedHTTPMethod, got)
 			}
 		})
+	}
+}
+
+func TestResourceHTTPServerReadRequestMethodStoresAPIValue(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{
+  "interval": 120,
+  "url": "https://www.thousandeyes.com",
+  "testId": "test-id",
+  "testName": "http server",
+  "requestMethod": "post",
+  "postBody": ""
+}`))
+	}))
+	defer server.Close()
+
+	d := resourceHTTPServer().Data(&terraform.InstanceState{
+		ID: "test-id",
+	})
+	apiClient := client.NewAPIClient(&client.Configuration{
+		AuthToken:  "test-token",
+		ServerURL:  server.URL,
+		HTTPClient: server.Client(),
+		Context:    context.Background(),
+	})
+
+	if err := resourceHTTPServerRead(d, apiClient); err != nil {
+		t.Fatalf("resourceHTTPServerRead returned error: %v", err)
+	}
+
+	if got := d.Get(httpServerRequestMethodField); got != "post" {
+		t.Fatalf("expected request_method post, got %v", got)
 	}
 }
 
