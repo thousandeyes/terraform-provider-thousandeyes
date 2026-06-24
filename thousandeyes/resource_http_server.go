@@ -187,11 +187,7 @@ func buildHTTPServerStruct(d *schema.ResourceData) *tests.HttpServerTestRequest 
 				req.PostBody = &empty
 			}
 		}
-	} else if postBody, configured := rawConfigHTTPServerPostBody(d); configured {
-		if postBody == "" {
-			req.PostBody = nil
-		}
-	} else if rawConfigAvailable(d) || req.PostBody == nil || *req.PostBody == "" {
+	} else if shouldOmitHTTPServerPostBodyWithoutRequestMethod(d, req.PostBody) {
 		req.PostBody = nil
 	}
 
@@ -206,6 +202,13 @@ func buildHTTPServerStruct(d *schema.ResourceData) *tests.HttpServerTestRequest 
 		req.CustomHeaders = nil
 	}
 	return req
+}
+
+func shouldOmitHTTPServerPostBodyWithoutRequestMethod(d *schema.ResourceData, postBody *string) bool {
+	if rawPostBody, configured := rawConfigHTTPServerPostBody(d); configured {
+		return rawPostBody == ""
+	}
+	return rawConfigAvailable(d) || postBody == nil || *postBody == ""
 }
 
 func rawConfigPostBodyConfigured(d rawConfigReader) bool {
