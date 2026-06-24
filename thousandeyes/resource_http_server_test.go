@@ -307,7 +307,7 @@ func TestResourceHTTPServerReadRequestMethodStoresAPIValue(t *testing.T) {
 	}
 }
 
-func TestBuildHTTPServerStructPreservesNonEmptyPostBody(t *testing.T) {
+func TestBuildHTTPServerStructOmitsStateOnlyNonEmptyPostBodyWithoutRawRequestMethod(t *testing.T) {
 	d := resourceHTTPServer().Data(&terraform.InstanceState{
 		ID: "test-id",
 		Attributes: map[string]string{
@@ -320,11 +320,8 @@ func TestBuildHTTPServerStructPreservesNonEmptyPostBody(t *testing.T) {
 
 	req := buildHTTPServerStruct(d)
 
-	if req.PostBody == nil {
-		t.Fatal("expected non-empty post_body to be preserved")
-	}
-	if *req.PostBody != "payload" {
-		t.Fatalf("expected PostBody %q, got %q", "payload", *req.PostBody)
+	if req.PostBody != nil {
+		t.Fatalf("expected state-only post_body without raw request_method to be omitted, got %q", *req.PostBody)
 	}
 }
 

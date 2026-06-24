@@ -187,8 +187,8 @@ func buildHTTPServerStruct(d *schema.ResourceData) *tests.HttpServerTestRequest 
 				req.PostBody = &empty
 			}
 		}
-	} else if shouldOmitHTTPServerPostBodyWithoutRequestMethod(d, req.PostBody) {
-		req.PostBody = nil
+	} else {
+		req.PostBody = rawConfigHTTPServerPostBodyWithoutRequestMethod(d)
 	}
 
 	if headersConfigured {
@@ -204,16 +204,13 @@ func buildHTTPServerStruct(d *schema.ResourceData) *tests.HttpServerTestRequest 
 	return req
 }
 
-func shouldOmitHTTPServerPostBodyWithoutRequestMethod(d *schema.ResourceData, postBody *string) bool {
+func rawConfigHTTPServerPostBodyWithoutRequestMethod(d rawConfigReader) *string {
 	if rawPostBody, configured := rawConfigHTTPServerPostBody(d); configured {
-		return rawPostBody == ""
+		if rawPostBody != "" {
+			return &rawPostBody
+		}
 	}
-	return rawConfigAvailable(d) || postBody == nil || *postBody == ""
-}
-
-func rawConfigPostBodyConfigured(d rawConfigReader) bool {
-	_, configured := rawConfigHTTPServerPostBody(d)
-	return configured
+	return nil
 }
 
 func rawConfigHTTPServerPostBody(d rawConfigReader) (string, bool) {
@@ -224,9 +221,9 @@ func rawConfigHTTPServerPostBody(d rawConfigReader) (string, bool) {
 	return raw.AsString(), true
 }
 
-func rawConfigAvailable(d *schema.ResourceData) bool {
-	raw := d.GetRawConfig()
-	return raw.IsKnown() && !raw.IsNull()
+func rawConfigPostBodyConfigured(d rawConfigReader) bool {
+	_, configured := rawConfigHTTPServerPostBody(d)
+	return configured
 }
 
 func rawConfigHTTPServerRequestMethod(d rawConfigReader) (string, bool) {
