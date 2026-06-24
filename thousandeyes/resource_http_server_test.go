@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
-	"strings"
 	"testing"
 
 	"github.com/hashicorp/go-cty/cty"
@@ -73,22 +72,50 @@ func TestBuildHTTPServerStructOmitsNullPostBodyWithoutRawRequestMethod(t *testin
 }
 
 func TestBuildHTTPServerStructRequestMethodGetOmitsPostBody(t *testing.T) {
-	d := resourceHTTPServer().Data(&terraform.InstanceState{
-		ID:        "test-id",
-		RawConfig: cty.ObjectVal(map[string]cty.Value{"request_method": cty.StringVal("get")}),
-		Attributes: map[string]string{
-			"test_name":      "http server",
-			"url":            "https://www.thousandeyes.com",
-			"interval":       "120",
-			"request_method": "get",
-			"post_body":      "",
+	for _, tc := range []struct {
+		name      string
+		rawConfig cty.Value
+		postBody  string
+	}{
+		{
+			name:      "omitted post_body",
+			rawConfig: cty.ObjectVal(map[string]cty.Value{"request_method": cty.StringVal("get")}),
 		},
-	})
+		{
+			name: "empty post_body",
+			rawConfig: cty.ObjectVal(map[string]cty.Value{
+				"request_method": cty.StringVal("get"),
+				"post_body":      cty.StringVal(""),
+			}),
+		},
+		{
+			name: "payload post_body",
+			rawConfig: cty.ObjectVal(map[string]cty.Value{
+				"request_method": cty.StringVal("get"),
+				"post_body":      cty.StringVal("payload"),
+			}),
+			postBody: "payload",
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			d := resourceHTTPServer().Data(&terraform.InstanceState{
+				ID:        "test-id",
+				RawConfig: tc.rawConfig,
+				Attributes: map[string]string{
+					"test_name":      "http server",
+					"url":            "https://www.thousandeyes.com",
+					"interval":       "120",
+					"request_method": "get",
+					"post_body":      tc.postBody,
+				},
+			})
 
-	req := buildHTTPServerStruct(d)
+			req := buildHTTPServerStruct(d)
 
-	if req.PostBody != nil {
-		t.Fatalf("expected get request_method to omit PostBody, got %q", *req.PostBody)
+			if req.PostBody != nil {
+				t.Fatalf("expected get request_method to omit PostBody, got %q", *req.PostBody)
+			}
+		})
 	}
 }
 
@@ -198,26 +225,38 @@ func TestBuildHTTPServerStructPreservesConfiguredNonEmptyPostBodyOverComputedGet
 	}
 }
 
-func TestHTTPServerRequestMethodGetRejectsConfiguredPostBody(t *testing.T) {
-	rawConfig := cty.ObjectVal(map[string]cty.Value{
-		"request_method": cty.StringVal(httpServerRequestMethodGET),
-		"post_body":      cty.StringVal(""),
-	})
-	conf := terraform.NewResourceConfigRaw(map[string]interface{}{
-		"test_name":      "http server",
-		"url":            "https://www.thousandeyes.com",
-		"interval":       120,
-		"agents":         []interface{}{"1"},
-		"request_method": httpServerRequestMethodGET,
-		"post_body":      "",
-	})
+func TestHTTPServerRequestMethodGetAllowsConfiguredPostBody(t *testing.T) {
+	for _, tc := range []struct {
+		name     string
+		postBody string
+	}{
+		{
+			name:     "empty post_body",
+			postBody: "",
+		},
+		{
+			name:     "payload post_body",
+			postBody: "payload",
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			rawConfig := cty.ObjectVal(map[string]cty.Value{
+				"request_method": cty.StringVal(httpServerRequestMethodGET),
+				"post_body":      cty.StringVal(tc.postBody),
+			})
+			conf := terraform.NewResourceConfigRaw(map[string]interface{}{
+				"test_name":      "http server",
+				"url":            "https://www.thousandeyes.com",
+				"interval":       120,
+				"agents":         []interface{}{"1"},
+				"request_method": httpServerRequestMethodGET,
+				"post_body":      tc.postBody,
+			})
 
-	_, err := resourceHTTPServer().Diff(context.Background(), &terraform.InstanceState{RawConfig: rawConfig}, conf, nil)
-	if err == nil {
-		t.Fatal("expected get request_method with configured post_body to fail")
-	}
-	if !strings.Contains(err.Error(), "post_body can only be set when request_method is post") {
-		t.Fatalf("expected post_body incompatibility error, got %v", err)
+			if _, err := resourceHTTPServer().Diff(context.Background(), &terraform.InstanceState{RawConfig: rawConfig}, conf, nil); err != nil {
+				t.Fatalf("expected get request_method with configured post_body %q to plan, got %v", tc.postBody, err)
+			}
+		})
 	}
 }
 

@@ -2,7 +2,6 @@ package thousandeyes
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"reflect"
 	"strings"
@@ -10,7 +9,6 @@ import (
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/thousandeyes/terraform-provider-thousandeyes/thousandeyes/schemas"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/thousandeyes/thousandeyes-sdk-go/v3/client"
 	"github.com/thousandeyes/thousandeyes-sdk-go/v3/tests"
@@ -25,15 +23,12 @@ const httpServerRequestMethodPOST = "post"
 
 func resourceHTTPServer() *schema.Resource {
 	resource := schema.Resource{
-		Schema: ResourceSchemaBuild(tests.HttpServerTestRequest{}, schemas.CommonSchema, nil),
-		Create: resourceHTTPServerCreate,
-		Read:   resourceHTTPServerRead,
-		Update: resourceHTTPServerUpdate,
-		Delete: resourceHTTPServerDelete,
-		CustomizeDiff: customdiff.All(
-			normalizeHTTPServerHeadersDiff,
-			validateHTTPServerRequestMethodDiff,
-		),
+		Schema:        ResourceSchemaBuild(tests.HttpServerTestRequest{}, schemas.CommonSchema, nil),
+		Create:        resourceHTTPServerCreate,
+		Read:          resourceHTTPServerRead,
+		Update:        resourceHTTPServerUpdate,
+		Delete:        resourceHTTPServerDelete,
+		CustomizeDiff: normalizeHTTPServerHeadersDiff,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -232,14 +227,6 @@ func rawConfigHTTPServerRequestMethod(d rawConfigReader) (string, bool) {
 		return "", false
 	}
 	return normalizeHTTPServerRequestMethod(raw.AsString())
-}
-
-func validateHTTPServerRequestMethodDiff(_ context.Context, d *schema.ResourceDiff, _ interface{}) error {
-	method, ok := rawConfigHTTPServerRequestMethod(d)
-	if ok && method == httpServerRequestMethodGET && rawConfigPostBodyConfigured(d) {
-		return fmt.Errorf("post_body can only be set when request_method is post")
-	}
-	return nil
 }
 
 func setHTTPServerRequestMethodState(d *schema.ResourceData, resp *tests.HttpServerTestResponse) error {
