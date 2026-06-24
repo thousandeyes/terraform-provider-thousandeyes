@@ -187,20 +187,12 @@ func buildHTTPServerStruct(d *schema.ResourceData) *tests.HttpServerTestRequest 
 				req.PostBody = &empty
 			}
 		}
-	} else if req.PostBody == nil || *req.PostBody == "" {
-		if requestMethod, ok := stateHTTPServerRequestMethod(d); ok {
-			switch requestMethod {
-			case httpServerRequestMethodGET:
-				req.PostBody = nil
-			case httpServerRequestMethodPOST:
-				if req.PostBody == nil {
-					empty := ""
-					req.PostBody = &empty
-				}
-			}
-		} else if req.PostBody != nil {
+	} else if postBody, configured := rawConfigHTTPServerPostBody(d); configured {
+		if postBody == "" {
 			req.PostBody = nil
 		}
+	} else if rawConfigAvailable(d) || req.PostBody == nil || *req.PostBody == "" {
+		req.PostBody = nil
 	}
 
 	if headersConfigured {
@@ -217,8 +209,21 @@ func buildHTTPServerStruct(d *schema.ResourceData) *tests.HttpServerTestRequest 
 }
 
 func rawConfigPostBodyConfigured(d rawConfigReader) bool {
+	_, configured := rawConfigHTTPServerPostBody(d)
+	return configured
+}
+
+func rawConfigHTTPServerPostBody(d rawConfigReader) (string, bool) {
 	raw, diags := d.GetRawConfigAt(cty.Path{cty.GetAttrStep{Name: "post_body"}})
-	return !diags.HasError() && raw.IsKnown() && !raw.IsNull()
+	if diags.HasError() || !raw.IsKnown() || raw.IsNull() {
+		return "", false
+	}
+	return raw.AsString(), true
+}
+
+func rawConfigAvailable(d *schema.ResourceData) bool {
+	raw := d.GetRawConfig()
+	return raw.IsKnown() && !raw.IsNull()
 }
 
 func rawConfigHTTPServerRequestMethod(d rawConfigReader) (string, bool) {
@@ -227,14 +232,6 @@ func rawConfigHTTPServerRequestMethod(d rawConfigReader) (string, bool) {
 		return "", false
 	}
 	return normalizeHTTPServerRequestMethod(raw.AsString())
-}
-
-func stateHTTPServerRequestMethod(d *schema.ResourceData) (string, bool) {
-	method, ok := d.Get(httpServerRequestMethodField).(string)
-	if !ok || method == "" {
-		return "", false
-	}
-	return normalizeHTTPServerRequestMethod(method)
 }
 
 func validateHTTPServerRequestMethodDiff(_ context.Context, d *schema.ResourceDiff, _ interface{}) error {

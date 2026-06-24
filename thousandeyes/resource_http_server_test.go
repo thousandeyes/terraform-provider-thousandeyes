@@ -52,6 +52,26 @@ func TestBuildHTTPServerStructOmitsConfiguredEmptyPostBodyWithoutRequestMethod(t
 	}
 }
 
+func TestBuildHTTPServerStructOmitsNullPostBodyWithoutRawRequestMethod(t *testing.T) {
+	d := resourceHTTPServer().Data(&terraform.InstanceState{
+		ID:        "test-id",
+		RawConfig: cty.ObjectVal(map[string]cty.Value{"post_body": cty.NullVal(cty.String)}),
+		Attributes: map[string]string{
+			"test_name":      "http server",
+			"url":            "https://www.thousandeyes.com",
+			"interval":       "120",
+			"request_method": "post",
+			"post_body":      "stale payload",
+		},
+	})
+
+	req := buildHTTPServerStruct(d)
+
+	if req.PostBody != nil {
+		t.Fatalf("expected null post_body without raw request_method to omit stale PostBody, got %q", *req.PostBody)
+	}
+}
+
 func TestBuildHTTPServerStructRequestMethodGetOmitsPostBody(t *testing.T) {
 	d := resourceHTTPServer().Data(&terraform.InstanceState{
 		ID:        "test-id",
@@ -136,7 +156,7 @@ func TestBuildHTTPServerStructRequestMethodPostOmitsStalePostBody(t *testing.T) 
 	}
 }
 
-func TestBuildHTTPServerStructPreservesComputedPostWithEmptyPostBody(t *testing.T) {
+func TestBuildHTTPServerStructOmitsComputedPostWithEmptyPostBody(t *testing.T) {
 	d := resourceHTTPServer().Data(&terraform.InstanceState{
 		ID: "test-id",
 		Attributes: map[string]string{
@@ -150,11 +170,8 @@ func TestBuildHTTPServerStructPreservesComputedPostWithEmptyPostBody(t *testing.
 
 	req := buildHTTPServerStruct(d)
 
-	if req.PostBody == nil {
-		t.Fatal("expected computed post request_method to preserve empty PostBody")
-	}
-	if *req.PostBody != "" {
-		t.Fatalf("expected empty PostBody, got %q", *req.PostBody)
+	if req.PostBody != nil {
+		t.Fatalf("expected computed post request_method with empty post_body to omit PostBody, got %q", *req.PostBody)
 	}
 }
 
