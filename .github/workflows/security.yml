@@ -55,7 +55,7 @@ jobs:
       - name: Run GolangCI-Lint
         uses: golangci/golangci-lint-action@v7
         with:
-          version: v2.0.2
+          version: v2.12.2
           only-new-issues: true
           args: --tests=false
 
