@@ -7,7 +7,7 @@ require (
 	github.com/hashicorp/terraform-plugin-docs v0.21.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.36.1
 	github.com/stretchr/testify v1.8.4
-	github.com/thousandeyes/thousandeyes-sdk-go/v3 v3.0.0-alpha.20
+	github.com/thousandeyes/thousandeyes-sdk-go/v3 v3.0.0-alpha.22
 )
 
 require (
@@ -88,6 +88,3 @@ require (
 	gopkg.in/yaml.v2 v2.3.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
-
-// Temporary for CP-4595: replace with a published SDK once RequestMethod support is released.
-replace github.com/thousandeyes/thousandeyes-sdk-go/v3 => ../thousandeyes-sdk-go
