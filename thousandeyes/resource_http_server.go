@@ -16,8 +16,6 @@ const httpHeaderSourceModeField = "header_source_mode"
 const httpHeaderSourceModeHeaders = "headers"
 const httpHeaderSourceModeCustomHeaders = "custom_headers"
 const httpServerRequestMethodField = "request_method"
-const httpServerRequestMethodGET = "get"
-const httpServerRequestMethodPOST = "post"
 
 func resourceHTTPServer() *schema.Resource {
 	resource := schema.Resource{

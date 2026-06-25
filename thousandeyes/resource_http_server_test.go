@@ -15,6 +15,9 @@ import (
 	"github.com/thousandeyes/thousandeyes-sdk-go/v3/tests"
 )
 
+const httpServerRequestMethodGET = "get"
+const httpServerRequestMethodPOST = "post"
+
 func TestBuildHTTPServerStructSetsExplicitRequestMethodAndPostBody(t *testing.T) {
 	for _, tc := range []struct {
 		name               string

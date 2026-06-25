@@ -9,7 +9,7 @@ The same breaking changes are applied to the provider as they are to the API.
 ## Requirements
 
 - [Terraform](https://www.terraform.io/downloads.html) 0.12.x
-- [Go](https://golang.org/doc/install) 1.24 (to build the provider plugin)
+- [Go](https://golang.org/doc/install) 1.25 (to build the provider plugin)
 
 ## Usage
 The provider is on the Terraform registry. To use it, add the following code and run `terraform init`:
