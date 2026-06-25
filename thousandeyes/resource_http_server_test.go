@@ -2,6 +2,7 @@ package thousandeyes
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -14,47 +15,121 @@ import (
 	"github.com/thousandeyes/thousandeyes-sdk-go/v3/tests"
 )
 
-func TestBuildHTTPServerStructOmitsEmptyPostBodyFromState(t *testing.T) {
-	d := resourceHTTPServer().Data(&terraform.InstanceState{
-		ID: "test-id",
-		Attributes: map[string]string{
-			"test_name": "http server",
-			"url":       "https://www.thousandeyes.com",
-			"interval":  "120",
-			"post_body": "",
+func TestBuildHTTPServerStructSetsExplicitRequestMethodAndPostBody(t *testing.T) {
+	for _, tc := range []struct {
+		name               string
+		rawConfig          cty.Value
+		stateRequestMethod string
+		statePostBody      string
+		wantRequestMethod  tests.RequestMethod
+		wantPostBody       string
+	}{
+		{
+			name:               "no request_method and omitted post_body defaults GET with empty body",
+			rawConfig:          cty.EmptyObjectVal,
+			stateRequestMethod: httpServerRequestMethodPOST,
+			statePostBody:      "stale payload",
+			wantRequestMethod:  tests.REQUESTMETHOD_GET,
+			wantPostBody:       "",
 		},
-	})
+		{
+			name: "no request_method and null post_body defaults GET with empty body",
+			rawConfig: cty.ObjectVal(map[string]cty.Value{
+				"post_body": cty.NullVal(cty.String),
+			}),
+			stateRequestMethod: httpServerRequestMethodPOST,
+			statePostBody:      "stale payload",
+			wantRequestMethod:  tests.REQUESTMETHOD_GET,
+			wantPostBody:       "",
+		},
+		{
+			name: "no request_method and empty post_body defaults GET with empty body",
+			rawConfig: cty.ObjectVal(map[string]cty.Value{
+				"post_body": cty.StringVal(""),
+			}),
+			stateRequestMethod: httpServerRequestMethodPOST,
+			statePostBody:      "stale payload",
+			wantRequestMethod:  tests.REQUESTMETHOD_GET,
+			wantPostBody:       "",
+		},
+		{
+			name: "no request_method and non-empty post_body defaults POST with configured body",
+			rawConfig: cty.ObjectVal(map[string]cty.Value{
+				"post_body": cty.StringVal("payload"),
+			}),
+			stateRequestMethod: httpServerRequestMethodGET,
+			statePostBody:      "stale payload",
+			wantRequestMethod:  tests.REQUESTMETHOD_POST,
+			wantPostBody:       "payload",
+		},
+		{
+			name: "GET request_method and omitted post_body sends empty body",
+			rawConfig: cty.ObjectVal(map[string]cty.Value{
+				"request_method": cty.StringVal(httpServerRequestMethodGET),
+			}),
+			stateRequestMethod: httpServerRequestMethodPOST,
+			statePostBody:      "stale payload",
+			wantRequestMethod:  tests.REQUESTMETHOD_GET,
+			wantPostBody:       "",
+		},
+		{
+			name: "POST request_method and omitted post_body sends empty body",
+			rawConfig: cty.ObjectVal(map[string]cty.Value{
+				"request_method": cty.StringVal(httpServerRequestMethodPOST),
+			}),
+			stateRequestMethod: httpServerRequestMethodGET,
+			statePostBody:      "stale payload",
+			wantRequestMethod:  tests.REQUESTMETHOD_POST,
+			wantPostBody:       "",
+		},
+		{
+			name: "GET request_method and explicit post_body preserve configured values",
+			rawConfig: cty.ObjectVal(map[string]cty.Value{
+				"request_method": cty.StringVal(httpServerRequestMethodGET),
+				"post_body":      cty.StringVal("payload"),
+			}),
+			stateRequestMethod: httpServerRequestMethodPOST,
+			statePostBody:      "stale payload",
+			wantRequestMethod:  tests.REQUESTMETHOD_GET,
+			wantPostBody:       "payload",
+		},
+		{
+			name: "POST request_method and explicit post_body preserve configured values",
+			rawConfig: cty.ObjectVal(map[string]cty.Value{
+				"request_method": cty.StringVal(httpServerRequestMethodPOST),
+				"post_body":      cty.StringVal("payload"),
+			}),
+			stateRequestMethod: httpServerRequestMethodGET,
+			statePostBody:      "stale payload",
+			wantRequestMethod:  tests.REQUESTMETHOD_POST,
+			wantPostBody:       "payload",
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			d := resourceHTTPServer().Data(&terraform.InstanceState{
+				ID:        "test-id",
+				RawConfig: tc.rawConfig,
+				Attributes: map[string]string{
+					"test_name":      "http server",
+					"url":            "https://www.thousandeyes.com",
+					"interval":       "120",
+					"request_method": tc.stateRequestMethod,
+					"post_body":      tc.statePostBody,
+				},
+			})
 
-	req := buildHTTPServerStruct(d)
+			req := buildHTTPServerStruct(d)
 
-	if req.PostBody != nil {
-		t.Fatalf("expected empty post_body state to be omitted, got PostBody=%q", *req.PostBody)
+			assertHTTPServerRequestMethod(t, req, tc.wantRequestMethod)
+			assertStringPointer(t, req.PostBody, getPointer(tc.wantPostBody))
+		})
 	}
 }
 
-func TestBuildHTTPServerStructOmitsConfiguredEmptyPostBodyWithoutRequestMethod(t *testing.T) {
+func TestHTTPServerTestRequestSDKMarshalJSONIncludesExplicitMethodAndPostBody(t *testing.T) {
 	d := resourceHTTPServer().Data(&terraform.InstanceState{
 		ID:        "test-id",
-		RawConfig: cty.ObjectVal(map[string]cty.Value{"post_body": cty.StringVal("")}),
-		Attributes: map[string]string{
-			"test_name": "http server",
-			"url":       "https://www.thousandeyes.com",
-			"interval":  "120",
-			"post_body": "",
-		},
-	})
-
-	req := buildHTTPServerStruct(d)
-
-	if req.PostBody != nil {
-		t.Fatalf("expected configured empty post_body without request_method to be omitted, got PostBody=%q", *req.PostBody)
-	}
-}
-
-func TestBuildHTTPServerStructOmitsNullPostBodyWithoutRawRequestMethod(t *testing.T) {
-	d := resourceHTTPServer().Data(&terraform.InstanceState{
-		ID:        "test-id",
-		RawConfig: cty.ObjectVal(map[string]cty.Value{"post_body": cty.NullVal(cty.String)}),
+		RawConfig: cty.EmptyObjectVal,
 		Attributes: map[string]string{
 			"test_name":      "http server",
 			"url":            "https://www.thousandeyes.com",
@@ -65,251 +140,21 @@ func TestBuildHTTPServerStructOmitsNullPostBodyWithoutRawRequestMethod(t *testin
 	})
 
 	req := buildHTTPServerStruct(d)
-
-	if req.PostBody != nil {
-		t.Fatalf("expected null post_body without raw request_method to omit stale PostBody, got %q", *req.PostBody)
+	body, err := json.Marshal(req)
+	if err != nil {
+		t.Fatalf("failed to marshal HTTP server request: %v", err)
 	}
-}
 
-func TestBuildHTTPServerStructRequestMethodGetOmitsPostBody(t *testing.T) {
-	for _, tc := range []struct {
-		name      string
-		rawConfig cty.Value
-		postBody  string
-	}{
-		{
-			name:      "omitted post_body",
-			rawConfig: cty.ObjectVal(map[string]cty.Value{"request_method": cty.StringVal("get")}),
-		},
-		{
-			name: "empty post_body",
-			rawConfig: cty.ObjectVal(map[string]cty.Value{
-				"request_method": cty.StringVal("get"),
-				"post_body":      cty.StringVal(""),
-			}),
-		},
-		{
-			name: "payload post_body",
-			rawConfig: cty.ObjectVal(map[string]cty.Value{
-				"request_method": cty.StringVal("get"),
-				"post_body":      cty.StringVal("payload"),
-			}),
-			postBody: "payload",
-		},
-	} {
-		t.Run(tc.name, func(t *testing.T) {
-			d := resourceHTTPServer().Data(&terraform.InstanceState{
-				ID:        "test-id",
-				RawConfig: tc.rawConfig,
-				Attributes: map[string]string{
-					"test_name":      "http server",
-					"url":            "https://www.thousandeyes.com",
-					"interval":       "120",
-					"request_method": "get",
-					"post_body":      tc.postBody,
-				},
-			})
-
-			req := buildHTTPServerStruct(d)
-
-			if req.PostBody != nil {
-				t.Fatalf("expected get request_method to omit PostBody, got %q", *req.PostBody)
-			}
-		})
+	var payload map[string]interface{}
+	if err := json.Unmarshal(body, &payload); err != nil {
+		t.Fatalf("failed to unmarshal HTTP server request: %v", err)
 	}
-}
 
-func TestBuildHTTPServerStructRequestMethodPostDefaultsToEmptyPostBody(t *testing.T) {
-	d := resourceHTTPServer().Data(&terraform.InstanceState{
-		ID:        "test-id",
-		RawConfig: cty.ObjectVal(map[string]cty.Value{"request_method": cty.StringVal("post")}),
-		Attributes: map[string]string{
-			"test_name":      "http server",
-			"url":            "https://www.thousandeyes.com",
-			"interval":       "120",
-			"request_method": "post",
-		},
-	})
-
-	req := buildHTTPServerStruct(d)
-
-	if req.PostBody == nil {
-		t.Fatal("expected post request_method to send empty PostBody when no body is configured")
+	if got := payload["requestMethod"]; got != httpServerRequestMethodGET {
+		t.Fatalf("expected request method %q, got %q", httpServerRequestMethodGET, got)
 	}
-	if *req.PostBody != "" {
-		t.Fatalf("expected empty PostBody, got %q", *req.PostBody)
-	}
-}
-
-func TestBuildHTTPServerStructRequestMethodPostOmitsStalePostBody(t *testing.T) {
-	for _, tc := range []struct {
-		name      string
-		rawConfig cty.Value
-	}{
-		{
-			name:      "omitted post_body",
-			rawConfig: cty.ObjectVal(map[string]cty.Value{"request_method": cty.StringVal("post")}),
-		},
-		{
-			name: "null post_body",
-			rawConfig: cty.ObjectVal(map[string]cty.Value{
-				"request_method": cty.StringVal("post"),
-				"post_body":      cty.NullVal(cty.String),
-			}),
-		},
-	} {
-		t.Run(tc.name, func(t *testing.T) {
-			d := resourceHTTPServer().Data(&terraform.InstanceState{
-				ID:        "test-id",
-				RawConfig: tc.rawConfig,
-				Attributes: map[string]string{
-					"test_name":      "http server",
-					"url":            "https://www.thousandeyes.com",
-					"interval":       "120",
-					"request_method": "post",
-					"post_body":      "payload",
-				},
-			})
-
-			req := buildHTTPServerStruct(d)
-
-			if req.PostBody == nil {
-				t.Fatal("expected post request_method to send empty PostBody")
-			}
-			if *req.PostBody != "" {
-				t.Fatalf("expected stale PostBody to be cleared, got %q", *req.PostBody)
-			}
-		})
-	}
-}
-
-func TestBuildHTTPServerStructOmitsComputedPostWithEmptyPostBody(t *testing.T) {
-	d := resourceHTTPServer().Data(&terraform.InstanceState{
-		ID: "test-id",
-		Attributes: map[string]string{
-			"test_name":      "http server",
-			"url":            "https://www.thousandeyes.com",
-			"interval":       "120",
-			"request_method": "post",
-			"post_body":      "",
-		},
-	})
-
-	req := buildHTTPServerStruct(d)
-
-	if req.PostBody != nil {
-		t.Fatalf("expected computed post request_method with empty post_body to omit PostBody, got %q", *req.PostBody)
-	}
-}
-
-func TestBuildHTTPServerStructPreservesConfiguredNonEmptyPostBodyOverComputedGet(t *testing.T) {
-	d := resourceHTTPServer().Data(&terraform.InstanceState{
-		ID:        "test-id",
-		RawConfig: cty.ObjectVal(map[string]cty.Value{"post_body": cty.StringVal("payload")}),
-		Attributes: map[string]string{
-			"test_name":      "http server",
-			"url":            "https://www.thousandeyes.com",
-			"interval":       "120",
-			"request_method": "get",
-			"post_body":      "payload",
-		},
-	})
-
-	req := buildHTTPServerStruct(d)
-
-	if req.PostBody == nil {
-		t.Fatal("expected configured non-empty post_body to be preserved over computed get request_method")
-	}
-	if *req.PostBody != "payload" {
-		t.Fatalf("expected PostBody %q, got %q", "payload", *req.PostBody)
-	}
-}
-
-func TestHTTPServerRequestMethodGetAllowsConfiguredPostBody(t *testing.T) {
-	for _, tc := range []struct {
-		name     string
-		postBody string
-	}{
-		{
-			name:     "empty post_body",
-			postBody: "",
-		},
-		{
-			name:     "payload post_body",
-			postBody: "payload",
-		},
-	} {
-		t.Run(tc.name, func(t *testing.T) {
-			rawConfig := cty.ObjectVal(map[string]cty.Value{
-				"request_method": cty.StringVal(httpServerRequestMethodGET),
-				"post_body":      cty.StringVal(tc.postBody),
-			})
-			conf := terraform.NewResourceConfigRaw(map[string]interface{}{
-				"test_name":      "http server",
-				"url":            "https://www.thousandeyes.com",
-				"interval":       120,
-				"agents":         []interface{}{"1"},
-				"request_method": httpServerRequestMethodGET,
-				"post_body":      tc.postBody,
-			})
-
-			if _, err := resourceHTTPServer().Diff(context.Background(), &terraform.InstanceState{RawConfig: rawConfig}, conf, nil); err != nil {
-				t.Fatalf("expected get request_method with configured post_body %q to plan, got %v", tc.postBody, err)
-			}
-		})
-	}
-}
-
-func TestResourceHTTPServerReadRequestMethodFallsBackToPostBody(t *testing.T) {
-	for _, tc := range []struct {
-		name               string
-		apiPostBody        string
-		expectedHTTPMethod string
-	}{
-		{
-			name:               "nil post body is get",
-			expectedHTTPMethod: "get",
-		},
-		{
-			name:               "non-nil post body is post",
-			apiPostBody:        `"payload"`,
-			expectedHTTPMethod: "post",
-		},
-	} {
-		t.Run(tc.name, func(t *testing.T) {
-			postBody := ""
-			if tc.apiPostBody != "" {
-				postBody = `,"postBody":` + tc.apiPostBody
-			}
-			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				w.Header().Set("Content-Type", "application/json")
-				_, _ = w.Write([]byte(`{
-  "interval": 120,
-  "url": "https://www.thousandeyes.com",
-  "testId": "test-id",
-  "testName": "http server"` + postBody + `
-}`))
-			}))
-			defer server.Close()
-
-			d := resourceHTTPServer().Data(&terraform.InstanceState{
-				ID: "test-id",
-			})
-			apiClient := client.NewAPIClient(&client.Configuration{
-				AuthToken:  "test-token",
-				ServerURL:  server.URL,
-				HTTPClient: server.Client(),
-				Context:    context.Background(),
-			})
-
-			if err := resourceHTTPServerRead(d, apiClient); err != nil {
-				t.Fatalf("resourceHTTPServerRead returned error: %v", err)
-			}
-
-			if got := d.Get(httpServerRequestMethodField); got != tc.expectedHTTPMethod {
-				t.Fatalf("expected request_method %s, got %v", tc.expectedHTTPMethod, got)
-			}
-		})
+	if got := payload["postBody"]; got != "" {
+		t.Fatalf("expected postBody %q, got %q", "", got)
 	}
 }
 
@@ -346,21 +191,156 @@ func TestResourceHTTPServerReadRequestMethodStoresAPIValue(t *testing.T) {
 	}
 }
 
-func TestBuildHTTPServerStructOmitsStateOnlyNonEmptyPostBodyWithoutRawRequestMethod(t *testing.T) {
-	d := resourceHTTPServer().Data(&terraform.InstanceState{
-		ID: "test-id",
-		Attributes: map[string]string{
-			"test_name": "http server",
-			"url":       "https://www.thousandeyes.com",
-			"interval":  "120",
-			"post_body": "payload",
-		},
+func TestHTTPServerGeneratedUpdateSendsRequestMethod(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPut {
+			t.Fatalf("expected PUT request, got %s", r.Method)
+		}
+		if r.URL.EscapedPath() != "/tests/http-server/test%2Fid" {
+			t.Fatalf("expected escaped update path, got %s", r.URL.EscapedPath())
+		}
+		if got := r.URL.Query().Get("aid"); got != "aid-123" {
+			t.Fatalf("expected aid query param %q, got %q", "aid-123", got)
+		}
+		if got := r.URL.Query().Get("expand"); got != "agent,monitor" {
+			t.Fatalf("expected expand query param %q, got %q", "agent,monitor", got)
+		}
+		if got := r.Header.Get("Content-Type"); got != "application/json" {
+			t.Fatalf("expected Content-Type application/json, got %q", got)
+		}
+		if got := r.Header.Get("Accept"); got != "application/hal+json,application/json,application/problem+json" {
+			t.Fatalf("unexpected Accept header %q", got)
+		}
+		if got := r.Header.Get("Authorization"); got != "Bearer test-token" {
+			t.Fatalf("unexpected Authorization header %q", got)
+		}
+
+		var payload map[string]interface{}
+		if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+			t.Fatalf("failed to decode request body: %v", err)
+		}
+		if got := payload["requestMethod"]; got != httpServerRequestMethodPOST {
+			t.Fatalf("expected requestMethod %q, got %q", httpServerRequestMethodPOST, got)
+		}
+		if got := payload["postBody"]; got != "payload" {
+			t.Fatalf("expected postBody %q, got %q", "payload", got)
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"testId":"test-id","testName":"http server","url":"https://www.thousandeyes.com","interval":120}`))
+	}))
+	defer server.Close()
+
+	apiClient := client.NewAPIClient(&client.Configuration{
+		AuthToken:  "test-token",
+		ServerURL:  server.URL,
+		HTTPClient: server.Client(),
+		Context:    context.Background(),
+	})
+	api := (*tests.HTTPServerTestsAPIService)(&apiClient.Common)
+	req := api.UpdateHttpServerTest("test/id").HttpServerTestRequest(tests.HttpServerTestRequest{
+		PostBody:      getPointer("payload"),
+		RequestMethod: tests.REQUESTMETHOD_POST.Ptr(),
+	}).Aid("aid-123").Expand([]tests.ExpandTestOptions{
+		tests.EXPANDTESTOPTIONS_AGENT,
+		tests.EXPANDTESTOPTIONS_MONITOR,
 	})
 
-	req := buildHTTPServerStruct(d)
+	resp, httpResp, err := req.Execute()
+	if err != nil {
+		t.Fatalf("generated update request returned error: %v", err)
+	}
+	if httpResp == nil || httpResp.StatusCode != http.StatusOK {
+		t.Fatalf("expected HTTP 200 response, got %#v", httpResp)
+	}
+	if resp == nil || resp.TestId == nil || *resp.TestId != "test-id" {
+		t.Fatalf("expected decoded test response, got %#v", resp)
+	}
+}
 
-	if req.PostBody != nil {
-		t.Fatalf("expected state-only post_body without raw request_method to be omitted, got %q", *req.PostBody)
+func TestHTTPServerGeneratedCreateSendsRequestMethod(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			t.Fatalf("expected POST request, got %s", r.Method)
+		}
+		if r.URL.EscapedPath() != "/tests/http-server" {
+			t.Fatalf("expected create path, got %s", r.URL.EscapedPath())
+		}
+		if got := r.URL.Query().Get("aid"); got != "aid-123" {
+			t.Fatalf("expected aid query param %q, got %q", "aid-123", got)
+		}
+		if got := r.URL.Query().Get("expand"); got != "agent,monitor" {
+			t.Fatalf("expected expand query param %q, got %q", "agent,monitor", got)
+		}
+
+		var payload map[string]interface{}
+		if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+			t.Fatalf("failed to decode request body: %v", err)
+		}
+		if got := payload["requestMethod"]; got != httpServerRequestMethodGET {
+			t.Fatalf("expected requestMethod %q, got %q", httpServerRequestMethodGET, got)
+		}
+		if got := payload["postBody"]; got != "" {
+			t.Fatalf("expected postBody %q, got %q", "", got)
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"testId":"test-id","testName":"http server","url":"https://www.thousandeyes.com","interval":120}`))
+	}))
+	defer server.Close()
+
+	apiClient := client.NewAPIClient(&client.Configuration{
+		AuthToken:  "test-token",
+		ServerURL:  server.URL,
+		HTTPClient: server.Client(),
+		Context:    context.Background(),
+	})
+	api := (*tests.HTTPServerTestsAPIService)(&apiClient.Common)
+	req := api.CreateHttpServerTest().HttpServerTestRequest(tests.HttpServerTestRequest{
+		PostBody:      getPointer(""),
+		RequestMethod: tests.REQUESTMETHOD_GET.Ptr(),
+	}).Aid("aid-123").Expand([]tests.ExpandTestOptions{
+		tests.EXPANDTESTOPTIONS_AGENT,
+		tests.EXPANDTESTOPTIONS_MONITOR,
+	})
+
+	resp, httpResp, err := req.Execute()
+	if err != nil {
+		t.Fatalf("generated create request returned error: %v", err)
+	}
+	if httpResp == nil || httpResp.StatusCode != http.StatusOK {
+		t.Fatalf("expected HTTP 200 response, got %#v", httpResp)
+	}
+	if resp == nil || resp.TestId == nil || *resp.TestId != "test-id" {
+		t.Fatalf("expected decoded test response, got %#v", resp)
+	}
+}
+
+func assertHTTPServerRequestMethod(t *testing.T, req *tests.HttpServerTestRequest, want tests.RequestMethod) {
+	t.Helper()
+
+	if req.RequestMethod == nil {
+		t.Fatalf("expected SDK RequestMethod %q, got nil", want)
+	}
+	if got := *req.RequestMethod; got != want {
+		t.Fatalf("expected SDK RequestMethod %q, got %q", want, got)
+	}
+}
+
+func assertStringPointer(t *testing.T, got, want *string) {
+	t.Helper()
+
+	if want == nil {
+		if got != nil {
+			t.Fatalf("expected nil string pointer, got %q", *got)
+		}
+		return
+	}
+	if got == nil {
+		t.Fatalf("expected string pointer %q, got nil", *want)
+	}
+	if *got != *want {
+		t.Fatalf("expected string pointer %q, got %q", *want, *got)
 	}
 }
 

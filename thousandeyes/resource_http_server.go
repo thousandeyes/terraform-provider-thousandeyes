@@ -3,8 +3,6 @@ package thousandeyes
 import (
 	"context"
 	"log"
-	"reflect"
-	"strings"
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/thousandeyes/terraform-provider-thousandeyes/thousandeyes/schemas"
@@ -47,7 +45,6 @@ func resourceHTTPServer() *schema.Resource {
 		Type:     schema.TypeString,
 		Computed: true,
 	}
-	resource.Schema[httpServerRequestMethodField] = schemas.CommonSchema[httpServerRequestMethodField]
 	return &resource
 }
 
@@ -70,9 +67,6 @@ func resourceHTTPServerRead(d *schema.ResourceData, m interface{}) error {
 
 	existingOAuth := currentHTTPServerOAuthStateValue(d)
 	if err := ResourceRead(context.Background(), d, resp); err != nil {
-		return err
-	}
-	if err := setHTTPServerRequestMethodState(d, resp); err != nil {
 		return err
 	}
 
@@ -172,18 +166,18 @@ func buildHTTPServerStruct(d *schema.ResourceData) *tests.HttpServerTestRequest 
 	headers, headersConfigured := rawConfigHeaderStrings(d)
 	customHeaders, customHeadersConfigured := rawConfigCustomHeaders(d)
 
+	postBody := ""
+	if rawPostBody, configured := rawConfigHTTPServerPostBody(d); configured {
+		postBody = rawPostBody
+	}
+	req.PostBody = &postBody
+
 	if requestMethod, configured := rawConfigHTTPServerRequestMethod(d); configured {
-		switch requestMethod {
-		case httpServerRequestMethodGET:
-			req.PostBody = nil
-		case httpServerRequestMethodPOST:
-			if !rawConfigPostBodyConfigured(d) || req.PostBody == nil {
-				empty := ""
-				req.PostBody = &empty
-			}
-		}
+		req.RequestMethod = tests.RequestMethod(requestMethod).Ptr()
+	} else if postBody != "" {
+		req.RequestMethod = tests.REQUESTMETHOD_POST.Ptr()
 	} else {
-		req.PostBody = rawConfigHTTPServerPostBodyWithoutRequestMethod(d)
+		req.RequestMethod = tests.REQUESTMETHOD_GET.Ptr()
 	}
 
 	if headersConfigured {
@@ -199,15 +193,6 @@ func buildHTTPServerStruct(d *schema.ResourceData) *tests.HttpServerTestRequest 
 	return req
 }
 
-func rawConfigHTTPServerPostBodyWithoutRequestMethod(d rawConfigReader) *string {
-	if rawPostBody, configured := rawConfigHTTPServerPostBody(d); configured {
-		if rawPostBody != "" {
-			return &rawPostBody
-		}
-	}
-	return nil
-}
-
 func rawConfigHTTPServerPostBody(d rawConfigReader) (string, bool) {
 	raw, diags := d.GetRawConfigAt(cty.Path{cty.GetAttrStep{Name: "post_body"}})
 	if diags.HasError() || !raw.IsKnown() || raw.IsNull() {
@@ -216,49 +201,10 @@ func rawConfigHTTPServerPostBody(d rawConfigReader) (string, bool) {
 	return raw.AsString(), true
 }
 
-func rawConfigPostBodyConfigured(d rawConfigReader) bool {
-	_, configured := rawConfigHTTPServerPostBody(d)
-	return configured
-}
-
 func rawConfigHTTPServerRequestMethod(d rawConfigReader) (string, bool) {
 	raw, diags := d.GetRawConfigAt(cty.Path{cty.GetAttrStep{Name: httpServerRequestMethodField}})
 	if diags.HasError() || !raw.IsKnown() || raw.IsNull() {
 		return "", false
 	}
-	return normalizeHTTPServerRequestMethod(raw.AsString())
-}
-
-func setHTTPServerRequestMethodState(d *schema.ResourceData, resp *tests.HttpServerTestResponse) error {
-	if method, ok := httpServerResponseRequestMethod(resp); ok {
-		return d.Set(httpServerRequestMethodField, method)
-	}
-	if resp.PostBody != nil {
-		return d.Set(httpServerRequestMethodField, httpServerRequestMethodPOST)
-	}
-	return d.Set(httpServerRequestMethodField, httpServerRequestMethodGET)
-}
-
-func httpServerResponseRequestMethod(resp *tests.HttpServerTestResponse) (string, bool) {
-	v := reflect.ValueOf(resp)
-	if v.Kind() == reflect.Pointer {
-		if v.IsNil() {
-			return "", false
-		}
-		v = v.Elem()
-	}
-	field := v.FieldByName("RequestMethod")
-	if !field.IsValid() || field.Kind() != reflect.Pointer || field.IsNil() || field.Elem().Kind() != reflect.String {
-		return "", false
-	}
-
-	return normalizeHTTPServerRequestMethod(field.Elem().String())
-}
-
-func normalizeHTTPServerRequestMethod(method string) (string, bool) {
-	method = strings.ToLower(method)
-	if method != httpServerRequestMethodGET && method != httpServerRequestMethodPOST {
-		return "", false
-	}
-	return method, true
+	return raw.AsString(), true
 }

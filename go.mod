@@ -88,3 +88,6 @@ require (
 	gopkg.in/yaml.v2 v2.3.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+// Temporary for CP-4595: replace with a published SDK once RequestMethod support is released.
+replace github.com/thousandeyes/thousandeyes-sdk-go/v3 => ../thousandeyes-sdk-go

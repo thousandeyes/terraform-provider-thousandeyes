@@ -61,6 +61,61 @@ func TestResourceRead(t *testing.T) {
 	}
 }
 
+func TestResourceReadIgnoresResponseTagsWithoutSchemaField(t *testing.T) {
+	type tagResponse struct {
+		Id string `json:"id,omitempty"`
+	}
+	type testResponse struct {
+		Prefix string        `json:"prefix,omitempty"`
+		Tags   []tagResponse `json:"tags,omitempty"`
+	}
+
+	prefix := "8.19.2.2/19"
+	d := getReferenceData(schemas.CommonSchema, map[string]string{})
+	remoteResource := testResponse{
+		Prefix: prefix,
+		Tags: []tagResponse{
+			{Id: "tag-1"},
+		},
+	}
+
+	if err := ResourceRead(context.TODO(), d, &remoteResource); err != nil {
+		t.Fatalf("ResourceRead returned error: %v", err)
+	}
+	if d.Get("prefix") != prefix {
+		t.Fatalf("expected prefix %q in state, got %#v", prefix, d.Get("prefix"))
+	}
+}
+
+func TestResourceReadIgnoresResponseVaultCredentialsWithoutSchemaField(t *testing.T) {
+	type vaultCredentialResponse struct {
+		Id string `json:"id,omitempty"`
+	}
+	type testResponse struct {
+		Prefix           string                    `json:"prefix,omitempty"`
+		VaultCredentials []vaultCredentialResponse `json:"vaultCredentials,omitempty"`
+	}
+
+	prefix := "8.19.2.2/19"
+	d := getReferenceData(schemas.CommonSchema, map[string]string{})
+	remoteResource := testResponse{
+		Prefix: prefix,
+		VaultCredentials: []vaultCredentialResponse{
+			{Id: "vault-credential-1"},
+		},
+	}
+
+	if err := ResourceRead(context.TODO(), d, &remoteResource); err != nil {
+		t.Fatalf("ResourceRead returned error: %v", err)
+	}
+	if d.Get("prefix") != prefix {
+		t.Fatalf("expected prefix %q in state, got %#v", prefix, d.Get("prefix"))
+	}
+	if _, ok := d.State().Attributes["vault_credentials"]; ok {
+		t.Fatalf("vault_credentials should not be written to state: %#v", d.State().Attributes)
+	}
+}
+
 func TestResourceReadHTTPServerOAuthState(t *testing.T) {
 	d := getReferenceData(resourceHTTPServer().Schema, map[string]string{})
 
@@ -1139,12 +1194,12 @@ func TestResourceReadTagExtendedFieldsArePersisted(t *testing.T) {
 func TestResourceReadAPINestedSensitiveFields(t *testing.T) {
 	apiSchema := ResourceSchemaBuild(tests.ApiTestRequest{}, schemas.CommonSchema, nil)
 	d := getReferenceData(apiSchema, map[string]string{
-		"requests.#":            "1",
-		"requests.0.name":       "step1",
-		"requests.0.url":        "https://example.com",
-		"requests.0.password":   "test_password",
-		"requests.0.auth_type":  "basic",
-		"requests.0.client_id":  "test_client",
+		"requests.#":              "1",
+		"requests.0.name":         "step1",
+		"requests.0.url":          "https://example.com",
+		"requests.0.password":     "test_password",
+		"requests.0.auth_type":    "basic",
+		"requests.0.client_id":    "test_client",
 		"requests.0.bearer_token": "test_bearer",
 	})
 
