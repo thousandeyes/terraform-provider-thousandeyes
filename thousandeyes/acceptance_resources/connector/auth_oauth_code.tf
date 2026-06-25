@@ -6,8 +6,8 @@ resource "thousandeyes_connector" "test_auth" {
     type                = "oauth-auth-code"
     oauth_client_id     = "test-client-id"
     oauth_client_secret = "test-client-secret"
-    oauth_token_url     = "https://auth.example.com/oauth/token"
-    oauth_auth_url      = "https://auth.example.com/oauth/authorize"
+    oauth_token_url     = "https://example.com/oauth/token"
+    oauth_auth_url      = "https://example.com/oauth/authorize"
     code                = "test-auth-code"
     redirect_uri        = "https://app.example.com/callback"
   }
