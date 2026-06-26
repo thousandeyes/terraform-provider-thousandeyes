@@ -9,14 +9,12 @@ import (
 	"testing"
 
 	"github.com/hashicorp/go-cty/cty"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/thousandeyes/thousandeyes-sdk-go/v3/client"
 	"github.com/thousandeyes/thousandeyes-sdk-go/v3/tests"
 )
-
-const httpServerRequestMethodGET = "get"
-const httpServerRequestMethodPOST = "post"
 
 func TestBuildHTTPServerStructSetsExplicitRequestMethodAndPostBody(t *testing.T) {
 	for _, tc := range []struct {
@@ -129,6 +127,97 @@ func TestBuildHTTPServerStructSetsExplicitRequestMethodAndPostBody(t *testing.T)
 	}
 }
 
+func TestHTTPServerPlannedRequestMethodFromRawConfig(t *testing.T) {
+	for _, tc := range []struct {
+		name    string
+		raw     map[string]cty.Value
+		want    string
+		wantSet bool
+	}{
+		{
+			name:    "omitted request_method and omitted post_body defaults GET",
+			raw:     map[string]cty.Value{},
+			want:    httpServerRequestMethodGET,
+			wantSet: true,
+		},
+		{
+			name: "omitted request_method and null post_body defaults GET",
+			raw: map[string]cty.Value{
+				"post_body": cty.NullVal(cty.String),
+			},
+			want:    httpServerRequestMethodGET,
+			wantSet: true,
+		},
+		{
+			name: "omitted request_method and empty post_body defaults GET",
+			raw: map[string]cty.Value{
+				"post_body": cty.StringVal(""),
+			},
+			want:    httpServerRequestMethodGET,
+			wantSet: true,
+		},
+		{
+			name: "omitted request_method and unknown post_body defaults GET",
+			raw: map[string]cty.Value{
+				"post_body": cty.UnknownVal(cty.String),
+			},
+			want:    httpServerRequestMethodGET,
+			wantSet: true,
+		},
+		{
+			name: "omitted request_method and non-empty post_body defaults POST",
+			raw: map[string]cty.Value{
+				"post_body": cty.StringVal("payload"),
+			},
+			want:    httpServerRequestMethodPOST,
+			wantSet: true,
+		},
+		{
+			name: "null request_method and non-empty post_body defaults POST",
+			raw: map[string]cty.Value{
+				"request_method": cty.NullVal(cty.String),
+				"post_body":      cty.StringVal("payload"),
+			},
+			want:    httpServerRequestMethodPOST,
+			wantSet: true,
+		},
+		{
+			name: "explicit GET request_method is not overridden",
+			raw: map[string]cty.Value{
+				"request_method": cty.StringVal(httpServerRequestMethodGET),
+				"post_body":      cty.StringVal("payload"),
+			},
+			wantSet: false,
+		},
+		{
+			name: "explicit POST request_method is not overridden",
+			raw: map[string]cty.Value{
+				"request_method": cty.StringVal(httpServerRequestMethodPOST),
+			},
+			wantSet: false,
+		},
+		{
+			name: "explicit unknown request_method is not defaulted",
+			raw: map[string]cty.Value{
+				"request_method": cty.UnknownVal(cty.String),
+				"post_body":      cty.StringVal("payload"),
+			},
+			wantSet: false,
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			got, gotSet := plannedHTTPServerRequestMethod(&ctyRawConfigReader{values: tc.raw})
+
+			if gotSet != tc.wantSet {
+				t.Fatalf("expected set=%v, got %v with value %q", tc.wantSet, gotSet, got)
+			}
+			if got != tc.want {
+				t.Fatalf("expected request method %q, got %q", tc.want, got)
+			}
+		})
+	}
+}
+
 func TestHTTPServerTestRequestSDKMarshalJSONIncludesExplicitMethodAndPostBody(t *testing.T) {
 	d := resourceHTTPServer().Data(&terraform.InstanceState{
 		ID:        "test-id",
@@ -159,6 +248,27 @@ func TestHTTPServerTestRequestSDKMarshalJSONIncludesExplicitMethodAndPostBody(t 
 	if got := payload["postBody"]; got != "" {
 		t.Fatalf("expected postBody %q, got %q", "", got)
 	}
+}
+
+type ctyRawConfigReader struct {
+	values map[string]cty.Value
+}
+
+func (r *ctyRawConfigReader) GetRawConfigAt(path cty.Path) (cty.Value, diag.Diagnostics) {
+	if len(path) != 1 {
+		return cty.NullVal(cty.DynamicPseudoType), nil
+	}
+
+	attr, ok := path[0].(cty.GetAttrStep)
+	if !ok {
+		return cty.NullVal(cty.DynamicPseudoType), nil
+	}
+
+	value, ok := r.values[attr.Name]
+	if !ok {
+		return cty.NullVal(cty.DynamicPseudoType), nil
+	}
+	return value, nil
 }
 
 func TestResourceHTTPServerReadRequestMethodStoresAPIValue(t *testing.T) {
