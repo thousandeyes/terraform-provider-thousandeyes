@@ -763,8 +763,19 @@ var CommonSchema = map[string]*schema.Schema{
 	// postBody
 	"post_body": {
 		Type:        schema.TypeString,
-		Description: "The POST body content. No escaping is required. If the post body is set to something other than empty, the requestMethod will be set to POST.",
+		Description: "The POST body content. No escaping is required. The provider sends an empty string when omitted, null, or unknown to prevent API-side post body retention.",
 		Optional:    true,
+	},
+	// requestMethod
+	"request_method": {
+		Type:        schema.TypeString,
+		Description: "HTTP request method. When omitted, the provider sends post if post_body is non-empty and sends get if post_body is empty, omitted, null, or unknown.",
+		Optional:    true,
+		Computed:    true,
+		ValidateDiagFunc: validation.ToDiagFunc(validation.StringInSlice([]string{
+			"get",
+			"post",
+		}, false)),
 	},
 	"distributed_tracing": {
 		Type:        schema.TypeBool,

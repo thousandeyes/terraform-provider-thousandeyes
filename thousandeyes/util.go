@@ -393,6 +393,16 @@ func FixReadValues(ctx context.Context, targetMaps map[string]map[string]interfa
 			m.([]interface{})[i] = label["label_id"]
 		}
 
+	// Tags are managed through separate tag and tag assignment resources.
+	case "tags":
+		*name = ""
+		return nil, nil
+
+	// Vault credentials are not managed by the provider yet.
+	case "vault_credentials":
+		*name = ""
+		return nil, nil
+
 	// custom_headers is represented as a single nested block in schema, so wrap
 	// the decoded object into a one-item slice before writing state.
 	case "custom_headers":

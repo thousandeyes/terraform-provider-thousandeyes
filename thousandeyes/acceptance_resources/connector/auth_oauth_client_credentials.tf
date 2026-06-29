@@ -6,6 +6,6 @@ resource "thousandeyes_connector" "test_auth" {
     type                = "oauth-client-credentials"
     oauth_client_id     = "test-client-id"
     oauth_client_secret = "test-client-secret"
-    oauth_token_url     = "https://auth.example.com/oauth/token"
+    oauth_token_url     = "https://example.com/oauth/token"
   }
 }

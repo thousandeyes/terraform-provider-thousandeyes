@@ -111,10 +111,11 @@ The provider also stores a read-only `header_source_mode` value in state. This i
 - `override_proxy_id` (String) ID of the proxy to be used if the default proxy is overridden.
 - `password` (String, Sensitive) The password to be used to authenticate with the destination server.
 - `path_trace_mode` (String) [classic or in-session] Choose 'inSession' to perform the path trace within a TCP session. Default value is 'classic'.
-- `post_body` (String) The POST body content. No escaping is required. If the post body is set to something other than empty, the requestMethod will be set to POST.
+- `post_body` (String) The POST body content. No escaping is required. The provider sends an empty string when omitted, null, or unknown to prevent API-side post body retention.
 - `probe_mode` (String) [auto, sack, or syn] The probe mode used by end-to-end network tests. This is only valid if the protocol is set to TCP. The default value is AUTO.
 - `protocol` (String) The protocol used by dependent network tests (end-to-end, path trace, PMTUD). Default value is tcp.
 - `randomized_start_time` (Boolean) Indicates whether agents should randomize the start time in each test round.
+- `request_method` (String) HTTP request method. When omitted, the provider sends post if post_body is non-empty and sends get if post_body is empty, omitted, null, or unknown.
 - `shared_with_accounts` (Set of String) List of accounts
 - `ssl_version_id` (String) Defines the SSL version. 0 for auto, 3 for SSLv3, 4 for TLS v1.0, 5 for TLS v1.1, 6 for TLS v1.2.
 - `test_name` (String) The name of the test.
