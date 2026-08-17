@@ -27,12 +27,12 @@ resource "thousandeyes_api" "test" {
   target_time          = 30
   time_limit           = 90
   requests {
-    name                  = "Step 1 - GET Request"
-    url                   = "https://www.thousandeyes.com"
-    method                = "get"
-    auth_type             = "basic"
-    username              = "test_username"
-    password              = "test_password"
+    name      = "Step 1 - GET Request"
+    url       = "https://www.thousandeyes.com"
+    method    = "get"
+    auth_type = "basic"
+    username  = "test_username"
+    password  = "test_password"
 
     headers {
       key   = "Accept"
@@ -72,6 +72,11 @@ resource "thousandeyes_api" "test" {
       value = "application/json"
     }
 
+    variables {
+      name  = "responseToken"
+      value = "$.token"
+    }
+
     assertions {
       name     = "status-code"
       operator = "is"
@@ -84,7 +89,7 @@ resource "thousandeyes_api" "test" {
       value    = "error"
     }
 
-    wait_time_ms = 1000 
+    wait_time_ms = 1000
   }
 
 }

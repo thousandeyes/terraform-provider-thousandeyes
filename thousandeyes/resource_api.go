@@ -34,6 +34,9 @@ func resourceAPIRead(d *schema.ResourceData, m interface{}) error {
 		req = SetAidFromContext(apiClient.GetConfig().Context, req)
 
 		resp, _, err := req.Execute()
+		if err == nil {
+			normalizeAPIResponseRequests(d, resp)
+		}
 		return resp, err
 	})
 }
