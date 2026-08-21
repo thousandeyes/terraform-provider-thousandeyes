@@ -77,7 +77,7 @@ The provider also stores a read-only `header_source_mode` value in state. This i
 
 ### Optional
 
-- `agent_interfaces` (Block Set) Agent interfaces (see [below for nested schema](#nestedblock--agent_interfaces))
+- `agent_interfaces` (Block Set) Source interfaces for assigned enterprise agents. Each block pairs an agent ID from `agents` with one of that agent's IP addresses. (see [below for nested schema](#nestedblock--agent_interfaces))
 - `alert_rules` (Set of String) List of alert rules IDs to apply to the test (get `ruleId` from `/alerts/rules` endpoint. If `alertsEnabled` is set to `true` and `alertRules` is not included on test creation or update, applicable user default alert rules will be used)
 - `alerts_enabled` (Boolean) Set to 'true' to enable alerts, or 'false' to disable alerts. The default value is 'true'.
 - `allow_unsafe_legacy_renegotiation` (Boolean) Allows TLS renegotiation with servers not supporting RFC 5746. Default Set to true to allow unsafe legacy renegotiation.
@@ -146,8 +146,8 @@ The provider also stores a read-only `header_source_mode` value in state. This i
 
 Optional:
 
-- `agent_id` (String) The agent ID of the enterprise agent for the test.
-- `ip_address` (String) IP address of the agent interface.
+- `agent_id` (String) The ID of an enterprise agent assigned to the test through `agents`.
+- `ip_address` (String) The agent interface IP address to use as the source IP.
 
 
 <a id="nestedblock--custom_headers"></a>

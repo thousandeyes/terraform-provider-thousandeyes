@@ -549,7 +549,7 @@ var CommonSchema = map[string]*schema.Schema{
 	},
 	// agentInterfaces
 	"agent_interfaces": {
-		Description: "Agent interfaces",
+		Description: "Source interfaces for assigned enterprise agents. Each block pairs an agent ID from `agents` with one of that agent's IP addresses.",
 		Optional:    true,
 		Required:    false,
 		Type:        schema.TypeSet,
@@ -557,12 +557,12 @@ var CommonSchema = map[string]*schema.Schema{
 			Schema: map[string]*schema.Schema{
 				"agent_id": {
 					Type:        schema.TypeString,
-					Description: "The agent ID of the enterprise agent for the test.",
+					Description: "The ID of an enterprise agent assigned to the test through `agents`.",
 					Optional:    true,
 				},
 				"ip_address": {
 					Type:        schema.TypeString,
-					Description: "IP address of the agent interface.",
+					Description: "The agent interface IP address to use as the source IP.",
 					Optional:    true,
 				},
 			},

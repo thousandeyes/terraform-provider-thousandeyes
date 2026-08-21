@@ -2,6 +2,7 @@ package thousandeyes
 
 import (
 	"context"
+	"encoding/json"
 	"reflect"
 	"testing"
 
@@ -43,6 +44,172 @@ func TestResourceBuildStruct(t *testing.T) {
 		t.Error("Building resource did not assign struct field correctly.")
 	}
 
+}
+
+func TestTestResourceBuildersApplyAgentInterfacesToAgents(t *testing.T) {
+	type buildResult struct {
+		agents             []tests.TestAgentRequest
+		hasAgentInterfaces bool
+		payload            []byte
+	}
+
+	testCases := []struct {
+		name     string
+		resource *schema.Resource
+		build    func(*schema.ResourceData) buildResult
+	}{
+		{
+			name:     "HTTP server",
+			resource: resourceHTTPServer(),
+			build: func(d *schema.ResourceData) buildResult {
+				req := buildHTTPServerStruct(d)
+				payload, err := json.Marshal(req)
+				if err != nil {
+					t.Fatalf("failed to marshal HTTP server request: %v", err)
+				}
+				return buildResult{req.Agents, req.AgentInterfaces != nil, payload}
+			},
+		},
+		{
+			name:     "page load",
+			resource: resourcePageLoad(),
+			build: func(d *schema.ResourceData) buildResult {
+				req := buildPageLoadStruct(d)
+				payload, err := json.Marshal(req)
+				if err != nil {
+					t.Fatalf("failed to marshal page load request: %v", err)
+				}
+				return buildResult{req.Agents, req.AgentInterfaces != nil, payload}
+			},
+		},
+		{
+			name:     "web transaction",
+			resource: resourceWebTransaction(),
+			build: func(d *schema.ResourceData) buildResult {
+				req := buildWebTransactionStruct(d)
+				payload, err := json.Marshal(req)
+				if err != nil {
+					t.Fatalf("failed to marshal web transaction request: %v", err)
+				}
+				return buildResult{req.Agents, req.AgentInterfaces != nil, payload}
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			d := schema.TestResourceDataRaw(t, tc.resource.Schema, map[string]interface{}{
+				"agents": []interface{}{"agent-1", "agent-2", "agent-with-default-interface"},
+				"agent_interfaces": []interface{}{
+					map[string]interface{}{"agent_id": "agent-1", "ip_address": "192.0.2.1"},
+					map[string]interface{}{"agent_id": "agent-2", "ip_address": "192.0.2.2"},
+					map[string]interface{}{"agent_id": "unassigned-agent", "ip_address": "192.0.2.3"},
+					map[string]interface{}{"agent_id": "incomplete-agent"},
+				},
+			})
+
+			result := tc.build(d)
+			if result.hasAgentInterfaces {
+				t.Fatal("expected legacy top-level agentInterfaces field to be cleared")
+			}
+
+			var payload map[string]interface{}
+			if err := json.Unmarshal(result.payload, &payload); err != nil {
+				t.Fatalf("failed to unmarshal request payload: %v", err)
+			}
+			if _, ok := payload["agentInterfaces"]; ok {
+				t.Fatalf("request contains legacy top-level agentInterfaces: %s", result.payload)
+			}
+
+			agentsByID := make(map[string]tests.TestAgentRequest, len(result.agents))
+			for _, agent := range result.agents {
+				agentsByID[agent.AgentId] = agent
+			}
+			if len(agentsByID) != 3 {
+				t.Fatalf("expected 3 assigned agents, got %#v", result.agents)
+			}
+			assertStringPointer(t, agentsByID["agent-1"].SourceIpAddress, getPointer("192.0.2.1"))
+			assertStringPointer(t, agentsByID["agent-2"].SourceIpAddress, getPointer("192.0.2.2"))
+			if got := agentsByID["agent-with-default-interface"].SourceIpAddress; got != nil {
+				t.Fatalf("expected unmatched agent source IP to be nil, got %q", *got)
+			}
+			if _, ok := agentsByID["unassigned-agent"]; ok {
+				t.Fatal("agent_interfaces must not add agents that are not assigned through agents")
+			}
+		})
+	}
+}
+
+func TestResourceReadBuildsAgentInterfacesFromResponseAgents(t *testing.T) {
+	d := schema.TestResourceDataRaw(t, resourceHTTPServer().Schema, map[string]interface{}{})
+	remote := tests.NewHttpServerTestResponse(tests.TESTINTERVAL__60, "https://example.com")
+	remote.Agents = []tests.TestAgentResponse{
+		{
+			AgentType:       tests.CLOUDENTERPRISEAGENTTYPE_ENTERPRISE,
+			AgentId:         getPointer("agent-1"),
+			SourceIpAddress: getPointer("192.0.2.1"),
+		},
+		{
+			AgentType: tests.CLOUDENTERPRISEAGENTTYPE_ENTERPRISE,
+			AgentId:   getPointer("agent-with-default-interface"),
+		},
+	}
+
+	if err := ResourceRead(context.Background(), d, remote); err != nil {
+		t.Fatalf("ResourceRead returned error: %v", err)
+	}
+
+	agents := d.Get("agents").(*schema.Set)
+	agentIDs := make(map[string]bool, agents.Len())
+	for _, agentID := range agents.List() {
+		agentIDs[agentID.(string)] = true
+	}
+	if !reflect.DeepEqual(agentIDs, map[string]bool{"agent-1": true, "agent-with-default-interface": true}) {
+		t.Fatalf("unexpected agents state: %#v", agents.List())
+	}
+
+	interfaces := d.Get("agent_interfaces").(*schema.Set)
+	if interfaces.Len() != 1 {
+		t.Fatalf("expected one agent interface, got %#v", interfaces.List())
+	}
+	got := interfaces.List()[0].(map[string]interface{})
+	if got["agent_id"] != "agent-1" || got["ip_address"] != "192.0.2.1" {
+		t.Fatalf("unexpected agent interface state: %#v", got)
+	}
+}
+
+func TestAgentInterfacesRemainScopedToExistingResources(t *testing.T) {
+	supported := map[string]*schema.Resource{
+		"HTTP server":     resourceHTTPServer(),
+		"page load":       resourcePageLoad(),
+		"web transaction": resourceWebTransaction(),
+	}
+	unsupported := map[string]*schema.Resource{
+		"agent to agent":  resourceAgentToAgent(),
+		"agent to server": resourceAgentToServer(),
+		"API":             resourceAPI(),
+		"DNS server":      resourceDNSServer(),
+		"DNS trace":       resourceDNSTrace(),
+		"DNSSEC":          resourceDNSSec(),
+		"FTP server":      resourceFTPServer(),
+		"SIP server":      resourceSIPServer(),
+		"voice":           resourceRTPStream(),
+	}
+
+	for name, resource := range supported {
+		t.Run(name+" supports agent interfaces", func(t *testing.T) {
+			if _, ok := resource.Schema["agent_interfaces"]; !ok {
+				t.Fatal("resource should expose agent_interfaces")
+			}
+		})
+	}
+	for name, resource := range unsupported {
+		t.Run(name+" does not expose agent interfaces", func(t *testing.T) {
+			if _, ok := resource.Schema["agent_interfaces"]; ok {
+				t.Fatal("resource should not expose agent_interfaces")
+			}
+		})
+	}
 }
 
 func TestResourceRead(t *testing.T) {
@@ -1149,6 +1316,29 @@ func TestFixReadValuesTagAidNilPointer(t *testing.T) {
 	}
 }
 
+func TestUnwrapSDKNullable(t *testing.T) {
+	var tag tags.Tag
+
+	value, recognized := unwrapSDKNullable(tag.Aid)
+	if !recognized || value != nil {
+		t.Fatalf("expected unset SDK nullable to be recognized as nil, got %#v, %v", value, recognized)
+	}
+
+	tag.SetAid(109108)
+	value, recognized = unwrapSDKNullable(tag.Aid)
+	if !recognized {
+		t.Fatal("expected SDK nullable to be recognized")
+	}
+	aid, ok := value.(*int64)
+	if !ok || aid == nil || *aid != 109108 {
+		t.Fatalf("expected SDK nullable to unwrap to 109108, got %#v", value)
+	}
+
+	if value, recognized = unwrapSDKNullable("not nullable"); recognized || value != nil {
+		t.Fatalf("expected ordinary value not to be recognized, got %#v, %v", value, recognized)
+	}
+}
+
 func TestResourceReadTagExtendedFieldsArePersisted(t *testing.T) {
 	resourceSchema := ResourceSchemaBuild(tags.Tag{}, schemas.TagSchema, nil)
 	d := getReferenceData(resourceSchema, map[string]string{})
@@ -1164,10 +1354,10 @@ func TestResourceReadTagExtendedFieldsArePersisted(t *testing.T) {
 		Id:      &id,
 		Key:     &key,
 		Value:   &value,
-		Aid:     &aid,
 		BuiltIn: &builtIn,
 		Type:    &typeVal,
 	}
+	remoteTag.SetAid(aid)
 
 	ctx := context.WithValue(context.Background(), tagsKey, struct{}{})
 	if err := ResourceRead(ctx, d, &remoteTag); err != nil {

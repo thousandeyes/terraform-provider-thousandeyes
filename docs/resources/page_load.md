@@ -33,7 +33,7 @@ resource "thousandeyes_page_load" "example_page_load_test" {
 
 ### Optional
 
-- `agent_interfaces` (Block Set) Agent interfaces (see [below for nested schema](#nestedblock--agent_interfaces))
+- `agent_interfaces` (Block Set) Source interfaces for assigned enterprise agents. Each block pairs an agent ID from `agents` with one of that agent's IP addresses. (see [below for nested schema](#nestedblock--agent_interfaces))
 - `alert_rules` (Set of String) List of alert rules IDs to apply to the test (get `ruleId` from `/alerts/rules` endpoint. If `alertsEnabled` is set to `true` and `alertRules` is not included on test creation or update, applicable user default alert rules will be used)
 - `alerts_enabled` (Boolean) Set to 'true' to enable alerts, or 'false' to disable alerts. The default value is 'true'.
 - `allow_geolocation` (Boolean) Set true to use the agent's geolocation by the web page.
@@ -107,8 +107,8 @@ resource "thousandeyes_page_load" "example_page_load_test" {
 
 Optional:
 
-- `agent_id` (String) The agent ID of the enterprise agent for the test.
-- `ip_address` (String) IP address of the agent interface.
+- `agent_id` (String) The ID of an enterprise agent assigned to the test through `agents`.
+- `ip_address` (String) The agent interface IP address to use as the source IP.
 
 
 <a id="nestedblock--custom_headers"></a>
