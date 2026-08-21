@@ -26,12 +26,12 @@ resource "thousandeyes_api" "test" {
   bgp_measurements     = false
   time_limit           = 90
   requests {
-    name                  = "Step 1 - GET Request (Updated)"
-    url                   = "https://www.thousandeyes.com"
-    method                = "get"
-    auth_type             = "basic"
-    username              = "new_test_username"
-    password              = "test_password"
+    name      = "Step 1 - GET Request (Updated)"
+    url       = "https://www.thousandeyes.com"
+    method    = "get"
+    auth_type = "basic"
+    username  = "new_test_username"
+    password  = "test_password"
 
     headers {
       key   = "Accept"
@@ -68,6 +68,11 @@ resource "thousandeyes_api" "test" {
     headers {
       key   = "Content-Type"
       value = "application/json"
+    }
+
+    variables {
+      name  = "responseToken"
+      value = "$.token"
     }
 
     assertions {

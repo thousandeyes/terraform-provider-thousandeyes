@@ -1,7 +1,9 @@
 package thousandeyes
 
 import (
+	"fmt"
 	"os"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -62,6 +64,9 @@ func TestAccThousandEyesAPI(t *testing.T) {
 				resource.TestCheckResourceAttr(resourceName, "requests.1.headers.#", "1"),
 				resource.TestCheckResourceAttr(resourceName, "requests.1.headers.0.key", "Content-Type"),
 				resource.TestCheckResourceAttr(resourceName, "requests.1.headers.0.value", "application/json"),
+				resource.TestCheckResourceAttr(resourceName, "requests.1.variables.#", "1"),
+				resource.TestCheckResourceAttr(resourceName, "requests.1.variables.0.name", "responseToken"),
+				resource.TestCheckResourceAttr(resourceName, "requests.1.variables.0.value", "$.token"),
 				resource.TestCheckResourceAttr(resourceName, "requests.1.assertions.#", "2"),
 				resource.TestCheckResourceAttr(resourceName, "requests.1.assertions.0.name", "response-body"),
 				resource.TestCheckResourceAttr(resourceName, "requests.1.assertions.0.operator", "includes"),
@@ -107,6 +112,9 @@ func TestAccThousandEyesAPI(t *testing.T) {
 				resource.TestCheckResourceAttr(resourceName, "requests.1.headers.#", "1"),
 				resource.TestCheckResourceAttr(resourceName, "requests.1.headers.0.key", "Content-Type"),
 				resource.TestCheckResourceAttr(resourceName, "requests.1.headers.0.value", "application/json"),
+				resource.TestCheckResourceAttr(resourceName, "requests.1.variables.#", "1"),
+				resource.TestCheckResourceAttr(resourceName, "requests.1.variables.0.name", "responseToken"),
+				resource.TestCheckResourceAttr(resourceName, "requests.1.variables.0.value", "$.token"),
 				resource.TestCheckResourceAttr(resourceName, "requests.1.assertions.#", "2"),
 				resource.TestCheckResourceAttr(resourceName, "requests.1.assertions.0.name", "response-body"),
 				resource.TestCheckResourceAttr(resourceName, "requests.1.assertions.0.operator", "includes"),
@@ -127,19 +135,35 @@ func TestAccThousandEyesAPI(t *testing.T) {
 				CheckDestroy:      tc.checkDestroyFunction,
 				Steps: []resource.TestStep{
 					{
-						Config:             testAccThousandEyesAPIConfig(tc.createResourceFile),
-						Check:              resource.ComposeTestCheckFunc(tc.checkCreateFunc...),
-						ExpectNonEmptyPlan: true,
+						Config: testAccThousandEyesAPIConfig(tc.createResourceFile),
+						Check:  resource.ComposeTestCheckFunc(tc.checkCreateFunc...),
 					},
 					{
-						Config:             testAccThousandEyesAPIConfig(tc.updateResourceFile),
-						Check:              resource.ComposeTestCheckFunc(tc.checkUpdateFunc...),
-						ExpectNonEmptyPlan: true,
+						Config: testAccThousandEyesAPIConfig(tc.updateResourceFile),
+						Check:  resource.ComposeTestCheckFunc(tc.checkUpdateFunc...),
+					},
+					{
+						ResourceName:     tc.resourceName,
+						ImportState:      true,
+						ImportStateCheck: testAccCheckAPIOAuthGeneratedFieldsAbsent,
 					},
 				},
 			})
 		})
 	}
+}
+
+func testAccCheckAPIOAuthGeneratedFieldsAbsent(states []*terraform.InstanceState) error {
+	generatedVariable := regexp.MustCompile(`^OAuth2_Token_Step_[0-9]+$`)
+	generatedHeader := regexp.MustCompile(`^\{\{OAuth2_Token_Step_[0-9]+\}\}$`)
+	for _, state := range states {
+		for key, value := range state.Attributes {
+			if generatedVariable.MatchString(value) || generatedHeader.MatchString(value) {
+				return fmt.Errorf("imported API state contains generated OAuth2 artifact at %s: %q", key, value)
+			}
+		}
+	}
+	return nil
 }
 
 func testAccCheckDefaultAPIResourceDestroy(s *terraform.State) error {
