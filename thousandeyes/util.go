@@ -756,7 +756,7 @@ func unwrapSDKNullable(value interface{}) (interface{}, bool) {
 		return nil, true
 	}
 	unwrapped := getMethod.Call(nil)[0]
-	if unwrapped.Kind() == reflect.Ptr && unwrapped.IsNil() {
+	if unwrapped.Kind() == reflect.Pointer && unwrapped.IsNil() {
 		return nil, true
 	}
 	return unwrapped.Interface(), true
