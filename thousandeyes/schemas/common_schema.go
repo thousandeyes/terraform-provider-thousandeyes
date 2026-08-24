@@ -967,6 +967,13 @@ var CommonSchema = map[string]*schema.Schema{
 		Description: "The full selenium transaction script.",
 		Required:    true,
 	},
+	// flagCollectConsoleLogs
+	"flag_collect_console_logs": {
+		Type:        schema.TypeBool,
+		Description: "Whether to collect console logs during script execution.",
+		Optional:    true,
+		Default:     false,
+	},
 	// credentials
 	"credentials": {
 		Type:        schema.TypeSet,

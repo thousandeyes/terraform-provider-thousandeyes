@@ -255,6 +255,49 @@ func TestChromiumTrackIsScopedToBrowserTests(t *testing.T) {
 	}
 }
 
+func TestResourceReadWebTransactionFlagCollectConsoleLogs(t *testing.T) {
+	d := schema.TestResourceDataRaw(t, resourceWebTransaction().Schema, map[string]interface{}{})
+	remote := &tests.WebTransactionTestResponse{}
+	remote.SetFlagCollectConsoleLogs(true)
+
+	if err := ResourceRead(context.Background(), d, remote); err != nil {
+		t.Fatalf("ResourceRead returned error: %v", err)
+	}
+
+	if got := d.Get("flag_collect_console_logs"); got != true {
+		t.Fatalf("unexpected flag_collect_console_logs state: got %#v want true", got)
+	}
+}
+
+func TestResourceBuildWebTransactionFlagCollectConsoleLogs(t *testing.T) {
+	d := schema.TestResourceDataRaw(t, resourceWebTransaction().Schema, map[string]interface{}{
+		"flag_collect_console_logs": true,
+	})
+	request := buildWebTransactionStruct(d)
+
+	if request.FlagCollectConsoleLogs == nil || !*request.FlagCollectConsoleLogs {
+		t.Fatalf("unexpected FlagCollectConsoleLogs request value: %#v", request.FlagCollectConsoleLogs)
+	}
+}
+
+func TestFlagCollectConsoleLogsIsScopedToWebTransaction(t *testing.T) {
+	if _, ok := resourceWebTransaction().Schema["flag_collect_console_logs"]; !ok {
+		t.Fatal("Web Transaction resource should expose flag_collect_console_logs")
+	}
+
+	unsupported := map[string]*schema.Resource{
+		"page load":   resourcePageLoad(),
+		"HTTP server": resourceHTTPServer(),
+	}
+	for name, resource := range unsupported {
+		t.Run(name, func(t *testing.T) {
+			if _, ok := resource.Schema["flag_collect_console_logs"]; ok {
+				t.Fatal("resource should not expose flag_collect_console_logs")
+			}
+		})
+	}
+}
+
 func TestResourceRead(t *testing.T) {
 	prefix := "8.19.2.2/19"
 	attrs := map[string]string{}

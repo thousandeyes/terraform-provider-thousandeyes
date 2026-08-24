@@ -70,6 +70,7 @@ EOF
 - `emulated_device_id` (String) ID of the emulated device, if one was given when the test was created.
 - `enabled` (Boolean) Enables or disables the test.
 - `fixed_packet_rate` (Number) Sets packets rate sent to measure the network in packets per second.
+- `flag_collect_console_logs` (Boolean) Whether to collect console logs during script execution.
 - `follow_redirects` (Boolean) Follow HTTP/301 or HTTP/302 redirect directives. Defaults to 'true'.
 - `http_target_time` (Number) The target time for HTTP server completion, specified in milliseconds.
 - `http_time_limit` (Number) The target time for HTTP server limits, specified in seconds.
