@@ -838,6 +838,17 @@ var CommonSchema = map[string]*schema.Schema{
 		Optional:    true,
 		Default:     "en-US",
 	},
+	// chromiumTrack
+	"chromium_track": {
+		Type:        schema.TypeString,
+		Description: "Chromium release track used by the test. `stable` uses the default Chromium version, while `latest` uses the newest version available from ThousandEyes.",
+		Optional:    true,
+		Default:     "stable",
+		ValidateFunc: validation.StringInSlice([]string{
+			"stable",
+			"latest",
+		}, false),
+	},
 	// pageLoadingStrategy
 	"page_loading_strategy": {
 		Type:        schema.TypeString,

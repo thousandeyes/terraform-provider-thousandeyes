@@ -212,6 +212,49 @@ func TestAgentInterfacesRemainScopedToExistingResources(t *testing.T) {
 	}
 }
 
+func TestResourceReadPageLoadChromiumTrack(t *testing.T) {
+	d := schema.TestResourceDataRaw(t, resourcePageLoad().Schema, map[string]interface{}{})
+	remote := &tests.PageLoadTestResponse{}
+	remote.SetChromiumTrack(tests.TESTCHROMIUMTRACK_LATEST)
+
+	if err := ResourceRead(context.Background(), d, remote); err != nil {
+		t.Fatalf("ResourceRead returned error: %v", err)
+	}
+
+	if got := d.Get("chromium_track"); got != "latest" {
+		t.Fatalf("unexpected chromium_track state: got %q want %q", got, "latest")
+	}
+}
+
+func TestResourceBuildPageLoadChromiumTrack(t *testing.T) {
+	d := schema.TestResourceDataRaw(t, resourcePageLoad().Schema, map[string]interface{}{
+		"chromium_track": "latest",
+	})
+	request := buildPageLoadStruct(d)
+
+	if request.ChromiumTrack == nil || *request.ChromiumTrack != tests.TESTCHROMIUMTRACK_LATEST {
+		t.Fatalf("unexpected ChromiumTrack request value: %#v", request.ChromiumTrack)
+	}
+}
+
+func TestChromiumTrackIsScopedToBrowserTests(t *testing.T) {
+	supported := map[string]*schema.Resource{
+		"page load":       resourcePageLoad(),
+		"web transaction": resourceWebTransaction(),
+	}
+	for name, resource := range supported {
+		t.Run(name, func(t *testing.T) {
+			if _, ok := resource.Schema["chromium_track"]; !ok {
+				t.Fatal("resource should expose chromium_track")
+			}
+		})
+	}
+
+	if _, ok := resourceHTTPServer().Schema["chromium_track"]; ok {
+		t.Fatal("HTTP server resource should not expose chromium_track")
+	}
+}
+
 func TestResourceRead(t *testing.T) {
 	prefix := "8.19.2.2/19"
 	attrs := map[string]string{}
