@@ -44,7 +44,7 @@ EOF
 
 ### Optional
 
-- `agent_interfaces` (Block Set) Agent interfaces (see [below for nested schema](#nestedblock--agent_interfaces))
+- `agent_interfaces` (Block Set) Source interfaces for assigned enterprise agents. Each block pairs an agent ID from `agents` with one of that agent's IP addresses. (see [below for nested schema](#nestedblock--agent_interfaces))
 - `alert_rules` (Set of String) List of alert rules IDs to apply to the test (get `ruleId` from `/alerts/rules` endpoint. If `alertsEnabled` is set to `true` and `alertRules` is not included on test creation or update, applicable user default alert rules will be used)
 - `alerts_enabled` (Boolean) Set to 'true' to enable alerts, or 'false' to disable alerts. The default value is 'true'.
 - `allow_geolocation` (Boolean) Set true to use the agent's geolocation by the web page.
@@ -55,6 +55,7 @@ EOF
 - `bgp_measurements` (Boolean) Enable BGP measurements. Set to true for enabled, false for disabled.
 - `block_domains` (String) Domains or full object URLs to be excluded from metrics and waterfall data for transaction tests.
 - `browser_language` (String) Set one of the available browser language that you want to use to configure the browser.
+- `chromium_track` (String) Chromium release track used by the test. `stable` uses the default Chromium version, while `latest` uses the newest version available from ThousandEyes.
 - `client_certificate` (String) String representation (containing newline characters) of client certificate, the private key must be placed first, then the certificate.
 - `collect_proxy_network_data` (Boolean) Indicates whether network data to the proxy should be collected.
 - `content_regex` (String) Verify content using a regular expression. This field does not require escaping.
@@ -69,6 +70,7 @@ EOF
 - `emulated_device_id` (String) ID of the emulated device, if one was given when the test was created.
 - `enabled` (Boolean) Enables or disables the test.
 - `fixed_packet_rate` (Number) Sets packets rate sent to measure the network in packets per second.
+- `flag_collect_console_logs` (Boolean) Whether to collect console logs during script execution.
 - `follow_redirects` (Boolean) Follow HTTP/301 or HTTP/302 redirect directives. Defaults to 'true'.
 - `http_target_time` (Number) The target time for HTTP server completion, specified in milliseconds.
 - `http_time_limit` (Number) The target time for HTTP server limits, specified in seconds.
@@ -119,8 +121,8 @@ EOF
 
 Optional:
 
-- `agent_id` (String) The agent ID of the enterprise agent for the test.
-- `ip_address` (String) IP address of the agent interface.
+- `agent_id` (String) The ID of an enterprise agent assigned to the test through `agents`.
+- `ip_address` (String) The agent interface IP address to use as the source IP.
 
 
 <a id="nestedblock--custom_headers"></a>

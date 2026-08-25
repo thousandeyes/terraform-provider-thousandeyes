@@ -69,6 +69,64 @@ func expandAgents(v interface{}) []tests.TestAgentRequest {
 	return agents
 }
 
+func applyAgentInterfaces(agents []tests.TestAgentRequest, v interface{}) []tests.TestAgentRequest {
+	interfaces, ok := v.(*schema.Set)
+	if !ok {
+		return agents
+	}
+
+	sourceIPs := make(map[string]string, interfaces.Len())
+	for _, item := range interfaces.List() {
+		agentInterface, ok := item.(map[string]interface{})
+		if !ok {
+			continue
+		}
+
+		agentID, _ := agentInterface["agent_id"].(string)
+		ipAddress, _ := agentInterface["ip_address"].(string)
+		if agentID == "" || ipAddress == "" {
+			continue
+		}
+		sourceIPs[agentID] = ipAddress
+	}
+
+	for i := range agents {
+		if ipAddress, ok := sourceIPs[agents[i].AgentId]; ok {
+			agents[i].SourceIpAddress = getPointer(ipAddress)
+		}
+	}
+
+	return agents
+}
+
+func flattenAgentInterfaces(agents []tests.TestAgentResponse) []interface{} {
+	interfaces := make([]interface{}, 0, len(agents))
+	for _, agent := range agents {
+		agentID, hasAgentID := agent.GetAgentIdOk()
+		sourceIP, hasSourceIP := agent.GetSourceIpAddressOk()
+		if !hasAgentID || !hasSourceIP || *agentID == "" || *sourceIP == "" {
+			continue
+		}
+
+		interfaces = append(interfaces, map[string]interface{}{
+			"agent_id":   *agentID,
+			"ip_address": *sourceIP,
+		})
+	}
+
+	return interfaces
+}
+
+func resourceDataHasField(d *schema.ResourceData, name string) bool {
+	if stateType := d.GetRawState().Type(); stateType.IsObjectType() && stateType.HasAttribute(name) {
+		return true
+	}
+	if configType := d.GetRawConfig().Type(); configType.IsObjectType() && configType.HasAttribute(name) {
+		return true
+	}
+	return false
+}
+
 // ResourceBuildStruct fills the struct at a given address by querying a
 // schema.ResourceData object for the matching field.  It discovers the
 // matching value name by getting the JSON key from the struct field,
@@ -141,6 +199,14 @@ func ResourceRead(ctx context.Context, d *schema.ResourceData, structPtr interfa
 		val, err := ReadValue(v.Field(i).Interface())
 		if err != nil {
 			return err
+		}
+		if tfName == "agents" && resourceDataHasField(d, "agent_interfaces") {
+			agents, ok := v.Field(i).Interface().([]tests.TestAgentResponse)
+			if ok {
+				if err := d.Set("agent_interfaces", flattenAgentInterfaces(agents)); err != nil {
+					return err
+				}
+			}
 		}
 
 		isConfigured := ok
@@ -668,11 +734,43 @@ func FixReadValues(ctx context.Context, targetMaps map[string]map[string]interfa
 	return m, nil
 }
 
+// unwrapSDKNullable recognizes the IsSet/Get method pair used by generated SDK
+// nullable values. The boolean result reports whether value is such a wrapper;
+// a recognized wrapper may still unwrap to nil when it is unset or explicitly null.
+func unwrapSDKNullable(value interface{}) (interface{}, bool) {
+	original := reflect.ValueOf(value)
+	if !original.IsValid() {
+		return nil, false
+	}
+
+	isSetMethod := original.MethodByName("IsSet")
+	getMethod := original.MethodByName("Get")
+	if !isSetMethod.IsValid() || !getMethod.IsValid() ||
+		isSetMethod.Type().NumIn() != 0 || isSetMethod.Type().NumOut() != 1 ||
+		isSetMethod.Type().Out(0).Kind() != reflect.Bool ||
+		getMethod.Type().NumIn() != 0 || getMethod.Type().NumOut() != 1 {
+		return nil, false
+	}
+
+	if !isSetMethod.Call(nil)[0].Bool() {
+		return nil, true
+	}
+	unwrapped := getMethod.Call(nil)[0]
+	if unwrapped.Kind() == reflect.Pointer && unwrapped.IsNil() {
+		return nil, true
+	}
+	return unwrapped.Interface(), true
+}
+
 // ReadValue returns a value with key names for which Terraform will be able to
 // identify in the Schema.  This is required because calling the Set function on
 // a struct results in the JSON tag name (instead of the Terraform config key)
 // being used for schema lookups.
 func ReadValue(structPtr interface{}) (interface{}, error) {
+	if value, ok := unwrapSDKNullable(structPtr); ok {
+		return value, nil
+	}
+
 	var err error
 	v := reflect.Indirect(reflect.ValueOf(structPtr))
 	t := reflect.TypeOf(v.Interface())
@@ -760,6 +858,12 @@ func resourceFixups[T any](d *schema.ResourceData, structPtr *T) *T {
 	_, hasAgents := t.FieldByName("Agents")
 	if hasAgents && t.Name() != "AccountGroupRequest" {
 		scrappedAgents := expandAgents(d.Get("agents"))
+		if resourceDataHasField(d, "agent_interfaces") {
+			scrappedAgents = applyAgentInterfaces(scrappedAgents, d.Get("agent_interfaces"))
+		}
+		if _, hasAgentInterfaces := t.FieldByName("AgentInterfaces"); hasAgentInterfaces {
+			v.FieldByName("AgentInterfaces").Set(reflect.Zero(v.FieldByName("AgentInterfaces").Type()))
+		}
 		v.FieldByName("Agents").Set(reflect.ValueOf(scrappedAgents))
 	}
 

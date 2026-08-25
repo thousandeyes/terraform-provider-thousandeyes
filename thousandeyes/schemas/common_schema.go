@@ -549,7 +549,7 @@ var CommonSchema = map[string]*schema.Schema{
 	},
 	// agentInterfaces
 	"agent_interfaces": {
-		Description: "Agent interfaces",
+		Description: "Source interfaces for assigned enterprise agents. Each block pairs an agent ID from `agents` with one of that agent's IP addresses.",
 		Optional:    true,
 		Required:    false,
 		Type:        schema.TypeSet,
@@ -557,12 +557,12 @@ var CommonSchema = map[string]*schema.Schema{
 			Schema: map[string]*schema.Schema{
 				"agent_id": {
 					Type:        schema.TypeString,
-					Description: "The agent ID of the enterprise agent for the test.",
+					Description: "The ID of an enterprise agent assigned to the test through `agents`.",
 					Optional:    true,
 				},
 				"ip_address": {
 					Type:        schema.TypeString,
-					Description: "IP address of the agent interface.",
+					Description: "The agent interface IP address to use as the source IP.",
 					Optional:    true,
 				},
 			},
@@ -838,6 +838,17 @@ var CommonSchema = map[string]*schema.Schema{
 		Optional:    true,
 		Default:     "en-US",
 	},
+	// chromiumTrack
+	"chromium_track": {
+		Type:        schema.TypeString,
+		Description: "Chromium release track used by the test. `stable` uses the default Chromium version, while `latest` uses the newest version available from ThousandEyes.",
+		Optional:    true,
+		Default:     "stable",
+		ValidateFunc: validation.StringInSlice([]string{
+			"stable",
+			"latest",
+		}, false),
+	},
 	// pageLoadingStrategy
 	"page_loading_strategy": {
 		Type:        schema.TypeString,
@@ -955,6 +966,13 @@ var CommonSchema = map[string]*schema.Schema{
 		Type:        schema.TypeString,
 		Description: "The full selenium transaction script.",
 		Required:    true,
+	},
+	// flagCollectConsoleLogs
+	"flag_collect_console_logs": {
+		Type:        schema.TypeBool,
+		Description: "Whether to collect console logs during script execution.",
+		Optional:    true,
+		Default:     false,
 	},
 	// credentials
 	"credentials": {
