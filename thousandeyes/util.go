@@ -51,8 +51,8 @@ func IsNotFoundError(err error) bool {
 	return false
 }
 
-func expandAgents(v interface{}) []tests.TestAgentRequest {
-	agents := make([]tests.TestAgentRequest, 0)
+func expandAgents(v interface{}) []tests.TestAgentWithSourceIpRequest {
+	agents := make([]tests.TestAgentWithSourceIpRequest, 0)
 	var agentsIDs []interface{}
 	if rawAgents, ok := v.(*schema.Set); ok {
 		agentsIDs = rawAgents.List()
@@ -62,14 +62,14 @@ func expandAgents(v interface{}) []tests.TestAgentRequest {
 		if len(id) == 0 {
 			continue
 		}
-		agents = append(agents, tests.TestAgentRequest{
+		agents = append(agents, tests.TestAgentWithSourceIpRequest{
 			AgentId: id,
 		})
 	}
 	return agents
 }
 
-func applyAgentInterfaces(agents []tests.TestAgentRequest, v interface{}) []tests.TestAgentRequest {
+func applyAgentInterfaces(agents []tests.TestAgentWithSourceIpRequest, v interface{}) []tests.TestAgentWithSourceIpRequest {
 	interfaces, ok := v.(*schema.Set)
 	if !ok {
 		return agents
@@ -97,6 +97,39 @@ func applyAgentInterfaces(agents []tests.TestAgentRequest, v interface{}) []test
 	}
 
 	return agents
+}
+
+// agentsForFieldType converts the provider's agent representation to the
+// exact slice type used by the SDK request. The SDK uses
+// TestAgentWithSourceIpRequest only for test types that support selecting a
+// source interface; other request types still use TestAgentRequest.
+func agentsForFieldType(agents []tests.TestAgentWithSourceIpRequest, fieldType reflect.Type) reflect.Value {
+	result := reflect.MakeSlice(fieldType, 0, len(agents))
+	for _, agent := range agents {
+		item := reflect.New(fieldType.Elem()).Elem()
+
+		agentID := item.FieldByName("AgentId")
+		if agentID.IsValid() && agentID.CanSet() && agentID.Kind() == reflect.String {
+			agentID.SetString(agent.AgentId)
+		}
+
+		if agent.SourceIpAddress != nil {
+			sourceIP := item.FieldByName("SourceIpAddress")
+			if sourceIP.IsValid() && sourceIP.CanSet() {
+				switch {
+				case sourceIP.Kind() == reflect.Pointer && sourceIP.Type().Elem().Kind() == reflect.String:
+					value := reflect.New(sourceIP.Type().Elem())
+					value.Elem().SetString(*agent.SourceIpAddress)
+					sourceIP.Set(value)
+				case sourceIP.Kind() == reflect.String:
+					sourceIP.SetString(*agent.SourceIpAddress)
+				}
+			}
+		}
+
+		result = reflect.Append(result, item)
+	}
+	return result
 }
 
 func flattenAgentInterfaces(agents []tests.TestAgentResponse) []interface{} {
@@ -864,7 +897,8 @@ func resourceFixups[T any](d *schema.ResourceData, structPtr *T) *T {
 		if _, hasAgentInterfaces := t.FieldByName("AgentInterfaces"); hasAgentInterfaces {
 			v.FieldByName("AgentInterfaces").Set(reflect.Zero(v.FieldByName("AgentInterfaces").Type()))
 		}
-		v.FieldByName("Agents").Set(reflect.ValueOf(scrappedAgents))
+		agentsField := v.FieldByName("Agents")
+		agentsField.Set(agentsForFieldType(scrappedAgents, agentsField.Type()))
 	}
 
 	_, hasOAuth := t.FieldByName("OAuth")
@@ -933,6 +967,21 @@ func ResourceSchemaBuild(referenceStruct interface{}, schemas map[string]*schema
 		} else {
 			if val, ok := schemas[tfName]; ok {
 				newSchema[tfName] = val
+			}
+		}
+	}
+
+	// Newer SDK models represent a source interface as sourceIpAddress on
+	// each agent instead of exposing the legacy top-level agentInterfaces
+	// field. Keep the provider's agent_interfaces abstraction for any request
+	// whose agent element supports that field.
+	if agentsField, ok := t.FieldByName("Agents"); ok && agentsField.Type.Kind() == reflect.Slice {
+		agentType := agentsField.Type.Elem()
+		if agentType.Kind() == reflect.Struct {
+			if _, supportsSourceIP := agentType.FieldByName("SourceIpAddress"); supportsSourceIP {
+				if agentInterfacesSchema, exists := schemas["agent_interfaces"]; exists {
+					newSchema["agent_interfaces"] = agentInterfacesSchema
+				}
 			}
 		}
 	}

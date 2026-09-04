@@ -33,6 +33,7 @@ resource "thousandeyes_voice" "example_voice_test" {
 
 ### Optional
 
+- `agent_interfaces` (Block Set) Source interfaces for assigned enterprise agents. Each block pairs an agent ID from `agents` with one of that agent's IP addresses. (see [below for nested schema](#nestedblock--agent_interfaces))
 - `alert_rules` (Set of String) List of alert rules IDs to apply to the test (get `ruleId` from `/alerts/rules` endpoint. If `alertsEnabled` is set to `true` and `alertRules` is not included on test creation or update, applicable user default alert rules will be used)
 - `alerts_enabled` (Boolean) Set to 'true' to enable alerts, or 'false' to disable alerts. The default value is 'true'.
 - `bgp_measurements` (Boolean) Enable BGP measurements. Set to true for enabled, false for disabled.
@@ -64,6 +65,14 @@ resource "thousandeyes_voice" "example_voice_test" {
 - `saved_event` (Boolean) Set to 'true' for a saved event, or to 'false' for a normal test.
 - `test_id` (String) The unique ID of the test.
 - `type` (String) The type of test.
+
+<a id="nestedblock--agent_interfaces"></a>
+### Nested Schema for `agent_interfaces`
+
+Optional:
+
+- `agent_id` (String) The ID of an enterprise agent assigned to the test through `agents`.
+- `ip_address` (String) The agent interface IP address to use as the source IP.
 
 ## Import
 In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) providing `resource_id`.
