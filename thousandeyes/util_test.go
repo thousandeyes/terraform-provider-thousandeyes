@@ -48,9 +48,8 @@ func TestResourceBuildStruct(t *testing.T) {
 
 func TestTestResourceBuildersApplyAgentInterfacesToAgents(t *testing.T) {
 	type buildResult struct {
-		agents             []tests.TestAgentRequest
-		hasAgentInterfaces bool
-		payload            []byte
+		agents  []tests.TestAgentWithSourceIpRequest
+		payload []byte
 	}
 
 	testCases := []struct {
@@ -67,31 +66,67 @@ func TestTestResourceBuildersApplyAgentInterfacesToAgents(t *testing.T) {
 				if err != nil {
 					t.Fatalf("failed to marshal HTTP server request: %v", err)
 				}
-				return buildResult{req.Agents, req.AgentInterfaces != nil, payload}
+				return buildResult{req.Agents, payload}
 			},
 		},
 		{
-			name:     "page load",
-			resource: resourcePageLoad(),
+			name:     "agent to agent",
+			resource: resourceAgentToAgent(),
 			build: func(d *schema.ResourceData) buildResult {
-				req := buildPageLoadStruct(d)
+				req := buildAgentAgentStruct(d)
 				payload, err := json.Marshal(req)
 				if err != nil {
-					t.Fatalf("failed to marshal page load request: %v", err)
+					t.Fatalf("failed to marshal agent-to-agent request: %v", err)
 				}
-				return buildResult{req.Agents, req.AgentInterfaces != nil, payload}
+				return buildResult{req.Agents, payload}
 			},
 		},
 		{
-			name:     "web transaction",
-			resource: resourceWebTransaction(),
+			name:     "agent to server",
+			resource: resourceAgentToServer(),
 			build: func(d *schema.ResourceData) buildResult {
-				req := buildWebTransactionStruct(d)
+				req := buildAgentServerStruct(d)
 				payload, err := json.Marshal(req)
 				if err != nil {
-					t.Fatalf("failed to marshal web transaction request: %v", err)
+					t.Fatalf("failed to marshal agent-to-server request: %v", err)
 				}
-				return buildResult{req.Agents, req.AgentInterfaces != nil, payload}
+				return buildResult{req.Agents, payload}
+			},
+		},
+		{
+			name:     "FTP server",
+			resource: resourceFTPServer(),
+			build: func(d *schema.ResourceData) buildResult {
+				req := buildFTPServerStruct(d)
+				payload, err := json.Marshal(req)
+				if err != nil {
+					t.Fatalf("failed to marshal FTP server request: %v", err)
+				}
+				return buildResult{req.Agents, payload}
+			},
+		},
+		{
+			name:     "SIP server",
+			resource: resourceSIPServer(),
+			build: func(d *schema.ResourceData) buildResult {
+				req := buildSIPServerStruct(d)
+				payload, err := json.Marshal(req)
+				if err != nil {
+					t.Fatalf("failed to marshal SIP server request: %v", err)
+				}
+				return buildResult{req.Agents, payload}
+			},
+		},
+		{
+			name:     "voice",
+			resource: resourceRTPStream(),
+			build: func(d *schema.ResourceData) buildResult {
+				req := buildRTPStreamStruct(d)
+				payload, err := json.Marshal(req)
+				if err != nil {
+					t.Fatalf("failed to marshal voice request: %v", err)
+				}
+				return buildResult{req.Agents, payload}
 			},
 		},
 	}
@@ -109,9 +144,6 @@ func TestTestResourceBuildersApplyAgentInterfacesToAgents(t *testing.T) {
 			})
 
 			result := tc.build(d)
-			if result.hasAgentInterfaces {
-				t.Fatal("expected legacy top-level agentInterfaces field to be cleared")
-			}
 
 			var payload map[string]interface{}
 			if err := json.Unmarshal(result.payload, &payload); err != nil {
@@ -121,7 +153,7 @@ func TestTestResourceBuildersApplyAgentInterfacesToAgents(t *testing.T) {
 				t.Fatalf("request contains legacy top-level agentInterfaces: %s", result.payload)
 			}
 
-			agentsByID := make(map[string]tests.TestAgentRequest, len(result.agents))
+			agentsByID := make(map[string]tests.TestAgentWithSourceIpRequest, len(result.agents))
 			for _, agent := range result.agents {
 				agentsByID[agent.AgentId] = agent
 			}
@@ -181,19 +213,19 @@ func TestResourceReadBuildsAgentInterfacesFromResponseAgents(t *testing.T) {
 func TestAgentInterfacesRemainScopedToExistingResources(t *testing.T) {
 	supported := map[string]*schema.Resource{
 		"HTTP server":     resourceHTTPServer(),
-		"page load":       resourcePageLoad(),
-		"web transaction": resourceWebTransaction(),
-	}
-	unsupported := map[string]*schema.Resource{
 		"agent to agent":  resourceAgentToAgent(),
 		"agent to server": resourceAgentToServer(),
+		"FTP server":      resourceFTPServer(),
+		"SIP server":      resourceSIPServer(),
+		"voice":           resourceRTPStream(),
+	}
+	unsupported := map[string]*schema.Resource{
+		"page load":       resourcePageLoad(),
+		"web transaction": resourceWebTransaction(),
 		"API":             resourceAPI(),
 		"DNS server":      resourceDNSServer(),
 		"DNS trace":       resourceDNSTrace(),
 		"DNSSEC":          resourceDNSSec(),
-		"FTP server":      resourceFTPServer(),
-		"SIP server":      resourceSIPServer(),
-		"voice":           resourceRTPStream(),
 	}
 
 	for name, resource := range supported {
