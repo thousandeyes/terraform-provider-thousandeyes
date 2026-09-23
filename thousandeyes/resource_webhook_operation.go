@@ -105,6 +105,11 @@ func buildWebhookOperationStruct(d *schema.ResourceData) *connectors.WebhookOper
 }
 
 func setWebhookOperationResourceData(d *schema.ResourceData, webhook *connectors.WebhookOperation) error {
+	var priorHeaders []interface{}
+	if v, ok := d.Get("headers").([]interface{}); ok {
+		priorHeaders = v
+	}
+
 	if err := d.Set("name", webhook.Name); err != nil {
 		return err
 	}
@@ -164,7 +169,7 @@ func setWebhookOperationResourceData(d *schema.ResourceData, webhook *connectors
 	}
 
 	if len(webhook.Headers) > 0 {
-		if err := d.Set("headers", flattenWebhookOperationHeaders(webhook.Headers)); err != nil {
+		if err := d.Set("headers", flattenWebhookOperationHeaders(webhook.Headers, priorHeaders)); err != nil {
 			return err
 		}
 	} else {
@@ -176,12 +181,29 @@ func setWebhookOperationResourceData(d *schema.ResourceData, webhook *connectors
 	return nil
 }
 
-func flattenWebhookOperationHeaders(headers []connectors.Header) []interface{} {
+func flattenWebhookOperationHeaders(headers []connectors.Header, prior []interface{}) []interface{} {
+	priorByName := map[string]string{}
+	for _, raw := range prior {
+		headerMap, ok := raw.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		name, _ := headerMap["name"].(string)
+		value, _ := headerMap["value"].(string)
+		if name != "" {
+			priorByName[name] = value
+		}
+	}
+
 	out := make([]interface{}, 0, len(headers))
 	for _, header := range headers {
+		value := header.Value
+		if prior, ok := priorByName[header.Name]; ok {
+			value = prior
+		}
 		out = append(out, map[string]interface{}{
 			"name":  header.Name,
-			"value": header.Value,
+			"value": value,
 		})
 	}
 	return out
