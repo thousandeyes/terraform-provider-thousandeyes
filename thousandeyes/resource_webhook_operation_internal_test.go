@@ -6,12 +6,18 @@ import (
 	"github.com/thousandeyes/thousandeyes-sdk-go/v3/connectors"
 )
 
-func TestFlattenWebhookOperationHeadersUsesRemoteValue(t *testing.T) {
+func TestFlattenWebhookOperationHeadersUsesPriorValue(t *testing.T) {
 	headers := []connectors.Header{
-		{Name: "Authorization", Value: "Bearer remote-token"},
+		{Name: "Authorization", Value: "*****"},
+	}
+	prior := []interface{}{
+		map[string]interface{}{
+			"name":  "Authorization",
+			"value": "Bearer local-token",
+		},
 	}
 
-	got := flattenWebhookOperationHeaders(headers)
+	got := flattenWebhookOperationHeaders(headers, prior)
 	if len(got) != 1 {
 		t.Fatalf("expected 1 header, got %d", len(got))
 	}
@@ -19,8 +25,8 @@ func TestFlattenWebhookOperationHeadersUsesRemoteValue(t *testing.T) {
 	if headerMap["name"] != "Authorization" {
 		t.Fatalf("unexpected header name: %#v", headerMap["name"])
 	}
-	if headerMap["value"] != "Bearer remote-token" {
-		t.Fatalf("expected remote value, got %#v", headerMap["value"])
+	if headerMap["value"] != "Bearer local-token" {
+		t.Fatalf("expected prior value, got %#v", headerMap["value"])
 	}
 }
 
@@ -29,7 +35,7 @@ func TestFlattenWebhookOperationHeadersUsesRemoteShapeForDriftDetection(t *testi
 		{Name: "X-New-Header", Value: "*****"},
 	}
 
-	got := flattenWebhookOperationHeaders(headers)
+	got := flattenWebhookOperationHeaders(headers, nil)
 	if len(got) != 1 {
 		t.Fatalf("expected 1 header, got %d", len(got))
 	}
@@ -42,17 +48,23 @@ func TestFlattenWebhookOperationHeadersUsesRemoteShapeForDriftDetection(t *testi
 	}
 }
 
-func TestFlattenWebhookOperationHeadersKeepsRemoteValueWhenNotMasked(t *testing.T) {
+func TestFlattenWebhookOperationHeadersKeepsEmptyPriorValue(t *testing.T) {
 	headers := []connectors.Header{
-		{Name: "X-Trace-Id", Value: "remote-visible"},
+		{Name: "X-Trace-Id", Value: "*****"},
+	}
+	prior := []interface{}{
+		map[string]interface{}{
+			"name":  "X-Trace-Id",
+			"value": "",
+		},
 	}
 
-	got := flattenWebhookOperationHeaders(headers)
+	got := flattenWebhookOperationHeaders(headers, prior)
 	if len(got) != 1 {
 		t.Fatalf("expected 1 header, got %d", len(got))
 	}
 	headerMap := got[0].(map[string]interface{})
-	if headerMap["value"] != "remote-visible" {
-		t.Fatalf("expected remote value, got %#v", headerMap["value"])
+	if headerMap["value"] != "" {
+		t.Fatalf("expected empty prior value, got %#v", headerMap["value"])
 	}
 }
