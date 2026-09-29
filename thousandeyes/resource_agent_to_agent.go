@@ -6,6 +6,7 @@ import (
 
 	"github.com/thousandeyes/terraform-provider-thousandeyes/thousandeyes/schemas"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/thousandeyes/thousandeyes-sdk-go/v3/client"
@@ -13,7 +14,11 @@ import (
 )
 
 func resourceAgentToAgent() *schema.Resource {
+	monitorsSchema := *schemas.CommonSchema["monitors"]
+	monitorsSchema.Computed = true
+
 	agentToAgentSchemasOverride := map[string]*schema.Schema{
+		"monitors": &monitorsSchema,
 		"port": {
 			Type:         schema.TypeInt,
 			Description:  "The target port.",
@@ -112,5 +117,32 @@ func resourceAgentAgentCreate(d *schema.ResourceData, m interface{}) error {
 }
 
 func buildAgentAgentStruct(d *schema.ResourceData) *tests.AgentToAgentTestRequest {
-	return ResourceBuildStruct(d, &tests.AgentToAgentTestRequest{})
+	return buildAgentAgentStructWithConfig(d, d.GetRawConfig())
+}
+
+func buildAgentAgentStructWithConfig(d *schema.ResourceData, rawConfig cty.Value) *tests.AgentToAgentTestRequest {
+	request := ResourceBuildStruct(d, &tests.AgentToAgentTestRequest{})
+	request.Monitors = nil
+
+	if rawConfig.IsNull() || !rawConfig.IsKnown() || !rawConfig.Type().IsObjectType() || !rawConfig.Type().HasAttribute("monitors") {
+		return request
+	}
+
+	rawMonitors := rawConfig.GetAttr("monitors")
+	if rawMonitors.IsNull() || !rawMonitors.IsKnown() {
+		return request
+	}
+
+	monitorType := rawMonitors.Type()
+	if !monitorType.IsSetType() && !monitorType.IsListType() && !monitorType.IsTupleType() {
+		return request
+	}
+
+	request.Monitors = make([]string, 0, rawMonitors.LengthInt())
+	monitorIterator := rawMonitors.ElementIterator()
+	for monitorIterator.Next() {
+		_, monitor := monitorIterator.Element()
+		request.Monitors = append(request.Monitors, monitor.AsString())
+	}
+	return request
 }

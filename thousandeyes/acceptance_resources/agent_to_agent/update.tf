@@ -22,6 +22,7 @@ resource "thousandeyes_alert_rule" "alert-rule-agent_to_agent" {
 resource "thousandeyes_agent_to_agent" "test" {
   test_name        = "User Acceptance Test - Aget To Agent (Updated)"
   interval         = 300
+  monitors         = []
   alerts_enabled   = true
   bgp_measurements = true
   direction        = "bidirectional"

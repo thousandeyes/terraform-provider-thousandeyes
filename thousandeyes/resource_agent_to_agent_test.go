@@ -41,6 +41,7 @@ func TestAccThousandEyesAgentToAgent(t *testing.T) {
 				resource.TestCheckResourceAttr(httpResourceName, "interval", "300"),
 				resource.TestCheckResourceAttr(httpResourceName, "alerts_enabled", "true"),
 				resource.TestCheckResourceAttr(httpResourceName, "alert_rules.#", "2"),
+				resource.TestCheckResourceAttr(httpResourceName, "monitors.#", "0"),
 			},
 		},
 	}
@@ -57,8 +58,16 @@ func TestAccThousandEyesAgentToAgent(t *testing.T) {
 						Check:  resource.ComposeTestCheckFunc(tc.checkCreateFunc...),
 					},
 					{
+						Config:   testAccThousandEyesAgentToAgentConfig(tc.createResourceFile),
+						PlanOnly: true,
+					},
+					{
 						Config: testAccThousandEyesAgentToAgentConfig(tc.updateResourceFile),
 						Check:  resource.ComposeTestCheckFunc(tc.checkUpdateFunc...),
+					},
+					{
+						Config:   testAccThousandEyesAgentToAgentConfig(tc.updateResourceFile),
+						PlanOnly: true,
 					},
 				},
 			})
