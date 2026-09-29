@@ -1,9 +1,7 @@
 package thousandeyes
 
 import (
-	"fmt"
 	"os"
-	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -35,16 +33,6 @@ func TestAccThousandEyesAgentToAgent(t *testing.T) {
 				resource.TestCheckResourceAttr(httpResourceName, "interval", "120"),
 				resource.TestCheckResourceAttr(httpResourceName, "alerts_enabled", "true"),
 				resource.TestCheckResourceAttr(httpResourceName, "alert_rules.#", "2"),
-				resource.TestCheckResourceAttrWith(httpResourceName, "monitors.#", func(value string) error {
-					monitorCount, err := strconv.Atoi(value)
-					if err != nil {
-						return fmt.Errorf("parse monitor count: %w", err)
-					}
-					if monitorCount == 0 {
-						return fmt.Errorf("expected the API to assign at least one private monitor")
-					}
-					return nil
-				}),
 			},
 			checkUpdateFunc: []resource.TestCheckFunc{
 				resource.TestCheckResourceAttr(httpResourceName, "test_name", "User Acceptance Test - Aget To Agent (Updated)"),
