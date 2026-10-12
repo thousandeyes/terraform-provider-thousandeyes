@@ -469,6 +469,19 @@ func TestAccThousandEyesHTTPServer(t *testing.T) {
 		checkUpdateFunc      []resource.TestCheckFunc
 	}{
 		{
+			name:                 "remove_shared_accounts_from_http_server_test",
+			createResourceFile:   "acceptance_resources/http_server/shared_with_accounts.tf",
+			updateResourceFile:   "acceptance_resources/http_server/shared_with_accounts_removed.tf",
+			resourceName:         httpResourceName,
+			checkDestroyFunction: testAccCheckDefaultHTTPResourceDestroy,
+			checkCreateFunc: []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(httpResourceName, "shared_with_accounts.#", "1"),
+			},
+			checkUpdateFunc: []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(httpResourceName, "shared_with_accounts.#", "0"),
+			},
+		},
+		{
 			name:                 "create_update_delete_http_server_test",
 			createResourceFile:   "acceptance_resources/http_server/basic.tf",
 			updateResourceFile:   "acceptance_resources/http_server/update.tf",
