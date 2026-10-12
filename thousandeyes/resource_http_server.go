@@ -78,7 +78,7 @@ func resourceHTTPServerRead(d *schema.ResourceData, m interface{}) error {
 	}
 
 	existingOAuth := currentHTTPServerOAuthStateValue(d)
-	if err := ResourceRead(context.Background(), d, resp); err != nil {
+	if err := ResourceRead(apiClient.GetConfig().Context, d, resp); err != nil {
 		return err
 	}
 

@@ -1027,7 +1027,10 @@ func FillValue(source interface{}, target interface{}) interface{} {
 		tt := reflect.TypeOf(target)
 		tte := reflect.TypeOf(target).Elem() // The type of items in the slice
 		ntte := reflect.New(tte).Elem()
-		newSlice := reflect.New(tt).Elem()
+		// Preserve an explicitly empty Terraform collection as a non-nil empty
+		// slice. Several API request models use `omitempty`, where nil means
+		// "leave unchanged" and an empty slice means "clear this collection".
+		newSlice := reflect.MakeSlice(tt, 0, 0)
 
 		vs := reflect.ValueOf(source)
 		// If source is a *Set, we dereference it and convert it to a
