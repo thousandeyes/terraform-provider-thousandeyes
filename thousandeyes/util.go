@@ -196,6 +196,7 @@ func resourceRequestFieldValue(d *schema.ResourceData, name string) (interface{}
 		// SDK receives a non-nil empty slice for intentional share removal.
 		return val, d.HasChange(name)
 	default:
+		//nolint:staticcheck // GetOk would omit explicitly set false, zero, and empty values.
 		return d.GetOkExists(name)
 	}
 }
