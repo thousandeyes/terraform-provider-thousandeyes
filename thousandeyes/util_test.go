@@ -10,6 +10,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/stretchr/testify/require"
 	"github.com/thousandeyes/thousandeyes-sdk-go/v3/administrative"
 	"github.com/thousandeyes/thousandeyes-sdk-go/v3/alerts"
 	"github.com/thousandeyes/thousandeyes-sdk-go/v3/tags"
@@ -44,6 +45,93 @@ func TestResourceBuildStruct(t *testing.T) {
 		t.Error("Building resource did not assign struct field correctly.")
 	}
 
+	t.Run("shared accounts", func(t *testing.T) {
+		builders := []struct {
+			name     string
+			resource *schema.Resource
+			create   func(*schema.ResourceData) interface{}
+			update   func(*schema.ResourceData) interface{}
+		}{
+			{"API", resourceAPI(), sharingBuilder(buildAPITestStruct), sharingBuilder(buildAPITestStruct)},
+			{"HTTP server", resourceHTTPServer(), sharingBuilder(buildHTTPServerStruct), sharingBuilder(buildHTTPServerStruct)},
+			{"Agent to agent", resourceAgentToAgent(), sharingBuilder(buildAgentAgentStruct), sharingBuilder(buildAgentAgentStruct)},
+			{"Agent to server", resourceAgentToServer(), sharingBuilder(buildAgentServerStruct), sharingBuilder(buildAgentServerUpdateStruct)},
+			{"BGP", resourceBGP(), sharingBuilder(buildBGPStruct), sharingBuilder(buildUpdateBGPStruct)},
+			{"DNS server", resourceDNSServer(), sharingBuilder(buildDNSServerStruct), sharingBuilder(buildDNSServerStruct)},
+			{"DNS trace", resourceDNSTrace(), sharingBuilder(buildDNSTraceStruct), sharingBuilder(buildDNSTraceStruct)},
+			{"DNSSEC", resourceDNSSec(), sharingBuilder(buildDNSSecStruct), sharingBuilder(buildDNSSecStruct)},
+			{"FTP server", resourceFTPServer(), sharingBuilder(buildFTPServerStruct), sharingBuilder(buildFTPServerStruct)},
+			{"Page load", resourcePageLoad(), sharingBuilder(buildPageLoadStruct), sharingBuilder(buildPageLoadStruct)},
+			{"SIP server", resourceSIPServer(), sharingBuilder(buildSIPServerStruct), sharingBuilder(buildSIPServerStruct)},
+			{"Voice", resourceRTPStream(), sharingBuilder(buildRTPStreamStruct), sharingBuilder(buildRTPStreamStruct)},
+			{"Web transaction", resourceWebTransaction(), sharingBuilder(buildWebTransactionStruct), sharingBuilder(buildWebTransactionStruct)},
+		}
+		for _, builder := range builders {
+			t.Run(builder.name, func(t *testing.T) {
+				for _, tc := range []struct {
+					name       string
+					update     bool
+					oldShares  []interface{}
+					configured bool
+					newShares  interface{}
+					want       []string // nil means the JSON key must be absent, not null or [].
+				}{
+					{name: "create omitted"},
+					{name: "create null", configured: true},
+					{name: "create empty", configured: true, newShares: []interface{}{}},
+					{name: "create shared", configured: true, newShares: []interface{}{"107980"}, want: []string{"107980"}},
+					{name: "update omitted after empty refresh", update: true},
+					{name: "update unchanged null", update: true, configured: true},
+					{name: "update unchanged empty", update: true, configured: true, newShares: []interface{}{}},
+					{name: "update unchanged shares", update: true, oldShares: []interface{}{"107980"}, configured: true, newShares: []interface{}{"107980"}},
+					{name: "update reordered shares", update: true, oldShares: []interface{}{"107980", "107981"}, configured: true, newShares: []interface{}{"107981", "107980"}},
+					{name: "update add shares", update: true, configured: true, newShares: []interface{}{"107980"}, want: []string{"107980"}},
+					{name: "update replace shares", update: true, oldShares: []interface{}{"107980"}, configured: true, newShares: []interface{}{"107981"}, want: []string{"107981"}},
+					{name: "update remove one share", update: true, oldShares: []interface{}{"107980", "107981"}, configured: true, newShares: []interface{}{"107981"}, want: []string{"107981"}},
+					{name: "update clear shares", update: true, oldShares: []interface{}{"107980"}, configured: true, newShares: []interface{}{}, want: []string{}},
+					{name: "update remove attribute", update: true, oldShares: []interface{}{"107980"}, want: []string{}},
+					{name: "update null removes shares", update: true, oldShares: []interface{}{"107980"}, configured: true, want: []string{}},
+				} {
+					t.Run(tc.name, func(t *testing.T) {
+						config := sharingTestConfig(builder.resource)
+						var state *terraform.InstanceState
+						build := builder.create
+						if tc.update {
+							prior := schema.TestResourceDataRaw(t, builder.resource.Schema, config)
+							prior.SetId("test-id")
+							// Refresh records even an empty set after filtering the owning account.
+							require.NoError(t, prior.Set("shared_with_accounts", tc.oldShares))
+							state = prior.State()
+							config["test_name"] = "updated test"
+							build = builder.update
+						}
+						if tc.configured {
+							config["shared_with_accounts"] = tc.newShares
+						}
+						// A real SDK diff distinguishes a present empty state from a planned removal.
+						diff, err := builder.resource.Diff(context.Background(), state, terraform.NewResourceConfigRaw(config), nil)
+						require.NoError(t, err)
+						d, err := schema.InternalMap(builder.resource.Schema).Data(state, diff)
+						require.NoError(t, err)
+						payload, err := json.Marshal(build(d))
+						require.NoError(t, err)
+						var object map[string]json.RawMessage
+						require.NoError(t, json.Unmarshal(payload, &object))
+						shares, present := object["sharedWithAccounts"]
+						if tc.want == nil {
+							require.False(t, present, "unexpected sharedWithAccounts: %s", shares)
+							return
+						}
+						require.True(t, present, "expected sharing update in %s", payload)
+						require.NotEqual(t, "null", string(shares))
+						var got []string
+						require.NoError(t, json.Unmarshal(shares, &got))
+						require.ElementsMatch(t, tc.want, got)
+					})
+				}
+			})
+		}
+	})
 }
 
 func TestTestResourceBuildersApplyAgentInterfacesToAgents(t *testing.T) {
@@ -1543,4 +1631,39 @@ func TestResourceReadAPINestedSensitiveFields(t *testing.T) {
 	if got := req["bearer_token"]; got != "test_bearer" {
 		t.Fatalf("expected bearer_token %q preserved in state, got %q", "test_bearer", got)
 	}
+}
+
+func sharingBuilder[T any](build func(*schema.ResourceData) *T) func(*schema.ResourceData) interface{} {
+	return func(d *schema.ResourceData) interface{} { return build(d) }
+}
+
+// Supply the resource-specific inputs needed to exercise each real builder.
+func sharingTestConfig(resource *schema.Resource) map[string]interface{} {
+	candidates := map[string]interface{}{
+		"test_name":          "sharing test",
+		"interval":           300,
+		"agents":             []interface{}{"19"},
+		"alerts_enabled":     false,
+		"url":                "https://example.com",
+		"server":             "example.com",
+		"domain":             "example.com",
+		"dns_servers":        []interface{}{"8.8.8.8"},
+		"prefix":             "192.0.2.0/24",
+		"target_agent_id":    "20",
+		"direction":          "to-target",
+		"transaction_script": "await driver.get('https://example.com');",
+		"requests": []interface{}{map[string]interface{}{
+			"name": "step1", "url": "https://example.com", "method": "get",
+		}},
+		"target_sip_credentials": []interface{}{map[string]interface{}{
+			"auth_user": "", "protocol": "tcp", "port": 5060, "sip_registrar": "example.com",
+		}},
+	}
+	config := make(map[string]interface{})
+	for key, value := range candidates {
+		if _, exists := resource.Schema[key]; exists {
+			config[key] = value
+		}
+	}
+	return config
 }
