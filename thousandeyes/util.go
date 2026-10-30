@@ -170,7 +170,7 @@ func ResourceBuildStruct[T any](d *schema.ResourceData, structPtr *T) *T {
 	for i := 0; i < v.NumField(); i++ {
 		tag := GetJSONKey(t.Field(i))
 		tfName := CamelCaseToUnderscore(tag)
-		val, ok := d.GetOkExists(tfName)
+		val, ok := resourceRequestFieldValue(d, tfName)
 		if ok {
 			newVal := FillValue(val, v.Field(i).Interface())
 			setVal := reflect.ValueOf(newVal)
@@ -178,6 +178,27 @@ func ResourceBuildStruct[T any](d *schema.ResourceData, structPtr *T) *T {
 		}
 	}
 	return resourceFixups(d, structPtr)
+}
+
+// resourceRequestFieldValue returns a field's value and whether to include it in
+// the API request, applying field-specific handling before the default lookup.
+func resourceRequestFieldValue(d *schema.ResourceData, name string) (interface{}, bool) {
+	switch name {
+	case "shared_with_accounts":
+		// Refresh can populate an empty share set even when sharing was never
+		// configured. Sending it on an unrelated update requires share permissions.
+		val := d.Get(name)
+		if d.Id() == "" {
+			shares, exists := val.(*schema.Set)
+			return val, exists && shares.Len() > 0
+		}
+		// Read the planned value even when clearing the collection so the
+		// SDK receives a non-nil empty slice for intentional share removal.
+		return val, d.HasChange(name)
+	default:
+		//nolint:staticcheck // GetOk would omit explicitly set false, zero, and empty values.
+		return d.GetOkExists(name)
+	}
 }
 
 // GetResource is a generic function for reading resources.

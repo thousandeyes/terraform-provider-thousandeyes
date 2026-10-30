@@ -23,6 +23,21 @@ func TestAccThousandEyesAPI(t *testing.T) {
 		checkUpdateFunc      []resource.TestCheckFunc
 	}{
 		{
+			name:                 "update_api_test_without_shared_accounts",
+			createResourceFile:   "acceptance_resources/api/without_shared_accounts.tf",
+			updateResourceFile:   "acceptance_resources/api/without_shared_accounts_updated.tf",
+			resourceName:         resourceName,
+			checkDestroyFunction: testAccCheckDefaultAPIResourceDestroy,
+			checkCreateFunc: []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(resourceName, "interval", "300"),
+				resource.TestCheckResourceAttr(resourceName, "shared_with_accounts.#", "0"),
+			},
+			checkUpdateFunc: []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(resourceName, "interval", "600"),
+				resource.TestCheckResourceAttr(resourceName, "shared_with_accounts.#", "0"),
+			},
+		},
+		{
 			name:                 "create_update_delete_api_test",
 			createResourceFile:   "acceptance_resources/api/basic.tf",
 			updateResourceFile:   "acceptance_resources/api/update.tf",
