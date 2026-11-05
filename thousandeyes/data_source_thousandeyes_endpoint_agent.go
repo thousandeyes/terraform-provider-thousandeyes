@@ -59,7 +59,7 @@ func dataSourceEndpointAgentRead(d *schema.ResourceData, meta interface{}) error
 
 			agentID := agent.GetId()
 			if agentID == "" {
-				return fmt.Errorf("Endpoint Agent %q was returned without an ID", searchName)
+				return fmt.Errorf("endpoint agent %q was returned without an ID", searchName)
 			}
 
 			d.SetId(agentID)
