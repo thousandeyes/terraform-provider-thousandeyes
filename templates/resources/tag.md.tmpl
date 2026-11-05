@@ -10,7 +10,28 @@ description: |-
 
 ## Example Usage
 
+### Static tag
+
 {{ tffile .ExampleFile }}
+
+### Dynamic Endpoint Agent tag
+
+Dynamic tags select Endpoint Agents automatically when their filter criteria match.
+Use `object_type = "endpoint-agent"`, `type = "dynamic"`, a `match_type`, and at
+least one `filters` block. `and` requires every filter to match; `or` requires any
+filter to match. Filters and their values are unordered.
+
+{{ tffile "examples/resources/thousandeyes_tag/dynamic.tf" }}
+
+The filter `scope` identifies where its `key` comes from:
+
+- `default` (the default): a built-in ThousandEyes field, such as `platform`, `hostname`, or `location`.
+- `custom`: a user-defined metadata key supplied when an Endpoint Agent checks in, such as `department`.
+
+Filter `mode` is `in` to match one of the supplied values or `not-in` to exclude
+all supplied values. Supported keys and value formats are validated by the
+[Tags API](https://developer.cisco.com/docs/thousandeyes/v7/taginfo/). The provider
+preserves case and wildcards in values.
 
 {{ .SchemaMarkdown | trimspace }}
 
