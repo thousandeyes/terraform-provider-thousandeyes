@@ -88,6 +88,7 @@ func Provider() *schema.Provider {
 			"thousandeyes_alert_rule":       dataSourceThousandeyesAlertRule(),
 			"thousandeyes_permission":       dataSourceThousandeyesPermission(),
 			"thousandeyes_dashboard_filter": dataSourceThousandeyesDashboardFilter(),
+			"thousandeyes_endpoint_agent":   dataSourceThousandeyesEndpointAgent(),
 		},
 		ConfigureContextFunc: providerConfigureWithContext,
 	}
