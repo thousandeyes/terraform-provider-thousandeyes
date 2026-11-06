@@ -17,7 +17,7 @@ func dataSourceThousandeyesEndpointAgent() *schema.Resource {
 			"agent_name": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The name of the Endpoint Agent.",
+				Description: "The exact name of the Endpoint Agent to look up.",
 			},
 			"agent_id": {
 				Type:        schema.TypeString,
@@ -25,7 +25,7 @@ func dataSourceThousandeyesEndpointAgent() *schema.Resource {
 				Description: "The unique ID of the Endpoint Agent.",
 			},
 		},
-		Description: "Use this data source to look up an existing ThousandEyes Endpoint Agent by name.",
+		Description: "Use this data source to look up an existing ThousandEyes Endpoint Agent by exact name.",
 	}
 }
 

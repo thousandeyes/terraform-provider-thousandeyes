@@ -3,12 +3,12 @@
 page_title: "thousandeyes_endpoint_agent Data Source - terraform-provider-thousandeyes"
 subcategory: ""
 description: |-
-  Use this data source to look up an existing ThousandEyes Endpoint Agent by name.
+  Use this data source to look up an existing ThousandEyes Endpoint Agent by exact name.
 ---
 
 # thousandeyes_endpoint_agent (Data Source)
 
-Use this data source to look up an existing ThousandEyes Endpoint Agent by name.
+Use this data source to look up an existing ThousandEyes Endpoint Agent by exact name.
 
 ## Example Usage
 
@@ -31,7 +31,7 @@ output "endpoint_agent_name" {
 
 ### Required
 
-- `agent_name` (String) The name of the Endpoint Agent.
+- `agent_name` (String) The exact name of the Endpoint Agent to look up.
 
 ### Read-Only
 
