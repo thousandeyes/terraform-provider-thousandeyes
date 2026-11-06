@@ -70,10 +70,10 @@ preserves case and wildcards in values.
 ### Optional
 
 - `access_type` (String) [all, partner, system] The access level of the tag. The access level impacts the visibility of the label in UI and the permissions to modify the label.
-- `color` (String) Tag color.
+- `color` (String) Tag color. When omitted, uses the API-provided value.
 - `description` (String) The tag's description.
 - `filters` (Block Set) Unordered filter criteria for dynamic Endpoint Agent tags. At least one filter is required for dynamic tags. (see [below for nested schema](#nestedblock--filters))
-- `icon` (String) Tag icon.
+- `icon` (String) Tag icon. When omitted, uses the API-provided value.
 - `key` (String) The tags's key.
 - `match_type` (String) How dynamic Endpoint Agent tag filters are combined: and requires all filters to match; or requires any filter to match. Required for dynamic tags.
 - `object_type` (String) [test, dashboard, endpoint-test, v-agent, endpoint-agent] The object type associated with the tag. Endpoint Agent tags require type = dynamic.
