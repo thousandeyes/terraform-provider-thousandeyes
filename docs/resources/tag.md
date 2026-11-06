@@ -27,9 +27,9 @@ resource "thousandeyes_tag" "example_tag" {
 ### Optional
 
 - `access_type` (String) [all, partner, system] The access level of the tag. The access level impacts the visibility of the label in UI and the permissions to modify the label.
-- `color` (String) Tag color.
+- `color` (String) Tag color. When omitted, uses the API-provided value.
 - `description` (String) The tag's description.
-- `icon` (String) Tag icon.
+- `icon` (String) Tag icon. When omitted, uses the API-provided value.
 - `key` (String) The tags's key.
 - `object_type` (String) [test, dashboard, endpoint-test, v-agent] The object type associated with the tag.
 - `value` (String) The tag's value.
