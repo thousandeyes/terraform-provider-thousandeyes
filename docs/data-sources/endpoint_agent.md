@@ -6,7 +6,7 @@ description: |-
 
 # thousandeyes_endpoint_agent (Data Source)
 
-Use this data source to look up an existing ThousandEyes Endpoint Agent by exact name.
+Use this data source to look up an existing ThousandEyes Endpoint Agent by exact name. For more information, see [List Endpoint Agents](https://developer.cisco.com/docs/thousandeyes/list-endpoint-agents/).
 
 ## Example Usage
 
