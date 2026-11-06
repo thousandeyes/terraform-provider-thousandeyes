@@ -25,7 +25,7 @@ func dataSourceThousandeyesEndpointAgent() *schema.Resource {
 				Description: "The unique ID of the Endpoint Agent.",
 			},
 		},
-		Description: "Use this data source to look up an existing ThousandEyes Endpoint Agent by exact name.",
+		Description: "Use this data source to look up an existing ThousandEyes Endpoint Agent by exact name. For more information, see [List Endpoint Agents](https://developer.cisco.com/docs/thousandeyes/list-endpoint-agents/).",
 	}
 }
 
