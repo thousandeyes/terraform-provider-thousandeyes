@@ -2,6 +2,7 @@ package thousandeyes
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"time"
 
@@ -14,15 +15,16 @@ import (
 
 func resourceTag() *schema.Resource {
 	resource := schema.Resource{
-		Schema: ResourceSchemaBuild(tags.Tag{}, schemas.TagSchema, nil),
-		Create: resourceTagCreate,
-		Read:   resourceTagRead,
-		Update: resourceTagUpdate,
-		Delete: resourceTagDelete,
+		Schema:        ResourceSchemaBuild(tags.Tag{}, schemas.TagSchema, nil),
+		Create:        resourceTagCreate,
+		Read:          resourceTagRead,
+		Update:        resourceTagUpdate,
+		Delete:        resourceTagDelete,
+		CustomizeDiff: resourceTagCustomizeDiff,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Description: "This resource provides a tagging system with key/value pairs. It allows you to tag assets within the ThousandEyes platform (such as agents, tests, or dashboards) with meaningful metadata.",
+		Description: "This resource manages key/value tags for ThousandEyes assets, including static tags for tests and dashboards and dynamic tags that automatically select Endpoint Agents using filter criteria.",
 	}
 	return &resource
 }
@@ -39,6 +41,19 @@ func resourceTagRead(d *schema.ResourceData, m interface{}) error {
 		resp, _, err := req.Execute()
 		if err != nil {
 			return resp, err
+		}
+
+		// The API may omit the default scope and absent matching logic.
+		// Normalize these before generic mapping so refresh and import agree.
+		for i := range resp.Filters {
+			if resp.Filters[i].Scope == nil {
+				resp.Filters[i].SetScope(tags.TAGFILTERSCOPE_DEFAULT)
+			}
+		}
+		if resp.MatchType == nil {
+			if err := d.Set("match_type", nil); err != nil {
+				return resp, err
+			}
 		}
 
 		// set nullable fields
@@ -74,6 +89,9 @@ func resourceTagRead(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceTagUpdate(d *schema.ResourceData, m interface{}) error {
+	if err := validateTagConfiguration(d, func(string) bool { return true }); err != nil {
+		return err
+	}
 	apiClient := m.(*client.APIClient)
 	api := (*tags.TagsAPIService)(&apiClient.Common)
 
@@ -107,6 +125,9 @@ func resourceTagDelete(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceTagCreate(d *schema.ResourceData, m interface{}) error {
+	if err := validateTagConfiguration(d, func(string) bool { return true }); err != nil {
+		return err
+	}
 	apiClient := m.(*client.APIClient)
 	api := (*tags.TagsAPIService)(&apiClient.Common)
 
@@ -128,6 +149,13 @@ func resourceTagCreate(d *schema.ResourceData, m interface{}) error {
 
 func buildTagStruct(d *schema.ResourceData) *tags.TagInfo {
 	tag := ResourceBuildStruct(d, &tags.TagInfo{})
+	// Empty matching logic is absent on static tags, never an empty API enum.
+	if d.Get("match_type").(string) == "" {
+		tag.MatchType = nil
+	}
+	if len(tag.Filters) == 0 {
+		tag.Filters = nil
+	}
 	// set nullable fields
 	if v := d.Get("icon").(string); len(v) != 0 {
 		tag.Icon.Set(
@@ -140,4 +168,54 @@ func buildTagStruct(d *schema.ResourceData) *tags.TagInfo {
 		)
 	}
 	return tag
+}
+
+func resourceTagCustomizeDiff(_ context.Context, d *schema.ResourceDiff, _ interface{}) error {
+	known := func(key string) bool {
+		config := d.GetRawConfig()
+		if !config.IsNull() && config.IsKnown() && config.Type().HasAttribute(key) {
+			value := config.GetAttr(key)
+			if !value.IsKnown() {
+				return false
+			}
+			// Distinguish an omitted optional/computed type from an unknown
+			// configured expression in a new plan.
+			if key == "type" && value.IsNull() {
+				return true
+			}
+		}
+		if key == "filters" {
+			return d.NewValueKnown("filters.#")
+		}
+		return d.NewValueKnown(key)
+	}
+	return validateTagConfiguration(d, known)
+}
+
+func validateTagConfiguration(d interface{ Get(string) interface{} }, known func(string) bool) error {
+	objectType := d.Get("object_type").(string)
+	tagType := d.Get("type").(string)
+	matchType := d.Get("match_type").(string)
+	filterCount := d.Get("filters").(*schema.Set).Len()
+
+	if known("object_type") && objectType == "endpoint-agent" && known("type") && tagType != "dynamic" {
+		return fmt.Errorf("endpoint-agent tags require type = dynamic")
+	}
+	if known("type") && tagType == "dynamic" {
+		if known("object_type") && objectType != "endpoint-agent" {
+			return fmt.Errorf("dynamic tags require object_type = endpoint-agent")
+		}
+		if known("match_type") && matchType == "" {
+			return fmt.Errorf("dynamic tags require match_type")
+		}
+		if known("filters") && filterCount == 0 {
+			return fmt.Errorf("dynamic tags require at least one filter")
+		}
+	}
+	if (known("object_type") && objectType != "endpoint-agent") || (known("type") && tagType != "dynamic") {
+		if (known("match_type") && matchType != "") || (known("filters") && filterCount > 0) {
+			return fmt.Errorf("match_type and filters are only supported for dynamic endpoint-agent tags")
+		}
+	}
+	return nil
 }

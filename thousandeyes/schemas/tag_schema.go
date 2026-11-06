@@ -89,7 +89,7 @@ var TagSchema = map[string]*schema.Schema{
 	// objectType
 	"object_type": {
 		Type:        schema.TypeString,
-		Description: "[test, dashboard, endpoint-test, v-agent] The object type associated with the tag.",
+		Description: "[test, dashboard, endpoint-test, v-agent, endpoint-agent] The object type associated with the tag. Endpoint Agent tags require type = dynamic.",
 		Optional:    true,
 		Required:    false,
 		ValidateFunc: validation.StringInSlice([]string{
@@ -97,13 +97,64 @@ var TagSchema = map[string]*schema.Schema{
 			"dashboard",
 			"endpoint-test",
 			"v-agent",
+			"endpoint-agent",
 		}, false),
 	},
 	// type
 	"type": {
 		Type:        schema.TypeString,
-		Description: "The nature of the tag (currently static).",
+		Description: "The nature of the tag: static or dynamic. Only endpoint-agent tags support dynamic assignment. Existing static tags can omit this field.",
+		Optional:    true,
 		Computed:    true,
+		ValidateFunc: validation.StringInSlice([]string{
+			"static",
+			"dynamic",
+		}, false),
+	},
+	"match_type": {
+		Type:         schema.TypeString,
+		Description:  "How dynamic Endpoint Agent tag filters are combined: and requires all filters to match; or requires any filter to match. Required for dynamic tags.",
+		Optional:     true,
+		ValidateFunc: validation.StringInSlice([]string{"and", "or"}, false),
+	},
+	"filters": {
+		Type:        schema.TypeSet,
+		Description: "Unordered filter criteria for dynamic Endpoint Agent tags. At least one filter is required for dynamic tags.",
+		Optional:    true,
+		MinItems:    1,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"key": {
+					Type:         schema.TypeString,
+					Description:  "The built-in agent field or custom check-in metadata key to filter on. The API validates supported keys.",
+					Required:     true,
+					ValidateFunc: validation.StringIsNotEmpty,
+				},
+				"values": {
+					Type:        schema.TypeSet,
+					Description: "Unordered values to match, passed unchanged to the API. Their format and matching semantics depend on the filter key.",
+					Required:    true,
+					MinItems:    1,
+					Elem: &schema.Schema{
+						Type:         schema.TypeString,
+						ValidateFunc: validation.StringIsNotEmpty,
+					},
+				},
+				"mode": {
+					Type:         schema.TypeString,
+					Description:  "Whether the agent's value must match a value (in) or must not match any value (not-in).",
+					Required:     true,
+					ValidateFunc: validation.StringInSlice([]string{"in", "not-in"}, false),
+				},
+				"scope": {
+					Type:         schema.TypeString,
+					Description:  "Where the filter key comes from: default for built-in ThousandEyes agent fields, or custom for metadata supplied when an agent checks in.",
+					Optional:     true,
+					Default:      "default",
+					ValidateFunc: validation.StringInSlice([]string{"default", "custom"}, false),
+				},
+			},
+		},
 	},
 	// value
 	"value": {
