@@ -19,7 +19,7 @@ func resourceEndpointHTTPServer() *schema.Resource {
 		Update: resourceEndpointHTTPServerUpdate,
 		Delete: resourceEndpointHTTPServerDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Description:   "Manages a scheduled Endpoint HTTP Server test. Agent selectors and other create-only settings require replacement when changed.",
 		CustomizeDiff: resourceEndpointHTTPServerCustomizeDiff,
