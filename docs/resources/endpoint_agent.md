@@ -35,9 +35,7 @@ Endpoint Agents must already exist before Terraform can manage them. The resourc
 - `id` (String) The ID of this resource.
 
 ## Import
-
 In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) providing `resource_id`.
-
 ```terraform
 import {
   to = thousandeyes_endpoint_agent.laptop
@@ -46,7 +44,6 @@ import {
 ```
 
 Using `terraform import` command.
-
 ```shell
 terraform import thousandeyes_endpoint_agent.laptop 123456
 ```
