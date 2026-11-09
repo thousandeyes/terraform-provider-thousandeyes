@@ -33,8 +33,9 @@ var TagSchema = map[string]*schema.Schema{
 	// color
 	"color": {
 		Type:        schema.TypeString,
-		Description: "Tag color.",
+		Description: "Tag color. When omitted, uses the API-provided value.",
 		Optional:    true,
+		Computed:    true,
 	},
 	// createDate
 	"create_date": {
@@ -57,8 +58,9 @@ var TagSchema = map[string]*schema.Schema{
 	// icon
 	"icon": {
 		Type:        schema.TypeString,
-		Description: "Tag icon.",
+		Description: "Tag icon. When omitted, uses the API-provided value.",
 		Optional:    true,
+		Computed:    true,
 	},
 	// description
 	"description": {
