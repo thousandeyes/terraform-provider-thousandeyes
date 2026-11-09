@@ -12,8 +12,7 @@ description: |-
 
 {{ tffile .ExampleFile }}
 
-The provider defaults a URL without a scheme to HTTPS. The returned HTTPS URL
-and the configured bare hostname are treated as equivalent during refresh.
+URLs without a scheme use HTTPS.
 
 ## Agent Selection
 
@@ -25,26 +24,18 @@ Endpoint Labels and the legacy `agent-labels` selector are unsupported.
 For selection by dynamic tags, create a `thousandeyes_tag` with `object_type = "endpoint-agent"`
 and `type = "dynamic"`, and reference its ID in `tag_ids`.
 
-## Updates and Refresh
+## Updates and Import
 
 Changes to `test_name`, `url`, `interval`, `protocol`, `tcp_probe_mode`, and `is_enabled`
 update the existing test. IPv6 and OS-default IP preferences require `protocol = "icmp"`;
 other protocols require `ip_version = "V4_ONLY"`.
 
-Other configurable settings require replacement because the
-Endpoint HTTP update API does not accept them. A test configured with `is_enabled = false`
-is created first, then disabled in a second API call.
+Changes to other configurable settings replace the test. Tests configured with
+`is_enabled = false` may briefly be enabled during creation.
 
-The API does not return `password`, `has_ping`, or `has_traceroute`.
-The provider retains these configured values, but cannot detect remote changes to them.
-After import, configure these fields deliberately: differences may require replacement.
-Passwords are sensitive and are retained in Terraform state.
-
-The API returns `target_response_time` as `http_target_time`; the provider restores
-both attributes from that response value.
-
-This resource uses the Endpoint HTTP test API; headers, request bodies, and OAuth
-settings from Cloud and Enterprise HTTP server tests are unavailable.
+Passwords are stored in Terraform state. Changes made outside Terraform to
+passwords or the deprecated `has_ping` and `has_traceroute` settings cannot be
+detected. Configuring these values after import may require replacing the test.
 
 {{ .SchemaMarkdown | trimspace }}
 

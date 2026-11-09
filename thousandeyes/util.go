@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net"
 	"reflect"
 	"regexp"
 	"slices"
@@ -377,6 +378,14 @@ func getTargetFieldsMaps(d *schema.ResourceData, structPtr interface{}) map[stri
 	return res
 }
 
+// serverHost removes an explicit port while preserving addresses without one.
+func serverHost(server string) string {
+	if host, _, err := net.SplitHostPort(server); err == nil {
+		return host
+	}
+	return server
+}
+
 // FixReadValues adjusts certain values returned from ThousandEyes to make them
 // processable by this Terraform plugin.  This includes removing extraneous
 // information that ThousandEyes returns when querying certain resources (ie,
@@ -469,10 +478,10 @@ func FixReadValues(ctx context.Context, targetMaps map[string]map[string]interfa
 	case "server":
 		switch server := m.(type) {
 		case string:
-			m = strings.Split(server, ":")[0]
+			m = serverHost(server)
 		case *string:
 			if server != nil {
-				m = strings.Split(*server, ":")[0]
+				m = serverHost(*server)
 			}
 		}
 

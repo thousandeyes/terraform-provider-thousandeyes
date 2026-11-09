@@ -397,3 +397,28 @@ func TestAccEndpointHTTPServerMinimum(t *testing.T) {
 		},
 	})
 }
+
+func TestEndpointHTTPServerReadPreservesIPv6Server(t *testing.T) {
+	for _, tc := range []struct{ server, want string }{
+		{"2001:db8::1", "2001:db8::1"},
+		{"[2001:db8::1]:443", "2001:db8::1"},
+	} {
+		t.Run(tc.server, func(t *testing.T) {
+			client := newEndpointAgentTestClient(endpointAgentRoundTripFunc(func(r *http.Request) (*http.Response, error) {
+				response := fmt.Sprintf(`{"type":"http-server","testId":"ipv6-test","server":%q,"url":"https://[2001:db8::1]","agentSelectorConfig":{"agentSelectorType":"all-agents"}}`, tc.server)
+				return endpointAgentJSONResponse(200, response), nil
+			}), "12345")
+			d := schema.TestResourceDataRaw(t, resourceEndpointHTTPServer().Schema, nil)
+			d.SetId("ipv6-test")
+			// The first read populates imported state; the second refreshes it.
+			for i := 0; i < 2; i++ {
+				if err := resourceEndpointHTTPServerRead(d, client); err != nil {
+					t.Fatal(err)
+				}
+				if got := d.Get("server"); got != tc.want {
+					t.Fatalf("read %d: got %q, want %q", i, got, tc.want)
+				}
+			}
+		})
+	}
+}

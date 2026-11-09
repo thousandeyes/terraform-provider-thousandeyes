@@ -1,9 +1,10 @@
 package schemas
 
 import (
+	"strings"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"strings"
 )
 
 // EndpointHTTPServerSchema returns a new schema owned by the scheduled Endpoint HTTP Server resource.
@@ -130,14 +131,14 @@ func EndpointHTTPServerSchema() map[string]*schema.Schema {
 		},
 		"has_ping": {
 			Type:        schema.TypeBool,
-			Description: "Deprecated network probe flag. Omitted unless explicitly configured; not returned by the API.",
+			Description: "Deprecated network probe flag. Use network_measurements instead.",
 			Optional:    true,
 			ForceNew:    true,
 			Deprecated:  "Use network_measurements instead.",
 		},
 		"has_traceroute": {
 			Type:        schema.TypeBool,
-			Description: "Deprecated network probe flag. Omitted unless explicitly configured; not returned by the API.",
+			Description: "Deprecated network probe flag. Use network_measurements instead.",
 			Optional:    true,
 			ForceNew:    true,
 			Deprecated:  "Use network_measurements instead.",
@@ -151,7 +152,7 @@ func EndpointHTTPServerSchema() map[string]*schema.Schema {
 		},
 		"target_response_time": {
 			Type:         schema.TypeInt,
-			Description:  "Response time target in milliseconds, returned by the API as http_target_time.",
+			Description:  "Response time target in milliseconds.",
 			Optional:     true,
 			ForceNew:     true,
 			Default:      1000,
@@ -159,7 +160,7 @@ func EndpointHTTPServerSchema() map[string]*schema.Schema {
 		},
 		"password": {
 			Type:        schema.TypeString,
-			Description: "Password for Basic or NTLM authentication. Not returned by the API.",
+			Description: "Password for Basic or NTLM authentication.",
 			Optional:    true,
 			ForceNew:    true,
 			Sensitive:   true,
@@ -180,7 +181,7 @@ func EndpointHTTPServerSchema() map[string]*schema.Schema {
 		},
 		"is_enabled": {
 			Type:        schema.TypeBool,
-			Description: "Whether the test is enabled. Disabled tests are created and then disabled.",
+			Description: "Whether the test is enabled.",
 			Optional:    true,
 			Default:     true,
 		},
@@ -198,7 +199,7 @@ func EndpointHTTPServerSchema() map[string]*schema.Schema {
 		},
 		"aid": {
 			Type:        schema.TypeString,
-			Description: "A unique identifier associated with your account group. You can retrieve your `AccountGroupId` from the `/account-groups` endpoint.",
+			Description: "Account group ID.",
 			Computed:    true,
 		},
 		"created_date": {
@@ -208,7 +209,7 @@ func EndpointHTTPServerSchema() map[string]*schema.Schema {
 		},
 		"is_saved_event": {
 			Type:        schema.TypeBool,
-			Description: "Indicates if the test is a saved event.  **Note**: **Saved Events** are now called **Private Snapshots** in the user interface. This change does not affect API.",
+			Description: "Whether the test is a private snapshot.",
 			Computed:    true,
 		},
 		"modified_date": {
@@ -223,7 +224,7 @@ func EndpointHTTPServerSchema() map[string]*schema.Schema {
 		},
 		"test_id": {
 			Type:        schema.TypeString,
-			Description: "Each test is assigned a unique ID to access test data from other endpoints.",
+			Description: "Test ID.",
 			Computed:    true,
 		},
 		"type": {
@@ -238,27 +239,27 @@ func EndpointHTTPServerSchema() map[string]*schema.Schema {
 		},
 		"follow_redirects": {
 			Type:        schema.TypeBool,
-			Description: "To disable following HTTP/301 or HTTP/302 redirect directives, set this parameter to `false`.",
+			Description: "Whether the test follows HTTP redirects.",
 			Computed:    true,
 		},
 		"http_target_time": {
 			Type:        schema.TypeInt,
-			Description: "HTTP completion target in milliseconds reported by the API.",
+			Description: "HTTP response time target in milliseconds.",
 			Computed:    true,
 		},
 		"http_version": {
 			Type:        schema.TypeInt,
-			Description: "HTTP protocol version. Set to '2' to prefer HTTP/2, or '1' to use only HTTP/1.1.",
+			Description: "HTTP protocol version used by the test.",
 			Computed:    true,
 		},
 		"ssl_version": {
 			Type:        schema.TypeString,
-			Description: "Reflects the verbose SSL protocol version used by a test.",
+			Description: "SSL/TLS protocol version used by the test.",
 			Computed:    true,
 		},
 		"use_ntlm": {
 			Type:        schema.TypeBool,
-			Description: "Set to true to use NTLM, false to use Basic Authentication. Requires username and password to be set.",
+			Description: "Whether HTTP authentication uses NTLM.",
 			Computed:    true,
 		},
 	}
