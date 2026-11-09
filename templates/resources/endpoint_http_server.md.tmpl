@@ -33,9 +33,8 @@ other protocols require `ip_version = "V4_ONLY"`.
 Changes to other configurable settings replace the test. Tests configured with
 `is_enabled = false` may briefly be enabled during creation.
 
-Passwords are stored in Terraform state. Changes made outside Terraform to
-passwords or the deprecated `has_ping` and `has_traceroute` settings cannot be
-detected. Configuring these values after import may require replacing the test.
+Passwords are stored in Terraform state. Password changes made outside Terraform
+cannot be detected. Configuring a password after import may require replacing the test.
 
 {{ .SchemaMarkdown | trimspace }}
 

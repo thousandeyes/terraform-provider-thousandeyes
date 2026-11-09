@@ -129,20 +129,6 @@ func EndpointHTTPServerSchema() map[string]*schema.Schema {
 			},
 			DiffSuppressOnRefresh: true,
 		},
-		"has_ping": {
-			Type:        schema.TypeBool,
-			Description: "Deprecated network probe flag. Use network_measurements instead.",
-			Optional:    true,
-			ForceNew:    true,
-			Deprecated:  "Use network_measurements instead.",
-		},
-		"has_traceroute": {
-			Type:        schema.TypeBool,
-			Description: "Deprecated network probe flag. Use network_measurements instead.",
-			Optional:    true,
-			ForceNew:    true,
-			Deprecated:  "Use network_measurements instead.",
-		},
 		"network_measurements": {
 			Type:        schema.TypeBool,
 			Description: "Enable or disable network measurements. Set to true to enable or false to disable network measurements.",

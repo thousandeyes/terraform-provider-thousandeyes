@@ -302,13 +302,13 @@ func TestEndpointHTTPServerSelectorWithUnknownIDs(t *testing.T) {
 	}
 }
 
-func TestEndpointHTTPServerCreateOmitsDeprecatedDefaults(t *testing.T) {
+func TestEndpointHTTPServerCreateUsesNetworkMeasurements(t *testing.T) {
 	d := schema.TestResourceDataRaw(t, resourceEndpointHTTPServer().Schema, map[string]interface{}{
 		"test_name": "test", "url": "https://example.com", "network_measurements": false,
 	})
 	req := buildEndpointHTTPServerCreate(d)
 	if req.HasPing != nil || req.HasTraceroute != nil {
-		t.Fatal("omitted deprecated flags must not be sent or defaulted in state")
+		t.Fatal("deprecated probe flags must not be sent")
 	}
 	if req.NetworkMeasurements == nil || *req.NetworkMeasurements {
 		t.Fatal("explicit false network_measurements must be preserved")
