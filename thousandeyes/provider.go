@@ -80,6 +80,7 @@ func Provider() *schema.Provider {
 			"thousandeyes_connector_assignment": resourceConnectorAssignment(),
 			"thousandeyes_webhook_operation":    resourceWebhookOperation(),
 			"thousandeyes_dashboard":            resourceDashboard(),
+			"thousandeyes_endpoint_agent":       resourceEndpointAgent(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"thousandeyes_account_group":    dataSourceThousandeyesAccountGroup(),
