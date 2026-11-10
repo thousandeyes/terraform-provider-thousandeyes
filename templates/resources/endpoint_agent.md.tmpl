@@ -1,0 +1,27 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: ""
+description: |-
+  Manages an existing ThousandEyes Endpoint Agent. This resource is import-only because the API does not support creating Endpoint Agents. Import an existing agent by ID before managing it. When `deletion_protection` is enabled, destroying the resource removes it from Terraform state without deleting the remote agent.
+---
+
+# {{.Name}} ({{.Type}})
+
+Manages an existing ThousandEyes Endpoint Agent. This resource is import-only because the API does not support creating Endpoint Agents. Import an existing agent by ID before managing it. When `deletion_protection` is enabled, destroying the resource removes it from Terraform state without deleting the remote agent.
+
+## Example Usage
+
+{{ tffile .ExampleFile }}
+
+Endpoint Agents must already exist before Terraform can manage them. The resource supports updating the name and supported license types, and enabling or disabling the imported agent through `status`. The `embed-wireless-advantage` and `embed-wireless-essentials` license types can be read after import but cannot be assigned. To remove an agent from Terraform without deleting it, first set `deletion_protection = true` and apply the change, then remove the resource from configuration and apply again. To delete the remote agent, set `deletion_protection = false` and apply before removing the resource.
+
+{{ .SchemaMarkdown | trimspace }}
+
+{{ if .HasImport -}}
+## Import
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) providing `resource_id`.
+{{ tffile "examples/resources/thousandeyes_endpoint_agent/import.tf" }}
+
+Using `terraform import` command.
+{{ codefile "shell" .ImportFile }}
+{{- end }}
