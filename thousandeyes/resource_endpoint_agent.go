@@ -1,13 +1,9 @@
 package thousandeyes
 
 import (
-	"encoding/json"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
-	"net/url"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -87,69 +83,28 @@ func resourceEndpointAgentRead(d *schema.ResourceData, meta interface{}) error {
 		}
 		return err
 	}
-	if agent.ID == "" {
+	if agent == nil || agent.GetId() == "" {
 		return fmt.Errorf("Endpoint Agent %s response did not include an ID", d.Id())
 	}
 
-	d.SetId(agent.ID)
-	if err := d.Set("name", agent.Name); err != nil {
+	d.SetId(agent.GetId())
+	if err := d.Set("name", agent.GetName()); err != nil {
 		return err
 	}
-	if err := d.Set("license_type", agent.LicenseType); err != nil {
+	if err := d.Set("license_type", string(agent.GetLicenseType())); err != nil {
 		return err
 	}
-	if err := d.Set("status", agent.Status); err != nil {
+	if err := d.Set("status", string(agent.GetStatus())); err != nil {
 		return err
 	}
 	return nil
 }
 
-// getEndpointAgentResource uses the SDK client's request and transport layers,
-// but decodes only the fields this resource manages. The SDK's generated
-// AgentLicenseType decoder rejects the two wireless license values that the API
-// can return, which would otherwise make imported agents unreadable.
-func getEndpointAgentResource(apiClient *client.APIClient, id string) (*endpointAgentResourceResponse, *http.Response, error) {
-	apiURL := strings.TrimRight(apiClient.GetConfig().ServerURL, "/") + "/endpoint/agents/" + url.PathEscape(id)
-	query := url.Values{}
-	if ctx := apiClient.GetConfig().Context; ctx != nil {
-		if aid, ok := ctx.Value(accountGroupIdKey).(string); ok && aid != "" {
-			query.Set("aid", aid)
-		}
-	}
-	request, err := apiClient.Common.Client.PrepareRequest(apiURL, http.MethodGet, nil, map[string]string{"Accept": "application/json"}, query, url.Values{})
-	if err != nil {
-		return nil, nil, err
-	}
-	response, err := apiClient.Common.Client.CallAPI(request)
-	if response != nil && response.Body != nil {
-		defer response.Body.Close()
-	}
-	if err != nil {
-		return nil, response, err
-	}
-	if response == nil {
-		return nil, nil, fmt.Errorf("received an empty response while reading Endpoint Agent %s", id)
-	}
-	if response.StatusCode >= http.StatusMultipleChoices {
-		body, readErr := io.ReadAll(response.Body)
-		if readErr != nil {
-			return nil, response, readErr
-		}
-		return nil, response, fmt.Errorf("unable to read Endpoint Agent %s: %s: %s", id, response.Status, strings.TrimSpace(string(body)))
-	}
-
-	var agent endpointAgentResourceResponse
-	if err := json.NewDecoder(response.Body).Decode(&agent); err != nil {
-		return nil, response, fmt.Errorf("unable to decode Endpoint Agent %s response: %w", id, err)
-	}
-	return &agent, response, nil
-}
-
-type endpointAgentResourceResponse struct {
-	ID          string `json:"id"`
-	Name        string `json:"name"`
-	LicenseType string `json:"licenseType"`
-	Status      string `json:"status"`
+func getEndpointAgentResource(apiClient *client.APIClient, id string) (*endpointagents.EndpointAgent, *http.Response, error) {
+	api := (*endpointagents.EndpointAgentsAPIService)(&apiClient.Common)
+	req := api.GetEndpointAgent(id)
+	req = SetAidFromContext(apiClient.GetConfig().Context, req)
+	return req.Execute()
 }
 
 func resourceEndpointAgentUpdate(d *schema.ResourceData, meta interface{}) error {
