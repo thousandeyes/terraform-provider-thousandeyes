@@ -340,7 +340,7 @@ func TestEndpointAgentToServerDynamicMutationErrors(t *testing.T) {
 }
 
 func TestEndpointAgentToServerDynamicInvalidSettings(t *testing.T) {
-	for key, value := range map[string]interface{}{"test_name": "", "application": "invalid", "max_machines": 0, "interval": 0, "protocol": "invalid", "ip_version": "unknown", "tcp_probe_mode": "invalid", "agent_selector_type": "agent-labels"} {
+	for key, value := range map[string]interface{}{"test_name": "", "application": "invalid", "max_machines": 0, "interval": 0, "protocol": "ast-autodetect", "ip_version": "unknown", "tcp_probe_mode": "invalid", "agent_selector_type": "agent-labels"} {
 		t.Run(key, func(t *testing.T) {
 			s := resourceEndpointAgentToServerDynamic().Schema[key]
 			_, errors := s.ValidateFunc(value, key)
