@@ -203,6 +203,34 @@ func TestResourceEndpointAgentDelete_RetainsStateAfterFailure(t *testing.T) {
 	}
 }
 
+func TestResourceEndpointAgentDelete_ProtectionRemovesStateWithoutAPIRequest(t *testing.T) {
+	requests := 0
+	transport := endpointAgentRoundTripFunc(func(r *http.Request) (*http.Response, error) {
+		requests++
+		return endpointAgentJSONResponse(http.StatusNoContent, ``), nil
+	})
+	d := schema.TestResourceDataRaw(t, resourceEndpointAgent().Schema, map[string]interface{}{
+		"deletion_protection": true,
+	})
+	d.SetId("agent-123")
+	if err := resourceEndpointAgentDelete(d, newEndpointAgentTestClient(transport, "12345")); err != nil {
+		t.Fatalf("protected delete should detach successfully, got %v", err)
+	}
+	if requests != 0 {
+		t.Fatalf("deletion protection must not call the API, got %d requests", requests)
+	}
+	if d.Id() != "" {
+		t.Fatalf("expected state ID to clear after protected delete, got %q", d.Id())
+	}
+}
+
+func TestResourceEndpointAgentDelete_ProtectionDefaultsToFalse(t *testing.T) {
+	resource := resourceEndpointAgent()
+	if got := resource.Schema["deletion_protection"].Default; got != false {
+		t.Fatalf("expected deletion protection default false, got %#v", got)
+	}
+}
+
 func TestResourceEndpointAgentCreate_IsRejectedWithoutRequest(t *testing.T) {
 	requests := 0
 	transport := endpointAgentRoundTripFunc(func(r *http.Request) (*http.Response, error) {
