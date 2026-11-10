@@ -1,0 +1,26 @@
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: ""
+description: |-
+{{ .Description | trimspace }}
+
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+## Example Usage
+
+{{ tffile .ExampleFile }}
+
+Choose one selector mode. `specific-agents` requires `agents`; `agent-tags` requires `tag_ids`; `all-agents` sends neither list. `max_machines` is optional and defaults to 25 in the API. The selector and other create-only properties require replacement when changed.
+
+{{ .SchemaMarkdown | trimspace }}
+
+{{ if .HasImport -}}
+## Import
+In Terraform v1.5.0 and later, use an [`import` block](https://developer.hashicorp.com/terraform/language/import) providing `resource_id`.
+{{ tffile "examples/resources/thousandeyes_endpoint_agent_to_server/import.tf" }}
+
+Using `terraform import` command.
+{{ codefile "shell" .ImportFile }}
+
+{{- end }}
