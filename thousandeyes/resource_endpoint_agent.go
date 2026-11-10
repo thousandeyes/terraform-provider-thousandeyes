@@ -67,7 +67,7 @@ func validateEndpointAgentLicenseType(value interface{}, key string) ([]string, 
 }
 
 func resourceEndpointAgentCreate(_ *schema.ResourceData, _ interface{}) error {
-	return fmt.Errorf("Endpoint Agents cannot be created through Terraform; import an existing Endpoint Agent by ID")
+	return fmt.Errorf("endpoint agents cannot be created through Terraform; import an existing Endpoint Agent by ID")
 }
 
 func resourceEndpointAgentRead(d *schema.ResourceData, meta interface{}) error {
@@ -84,7 +84,7 @@ func resourceEndpointAgentRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 	if agent == nil || agent.GetId() == "" {
-		return fmt.Errorf("Endpoint Agent %s response did not include an ID", d.Id())
+		return fmt.Errorf("endpoint agent %s response did not include an ID", d.Id())
 	}
 
 	d.SetId(agent.GetId())
