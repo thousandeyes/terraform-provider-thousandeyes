@@ -26,7 +26,7 @@ Endpoint Agents must already exist before Terraform can manage them. The resourc
 
 ### Optional
 
-- `deletion_protection` (Boolean) When true, destroying the Terraform resource removes it from state without deleting the remote Endpoint Agent. Apply this setting before removing the resource from configuration.
+- `deletion_protection` (Boolean) When enabled, destroying the Terraform resource removes it from state without deleting the remote Endpoint Agent. Apply this setting before removing the resource from configuration.
 - `license_type` (String) The license type assigned to the Endpoint Agent. The `embed-wireless-advantage` and `embed-wireless-essentials` license types can be read after import but cannot be assigned.
 - `name` (String) The name of the Endpoint Agent.
 - `status` (String) The desired status of the Endpoint Agent: `enabled` or `disabled`.
