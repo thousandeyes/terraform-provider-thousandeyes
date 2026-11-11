@@ -56,7 +56,7 @@ func resourceEndpointAgent() *schema.Resource {
 				Description: "When enabled, destroying the Terraform resource removes it from state without deleting the remote Endpoint Agent. Apply this setting before removing the resource from configuration.",
 			},
 		},
-		Description: "Manages an existing ThousandEyes Endpoint Agent. This resource is import-only because the API does not support creating Endpoint Agents. Import an existing agent by ID before managing it. When `deletion_protection` is enabled, destroying the resource removes it from Terraform state without deleting the remote agent.",
+		Description: "Manages an existing ThousandEyes Endpoint Agent. This resource is import-only because the API does not support creating Endpoint Agents. Import an existing agent by ID before managing it. When `deletion_protection` is enabled, destroying the resource removes it from Terraform state without deleting the remote agent. For more information, see [Endpoint Agents](https://docs.thousandeyes.com/product-documentation/global-vantage-points/endpoint-agents).",
 	}
 }
 
