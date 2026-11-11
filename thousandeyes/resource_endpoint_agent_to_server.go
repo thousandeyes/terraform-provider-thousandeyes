@@ -8,15 +8,15 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/thousandeyes/terraform-provider-thousandeyes/thousandeyes/schemas"
 	"github.com/thousandeyes/thousandeyes-sdk-go/v3/client"
 	"github.com/thousandeyes/thousandeyes-sdk-go/v3/endpointtests"
 )
 
 const (
-	endpointAgentSelectorAllAgents       = "all-agents"
-	endpointAgentSelectorSpecificAgents  = "specific-agents"
-	endpointAgentSelectorAgentTags       = "agent-tags"
+	endpointAgentSelectorAllAgents       = schemas.EndpointAgentSelectorAllAgents
+	endpointAgentSelectorSpecificAgents  = schemas.EndpointAgentSelectorSpecificAgents
+	endpointAgentSelectorAgentTags       = schemas.EndpointAgentSelectorAgentTags
 	endpointAgentToServerTestIDAttribute = "test_id"
 )
 
@@ -30,141 +30,7 @@ func resourceEndpointAgentToServer() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Schema: map[string]*schema.Schema{
-			"agent_selector_type": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     true,
-				ValidateFunc: validation.StringInSlice([]string{endpointAgentSelectorAllAgents, endpointAgentSelectorSpecificAgents, endpointAgentSelectorAgentTags}, false),
-				Description:  "How Endpoint Agents are selected for this test: `all-agents`, `specific-agents`, or `agent-tags`.",
-			},
-			"agents": {
-				Type:        schema.TypeSet,
-				Optional:    true,
-				ForceNew:    true,
-				Elem:        &schema.Schema{Type: schema.TypeString},
-				Description: "Endpoint Agent IDs to use when `agent_selector_type` is `specific-agents`.",
-			},
-			"tag_ids": {
-				Type:        schema.TypeSet,
-				Optional:    true,
-				ForceNew:    true,
-				Elem:        &schema.Schema{Type: schema.TypeString},
-				Description: "Tag IDs used to select Endpoint Agents when `agent_selector_type` is `agent-tags`.",
-			},
-			"max_machines": {
-				Type:         schema.TypeInt,
-				Optional:     true,
-				Computed:     true,
-				ForceNew:     true,
-				ValidateFunc: validation.IntAtLeast(1),
-				Description:  "Maximum number of Endpoint Agents that can execute the test. If omitted, the API default of 25 applies.",
-			},
-			"test_name": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The name of the test.",
-			},
-			"server": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "Target domain name or IP address.",
-			},
-			"port": {
-				Type:         schema.TypeInt,
-				Optional:     true,
-				Computed:     true,
-				ValidateFunc: validation.IntBetween(1, 65535),
-				Description:  "Target port. The API default is 443.",
-			},
-			"protocol": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Computed:     true,
-				ValidateFunc: validation.StringInSlice([]string{"icmp", "icmp-with-tcp-connect", "tcp", "prefer-tcp", "ast-autodetect", "autodetect"}, false),
-				Description:  "Protocol requested for the test.",
-			},
-			"interval": {
-				Type:         schema.TypeInt,
-				Optional:     true,
-				Computed:     true,
-				ValidateFunc: validation.IntInSlice([]int{60, 120, 300, 600, 900, 1800, 3600}),
-				Description:  "Interval between test runs in seconds.",
-			},
-			"ip_version": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Computed:     true,
-				ForceNew:     true,
-				ValidateFunc: validation.StringInSlice([]string{"V4_ONLY", "V6_ONLY", "V6_PREFER", "OS_DEFAULT"}, false),
-				Description:  "IP version used for the test. This setting requires replacement when changed.",
-			},
-			"is_prioritized": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Computed:    true,
-				ForceNew:    true,
-				Description: "Whether the test is prioritized when the Endpoint Agent's test limit is exceeded. This setting requires replacement when changed.",
-			},
-			"is_enabled": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Computed:    true,
-				Description: "Whether the test is enabled. The API enables tests by default.",
-			},
-			"tcp_probe_mode": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Computed:     true,
-				ValidateFunc: validation.StringInSlice([]string{"auto", "sack", "syn"}, false),
-				Description:  "Probe mode used when the protocol is TCP.",
-			},
-			"network_measurements": {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "Whether network measurements are enabled.",
-			},
-			"has_path_trace_in_session": {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "Whether path tracing runs within a TCP session.",
-			},
-			"is_saved_event": {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "Whether the test is a saved event (private snapshot).",
-			},
-			"created_date": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "UTC date and time when the test was created.",
-			},
-			"modified_date": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "UTC date and time when the test was last modified.",
-			},
-			"type": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The type of test returned by the API.",
-			},
-			"aid": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Account group ID associated with the test.",
-			},
-			"link": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Link to the test resource returned by the API.",
-			},
-			endpointAgentToServerTestIDAttribute: {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The unique ID of the test.",
-			},
-		},
+		Schema:      schemas.EndpointAgentToServerSchema,
 		Description: "Manages a scheduled Endpoint Agent-to-Server test. Use `agent_selector_type` to choose all Endpoint Agents, specific agents, or agents selected by tags.",
 	}
 }
@@ -173,23 +39,45 @@ func validateEndpointAgentSelectorDiff(_ context.Context, diff *schema.ResourceD
 	selector := diff.Get("agent_selector_type").(string)
 	agents := diff.Get("agents").(*schema.Set)
 	tags := diff.Get("tag_ids").(*schema.Set)
+	agentCount, agentsKnown := endpointAgentSelectorSetCount(diff, "agents", agents)
+	tagCount, tagsKnown := endpointAgentSelectorSetCount(diff, "tag_ids", tags)
+	return validateEndpointAgentSelectorDiffValues(selector, agentCount, tagCount, agentsKnown, tagsKnown)
+}
+
+func endpointAgentSelectorSetCount(diff *schema.ResourceDiff, key string, current *schema.Set) (int, bool) {
+	config := diff.GetRawConfig()
+	if config.IsNull() || !config.Type().HasAttribute(key) {
+		return current.Len(), diff.NewValueKnown(key)
+	}
+
+	value := config.GetAttr(key)
+	if !value.IsKnown() {
+		return current.Len(), false
+	}
+	if value.IsNull() {
+		return 0, true
+	}
+	return value.LengthInt(), true
+}
+
+func validateEndpointAgentSelectorDiffValues(selector string, agentCount, tagCount int, agentsKnown, tagsKnown bool) error {
 	switch selector {
 	case endpointAgentSelectorAllAgents:
-		if agents.Len() > 0 || tags.Len() > 0 {
+		if (agentsKnown && agentCount > 0) || (tagsKnown && tagCount > 0) {
 			return fmt.Errorf("agents and tag_ids must be empty when agent_selector_type is %q", selector)
 		}
 	case endpointAgentSelectorSpecificAgents:
-		if agents.Len() == 0 {
+		if agentsKnown && agentCount == 0 {
 			return fmt.Errorf("agents must contain at least one ID when agent_selector_type is %q", selector)
 		}
-		if tags.Len() > 0 {
+		if tagsKnown && tagCount > 0 {
 			return fmt.Errorf("tag_ids must be empty when agent_selector_type is %q", selector)
 		}
 	case endpointAgentSelectorAgentTags:
-		if tags.Len() == 0 {
+		if tagsKnown && tagCount == 0 {
 			return fmt.Errorf("tag_ids must contain at least one ID when agent_selector_type is %q", selector)
 		}
-		if agents.Len() > 0 {
+		if agentsKnown && agentCount > 0 {
 			return fmt.Errorf("agents must be empty when agent_selector_type is %q", selector)
 		}
 	}
@@ -319,38 +207,11 @@ func resourceEndpointAgentToServerRead(d *schema.ResourceData, meta interface{})
 	if response.TestId != nil && *response.TestId != "" {
 		d.SetId(*response.TestId)
 	}
-	setters := []struct {
-		name  string
-		value interface{}
-	}{
-		{"test_id", stringValue(response.TestId)},
-		{"aid", stringValue(response.Aid)},
-		{"test_name", stringValue(response.TestName)},
-		{"server", stringValue(response.Server)},
-		{"port", int32Value(response.Port)},
-		{"interval", int32Value((*int32)(response.Interval))},
-		{"protocol", endpointTestProtocolValue(response.Protocol)},
-		{"ip_version", stringValue(response.IpVersion)},
-		{"is_prioritized", boolValue(response.IsPrioritized)},
-		{"is_enabled", boolValue(response.IsEnabled)},
-		{"tcp_probe_mode", endpointTestProbeModeValue(response.TcpProbeMode)},
-		{"network_measurements", boolValue(response.NetworkMeasurements)},
-		{"has_path_trace_in_session", boolValue(response.HasPathTraceInSession)},
-		{"is_saved_event", boolValue(response.IsSavedEvent)},
-		{"type", response.Type},
+	if err := ResourceRead(apiClient.GetConfig().Context, d, endpointAgentToServerResourceReadResponse(response)); err != nil {
+		return err
 	}
-	for _, setter := range setters {
-		if err := d.Set(setter.name, setter.value); err != nil {
-			return err
-		}
-	}
-	if response.CreatedDate != nil {
-		if err := d.Set("created_date", response.CreatedDate.Format(time.RFC3339)); err != nil {
-			return err
-		}
-	}
-	if response.ModifiedDate != nil {
-		if err := d.Set("modified_date", response.ModifiedDate.Format(time.RFC3339)); err != nil {
+	if response.Server != nil {
+		if err := d.Set("server", *response.Server); err != nil {
 			return err
 		}
 	}
@@ -360,6 +221,52 @@ func resourceEndpointAgentToServerRead(d *schema.ResourceData, meta interface{})
 		}
 	}
 	return setEndpointAgentSelectorState(d, response.AgentSelectorConfig)
+}
+
+type endpointAgentToServerReadResponse struct {
+	Aid                   *string                              `json:"aid,omitempty"`
+	CreatedDate           *time.Time                           `json:"createdDate,omitempty"`
+	IsPrioritized         *bool                                `json:"isPrioritized,omitempty"`
+	Interval              *endpointtests.TestInterval          `json:"interval,omitempty"`
+	IsEnabled             *bool                                `json:"isEnabled,omitempty"`
+	IsSavedEvent          *bool                                `json:"isSavedEvent,omitempty"`
+	HasPathTraceInSession *bool                                `json:"hasPathTraceInSession,omitempty"`
+	ModifiedDate          *time.Time                           `json:"modifiedDate,omitempty"`
+	NetworkMeasurements   *bool                                `json:"networkMeasurements,omitempty"`
+	Protocol              *endpointtests.EndpointTestProtocol  `json:"protocol,omitempty"`
+	IpVersion             *string                              `json:"ipVersion,omitempty"`
+	Server                string                               `json:"server,omitempty"`
+	TestId                *string                              `json:"testId,omitempty"`
+	TestName              *string                              `json:"testName,omitempty"`
+	Type                  string                               `json:"type"`
+	TcpProbeMode          *endpointtests.TestProbeModeResponse `json:"tcpProbeMode,omitempty"`
+	Port                  *int32                               `json:"port,omitempty"`
+}
+
+func endpointAgentToServerResourceReadResponse(response *endpointtests.EndpointAgentToServerTest) *endpointAgentToServerReadResponse {
+	server := ""
+	if response.Server != nil {
+		server = *response.Server
+	}
+	return &endpointAgentToServerReadResponse{
+		Aid:                   response.Aid,
+		CreatedDate:           response.CreatedDate,
+		IsPrioritized:         response.IsPrioritized,
+		Interval:              response.Interval,
+		IsEnabled:             response.IsEnabled,
+		IsSavedEvent:          response.IsSavedEvent,
+		HasPathTraceInSession: response.HasPathTraceInSession,
+		ModifiedDate:          response.ModifiedDate,
+		NetworkMeasurements:   response.NetworkMeasurements,
+		Protocol:              response.Protocol,
+		IpVersion:             response.IpVersion,
+		Server:                server,
+		TestId:                response.TestId,
+		TestName:              response.TestName,
+		Type:                  response.Type,
+		TcpProbeMode:          response.TcpProbeMode,
+		Port:                  response.Port,
+	}
 }
 
 func setEndpointAgentSelectorState(d *schema.ResourceData, config *endpointtests.EndpointAgentSelectorConfig) error {
@@ -400,41 +307,6 @@ func setEndpointAgentSelectorState(d *schema.ResourceData, config *endpointtests
 		}
 	}
 	return nil
-}
-
-func stringValue(value *string) string {
-	if value == nil {
-		return ""
-	}
-	return *value
-}
-
-func int32Value(value *int32) int {
-	if value == nil {
-		return 0
-	}
-	return int(*value)
-}
-
-func boolValue(value *bool) bool {
-	if value == nil {
-		return false
-	}
-	return *value
-}
-
-func endpointTestProtocolValue(value *endpointtests.EndpointTestProtocol) string {
-	if value == nil {
-		return ""
-	}
-	return string(*value)
-}
-
-func endpointTestProbeModeValue(value *endpointtests.TestProbeModeResponse) string {
-	if value == nil {
-		return ""
-	}
-	return string(*value)
 }
 
 func endpointAgentToServerCreateUpdate(d *schema.ResourceData) endpointtests.EndpointNetworkTestUpdate {

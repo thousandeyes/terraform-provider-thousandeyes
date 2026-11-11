@@ -26,7 +26,6 @@ func TestAccThousandEyesEndpointAgentToServer(t *testing.T) {
 		selector          string
 		selectorValue     string
 		requiresAgentName bool
-		requiresTagID     bool
 	}{
 		{
 			name:          "all_agents",
@@ -49,21 +48,30 @@ func TestAccThousandEyesEndpointAgentToServer(t *testing.T) {
 			updateConfig:  "agent_tags_update.tf",
 			selector:      "agent_selector_type",
 			selectorValue: "agent-tags",
-			requiresTagID: true,
 		},
 	}
 
 	for _, tc := range selectorCases {
 		t.Run(tc.name, func(t *testing.T) {
 			resourceName := "thousandeyes_endpoint_agent_to_server.test"
+			createChecks := []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(resourceName, "test_name", "Endpoint Agent-to-Server acceptance test"),
+				resource.TestCheckResourceAttr(resourceName, "server", "www.thousandeyes.com"),
+				resource.TestCheckResourceAttr(resourceName, tc.selector, tc.selectorValue),
+			}
+			if tc.selectorValue == endpointAgentSelectorAgentTags {
+				createChecks = append(createChecks,
+					resource.TestCheckResourceAttr("thousandeyes_tag.endpoint_agents", "object_type", "endpoint-agent"),
+					resource.TestCheckResourceAttr("thousandeyes_tag.endpoint_agents", "type", "dynamic"),
+					resource.TestCheckResourceAttr("thousandeyes_tag.endpoint_agents", "filters.#", "1"),
+					resource.TestCheckResourceAttrPair(resourceName, "tag_ids.0", "thousandeyes_tag.endpoint_agents", "id"),
+				)
+			}
 			resource.Test(t, resource.TestCase{
 				PreCheck: func() {
 					testAccPreCheck(t)
 					if tc.requiresAgentName && os.Getenv("TE_ENDPOINT_AGENT_NAME") == "" {
 						t.Skip("TE_ENDPOINT_AGENT_NAME is required for specific-agent and agent-tag acceptance cases")
-					}
-					if tc.requiresTagID && os.Getenv("TE_ENDPOINT_AGENT_TAG_ID") == "" {
-						t.Skip("TE_ENDPOINT_AGENT_TAG_ID is required for the agent-tag acceptance case; use a tag created with CP-5555 support")
 					}
 				},
 				ProviderFactories: providerFactories,
@@ -71,11 +79,7 @@ func TestAccThousandEyesEndpointAgentToServer(t *testing.T) {
 				Steps: []resource.TestStep{
 					{
 						Config: testAccEndpointAgentToServerConfig(t, tc.createConfig),
-						Check: resource.ComposeTestCheckFunc(
-							resource.TestCheckResourceAttr(resourceName, "test_name", "Endpoint Agent-to-Server acceptance test"),
-							resource.TestCheckResourceAttr(resourceName, "server", "www.thousandeyes.com"),
-							resource.TestCheckResourceAttr(resourceName, tc.selector, tc.selectorValue),
-						),
+						Check:  resource.ComposeTestCheckFunc(createChecks...),
 					},
 					{
 						Config: testAccEndpointAgentToServerConfig(t, tc.updateConfig),
@@ -92,15 +96,13 @@ func TestAccThousandEyesEndpointAgentToServer(t *testing.T) {
 
 func testAccEndpointAgentToServerConfig(t *testing.T, filename string) string {
 	t.Helper()
-	path := filepath.Join("..", "acceptance_resources", "endpoint_agent_to_server", filename)
+	path := filepath.Join("acceptance_resources", "endpoint_agent_to_server", filename)
 	contents, err := os.ReadFile(path)
 	if err != nil {
 		t.Fatalf("read acceptance config %s: %v", path, err)
 	}
 	endpointAgentName := os.Getenv("TE_ENDPOINT_AGENT_NAME")
 	contents = []byte(strings.ReplaceAll(string(contents), `"__ENDPOINT_AGENT_NAME__"`, fmt.Sprintf("%q", endpointAgentName)))
-	endpointAgentTagID := os.Getenv("TE_ENDPOINT_AGENT_TAG_ID")
-	contents = []byte(strings.ReplaceAll(string(contents), `"__ENDPOINT_AGENT_TAG_ID__"`, fmt.Sprintf("%q", endpointAgentTagID)))
 	return string(contents)
 }
 
@@ -113,6 +115,11 @@ func testAccCheckEndpointAgentToServerDestroy(s *terraform.State) error {
 			req = SetAidFromContext(testClient.GetConfig().Context, req)
 			resp, _, err := req.Execute()
 			return resp, err
+		},
+	}, {
+		ResourceName: "thousandeyes_tag",
+		GetResource: func(id string) (interface{}, error) {
+			return getTag(id)
 		},
 	}}
 	return testAccCheckResourceDestroy(resources, s)
@@ -194,6 +201,61 @@ func TestEndpointAgentToServerValidateSelectorInputs(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			err := validateEndpointAgentSelector(tc.selector, stringSet(tc.agents), stringSet(tc.tags))
+			if (err != nil) != tc.wantErr {
+				t.Fatalf("expected error=%t, got %v", tc.wantErr, err)
+			}
+		})
+	}
+}
+
+func TestEndpointAgentToServerValidateSelectorDiffValues(t *testing.T) {
+	cases := []struct {
+		name        string
+		selector    string
+		agentCount  int
+		tagCount    int
+		agentsKnown bool
+		tagsKnown   bool
+		wantErr     bool
+	}{
+		{
+			name:        "agent tags allow a tag ID that is not known until apply",
+			selector:    endpointAgentSelectorAgentTags,
+			agentsKnown: true,
+		},
+		{
+			name:      "specific agents allow agent IDs that are not known until apply",
+			selector:  endpointAgentSelectorSpecificAgents,
+			tagsKnown: true,
+		},
+		{
+			name:        "agent tags reject a known empty tag list",
+			selector:    endpointAgentSelectorAgentTags,
+			agentsKnown: true,
+			tagsKnown:   true,
+			wantErr:     true,
+		},
+		{
+			name:        "agent tags reject agent IDs",
+			selector:    endpointAgentSelectorAgentTags,
+			agentCount:  1,
+			tagCount:    1,
+			agentsKnown: true,
+			tagsKnown:   true,
+			wantErr:     true,
+		},
+		{
+			name:        "specific agents reject a known empty agent list",
+			selector:    endpointAgentSelectorSpecificAgents,
+			agentsKnown: true,
+			tagsKnown:   true,
+			wantErr:     true,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			err := validateEndpointAgentSelectorDiffValues(tc.selector, tc.agentCount, tc.tagCount, tc.agentsKnown, tc.tagsKnown)
 			if (err != nil) != tc.wantErr {
 				t.Fatalf("expected error=%t, got %v", tc.wantErr, err)
 			}
@@ -345,7 +407,7 @@ func TestEndpointAgentToServerReadAfterImportRestoresSelectorState(t *testing.T)
 		if got := r.URL.Query().Get("aid"); got != "aid-123" {
 			t.Errorf("expected aid=aid-123, got %q", got)
 		}
-		return endpointAgentJSONResponse(http.StatusOK, `{"testId":"imported-test","type":"agent-to-server","testName":"imported","server":"example.com","agentSelectorConfig":{"agentSelectorType":"agent-tags","tagIds":["tag-7"],"maxMachines":25}}`), nil
+		return endpointAgentJSONResponse(http.StatusOK, `{"testId":"imported-test","type":"agent-to-server","testName":"imported","server":"2001:db8::1","agentSelectorConfig":{"agentSelectorType":"agent-tags","tagIds":["tag-7"],"maxMachines":25}}`), nil
 	})
 
 	d := schema.TestResourceDataRaw(t, resource.Schema, map[string]interface{}{})
@@ -362,6 +424,9 @@ func TestEndpointAgentToServerReadAfterImportRestoresSelectorState(t *testing.T)
 	}
 	if got := imported[0].Get("agent_selector_type"); got != "agent-tags" {
 		t.Errorf("expected imported selector agent-tags, got %#v", got)
+	}
+	if got := imported[0].Get("server"); got != "2001:db8::1" {
+		t.Errorf("expected IPv6 server to be preserved, got %#v", got)
 	}
 	if got := resourceTestStringSet(imported[0], "tag_ids"); !equalStrings(got, []string{"tag-7"}) {
 		t.Errorf("expected imported tag_ids [tag-7], got %v", got)
