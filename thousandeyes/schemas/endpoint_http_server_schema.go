@@ -88,7 +88,7 @@ func EndpointHTTPServerSchema() map[string]*schema.Schema {
 			Description:  "Protocol.",
 			Optional:     true,
 			Default:      "icmp",
-			ValidateFunc: validation.StringInSlice([]string{"icmp", "icmp-with-tcp-connect", "tcp", "prefer-tcp", "ast-autodetect", "autodetect"}, false),
+			ValidateFunc: validation.StringInSlice([]string{"icmp", "icmp-with-tcp-connect", "tcp", "prefer-tcp", "autodetect"}, false),
 		},
 		"username": {
 			Type:        schema.TypeString,
