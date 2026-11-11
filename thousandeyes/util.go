@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net"
 	"reflect"
 	"regexp"
 	"slices"
@@ -377,6 +378,14 @@ func getTargetFieldsMaps(d *schema.ResourceData, structPtr interface{}) map[stri
 	return res
 }
 
+// serverHost removes an explicit port while preserving addresses without one.
+func serverHost(server string) string {
+	if host, _, err := net.SplitHostPort(server); err == nil {
+		return host
+	}
+	return server
+}
+
 // FixReadValues adjusts certain values returned from ThousandEyes to make them
 // processable by this Terraform plugin.  This includes removing extraneous
 // information that ThousandEyes returns when querying certain resources (ie,
@@ -467,7 +476,14 @@ func FixReadValues(ctx context.Context, targetMaps map[string]map[string]interfa
 
 	// Return only host when host:port pattern obtained
 	case "server":
-		m = strings.Split(m.(string), ":")[0]
+		switch server := m.(type) {
+		case string:
+			m = serverHost(server)
+		case *string:
+			if server != nil {
+				m = serverHost(*server)
+			}
+		}
 
 	// Remove all alert rule fields except for rule ID. Ignore default rules.
 	// Remove all alert rule fields except for rule ID.
@@ -512,6 +528,11 @@ func FixReadValues(ctx context.Context, targetMaps map[string]map[string]interfa
 			label := v.(map[string]interface{})
 			m.([]interface{})[i] = label["label_id"]
 		}
+
+	// Endpoint selectors are mapped separately to top-level Terraform attributes.
+	case "agent_selector_config":
+		*name = ""
+		return nil, nil
 
 	// Tags are managed through separate tag and tag assignment resources.
 	case "tags":
@@ -908,8 +929,11 @@ func resourceFixups[T any](d *schema.ResourceData, structPtr *T) *T {
 		}
 	}
 
-	_, hasAgents := t.FieldByName("Agents")
-	if hasAgents && t.Name() != "AccountGroupRequest" {
+	agentsFieldType, hasAgents := t.FieldByName("Agents")
+	// Cloud and Enterprise tests use agent objects. Endpoint tests use string
+	// IDs, which ResourceBuildStruct already maps without these fixups.
+	if hasAgents && t.Name() != "AccountGroupRequest" &&
+		agentsFieldType.Type.Kind() == reflect.Slice && agentsFieldType.Type.Elem().Kind() == reflect.Struct {
 		scrappedAgents := expandAgents(d.Get("agents"))
 		if resourceDataHasField(d, "agent_interfaces") {
 			scrappedAgents = applyAgentInterfaces(scrappedAgents, d.Get("agent_interfaces"))

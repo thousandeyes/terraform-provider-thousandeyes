@@ -58,6 +58,7 @@ func Provider() *schema.Provider {
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"thousandeyes_alert_rule":           resourceAlertRule(),
+			"thousandeyes_endpoint_http_server": resourceEndpointHTTPServer(),
 			"thousandeyes_http_server":          resourceHTTPServer(),
 			"thousandeyes_page_load":            resourcePageLoad(),
 			"thousandeyes_agent_to_server":      resourceAgentToServer(),

@@ -1667,3 +1667,26 @@ func sharingTestConfig(resource *schema.Resource) map[string]interface{} {
 	}
 	return config
 }
+
+func TestFixReadValuesServerHost(t *testing.T) {
+	for _, tc := range []struct{ input, want string }{
+		{"example.com", "example.com"}, {"example.com:443", "example.com"},
+		{"192.0.2.1", "192.0.2.1"}, {"192.0.2.1:443", "192.0.2.1"},
+		{"2001:db8::1", "2001:db8::1"}, {"2001:db8::1:443", "2001:db8::1:443"},
+		{"[2001:db8::1]:443", "2001:db8::1"}, {"[2001:db8::1]", "[2001:db8::1]"},
+		{"[fe80::1%en0]:443", "fe80::1%en0"}, {"fe80::1%en0", "fe80::1%en0"},
+	} {
+		t.Run(tc.input, func(t *testing.T) {
+			for _, value := range []interface{}{tc.input, getPointer(tc.input)} {
+				name := "server"
+				got, err := FixReadValues(context.Background(), nil, value, &name)
+				if err != nil {
+					t.Fatal(err)
+				}
+				if got != tc.want {
+					t.Errorf("server %v (%T): got %q, want %q", tc.input, value, got, tc.want)
+				}
+			}
+		})
+	}
+}

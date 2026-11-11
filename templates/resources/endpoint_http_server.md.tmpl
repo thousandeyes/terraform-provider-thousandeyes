@@ -1,0 +1,45 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: ""
+description: |-
+---
+
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+## Example Usage
+
+{{ tffile .ExampleFile }}
+
+URLs without a scheme use HTTPS.
+
+## Agent Selection
+
+`agent_selector_type` defaults to `all-agents`, which accepts neither `agents` nor `tag_ids`.
+Use `specific-agents` with a nonempty `agents` set, or `agent-tags` with a nonempty `tag_ids` set.
+Endpoint Agent IDs are strings. `max_machines` defaults to 25 for all selector modes.
+Endpoint Labels and the legacy `agent-labels` selector are unsupported.
+
+For selection by dynamic tags, create a `thousandeyes_tag` with `object_type = "endpoint-agent"`
+and `type = "dynamic"`, and reference its ID in `tag_ids`.
+
+## Updates and Import
+
+Changes to `test_name`, `url`, `interval`, `protocol`, `tcp_probe_mode`, and `is_enabled`
+update the existing test. IPv6 and OS-default IP preferences require `protocol = "icmp"`;
+other protocols require `ip_version = "V4_ONLY"`.
+
+Changes to other configurable settings replace the test. Tests configured with
+`is_enabled = false` may briefly be enabled during creation.
+
+Passwords are stored in Terraform state. Password changes made outside Terraform
+cannot be detected. Configuring a password after import may require replacing the test.
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+{{ tffile "examples/resources/thousandeyes_endpoint_http_server/import.tf" }}
+
+{{ codefile "shell" .ImportFile }}
