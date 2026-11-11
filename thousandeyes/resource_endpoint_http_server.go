@@ -37,6 +37,13 @@ func resourceEndpointHTTPServerCustomizeDiff(ctx context.Context, d *schema.Reso
 			return fmt.Errorf("ip_version %q requires protocol = icmp; other protocols require V4_ONLY", ipVersion)
 		}
 	}
+	// The API rejects URL changes on tests configured with HTTP authentication.
+	if d.Id() != "" && d.HasChange("url") && d.Get("auth_type").(string) != "none" {
+		oldURL, newURL := d.GetChange("url")
+		if schemas.NormalizeEndpointHTTPServerURL(oldURL.(string)) != schemas.NormalizeEndpointHTTPServerURL(newURL.(string)) {
+			return d.ForceNew("url")
+		}
+	}
 	return nil
 }
 

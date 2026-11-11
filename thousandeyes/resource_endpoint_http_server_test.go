@@ -271,6 +271,45 @@ func TestEndpointHTTPServerPlanValidation(t *testing.T) {
 	}
 }
 
+func TestEndpointHTTPServerAuthenticatedURLReplacement(t *testing.T) {
+	for _, authType := range []string{"none", "basic", "ntlm"} {
+		for _, tc := range []struct {
+			name    string
+			url     cty.Value
+			changed bool
+		}{
+			{"changed-url", cty.StringVal("https://other.example.com/health"), true},
+			{"unchanged-url", cty.StringVal("https://example.com"), false},
+			{"equivalent-url", cty.StringVal("example.com"), false},
+			{"unknown-url", cty.UnknownVal(cty.String), true},
+		} {
+			t.Run(authType+"/"+tc.name, func(t *testing.T) {
+				r := resourceEndpointHTTPServer()
+				d := schema.TestResourceDataRaw(t, r.Schema, map[string]interface{}{
+					"test_name": "test", "url": "https://example.com", "auth_type": authType,
+				})
+				d.SetId("test")
+				values := map[string]cty.Value{}
+				for name, ty := range r.CoreConfigSchema().ImpliedType().AttributeTypes() {
+					values[name] = cty.NullVal(ty)
+				}
+				values["test_name"] = cty.StringVal("renamed")
+				values["url"] = tc.url
+				values["auth_type"] = cty.StringVal(authType)
+				cfg := terraform.NewResourceConfigShimmed(cty.ObjectVal(values), r.CoreConfigSchema())
+				diff, err := r.Diff(context.Background(), d.State(), cfg, nil)
+				if err != nil {
+					t.Fatal(err)
+				}
+				wantReplacement := authType != "none" && tc.changed
+				if diff.RequiresNew() != wantReplacement {
+					t.Fatalf("replacement = %v, want %v", diff.RequiresNew(), wantReplacement)
+				}
+			})
+		}
+	}
+}
+
 func TestEndpointHTTPServerSelectorReadFixup(t *testing.T) {
 	name := "agent_selector_config"
 	value := map[string]interface{}{"agent_selector_type": "all-agents"}
