@@ -2,13 +2,64 @@ package thousandeyes
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
+
+func TestAccThousandEyesEndpointAgentImport(t *testing.T) {
+	const resourceName = "thousandeyes_endpoint_agent.test"
+	agentID := os.Getenv("TE_ENDPOINT_AGENT_ID")
+	if agentID == "" {
+		t.Skip("TE_ENDPOINT_AGENT_ID is required to run Endpoint Agent import acceptance coverage")
+	}
+
+	config, err := os.ReadFile(filepath.Join("acceptance_resources", "endpoint_agent", "import.tf"))
+	if err != nil {
+		t.Fatalf("read Endpoint Agent acceptance config: %v", err)
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: providerFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:             string(config),
+				ResourceName:       resourceName,
+				ImportState:        true,
+				ImportStateId:      agentID,
+				ImportStatePersist: false,
+				ImportStateCheck: func(states []*terraform.InstanceState) error {
+					if len(states) != 1 {
+						return fmt.Errorf("expected one imported Endpoint Agent, got %d", len(states))
+					}
+
+					state := states[0]
+					if state.ID != agentID {
+						return fmt.Errorf("expected imported Endpoint Agent ID %q, got %q", agentID, state.ID)
+					}
+					for _, key := range []string{"name", "license_type", "status"} {
+						if state.Attributes[key] == "" {
+							return fmt.Errorf("expected imported Endpoint Agent attribute %q to be populated", key)
+						}
+					}
+					if status := state.Attributes["status"]; status != "enabled" && status != "disabled" {
+						return fmt.Errorf("expected imported Endpoint Agent status to be enabled or disabled, got %q", status)
+					}
+					return nil
+				},
+			},
+		},
+	})
+}
 
 func TestResourceEndpointAgentRead_ImportAndRefresh(t *testing.T) {
 	const agentID = "agent-123"
