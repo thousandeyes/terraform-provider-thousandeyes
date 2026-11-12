@@ -42,10 +42,10 @@ func TestAccThousandEyesEndpointAgentToServerDynamic(t *testing.T) {
 			replacement := strings.Replace(basic, "max_machines        = 25", "max_machines        = 12", 1)
 			resource.Test(t, resource.TestCase{
 				PreCheck: func() {
-					testAccPreCheck(t)
 					if tc.selectorType == "specific-agents" && os.Getenv("TE_ENDPOINT_AGENT_NAME") == "" {
-						t.Skip("set TE_ENDPOINT_AGENT_NAME to an existing Endpoint Agent in the test account")
+						t.Fatal("TE_ENDPOINT_AGENT_NAME must identify an existing Endpoint Agent in the test account")
 					}
+					testAccPreCheck(t)
 				},
 				ProviderFactories: providerFactories,
 				CheckDestroy:      testAccCheckEndpointAgentToServerDynamicResourceDestroy,

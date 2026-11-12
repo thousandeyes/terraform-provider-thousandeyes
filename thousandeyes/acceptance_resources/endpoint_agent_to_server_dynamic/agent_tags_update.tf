@@ -9,7 +9,7 @@ resource "thousandeyes_tag" "endpoint" {
   filters {
     key    = "platform"
     mode   = "in"
-    values = ["Windows"]
+    values = ["Mac"]
   }
 }
 
