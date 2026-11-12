@@ -1,5 +1,5 @@
 data "thousandeyes_endpoint_agent" "selected" {
-  agent_name = "__ENDPOINT_AGENT_NAME__"
+  agent_name = "TE_ENDPOINT_AGENT_NAME"
 }
 
 resource "thousandeyes_endpoint_http_server" "test" {

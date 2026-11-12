@@ -116,5 +116,5 @@ func testAccThousandEyesEndpointHTTPServerConfig(testResource, name string) stri
 		panic(err)
 	}
 	config := strings.ReplaceAll(string(content), "User Acceptance Test - Endpoint HTTP Server", name)
-	return strings.ReplaceAll(config, "\"__ENDPOINT_AGENT_NAME__\"", strconv.Quote(os.Getenv("TE_ENDPOINT_AGENT_NAME")))
+	return strings.ReplaceAll(config, "\"TE_ENDPOINT_AGENT_NAME\"", strconv.Quote(os.Getenv("TE_ENDPOINT_AGENT_NAME")))
 }
