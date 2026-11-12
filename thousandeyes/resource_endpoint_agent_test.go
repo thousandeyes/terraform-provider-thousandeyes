@@ -26,6 +26,37 @@ func TestAccThousandEyesEndpointAgentImport(t *testing.T) {
 	if err != nil {
 		t.Fatalf("read Endpoint Agent acceptance config: %v", err)
 	}
+	disableConfig, err := os.ReadFile(filepath.Join("acceptance_resources", "endpoint_agent", "disable.tf"))
+	if err != nil {
+		t.Fatalf("read Endpoint Agent disable acceptance config: %v", err)
+	}
+	enableConfig, err := os.ReadFile(filepath.Join("acceptance_resources", "endpoint_agent", "enable.tf"))
+	if err != nil {
+		t.Fatalf("read Endpoint Agent enable acceptance config: %v", err)
+	}
+	var importedName, importedLicense string
+	checkAgentState := func(wantStatus string) resource.TestCheckFunc {
+		return func(s *terraform.State) error {
+			instance, ok := s.RootModule().Resources[resourceName]
+			if !ok {
+				return fmt.Errorf("expected resource %q in Terraform state", resourceName)
+			}
+
+			want := map[string]string{
+				"id":                  agentID,
+				"name":                importedName,
+				"license_type":        importedLicense,
+				"status":              wantStatus,
+				"deletion_protection": "true",
+			}
+			for key, expected := range want {
+				if actual := instance.Primary.Attributes[key]; actual != expected {
+					return fmt.Errorf("expected %s %q, got %q", key, expected, actual)
+				}
+			}
+			return nil
+		}
+	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
@@ -36,7 +67,7 @@ func TestAccThousandEyesEndpointAgentImport(t *testing.T) {
 				ResourceName:       resourceName,
 				ImportState:        true,
 				ImportStateId:      agentID,
-				ImportStatePersist: false,
+				ImportStatePersist: true,
 				ImportStateCheck: func(states []*terraform.InstanceState) error {
 					if len(states) != 1 {
 						return fmt.Errorf("expected one imported Endpoint Agent, got %d", len(states))
@@ -51,11 +82,40 @@ func TestAccThousandEyesEndpointAgentImport(t *testing.T) {
 							return fmt.Errorf("expected imported Endpoint Agent attribute %q to be populated", key)
 						}
 					}
+					importedName = state.Attributes["name"]
+					importedLicense = state.Attributes["license_type"]
 					if status := state.Attributes["status"]; status != "enabled" && status != "disabled" {
 						return fmt.Errorf("expected imported Endpoint Agent status to be enabled or disabled, got %q", status)
 					}
 					return nil
 				},
+			},
+			{
+				Config:       string(enableConfig),
+				ResourceName: resourceName,
+				Check:        checkAgentState("enabled"),
+			},
+			{
+				Config:   string(enableConfig),
+				PlanOnly: true,
+			},
+			{
+				Config:       string(disableConfig),
+				ResourceName: resourceName,
+				Check:        checkAgentState("disabled"),
+			},
+			{
+				Config:   string(disableConfig),
+				PlanOnly: true,
+			},
+			{
+				Config:       string(enableConfig),
+				ResourceName: resourceName,
+				Check:        checkAgentState("enabled"),
+			},
+			{
+				Config:   string(enableConfig),
+				PlanOnly: true,
 			},
 		},
 	})
@@ -195,14 +255,23 @@ func TestResourceEndpointAgentUpdate_ChangesStatus(t *testing.T) {
 		{status: "disabled", path: "/v7/endpoint/agents/agent-123/disable"},
 	} {
 		t.Run(tc.status, func(t *testing.T) {
-			var actionCount int
+			var actionCount, readCount int
 			transport := endpointAgentRoundTripFunc(func(r *http.Request) (*http.Response, error) {
 				switch {
 				case r.Method == http.MethodPost && r.URL.Path == tc.path:
 					actionCount++
 					return endpointAgentJSONResponse(http.StatusOK, `{"id":"agent-123","name":"Laptop","licenseType":"advantage","status":"`+tc.status+`"}`), nil
 				case r.Method == http.MethodGet && r.URL.Path == "/v7/endpoint/agents/agent-123":
-					return endpointAgentJSONResponse(http.StatusOK, `{"id":"agent-123","name":"Laptop","licenseType":"advantage","status":"`+tc.status+`"}`), nil
+					readCount++
+					observedStatus := tc.status
+					if readCount == 1 {
+						if tc.status == "enabled" {
+							observedStatus = "disabled"
+						} else {
+							observedStatus = "enabled"
+						}
+					}
+					return endpointAgentJSONResponse(http.StatusOK, `{"id":"agent-123","name":"Laptop","licenseType":"advantage","status":"`+observedStatus+`"}`), nil
 				default:
 					t.Errorf("unexpected request %s %s", r.Method, r.URL.Path)
 					return endpointAgentJSONResponse(http.StatusInternalServerError, `{}`), nil
@@ -215,6 +284,9 @@ func TestResourceEndpointAgentUpdate_ChangesStatus(t *testing.T) {
 			}
 			if actionCount != 1 {
 				t.Fatalf("expected one status operation at %s, got %d", tc.path, actionCount)
+			}
+			if readCount < 2 {
+				t.Fatalf("expected status update to poll after a stale response, got %d reads", readCount)
 			}
 			if got := d.Get("status").(string); got != tc.status {
 				t.Fatalf("expected refreshed status %q, got %q", tc.status, got)
