@@ -50,14 +50,6 @@ func TestAccThousandEyesEndpointAgentToServer(t *testing.T) {
 
 	for _, tc := range selectorCases {
 		t.Run(tc.name, func(t *testing.T) {
-			if tc.selectorValue == endpointAgentSelectorSpecificAgents {
-				endpointAgentID := os.Getenv("TE_ENDPOINT_AGENT_ID")
-				if endpointAgentID == "" {
-					t.Fatal("TE_ENDPOINT_AGENT_ID must be set for specific-agent acceptance coverage")
-				}
-				t.Setenv("TF_VAR_endpoint_agent_id", endpointAgentID)
-			}
-
 			resourceName := "thousandeyes_endpoint_agent_to_server.test"
 			createChecks := []resource.TestCheckFunc{
 				resource.TestCheckResourceAttr(resourceName, "test_name", "Endpoint Agent-to-Server acceptance test"),
@@ -73,7 +65,16 @@ func TestAccThousandEyesEndpointAgentToServer(t *testing.T) {
 				)
 			}
 			resource.Test(t, resource.TestCase{
-				PreCheck:          func() { testAccPreCheck(t) },
+				PreCheck: func() {
+					testAccPreCheck(t)
+					if tc.selectorValue == endpointAgentSelectorSpecificAgents {
+						endpointAgentID := os.Getenv("TE_ENDPOINT_AGENT_ID")
+						if endpointAgentID == "" {
+							t.Fatal("TE_ENDPOINT_AGENT_ID must be set for specific-agent acceptance coverage")
+						}
+						t.Setenv("TF_VAR_endpoint_agent_id", endpointAgentID)
+					}
+				},
 				ProviderFactories: providerFactories,
 				CheckDestroy:      testAccCheckEndpointAgentToServerDestroy,
 				Steps: []resource.TestStep{
