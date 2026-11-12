@@ -186,7 +186,7 @@ func resourceEndpointAgentWaitForStatus(d *schema.ResourceData, meta interface{}
 			return err
 		}
 		if d.Id() == "" {
-			return fmt.Errorf("Endpoint Agent was not found while waiting for status %q", expectedStatus)
+			return fmt.Errorf("endpoint agent was not found while waiting for status %q", expectedStatus)
 		}
 		if actualStatus := d.Get("status").(string); actualStatus == expectedStatus {
 			return nil
