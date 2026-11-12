@@ -136,7 +136,7 @@ func TestEndpointHTTPServerSchemaAndSelector(t *testing.T) {
 		agents, tags int
 		valid        bool
 	}{{"all-agents", 0, 0, true}, {"specific-agents", 1, 0, true}, {"agent-tags", 0, 1, true}, {"all-agents", 1, 0, false}, {"specific-agents", 0, 0, false}, {"agent-tags", 0, 0, false}, {"agent-tags", 1, 1, false}} {
-		if got := endpointHTTPServerSelectorValid(tc.mode, tc.agents, tc.tags); got != tc.valid {
+		if got := endpointTestSelectorValid(tc.mode, tc.agents, tc.tags); got != tc.valid {
 			t.Errorf("%+v: %v", tc, got)
 		}
 	}
@@ -168,9 +168,6 @@ func TestEndpointHTTPServerFlattenClearsInactiveSelectors(t *testing.T) {
 }
 func TestAccEndpointHTTPServer(t *testing.T) {
 	name := os.Getenv("TE_ENDPOINT_AGENT_NAME")
-	if name == "" {
-		t.Skip("set TE_ENDPOINT_AGENT_NAME for Endpoint acceptance coverage")
-	}
 	for _, mode := range []string{"all-agents", "specific-agents", "agent-tags"} {
 		t.Run(mode, func(t *testing.T) {
 			extra := ""
@@ -205,7 +202,12 @@ resource "thousandeyes_endpoint_http_server" "example" {
  %s
 }`, name, testName, mode, extra)
 			}
-			resource.Test(t, resource.TestCase{PreCheck: func() { testAccPreCheck(t) }, ProviderFactories: providerFactories, CheckDestroy: func(s *terraform.State) error {
+			resource.Test(t, resource.TestCase{PreCheck: func() {
+				if name == "" {
+					t.Fatal("TE_ENDPOINT_AGENT_NAME must identify an existing Endpoint Agent in the test account")
+				}
+				testAccPreCheck(t)
+			}, ProviderFactories: providerFactories, CheckDestroy: func(s *terraform.State) error {
 				return testAccCheckResourceDestroy([]ResourceType{{ResourceName: "thousandeyes_endpoint_http_server", GetResource: func(id string) (interface{}, error) {
 					req := endpointHTTPServerAPI(testClient).GetHttpServerEndpointScheduledTest(id)
 					returnValue, _, err := SetAidFromContext(testClient.GetConfig().Context, req).Execute()

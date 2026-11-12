@@ -1,0 +1,42 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: ""
+description: |-
+---
+
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+## Example Usage
+
+{{ tffile .ExampleFile }}
+
+Supported applications are `webex`, `zoom`, and `microsoft-teams`.
+
+## Agent Selection
+
+`agent_selector_type` defaults to `all-agents`, which accepts neither `agents` nor `tag_ids`.
+Use `specific-agents` with a nonempty `agents` set, or `agent-tags` with a nonempty `tag_ids` set.
+Endpoint Agent IDs are strings. `max_machines` defaults to 25 for all selector modes.
+Endpoint Labels and the legacy `agent-labels` selector are unsupported.
+
+For selection by dynamic tags, create a `thousandeyes_tag` with `object_type = "endpoint-agent"`
+and `type = "dynamic"`, and reference its ID in `tag_ids`.
+
+## Updates and Import
+
+Changes to `test_name`, `application`, `interval`, `protocol`, `tcp_probe_mode`, and `is_enabled`
+update the existing test.
+
+Changes to other configurable settings replace the test. Tests configured with
+`is_enabled = false` may briefly be enabled during creation.
+
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+{{ tffile "examples/resources/thousandeyes_endpoint_agent_to_server_dynamic/import.tf" }}
+
+{{ codefile "shell" .ImportFile }}

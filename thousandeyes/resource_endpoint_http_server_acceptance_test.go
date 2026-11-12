@@ -42,10 +42,10 @@ func TestAccThousandEyesEndpointHTTPServer(t *testing.T) {
 			replacement := strings.Replace(basic, "max_machines        = 25", "max_machines        = 12", 1)
 			resource.Test(t, resource.TestCase{
 				PreCheck: func() {
-					testAccPreCheck(t)
 					if tc.selectorType == "specific-agents" && os.Getenv("TE_ENDPOINT_AGENT_NAME") == "" {
-						t.Skip("set TE_ENDPOINT_AGENT_NAME to an existing Endpoint Agent in the test account")
+						t.Fatal("TE_ENDPOINT_AGENT_NAME must identify an existing Endpoint Agent in the test account")
 					}
+					testAccPreCheck(t)
 				},
 				ProviderFactories: providerFactories,
 				CheckDestroy:      testAccCheckEndpointHTTPServerResourceDestroy,
@@ -116,5 +116,5 @@ func testAccThousandEyesEndpointHTTPServerConfig(testResource, name string) stri
 		panic(err)
 	}
 	config := strings.ReplaceAll(string(content), "User Acceptance Test - Endpoint HTTP Server", name)
-	return strings.ReplaceAll(config, "\"__ENDPOINT_AGENT_NAME__\"", strconv.Quote(os.Getenv("TE_ENDPOINT_AGENT_NAME")))
+	return strings.ReplaceAll(config, "\"TE_ENDPOINT_AGENT_NAME\"", strconv.Quote(os.Getenv("TE_ENDPOINT_AGENT_NAME")))
 }

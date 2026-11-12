@@ -172,7 +172,11 @@ func newEndpointAgentTestClient(transport http.RoundTripper, aid string) *client
 		},
 		Context: context.WithValue(context.Background(), accountGroupIdKey, aid),
 	}
-	return client.NewAPIClient(cfg)
+	httpClient := cfg.HTTPClient
+	apiClient := client.NewAPIClient(cfg)
+	// Bypass the SDK retry wrapper: these mocks test error handling, not retries.
+	apiClient.GetConfig().HTTPClient = httpClient
+	return apiClient
 }
 
 func endpointAgentJSONResponse(status int, body string) *http.Response {
