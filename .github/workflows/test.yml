@@ -43,7 +43,7 @@ jobs:
         with:
           terraform_version: '1.5.*'
           terraform_wrapper: false
-      - run: go test -v -cover ./...
+      - run: go test -v -cover -timeout=15m ./...
         env:
           TE_TOKEN: ${{ secrets.TE_TOKEN }}
           TE_AID: ${{ secrets.TE_AID }}
