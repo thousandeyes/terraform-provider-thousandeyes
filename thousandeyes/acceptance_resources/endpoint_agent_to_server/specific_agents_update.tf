@@ -1,5 +1,5 @@
-data "thousandeyes_endpoint_agent" "test" {
-  agent_name = "__ENDPOINT_AGENT_NAME__"
+variable "endpoint_agent_id" {
+  type = string
 }
 
 resource "thousandeyes_endpoint_agent_to_server" "test" {
@@ -8,5 +8,5 @@ resource "thousandeyes_endpoint_agent_to_server" "test" {
   interval            = 300
   protocol            = "icmp"
   agent_selector_type = "specific-agents"
-  agents              = [data.thousandeyes_endpoint_agent.test.agent_id]
+  agents              = [var.endpoint_agent_id]
 }

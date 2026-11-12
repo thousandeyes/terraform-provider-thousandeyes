@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -20,12 +19,11 @@ const endpointAgentToServerPath = "/v7/endpoint/tests/scheduled-tests/agent-to-s
 
 func TestAccThousandEyesEndpointAgentToServer(t *testing.T) {
 	selectorCases := []struct {
-		name              string
-		createConfig      string
-		updateConfig      string
-		selector          string
-		selectorValue     string
-		requiresAgentName bool
+		name          string
+		createConfig  string
+		updateConfig  string
+		selector      string
+		selectorValue string
 	}{
 		{
 			name:          "all_agents",
@@ -35,12 +33,11 @@ func TestAccThousandEyesEndpointAgentToServer(t *testing.T) {
 			selectorValue: "all-agents",
 		},
 		{
-			name:              "specific_agents",
-			createConfig:      "specific_agents.tf",
-			updateConfig:      "specific_agents_update.tf",
-			selector:          "agent_selector_type",
-			selectorValue:     "specific-agents",
-			requiresAgentName: true,
+			name:          "specific_agents",
+			createConfig:  "specific_agents.tf",
+			updateConfig:  "specific_agents_update.tf",
+			selector:      "agent_selector_type",
+			selectorValue: "specific-agents",
 		},
 		{
 			name:          "agent_tags",
@@ -53,6 +50,14 @@ func TestAccThousandEyesEndpointAgentToServer(t *testing.T) {
 
 	for _, tc := range selectorCases {
 		t.Run(tc.name, func(t *testing.T) {
+			if tc.selectorValue == endpointAgentSelectorSpecificAgents {
+				endpointAgentID := os.Getenv("TE_ENDPOINT_AGENT_ID")
+				if endpointAgentID == "" {
+					t.Fatal("TE_ENDPOINT_AGENT_ID must be set for specific-agent acceptance coverage")
+				}
+				t.Setenv("TF_VAR_endpoint_agent_id", endpointAgentID)
+			}
+
 			resourceName := "thousandeyes_endpoint_agent_to_server.test"
 			createChecks := []resource.TestCheckFunc{
 				resource.TestCheckResourceAttr(resourceName, "test_name", "Endpoint Agent-to-Server acceptance test"),
@@ -68,12 +73,7 @@ func TestAccThousandEyesEndpointAgentToServer(t *testing.T) {
 				)
 			}
 			resource.Test(t, resource.TestCase{
-				PreCheck: func() {
-					testAccPreCheck(t)
-					if tc.requiresAgentName && os.Getenv("TE_ENDPOINT_AGENT_NAME") == "" {
-						t.Skip("TE_ENDPOINT_AGENT_NAME is required for specific-agent and agent-tag acceptance cases")
-					}
-				},
+				PreCheck:          func() { testAccPreCheck(t) },
 				ProviderFactories: providerFactories,
 				CheckDestroy:      testAccCheckEndpointAgentToServerDestroy,
 				Steps: []resource.TestStep{
@@ -101,8 +101,6 @@ func testAccEndpointAgentToServerConfig(t *testing.T, filename string) string {
 	if err != nil {
 		t.Fatalf("read acceptance config %s: %v", path, err)
 	}
-	endpointAgentName := os.Getenv("TE_ENDPOINT_AGENT_NAME")
-	contents = []byte(strings.ReplaceAll(string(contents), `"__ENDPOINT_AGENT_NAME__"`, fmt.Sprintf("%q", endpointAgentName)))
 	return string(contents)
 }
 
