@@ -121,7 +121,7 @@ func EndpointHTTPServerSchema() map[string]*schema.Schema {
 		},
 		"url": {
 			Type:         schema.TypeString,
-			Description:  "The test target URL. HTTPS is used when the scheme is omitted.",
+			Description:  "The test target URL. HTTPS is used when the scheme is omitted. Changes require replacement when auth_type is basic or ntlm.",
 			Required:     true,
 			ValidateFunc: validation.StringIsNotEmpty,
 			DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {

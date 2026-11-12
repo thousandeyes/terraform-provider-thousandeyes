@@ -39,8 +39,12 @@ and `type = "dynamic"`, and reference its ID in `tag_ids`.
 
 ## Updates and Import
 
-Changes to `test_name`, `url`, `interval`, `protocol`, `tcp_probe_mode`, and `is_enabled`
-update the existing test. IPv6 and OS-default IP preferences require `protocol = "icmp"`;
+Changes to `test_name`, `interval`, `protocol`, `tcp_probe_mode`, and `is_enabled`
+update the existing test. URL changes update tests without authentication, but require
+replacement when `auth_type` is `basic` or `ntlm` because the API cannot update
+the URL on authenticated tests.
+
+IPv6 and OS-default IP preferences require `protocol = "icmp"`;
 other protocols require `ip_version = "V4_ONLY"`.
 
 Changes to other configurable settings replace the test. Tests configured with
@@ -55,7 +59,7 @@ cannot be detected. Configuring a password after import may require replacing th
 ### Required
 
 - `test_name` (String) Name of the test.
-- `url` (String) The test target URL. HTTPS is used when the scheme is omitted.
+- `url` (String) The test target URL. HTTPS is used when the scheme is omitted. Changes require replacement when auth_type is basic or ntlm.
 
 ### Optional
 
