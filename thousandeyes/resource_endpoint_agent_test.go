@@ -1,6 +1,7 @@
 package thousandeyes
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -64,7 +65,7 @@ func TestAccThousandEyesEndpointAgentImport(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
-		ProviderFactories: providerFactories,
+		ProviderFactories: endpointAgentAcceptanceProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config:             string(config),
@@ -123,6 +124,24 @@ func TestAccThousandEyesEndpointAgentImport(t *testing.T) {
 			},
 		},
 	})
+}
+
+func endpointAgentAcceptanceProviderFactories() map[string]func() (*schema.Provider, error) {
+	return map[string]func() (*schema.Provider, error){
+		"thousandeyes": func() (*schema.Provider, error) {
+			provider := New()()
+			endpointAgentResource := *provider.ResourcesMap["thousandeyes_endpoint_agent"]
+			endpointAgentResource.Delete = endpointAgentAcceptanceDelete
+			provider.ResourcesMap["thousandeyes_endpoint_agent"] = &endpointAgentResource
+			return provider, nil
+		},
+	}
+}
+
+func endpointAgentAcceptanceDelete(d *schema.ResourceData, _ interface{}) error {
+	// Acceptance tests import a shared agent, so cleanup must never delete it.
+	d.SetId("")
+	return nil
 }
 
 func TestResourceEndpointAgentRead_ImportAndRefresh(t *testing.T) {
@@ -348,6 +367,43 @@ func TestResourceEndpointAgentDelete_ProtectionRemovesStateWithoutAPIRequest(t *
 	}
 	if d.Id() != "" {
 		t.Fatalf("expected state ID to clear after protected delete, got %q", d.Id())
+	}
+}
+
+func TestEndpointAgentAcceptanceCleanupDoesNotDeleteImportedAgent(t *testing.T) {
+	requests := 0
+	transport := endpointAgentRoundTripFunc(func(r *http.Request) (*http.Response, error) {
+		requests++
+		return endpointAgentJSONResponse(http.StatusNoContent, ``), nil
+	})
+	apiClient := newEndpointAgentTestClient(transport, "12345")
+	provider, err := endpointAgentAcceptanceProviderFactories()["thousandeyes"]()
+	if err != nil {
+		t.Fatalf("create acceptance test provider: %v", err)
+	}
+	resource := provider.ResourcesMap["thousandeyes_endpoint_agent"]
+	d := schema.TestResourceDataRaw(t, resource.Schema, map[string]interface{}{})
+	d.SetId("agent-123")
+
+	importedStates, err := resource.Importer.StateContext(context.Background(), d, apiClient)
+	if err != nil {
+		t.Fatalf("import Endpoint Agent state: %v", err)
+	}
+	if len(importedStates) != 1 {
+		t.Fatalf("expected one imported Endpoint Agent state, got %d", len(importedStates))
+	}
+	if importedStates[0].Get("deletion_protection").(bool) {
+		t.Fatal("expected passthrough import to leave deletion protection disabled")
+	}
+
+	if err := resource.Delete(importedStates[0], apiClient); err != nil {
+		t.Fatalf("acceptance cleanup failed: %v", err)
+	}
+	if requests != 0 {
+		t.Fatalf("acceptance cleanup must not call the API, got %d requests", requests)
+	}
+	if importedStates[0].Id() != "" {
+		t.Fatalf("expected acceptance cleanup to clear the imported ID, got %q", importedStates[0].Id())
 	}
 }
 
