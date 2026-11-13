@@ -15,8 +15,8 @@ import (
 const (
 	endpointAgentLicenseWirelessAdvantage  = "embed-wireless-advantage"
 	endpointAgentLicenseWirelessEssentials = "embed-wireless-essentials"
-	endpointAgentStatusInitialDelay        = 5 * time.Second
-	endpointAgentStatusPollInterval        = 2 * time.Second
+	endpointAgentStatusWaitInterval        = 5 * time.Second
+	endpointAgentStatusMaxRetries          = 3
 	endpointAgentStatusPollTimeout         = 30 * time.Second
 )
 
@@ -179,9 +179,9 @@ func resourceEndpointAgentUpdate(d *schema.ResourceData, meta interface{}) error
 
 func resourceEndpointAgentWaitForStatus(d *schema.ResourceData, meta interface{}, expectedStatus string) error {
 	deadline := time.Now().Add(endpointAgentStatusPollTimeout)
-	log.Printf("[INFO] Waiting up to %s for Endpoint Agent %s to reflect status %q", endpointAgentStatusPollTimeout, d.Id(), expectedStatus)
-	time.Sleep(endpointAgentStatusInitialDelay)
-	for {
+	log.Printf("[INFO] Waiting for Endpoint Agent %s to reflect status %q (up to %d retries, %s timeout)", d.Id(), expectedStatus, endpointAgentStatusMaxRetries, endpointAgentStatusPollTimeout)
+	time.Sleep(endpointAgentStatusWaitInterval)
+	for retry := 0; ; retry++ {
 		if err := resourceEndpointAgentRead(d, meta); err != nil {
 			return err
 		}
@@ -190,10 +190,10 @@ func resourceEndpointAgentWaitForStatus(d *schema.ResourceData, meta interface{}
 		}
 		if actualStatus := d.Get("status").(string); actualStatus == expectedStatus {
 			return nil
-		} else if time.Now().After(deadline) {
-			return fmt.Errorf("timed out waiting for Endpoint Agent %s to reach status %q; last observed status was %q", d.Id(), expectedStatus, actualStatus)
+		} else if retry >= endpointAgentStatusMaxRetries || time.Now().After(deadline) {
+			return fmt.Errorf("timed out waiting for Endpoint Agent %s to reach status %q after %d retries; last observed status was %q", d.Id(), expectedStatus, retry, actualStatus)
 		}
-		time.Sleep(endpointAgentStatusPollInterval)
+		time.Sleep(endpointAgentStatusWaitInterval)
 	}
 }
 
