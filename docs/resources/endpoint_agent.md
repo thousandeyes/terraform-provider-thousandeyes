@@ -2,12 +2,11 @@
 page_title: "thousandeyes_endpoint_agent Resource - terraform-provider-thousandeyes"
 subcategory: ""
 description: |-
-  Manages an existing ThousandEyes Endpoint Agent. This resource is import-only because the API does not support creating Endpoint Agents. Import an existing agent by ID before managing it. When `deletion_protection` is enabled, destroying the resource removes it from Terraform state without deleting the remote agent.
 ---
 
 # thousandeyes_endpoint_agent (Resource)
 
-Manages an existing ThousandEyes Endpoint Agent. This resource is import-only because the API does not support creating Endpoint Agents. Import an existing agent by ID before managing it. When `deletion_protection` is enabled, destroying the resource removes it from Terraform state without deleting the remote agent.
+Manages an existing ThousandEyes Endpoint Agent. This resource is import-only because the API does not support creating Endpoint Agents. Import an existing agent by ID before managing it. When `deletion_protection` is enabled, destroying the resource removes it from Terraform state without deleting the remote agent. For more information, see [Endpoint Agents](https://docs.thousandeyes.com/product-documentation/global-vantage-points/endpoint-agents).
 
 ## Example Usage
 
