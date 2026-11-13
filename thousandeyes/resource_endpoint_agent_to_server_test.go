@@ -499,8 +499,10 @@ func TestEndpointAgentToServerCreateAppliesUpdateOnlyFields(t *testing.T) {
 
 func TestEndpointAgentToServerUpdateSendsOnlyMutableFields(t *testing.T) {
 	resource := endpointAgentToServerResourceForTest(t)
+	patches := 0
 	transport := endpointAgentRoundTripFunc(func(r *http.Request) (*http.Response, error) {
 		if r.Method == http.MethodPatch && r.URL.Path == endpointAgentToServerPath+"/test-123" {
+			patches++
 			var payload map[string]interface{}
 			if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
 				t.Fatalf("decode update payload: %v", err)
@@ -522,7 +524,7 @@ func TestEndpointAgentToServerUpdateSendsOnlyMutableFields(t *testing.T) {
 		return endpointAgentJSONResponse(http.StatusMethodNotAllowed, `{}`), nil
 	})
 
-	d := resource.Data(&terraform.InstanceState{
+	state := &terraform.InstanceState{
 		ID: "test-123",
 		Attributes: map[string]string{
 			"test_name":           "old-name",
@@ -534,14 +536,26 @@ func TestEndpointAgentToServerUpdateSendsOnlyMutableFields(t *testing.T) {
 			"agents.0":            "agent-1",
 			"max_machines":        "25",
 		},
+	}
+	config := terraform.NewResourceConfigRaw(map[string]interface{}{
+		"test_name": "renamed", "server": "example.com", "interval": 60, "protocol": "icmp",
+		"agent_selector_type": "specific-agents", "agents": []interface{}{"agent-1"}, "max_machines": 25,
 	})
-	if err := d.Set("test_name", "renamed"); err != nil {
-		t.Fatalf("set updated test_name: %v", err)
+	diff, err := resource.Diff(context.Background(), state, config, nil)
+	if err != nil {
+		t.Fatalf("create update diff: %v", err)
 	}
-	if err := resource.Update(d, newEndpointAgentTestClient(transport, "aid-123")); err != nil {
-		t.Fatalf("update failed: %v", err)
+	if diff.Attributes["test_name"] == nil {
+		t.Fatal("expected test_name to change in diff")
 	}
-	if got := d.Get("test_name"); got != "renamed" {
+	updated, diagnostics := resource.Apply(context.Background(), state, diff, newEndpointAgentTestClient(transport, "aid-123"))
+	if diagnostics.HasError() {
+		t.Fatalf("apply update diff: %v", diagnostics)
+	}
+	if patches != 1 {
+		t.Fatalf("expected one PATCH request, got %d", patches)
+	}
+	if got := updated.Attributes["test_name"]; got != "renamed" {
 		t.Errorf("expected updated test_name state, got %#v", got)
 	}
 }
