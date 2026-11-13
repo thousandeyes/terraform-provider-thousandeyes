@@ -16,10 +16,14 @@ import (
 )
 
 func TestAccThousandEyesEndpointAgentImport(t *testing.T) {
+	if os.Getenv("TF_ACC") == "" {
+		t.Skip("Acceptance tests skipped unless env 'TF_ACC' set")
+	}
+
 	const resourceName = "thousandeyes_endpoint_agent.test"
 	agentID := os.Getenv("TE_ENDPOINT_AGENT_ID")
 	if agentID == "" {
-		t.Skip("TE_ENDPOINT_AGENT_ID is required to run Endpoint Agent import acceptance coverage")
+		t.Fatal("TE_ENDPOINT_AGENT_ID is required when TF_ACC=1")
 	}
 
 	config, err := os.ReadFile(filepath.Join("acceptance_resources", "endpoint_agent", "import.tf"))
