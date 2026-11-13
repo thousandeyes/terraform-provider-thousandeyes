@@ -351,7 +351,7 @@ func TestEndpointAgentToServerReadAfterImportRestoresSelectorState(t *testing.T)
 		if got := r.URL.Query().Get("aid"); got != "aid-123" {
 			t.Errorf("expected aid=aid-123, got %q", got)
 		}
-		return endpointAgentJSONResponse(http.StatusOK, `{"testId":"imported-test","type":"agent-to-server","testName":"imported","server":"2001:db8::1","agentSelectorConfig":{"agentSelectorType":"agent-tags","tagIds":["tag-7"],"maxMachines":25}}`), nil
+		return endpointAgentJSONResponse(http.StatusOK, `{"testId":"imported-test","type":"agent-to-server","testName":"imported","server":"2001:db8::1","_links":{"self":{"href":"https://api.example.com/tests/imported-test"}},"labels":[{"labelId":"legacy-label"}],"agentSelectorConfig":{"agentSelectorType":"agent-tags","tagIds":["tag-7"],"maxMachines":25}}`), nil
 	})
 
 	d := schema.TestResourceDataRaw(t, resource.Schema, map[string]interface{}{})
@@ -371,6 +371,9 @@ func TestEndpointAgentToServerReadAfterImportRestoresSelectorState(t *testing.T)
 	}
 	if got := imported[0].Get("server"); got != "2001:db8::1" {
 		t.Errorf("expected IPv6 server to be preserved, got %#v", got)
+	}
+	if got := imported[0].Get("link"); got != "https://api.example.com/tests/imported-test" {
+		t.Errorf("expected link from SDK response, got %#v", got)
 	}
 	if got := resourceTestStringSet(imported[0], "tag_ids"); !equalStrings(got, []string{"tag-7"}) {
 		t.Errorf("expected imported tag_ids [tag-7], got %v", got)

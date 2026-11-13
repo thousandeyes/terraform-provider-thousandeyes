@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/thousandeyes/terraform-provider-thousandeyes/thousandeyes/schemas"
@@ -157,66 +156,17 @@ func resourceEndpointAgentToServerRead(d *schema.ResourceData, meta interface{})
 	if response.TestId != nil && *response.TestId != "" {
 		d.SetId(*response.TestId)
 	}
-	if err := ResourceRead(apiClient.GetConfig().Context, d, endpointAgentToServerResourceReadResponse(response)); err != nil {
+	if err := ResourceRead(apiClient.GetConfig().Context, d, response); err != nil {
 		return err
 	}
-	if response.Server != nil {
-		if err := d.Set("server", *response.Server); err != nil {
-			return err
-		}
-	}
-	if response.Links != nil && response.Links.Self != nil {
-		if err := d.Set("link", response.Links.Self.Href); err != nil {
-			return err
-		}
-	}
-	return setEndpointAgentSelectorState(d, response.AgentSelectorConfig)
-}
-
-type endpointAgentToServerReadResponse struct {
-	Aid                   *string                              `json:"aid,omitempty"`
-	CreatedDate           *time.Time                           `json:"createdDate,omitempty"`
-	IsPrioritized         *bool                                `json:"isPrioritized,omitempty"`
-	Interval              *endpointtests.TestInterval          `json:"interval,omitempty"`
-	IsEnabled             *bool                                `json:"isEnabled,omitempty"`
-	IsSavedEvent          *bool                                `json:"isSavedEvent,omitempty"`
-	HasPathTraceInSession *bool                                `json:"hasPathTraceInSession,omitempty"`
-	ModifiedDate          *time.Time                           `json:"modifiedDate,omitempty"`
-	NetworkMeasurements   *bool                                `json:"networkMeasurements,omitempty"`
-	Protocol              *endpointtests.EndpointTestProtocol  `json:"protocol,omitempty"`
-	IpVersion             *string                              `json:"ipVersion,omitempty"`
-	Server                string                               `json:"server,omitempty"`
-	TestId                *string                              `json:"testId,omitempty"`
-	TestName              *string                              `json:"testName,omitempty"`
-	Type                  string                               `json:"type"`
-	TcpProbeMode          *endpointtests.TestProbeModeResponse `json:"tcpProbeMode,omitempty"`
-	Port                  *int32                               `json:"port,omitempty"`
-}
-
-func endpointAgentToServerResourceReadResponse(response *endpointtests.EndpointAgentToServerTest) *endpointAgentToServerReadResponse {
 	server := ""
 	if response.Server != nil {
 		server = *response.Server
 	}
-	return &endpointAgentToServerReadResponse{
-		Aid:                   response.Aid,
-		CreatedDate:           response.CreatedDate,
-		IsPrioritized:         response.IsPrioritized,
-		Interval:              response.Interval,
-		IsEnabled:             response.IsEnabled,
-		IsSavedEvent:          response.IsSavedEvent,
-		HasPathTraceInSession: response.HasPathTraceInSession,
-		ModifiedDate:          response.ModifiedDate,
-		NetworkMeasurements:   response.NetworkMeasurements,
-		Protocol:              response.Protocol,
-		IpVersion:             response.IpVersion,
-		Server:                server,
-		TestId:                response.TestId,
-		TestName:              response.TestName,
-		Type:                  response.Type,
-		TcpProbeMode:          response.TcpProbeMode,
-		Port:                  response.Port,
+	if err := d.Set("server", server); err != nil {
+		return err
 	}
+	return setEndpointAgentSelectorState(d, response.AgentSelectorConfig)
 }
 
 func setEndpointAgentSelectorState(d *schema.ResourceData, config *endpointtests.EndpointAgentSelectorConfig) error {

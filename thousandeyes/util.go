@@ -246,6 +246,10 @@ func ResourceRead(ctx context.Context, d *schema.ResourceData, structPtr interfa
 		if slices.Contains(sensitiveFields, tfName) {
 			continue
 		}
+		// Some SDK models expose legacy labels that not every resource manages.
+		if tfName == "labels" && !resourceDataHasField(d, tfName) {
+			continue
+		}
 
 		if v.Field(i).Kind() == reflect.Ptr && v.Field(i).IsNil() {
 			continue
