@@ -565,6 +565,25 @@ func TestEndpointAgentToServerDeleteClearsState(t *testing.T) {
 	}
 }
 
+func TestEndpointAgentToServerDeleteTreatsNotFoundAsSuccess(t *testing.T) {
+	resource := endpointAgentToServerResourceForTest(t)
+	transport := endpointAgentRoundTripFunc(func(r *http.Request) (*http.Response, error) {
+		if r.Method != http.MethodDelete || r.URL.Path != endpointAgentToServerPath+"/test-123" {
+			t.Errorf("expected DELETE for scheduled test, got %s %s", r.Method, r.URL.Path)
+		}
+		return endpointAgentJSONResponse(http.StatusNotFound, `{"error":"not found"}`), nil
+	})
+
+	d := schema.TestResourceDataRaw(t, resource.Schema, map[string]interface{}{})
+	d.SetId("test-123")
+	if err := resource.Delete(d, newEndpointAgentTestClient(transport, "aid-123")); err != nil {
+		t.Fatalf("delete should succeed when test is already absent: %v", err)
+	}
+	if d.Id() != "" {
+		t.Errorf("expected delete to clear state ID, got %q", d.Id())
+	}
+}
+
 func sameJSONSlice(got interface{}, want []string) bool {
 	values, ok := got.([]interface{})
 	if !ok {

@@ -284,7 +284,8 @@ func resourceEndpointAgentToServerDelete(d *schema.ResourceData, meta interface{
 	log.Printf("[INFO] Deleting ThousandEyes Endpoint Agent-to-Server test %s", d.Id())
 	req := api.DeleteAgentToServerEndpointScheduledTest(d.Id())
 	req = SetAidFromContext(apiClient.GetConfig().Context, req)
-	if _, err := req.Execute(); err != nil {
+	response, err := req.Execute()
+	if err != nil && (response == nil || response.StatusCode != http.StatusNotFound) {
 		return err
 	}
 	d.SetId("")
