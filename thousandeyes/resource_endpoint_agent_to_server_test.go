@@ -207,61 +207,6 @@ func TestEndpointAgentToServerValidateSelectorInputs(t *testing.T) {
 	}
 }
 
-func TestEndpointAgentToServerValidateSelectorDiffValues(t *testing.T) {
-	cases := []struct {
-		name        string
-		selector    string
-		agentCount  int
-		tagCount    int
-		agentsKnown bool
-		tagsKnown   bool
-		wantErr     bool
-	}{
-		{
-			name:        "agent tags allow a tag ID that is not known until apply",
-			selector:    endpointAgentSelectorAgentTags,
-			agentsKnown: true,
-		},
-		{
-			name:      "specific agents allow agent IDs that are not known until apply",
-			selector:  endpointAgentSelectorSpecificAgents,
-			tagsKnown: true,
-		},
-		{
-			name:        "agent tags reject a known empty tag list",
-			selector:    endpointAgentSelectorAgentTags,
-			agentsKnown: true,
-			tagsKnown:   true,
-			wantErr:     true,
-		},
-		{
-			name:        "agent tags reject agent IDs",
-			selector:    endpointAgentSelectorAgentTags,
-			agentCount:  1,
-			tagCount:    1,
-			agentsKnown: true,
-			tagsKnown:   true,
-			wantErr:     true,
-		},
-		{
-			name:        "specific agents reject a known empty agent list",
-			selector:    endpointAgentSelectorSpecificAgents,
-			agentsKnown: true,
-			tagsKnown:   true,
-			wantErr:     true,
-		},
-	}
-
-	for _, tc := range cases {
-		t.Run(tc.name, func(t *testing.T) {
-			err := validateEndpointAgentSelectorDiffValues(tc.selector, tc.agentCount, tc.tagCount, tc.agentsKnown, tc.tagsKnown)
-			if (err != nil) != tc.wantErr {
-				t.Fatalf("expected error=%t, got %v", tc.wantErr, err)
-			}
-		})
-	}
-}
-
 func TestEndpointAgentToServerCreateSelectorPayloadAndState(t *testing.T) {
 	cases := []struct {
 		name           string

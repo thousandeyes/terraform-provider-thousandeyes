@@ -1,7 +1,6 @@
 package thousandeyes
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -26,62 +25,13 @@ func resourceEndpointAgentToServer() *schema.Resource {
 		Read:          resourceEndpointAgentToServerRead,
 		Update:        resourceEndpointAgentToServerUpdate,
 		Delete:        resourceEndpointAgentToServerDelete,
-		CustomizeDiff: validateEndpointAgentSelectorDiff,
+		CustomizeDiff: validateEndpointTestSelector,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema:      schemas.EndpointAgentToServerSchema,
 		Description: "Manages a scheduled Endpoint Agent-to-Server test. Use `agent_selector_type` to choose all Endpoint Agents, specific agents, or agents selected by tags.",
 	}
-}
-
-func validateEndpointAgentSelectorDiff(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
-	selector := diff.Get("agent_selector_type").(string)
-	agents := diff.Get("agents").(*schema.Set)
-	tags := diff.Get("tag_ids").(*schema.Set)
-	agentCount, agentsKnown := endpointAgentSelectorSetCount(diff, "agents", agents)
-	tagCount, tagsKnown := endpointAgentSelectorSetCount(diff, "tag_ids", tags)
-	return validateEndpointAgentSelectorDiffValues(selector, agentCount, tagCount, agentsKnown, tagsKnown)
-}
-
-func endpointAgentSelectorSetCount(diff *schema.ResourceDiff, key string, current *schema.Set) (int, bool) {
-	config := diff.GetRawConfig()
-	if config.IsNull() || !config.Type().HasAttribute(key) {
-		return current.Len(), diff.NewValueKnown(key)
-	}
-
-	value := config.GetAttr(key)
-	if !value.IsKnown() {
-		return current.Len(), false
-	}
-	if value.IsNull() {
-		return 0, true
-	}
-	return value.LengthInt(), true
-}
-
-func validateEndpointAgentSelectorDiffValues(selector string, agentCount, tagCount int, agentsKnown, tagsKnown bool) error {
-	switch selector {
-	case endpointAgentSelectorAllAgents:
-		if (agentsKnown && agentCount > 0) || (tagsKnown && tagCount > 0) {
-			return fmt.Errorf("agents and tag_ids must be empty when agent_selector_type is %q", selector)
-		}
-	case endpointAgentSelectorSpecificAgents:
-		if agentsKnown && agentCount == 0 {
-			return fmt.Errorf("agents must contain at least one ID when agent_selector_type is %q", selector)
-		}
-		if tagsKnown && tagCount > 0 {
-			return fmt.Errorf("tag_ids must be empty when agent_selector_type is %q", selector)
-		}
-	case endpointAgentSelectorAgentTags:
-		if tagsKnown && tagCount == 0 {
-			return fmt.Errorf("tag_ids must contain at least one ID when agent_selector_type is %q", selector)
-		}
-		if agentsKnown && agentCount > 0 {
-			return fmt.Errorf("agents must be empty when agent_selector_type is %q", selector)
-		}
-	}
-	return nil
 }
 
 func resourceEndpointAgentToServerCreate(d *schema.ResourceData, meta interface{}) error {
