@@ -18,6 +18,14 @@ import (
 func TestAccThousandEyesEndpointAgentImport(t *testing.T) {
 	const resourceName = "thousandeyes_endpoint_agent.test"
 	agentID := os.Getenv("TE_ENDPOINT_AGENT_ID")
+	t.Logf("Endpoint Agent acceptance diagnostics: TF_ACC=%t TE_TOKEN_set=%t TE_AID_set=%t TE_ENDPOINT_AGENT_ID_set=%t TE_ENDPOINT_AGENT_ID_length=%d TE_API_ENDPOINT_set=%t",
+		os.Getenv("TF_ACC") == "1",
+		os.Getenv("TE_TOKEN") != "",
+		os.Getenv("TE_AID") != "",
+		agentID != "",
+		len(agentID),
+		os.Getenv("TE_API_ENDPOINT") != "",
+	)
 	if agentID == "" {
 		t.Skip("TE_ENDPOINT_AGENT_ID is required to run Endpoint Agent import acceptance coverage")
 	}

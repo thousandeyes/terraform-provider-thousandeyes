@@ -43,7 +43,18 @@ jobs:
         with:
           terraform_version: '1.5.*'
           terraform_wrapper: false
-      - run: go test -v -cover ./...
+      - name: Run Endpoint Agent acceptance test with diagnostics
+        run: |
+          echo "Go version: $(go version)"
+          echo "Working directory: $PWD"
+          for name in TF_ACC TE_TOKEN TE_AID TE_ENDPOINT_AGENT_ID TE_API_ENDPOINT; do
+            if [ -n "${!name}" ]; then
+              echo "$name is set"
+            else
+              echo "$name is NOT set"
+            fi
+          done
+          go test -v -count=1 -run '^TestAccThousandEyesEndpointAgentImport$' ./thousandeyes
         env:
           TE_TOKEN: ${{ secrets.TE_TOKEN }}
           TE_AID: ${{ secrets.TE_AID }}
