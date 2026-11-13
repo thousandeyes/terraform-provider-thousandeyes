@@ -166,47 +166,7 @@ func resourceEndpointAgentToServerRead(d *schema.ResourceData, meta interface{})
 	if err := d.Set("server", server); err != nil {
 		return err
 	}
-	return setEndpointAgentSelectorState(d, response.AgentSelectorConfig)
-}
-
-func setEndpointAgentSelectorState(d *schema.ResourceData, config *endpointtests.EndpointAgentSelectorConfig) error {
-	selector := ""
-	var agents, tags []string
-	var maxMachines *int32
-	if config != nil {
-		switch {
-		case config.EndpointAllAgentsSelectorConfig != nil:
-			selector = endpointAgentSelectorAllAgents
-			maxMachines = config.EndpointAllAgentsSelectorConfig.MaxMachines
-		case config.EndpointSpecificAgentsSelectorConfig != nil:
-			selector = endpointAgentSelectorSpecificAgents
-			agents = config.EndpointSpecificAgentsSelectorConfig.Agents
-			maxMachines = config.EndpointSpecificAgentsSelectorConfig.MaxMachines
-		case config.EndpointAgentTagsSelectorConfig != nil:
-			selector = endpointAgentSelectorAgentTags
-			tags = config.EndpointAgentTagsSelectorConfig.TagIds
-			maxMachines = config.EndpointAgentTagsSelectorConfig.MaxMachines
-		case config.EndpointAgentLabelsSelectorConfig != nil:
-			return fmt.Errorf("endpoint agent selector type %q is not supported; use all-agents, specific-agents, or agent-tags", "agent-labels")
-		}
-	}
-	if selector != "" {
-		if err := d.Set("agent_selector_type", selector); err != nil {
-			return err
-		}
-	}
-	if err := d.Set("agents", agents); err != nil {
-		return err
-	}
-	if err := d.Set("tag_ids", tags); err != nil {
-		return err
-	}
-	if maxMachines != nil {
-		if err := d.Set("max_machines", *maxMachines); err != nil {
-			return err
-		}
-	}
-	return nil
+	return flattenEndpointTestSelector(d, response.AgentSelectorConfig)
 }
 
 func endpointAgentToServerCreateUpdate(d *schema.ResourceData) endpointtests.EndpointNetworkTestUpdate {

@@ -384,6 +384,61 @@ func TestEndpointAgentToServerReadAfterImportRestoresSelectorState(t *testing.T)
 	}
 }
 
+func TestEndpointAgentToServerFlattenSelectorUsesSharedDefaults(t *testing.T) {
+	r := endpointAgentToServerResourceForTest(t)
+	d := schema.TestResourceDataRaw(t, r.Schema, map[string]interface{}{
+		"agent_selector_type": "all-agents",
+		"agents":              []interface{}{},
+		"tag_ids":             []interface{}{},
+		"max_machines":        12,
+	})
+
+	selector := &endpointtests.EndpointAgentSelectorConfig{
+		EndpointSpecificAgentsSelectorConfig: &endpointtests.EndpointSpecificAgentsSelectorConfig{
+			AgentSelectorType: "specific-agents",
+			Agents:            []string{"agent-1"},
+			// API may omit maxMachines; the shared flattener should apply its default.
+		},
+	}
+	if err := flattenEndpointTestSelector(d, selector); err != nil {
+		t.Fatalf("flatten selector: %v", err)
+	}
+	if got := d.Get("agent_selector_type"); got != "specific-agents" {
+		t.Errorf("expected specific-agents selector, got %#v", got)
+	}
+	if got := d.Get("max_machines"); got != 25 {
+		t.Errorf("expected default max_machines 25 when API omits it, got %#v", got)
+	}
+	if got := resourceTestStringSet(d, "agents"); !equalStrings(got, []string{"agent-1"}) {
+		t.Errorf("expected agents [agent-1], got %v", got)
+	}
+	if d.Get("tag_ids").(*schema.Set).Len() != 0 {
+		t.Errorf("expected absent tag_ids to remain empty, got %v", d.Get("tag_ids"))
+	}
+}
+
+func TestEndpointAgentToServerFlattenNilSelectorPreservesState(t *testing.T) {
+	r := endpointAgentToServerResourceForTest(t)
+	d := schema.TestResourceDataRaw(t, r.Schema, map[string]interface{}{
+		"agent_selector_type": "specific-agents",
+		"agents":              []interface{}{"agent-1"},
+		"max_machines":        12,
+	})
+
+	if err := flattenEndpointTestSelector(d, nil); err != nil {
+		t.Fatalf("flatten nil selector: %v", err)
+	}
+	if got := d.Get("agent_selector_type"); got != "specific-agents" {
+		t.Errorf("nil API selector should preserve selector type, got %#v", got)
+	}
+	if got := d.Get("max_machines"); got != 12 {
+		t.Errorf("nil API selector should preserve max_machines, got %#v", got)
+	}
+	if got := resourceTestStringSet(d, "agents"); !equalStrings(got, []string{"agent-1"}) {
+		t.Errorf("nil API selector should preserve agents, got %v", got)
+	}
+}
+
 func TestEndpointAgentToServerCreateAppliesUpdateOnlyFields(t *testing.T) {
 	cases := []struct {
 		name          string
