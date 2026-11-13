@@ -89,6 +89,7 @@ func TestAccThousandEyesEndpointAgentToServer(t *testing.T) {
 							resource.TestCheckResourceAttr(resourceName, tc.selector, tc.selectorValue),
 						),
 					},
+					{ResourceName: resourceName, ImportState: true, ImportStateVerify: true},
 				},
 			})
 		})
