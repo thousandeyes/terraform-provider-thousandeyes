@@ -2,12 +2,11 @@
 page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
 subcategory: ""
 description: |-
-  Manages an existing ThousandEyes Endpoint Agent. This resource is import-only because the API does not support creating Endpoint Agents. Import an existing agent by ID before managing it. When `deletion_protection` is enabled, destroying the resource removes it from Terraform state without deleting the remote agent.
 ---
 
 # {{.Name}} ({{.Type}})
 
-Manages an existing ThousandEyes Endpoint Agent. This resource is import-only because the API does not support creating Endpoint Agents. Import an existing agent by ID before managing it. When `deletion_protection` is enabled, destroying the resource removes it from Terraform state without deleting the remote agent.
+{{ .Description | trimspace }}
 
 ## Example Usage
 

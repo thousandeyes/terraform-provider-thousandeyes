@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -14,6 +15,9 @@ import (
 const (
 	endpointAgentLicenseWirelessAdvantage  = "embed-wireless-advantage"
 	endpointAgentLicenseWirelessEssentials = "embed-wireless-essentials"
+	endpointAgentStatusWaitInterval        = 5 * time.Second
+	endpointAgentStatusMaxRetries          = 3
+	endpointAgentStatusPollTimeout         = 30 * time.Second
 )
 
 func resourceEndpointAgent() *schema.Resource {
@@ -56,7 +60,7 @@ func resourceEndpointAgent() *schema.Resource {
 				Description: "When enabled, destroying the Terraform resource removes it from state without deleting the remote Endpoint Agent. Apply this setting before removing the resource from configuration.",
 			},
 		},
-		Description: "Manages an existing ThousandEyes Endpoint Agent. This resource is import-only because the API does not support creating Endpoint Agents. Import an existing agent by ID before managing it. When `deletion_protection` is enabled, destroying the resource removes it from Terraform state without deleting the remote agent.",
+		Description: "Manages an existing ThousandEyes Endpoint Agent. This resource is import-only because the API does not support creating Endpoint Agents. Import an existing agent by ID before managing it. When `deletion_protection` is enabled, destroying the resource removes it from Terraform state without deleting the remote agent. For more information, see [Endpoint Agents](https://docs.thousandeyes.com/product-documentation/global-vantage-points/endpoint-agents).",
 	}
 }
 
@@ -144,15 +148,18 @@ func resourceEndpointAgentUpdate(d *schema.ResourceData, meta interface{}) error
 		}
 	}
 
+	var expectedStatus string
 	if d.HasChange("status") {
 		var httpResp *http.Response
 		var err error
 		switch status := d.Get("status").(string); status {
 		case string(endpointagents.STATUS_ENABLED):
+			expectedStatus = status
 			req := api.EnableEndpointAgent(d.Id())
 			req = SetAidFromContext(apiClient.GetConfig().Context, req)
 			_, httpResp, err = req.Execute()
 		case string(endpointagents.STATUS_DISABLED):
+			expectedStatus = status
 			req := api.DisableEndpointAgent(d.Id())
 			req = SetAidFromContext(apiClient.GetConfig().Context, req)
 			_, httpResp, err = req.Execute()
@@ -164,7 +171,30 @@ func resourceEndpointAgentUpdate(d *schema.ResourceData, meta interface{}) error
 		}
 	}
 
+	if expectedStatus != "" {
+		return resourceEndpointAgentWaitForStatus(d, meta, expectedStatus)
+	}
 	return resourceEndpointAgentRead(d, meta)
+}
+
+func resourceEndpointAgentWaitForStatus(d *schema.ResourceData, meta interface{}, expectedStatus string) error {
+	deadline := time.Now().Add(endpointAgentStatusPollTimeout)
+	log.Printf("[INFO] Waiting for Endpoint Agent %s to reflect status %q (up to %d retries, %s timeout)", d.Id(), expectedStatus, endpointAgentStatusMaxRetries, endpointAgentStatusPollTimeout)
+	time.Sleep(endpointAgentStatusWaitInterval)
+	for retry := 0; ; retry++ {
+		if err := resourceEndpointAgentRead(d, meta); err != nil {
+			return err
+		}
+		if d.Id() == "" {
+			return fmt.Errorf("endpoint agent was not found while waiting for status %q", expectedStatus)
+		}
+		if actualStatus := d.Get("status").(string); actualStatus == expectedStatus {
+			return nil
+		} else if retry >= endpointAgentStatusMaxRetries || time.Now().After(deadline) {
+			return fmt.Errorf("timed out waiting for Endpoint Agent %s to reach status %q after %d retries; last observed status was %q", d.Id(), expectedStatus, retry, actualStatus)
+		}
+		time.Sleep(endpointAgentStatusWaitInterval)
+	}
 }
 
 func resourceEndpointAgentDelete(d *schema.ResourceData, meta interface{}) error {

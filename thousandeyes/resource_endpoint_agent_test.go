@@ -1,14 +1,148 @@
 package thousandeyes
 
 import (
+	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
+
+func TestAccThousandEyesEndpointAgentImport(t *testing.T) {
+	if os.Getenv("TF_ACC") == "" {
+		t.Skip("Acceptance tests skipped unless env 'TF_ACC' set")
+	}
+
+	const resourceName = "thousandeyes_endpoint_agent.test"
+	agentID := os.Getenv("TE_ENDPOINT_AGENT_ID")
+	if agentID == "" {
+		t.Fatal("TE_ENDPOINT_AGENT_ID is required when TF_ACC=1")
+	}
+
+	config, err := os.ReadFile(filepath.Join("acceptance_resources", "endpoint_agent", "import.tf"))
+	if err != nil {
+		t.Fatalf("read Endpoint Agent acceptance config: %v", err)
+	}
+	disableConfig, err := os.ReadFile(filepath.Join("acceptance_resources", "endpoint_agent", "disable.tf"))
+	if err != nil {
+		t.Fatalf("read Endpoint Agent disable acceptance config: %v", err)
+	}
+	enableConfig, err := os.ReadFile(filepath.Join("acceptance_resources", "endpoint_agent", "enable.tf"))
+	if err != nil {
+		t.Fatalf("read Endpoint Agent enable acceptance config: %v", err)
+	}
+	var importedName, importedLicense string
+	checkAgentState := func(wantStatus string) resource.TestCheckFunc {
+		return func(s *terraform.State) error {
+			instance, ok := s.RootModule().Resources[resourceName]
+			if !ok {
+				return fmt.Errorf("expected resource %q in Terraform state", resourceName)
+			}
+
+			want := map[string]string{
+				"id":                  agentID,
+				"name":                importedName,
+				"license_type":        importedLicense,
+				"status":              wantStatus,
+				"deletion_protection": "true",
+			}
+			for key, expected := range want {
+				if actual := instance.Primary.Attributes[key]; actual != expected {
+					return fmt.Errorf("expected %s %q, got %q", key, expected, actual)
+				}
+			}
+			return nil
+		}
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: endpointAgentAcceptanceProviderFactories(),
+		Steps: []resource.TestStep{
+			{
+				Config:             string(config),
+				ResourceName:       resourceName,
+				ImportState:        true,
+				ImportStateId:      agentID,
+				ImportStatePersist: true,
+				ImportStateCheck: func(states []*terraform.InstanceState) error {
+					if len(states) != 1 {
+						return fmt.Errorf("expected one imported Endpoint Agent, got %d", len(states))
+					}
+
+					state := states[0]
+					if state.ID != agentID {
+						return fmt.Errorf("expected imported Endpoint Agent ID %q, got %q", agentID, state.ID)
+					}
+					for _, key := range []string{"name", "license_type", "status"} {
+						if state.Attributes[key] == "" {
+							return fmt.Errorf("expected imported Endpoint Agent attribute %q to be populated", key)
+						}
+					}
+					importedName = state.Attributes["name"]
+					importedLicense = state.Attributes["license_type"]
+					if status := state.Attributes["status"]; status != "enabled" && status != "disabled" {
+						return fmt.Errorf("expected imported Endpoint Agent status to be enabled or disabled, got %q", status)
+					}
+					return nil
+				},
+			},
+			{
+				Config:       string(enableConfig),
+				ResourceName: resourceName,
+				Check:        checkAgentState("enabled"),
+			},
+			{
+				Config:   string(enableConfig),
+				PlanOnly: true,
+			},
+			{
+				Config:       string(disableConfig),
+				ResourceName: resourceName,
+				Check:        checkAgentState("disabled"),
+			},
+			{
+				Config:   string(disableConfig),
+				PlanOnly: true,
+			},
+			{
+				Config:       string(enableConfig),
+				ResourceName: resourceName,
+				Check:        checkAgentState("enabled"),
+			},
+			{
+				Config:   string(enableConfig),
+				PlanOnly: true,
+			},
+		},
+	})
+}
+
+func endpointAgentAcceptanceProviderFactories() map[string]func() (*schema.Provider, error) {
+	return map[string]func() (*schema.Provider, error){
+		"thousandeyes": func() (*schema.Provider, error) {
+			provider := New()()
+			endpointAgentResource := *provider.ResourcesMap["thousandeyes_endpoint_agent"]
+			endpointAgentResource.Delete = endpointAgentAcceptanceDelete
+			provider.ResourcesMap["thousandeyes_endpoint_agent"] = &endpointAgentResource
+			return provider, nil
+		},
+	}
+}
+
+func endpointAgentAcceptanceDelete(d *schema.ResourceData, _ interface{}) error {
+	// Acceptance tests import a shared agent, so cleanup must never delete it.
+	d.SetId("")
+	return nil
+}
 
 func TestResourceEndpointAgentRead_ImportAndRefresh(t *testing.T) {
 	const agentID = "agent-123"
@@ -144,14 +278,23 @@ func TestResourceEndpointAgentUpdate_ChangesStatus(t *testing.T) {
 		{status: "disabled", path: "/v7/endpoint/agents/agent-123/disable"},
 	} {
 		t.Run(tc.status, func(t *testing.T) {
-			var actionCount int
+			var actionCount, readCount int
 			transport := endpointAgentRoundTripFunc(func(r *http.Request) (*http.Response, error) {
 				switch {
 				case r.Method == http.MethodPost && r.URL.Path == tc.path:
 					actionCount++
 					return endpointAgentJSONResponse(http.StatusOK, `{"id":"agent-123","name":"Laptop","licenseType":"advantage","status":"`+tc.status+`"}`), nil
 				case r.Method == http.MethodGet && r.URL.Path == "/v7/endpoint/agents/agent-123":
-					return endpointAgentJSONResponse(http.StatusOK, `{"id":"agent-123","name":"Laptop","licenseType":"advantage","status":"`+tc.status+`"}`), nil
+					readCount++
+					observedStatus := tc.status
+					if readCount == 1 {
+						if tc.status == "enabled" {
+							observedStatus = "disabled"
+						} else {
+							observedStatus = "enabled"
+						}
+					}
+					return endpointAgentJSONResponse(http.StatusOK, `{"id":"agent-123","name":"Laptop","licenseType":"advantage","status":"`+observedStatus+`"}`), nil
 				default:
 					t.Errorf("unexpected request %s %s", r.Method, r.URL.Path)
 					return endpointAgentJSONResponse(http.StatusInternalServerError, `{}`), nil
@@ -164,6 +307,9 @@ func TestResourceEndpointAgentUpdate_ChangesStatus(t *testing.T) {
 			}
 			if actionCount != 1 {
 				t.Fatalf("expected one status operation at %s, got %d", tc.path, actionCount)
+			}
+			if readCount < 2 {
+				t.Fatalf("expected status update to poll after a stale response, got %d reads", readCount)
 			}
 			if got := d.Get("status").(string); got != tc.status {
 				t.Fatalf("expected refreshed status %q, got %q", tc.status, got)
@@ -221,6 +367,43 @@ func TestResourceEndpointAgentDelete_ProtectionRemovesStateWithoutAPIRequest(t *
 	}
 	if d.Id() != "" {
 		t.Fatalf("expected state ID to clear after protected delete, got %q", d.Id())
+	}
+}
+
+func TestEndpointAgentAcceptanceCleanupDoesNotDeleteImportedAgent(t *testing.T) {
+	requests := 0
+	transport := endpointAgentRoundTripFunc(func(r *http.Request) (*http.Response, error) {
+		requests++
+		return endpointAgentJSONResponse(http.StatusNoContent, ``), nil
+	})
+	apiClient := newEndpointAgentTestClient(transport, "12345")
+	provider, err := endpointAgentAcceptanceProviderFactories()["thousandeyes"]()
+	if err != nil {
+		t.Fatalf("create acceptance test provider: %v", err)
+	}
+	resource := provider.ResourcesMap["thousandeyes_endpoint_agent"]
+	d := schema.TestResourceDataRaw(t, resource.Schema, map[string]interface{}{})
+	d.SetId("agent-123")
+
+	importedStates, err := resource.Importer.StateContext(context.Background(), d, apiClient)
+	if err != nil {
+		t.Fatalf("import Endpoint Agent state: %v", err)
+	}
+	if len(importedStates) != 1 {
+		t.Fatalf("expected one imported Endpoint Agent state, got %d", len(importedStates))
+	}
+	if importedStates[0].Get("deletion_protection").(bool) {
+		t.Fatal("expected passthrough import to leave deletion protection disabled")
+	}
+
+	if err := resource.Delete(importedStates[0], apiClient); err != nil {
+		t.Fatalf("acceptance cleanup failed: %v", err)
+	}
+	if requests != 0 {
+		t.Fatalf("acceptance cleanup must not call the API, got %d requests", requests)
+	}
+	if importedStates[0].Id() != "" {
+		t.Fatalf("expected acceptance cleanup to clear the imported ID, got %q", importedStates[0].Id())
 	}
 }
 
