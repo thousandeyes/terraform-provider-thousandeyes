@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -168,6 +169,31 @@ func TestEndpointAgentToServerResourceSchemaSupportsOnlyCurrentSelectors(t *test
 		if !resource.Schema[key].ForceNew {
 			t.Errorf("create-only field %q must require replacement", key)
 		}
+	}
+}
+
+func TestEndpointAgentToServerMaxMachinesBounds(t *testing.T) {
+	validate := endpointAgentToServerResourceForTest(t).Schema["max_machines"].ValidateFunc
+	for _, tc := range []struct {
+		name    string
+		value   int64
+		wantErr bool
+	}{
+		{name: "below minimum", value: 0, wantErr: true},
+		{name: "minimum", value: 1},
+		{name: "int32 maximum", value: 2147483647},
+		{name: "above int32 maximum", value: 2147483648, wantErr: true},
+		{name: "wraps to 25", value: 4294967321, wantErr: true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			if strconv.IntSize == 32 && tc.value > 2147483647 {
+				t.Skip("value cannot be represented as int on this architecture")
+			}
+			_, errs := validate(int(tc.value), "max_machines")
+			if (len(errs) > 0) != tc.wantErr {
+				t.Errorf("max_machines %d: got errors %v, want error %t", tc.value, errs, tc.wantErr)
+			}
+		})
 	}
 }
 

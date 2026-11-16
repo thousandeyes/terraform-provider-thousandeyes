@@ -38,7 +38,7 @@ var EndpointAgentToServerSchema = map[string]*schema.Schema{
 		Optional:     true,
 		Computed:     true,
 		ForceNew:     true,
-		ValidateFunc: validation.IntAtLeast(1),
+		ValidateFunc: validation.IntBetween(1, 2147483647),
 		Description:  "Maximum number of Endpoint Agents that can execute the test. If omitted, the API default of 25 applies.",
 	},
 	"test_name": {
