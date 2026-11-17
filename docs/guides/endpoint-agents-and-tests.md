@@ -5,60 +5,32 @@ subcategory: ""
 
 # Endpoint Agents and Tests
 
-Use this guide to import an Endpoint Agent and configure Endpoint Tests. Agents must already be installed and registered because Terraform cannot create them.
+Use this guide to import an Endpoint Agent and configure Endpoint Tests. Agents must already be installed and registered because Terraform cannot create them. Replace the sample agent IDs and names with values from your account. The examples can be combined in one configuration.
 
-## Set up the provider
-
-Set `TE_TOKEN` to your API token. If needed, set `TE_AID` to the account group containing your agents. Use that group for the tags and tests too.
-
-```terraform
-terraform {
-  required_providers {
-    thousandeyes = {
-      source = "thousandeyes/thousandeyes"
-    }
-  }
-}
-
-provider "thousandeyes" {}
-```
-
-Run `terraform init`, then replace the sample agent ID and name below with values from your account. The examples share this provider configuration.
-
-## Import an agent
+## Import and manage an agent
 
 The [Endpoint Agent resource](../resources/endpoint_agent.md) manages existing agents. Applying it without an import returns an error because the API has no create operation.
 
-With Terraform 1.5 or later, use an `import` block:
+Use an `import` block to bring the agent under management, and set the name, license, and status to manage:
 
 ```terraform
-resource "thousandeyes_endpoint_agent" "laptop" {
-  deletion_protection = true
-}
-
 import {
   to = thousandeyes_endpoint_agent.laptop
   id = "123456"
 }
-```
 
-Run `terraform plan` and review the agent, then run `terraform apply`. You can also omit the `import` block and use this command before planning and applying:
-
-```shell
-terraform import thousandeyes_endpoint_agent.laptop 123456
-```
-
-### Manage the agent
-
-After importing, replace the resource block to manage its name, license, and status:
-
-```terraform
 resource "thousandeyes_endpoint_agent" "laptop" {
   name                = "London laptop"
   license_type        = "advantage"
   status              = "enabled"
   deletion_protection = true
 }
+```
+
+You can also omit the `import` block and run this command before planning and applying:
+
+```shell
+terraform import thousandeyes_endpoint_agent.laptop 123456
 ```
 
 Use `status = "disabled"` to disable the agent. Omitting `name`, `license_type`, or `status` keeps its remote value. The `embed-wireless-advantage` and `embed-wireless-essentials` license types can be read but cannot be assigned, so leave `license_type` unset to retain either license.
@@ -71,11 +43,11 @@ Importing alone does not apply deletion protection. To delete a protected agent 
 
 ## Look up an agent and configure a dynamic test
 
-Use the [Endpoint Agent data source](../data-sources/endpoint_agent.md) to find an agent by exact name. Then pass its `agent_id` to a [dynamic Agent to Server test](../resources/endpoint_agent_to_server_dynamic.md):
+Use the [Endpoint Agent data source](../data-sources/endpoint_agent.md) to find an agent by exact name when Terraform does not manage it. Then pass its `agent_id`, together with the ID of the imported agent, to a [dynamic Agent to Server test](../resources/endpoint_agent_to_server_dynamic.md):
 
 ```terraform
-data "thousandeyes_endpoint_agent" "laptop" {
-  agent_name = "London laptop"
+data "thousandeyes_endpoint_agent" "lisbon" {
+  agent_name = "Lisbon laptop"
 }
 
 resource "thousandeyes_endpoint_agent_to_server_dynamic" "webex" {
@@ -83,12 +55,15 @@ resource "thousandeyes_endpoint_agent_to_server_dynamic" "webex" {
   application         = "webex"
   interval            = 300
   agent_selector_type = "specific-agents"
-  agents              = [data.thousandeyes_endpoint_agent.laptop.agent_id]
-  max_machines        = 25
+  agents = [
+    thousandeyes_endpoint_agent.laptop.id,
+    data.thousandeyes_endpoint_agent.lisbon.agent_id,
+  ]
+  max_machines = 25
 }
 ```
 
-The lookup returns an error if no agent matches. If you imported the agent instead, use `thousandeyes_endpoint_agent.laptop.id`. Dynamic tests follow the servers used by `webex`, `zoom`, or `microsoft-teams`.
+The lookup returns an error if no agent matches. Dynamic tests follow the servers used by `webex`, `zoom`, or `microsoft-teams`.
 
 ## Choose an agent selector
 
@@ -145,7 +120,3 @@ resource "thousandeyes_endpoint_http_server" "website" {
 ```
 
 The tag selects Windows agents. If you add more filters, `match_type = "and"` requires all of them to match. Use `or` if any filter may match. The same `tag_ids` setting works with both Agent to Server test resources.
-
-## Apply changes
-
-Run `terraform plan` before applying. Changing `agent_selector_type`, `agents`, `tag_ids`, or `max_machines` replaces the test. Updating a tag's filters changes eligible agents while keeping the test. After applying, run `terraform plan` again to check for drift.
