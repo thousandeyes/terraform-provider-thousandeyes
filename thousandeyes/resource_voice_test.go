@@ -60,6 +60,9 @@ func TestAccThousandEyesVoice(t *testing.T) {
 			})
 		})
 	}
+	t.Run("update_without_alert_rules", func(t *testing.T) {
+		testAccAlertRulesOmitted(t, "thousandeyes_voice.test", "thousandeyes_voice", "voice", getRTPStream)
+	})
 }
 
 func testAccCheckVoiceResourceDestroy(s *terraform.State) error {

@@ -62,6 +62,9 @@ func TestAccThousandEyesBGP(t *testing.T) {
 			})
 		})
 	}
+	t.Run("update_without_alert_rules", func(t *testing.T) {
+		testAccAlertRulesOmitted(t, "thousandeyes_bgp.test", "thousandeyes_bgp", "bgp", getBGP)
+	})
 }
 
 func testAccCheckBGPResourceDestroy(s *terraform.State) error {
@@ -85,7 +88,7 @@ func testAccThousandEyesBGPConfig(testResource string) string {
 
 func getBGP(id string) (interface{}, error) {
 	api := (*tests.BGPTestsAPIService)(&testClient.Common)
-	req := api.GetBgpTest(id)
+	req := api.GetBgpTest(id).Expand(knownExpandBgpTestOptions())
 	req = SetAidFromContext(testClient.GetConfig().Context, req)
 	resp, _, err := req.Execute()
 	return resp, err

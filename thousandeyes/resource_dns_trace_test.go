@@ -62,6 +62,9 @@ func TestAccThousandEyesDNSTrace(t *testing.T) {
 			})
 		})
 	}
+	t.Run("update_without_alert_rules", func(t *testing.T) {
+		testAccAlertRulesOmitted(t, "thousandeyes_dns_trace.test", "thousandeyes_dns_trace", "dns_trace", getDNSTrace)
+	})
 }
 
 func testAccCheckDNSTraceResourceDestroy(s *terraform.State) error {

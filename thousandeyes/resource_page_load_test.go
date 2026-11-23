@@ -64,6 +64,9 @@ func TestAccThousandEyesPageLoadServer(t *testing.T) {
 			})
 		})
 	}
+	t.Run("update_without_alert_rules", func(t *testing.T) {
+		testAccAlertRulesOmitted(t, "thousandeyes_page_load.test", "thousandeyes_page_load", "page_load", getPageLoad)
+	})
 }
 
 func testAccCheckDefaultPageLoadResourceDestroy(s *terraform.State) error {

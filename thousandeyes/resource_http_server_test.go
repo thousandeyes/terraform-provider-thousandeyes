@@ -3,9 +3,11 @@ package thousandeyes
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"sort"
 	"testing"
 
 	"github.com/hashicorp/go-cty/cty"
@@ -250,6 +252,113 @@ func TestHTTPServerTestRequestSDKMarshalJSONIncludesExplicitMethodAndPostBody(t 
 	}
 }
 
+func TestBuildHTTPServerStructOmitsEmptyAlertRulesWhenUnsetOrNull(t *testing.T) {
+	for _, tc := range []struct {
+		name      string
+		rawConfig cty.Value
+		wantRules bool
+	}{
+		{
+			name:      "unset alert_rules",
+			rawConfig: cty.EmptyObjectVal,
+		},
+		{
+			name: "null alert_rules",
+			rawConfig: cty.ObjectVal(map[string]cty.Value{
+				"alert_rules": cty.NullVal(cty.Set(cty.String)),
+			}),
+		},
+		{
+			name: "explicitly empty alert_rules",
+			rawConfig: cty.ObjectVal(map[string]cty.Value{
+				"alert_rules": cty.SetValEmpty(cty.String),
+			}),
+			wantRules: true,
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			d := resourceHTTPServer().Data(&terraform.InstanceState{
+				ID:        "test-id",
+				RawConfig: tc.rawConfig,
+				Attributes: map[string]string{
+					"test_name":      "http server",
+					"url":            "https://www.thousandeyes.com",
+					"interval":       "120",
+					"alerts_enabled": "true",
+					"alert_rules.#":  "0",
+				},
+			})
+
+			body, err := json.Marshal(buildHTTPServerStruct(d))
+			if err != nil {
+				t.Fatalf("failed to marshal HTTP server request: %v", err)
+			}
+
+			var payload map[string]interface{}
+			if err := json.Unmarshal(body, &payload); err != nil {
+				t.Fatalf("failed to unmarshal HTTP server request: %v", err)
+			}
+			got, exists := payload["alertRules"]
+			if exists != tc.wantRules {
+				t.Fatalf("expected alertRules included=%v, got %#v", tc.wantRules, got)
+			}
+			if tc.wantRules {
+				gotRules, ok := got.([]interface{})
+				if !ok || len(gotRules) != 0 {
+					t.Fatalf("expected explicit empty alertRules array, got %#v", got)
+				}
+			}
+		})
+	}
+}
+
+func TestBuildHTTPServerStructPreservesConfiguredAlertRules(t *testing.T) {
+	rawConfig := cty.ObjectVal(map[string]cty.Value{
+		"alert_rules": cty.SetVal([]cty.Value{cty.StringVal("rule-1"), cty.StringVal("rule-2")}),
+	})
+	d := resourceHTTPServer().Data(&terraform.InstanceState{
+		ID:        "test-id",
+		RawConfig: rawConfig,
+		Attributes: map[string]string{
+			"test_name":      "http server",
+			"url":            "https://www.thousandeyes.com",
+			"interval":       "120",
+			"alerts_enabled": "true",
+			"alert_rules.#":  "2",
+			"alert_rules.0":  "rule-1",
+			"alert_rules.1":  "rule-2",
+		},
+	})
+
+	body, err := json.Marshal(buildHTTPServerStruct(d))
+	if err != nil {
+		t.Fatalf("failed to marshal HTTP server request: %v", err)
+	}
+
+	var payload map[string]interface{}
+	if err := json.Unmarshal(body, &payload); err != nil {
+		t.Fatalf("failed to unmarshal HTTP server request: %v", err)
+	}
+	got, exists := payload["alertRules"]
+	if !exists {
+		t.Fatal("expected configured alertRules to be included")
+	}
+	gotRules, ok := got.([]interface{})
+	if !ok || len(gotRules) != 2 {
+		t.Fatalf("expected both configured alert rules, got %#v", got)
+	}
+	wantRules := map[string]bool{"rule-1": true, "rule-2": true}
+	for _, rule := range gotRules {
+		if !wantRules[rule.(string)] {
+			t.Fatalf("unexpected configured alert rule %q in %#v", rule, gotRules)
+		}
+		delete(wantRules, rule.(string))
+	}
+	if len(wantRules) != 0 {
+		t.Fatalf("missing configured alert rules: %#v", wantRules)
+	}
+}
+
 type ctyRawConfigReader struct {
 	values map[string]cty.Value
 }
@@ -467,6 +576,8 @@ func TestAccThousandEyesHTTPServer(t *testing.T) {
 		checkDestroyFunction func(*terraform.State) error
 		checkCreateFunc      []resource.TestCheckFunc
 		checkUpdateFunc      []resource.TestCheckFunc
+		expectNonEmptyPlan   bool
+		compareAlertRules    bool
 	}{
 		{
 			name:                 "remove_shared_accounts_from_http_server_test",
@@ -502,27 +613,94 @@ func TestAccThousandEyesHTTPServer(t *testing.T) {
 				resource.TestCheckResourceAttr(httpResourceName, "alert_rules.#", "2"),
 			},
 		},
+		{
+			name:                 "update_http_server_test_with_omitted_alert_rules",
+			createResourceFile:   "acceptance_resources/http_server/alert_rules_omitted.tf",
+			updateResourceFile:   "acceptance_resources/http_server/alert_rules_omitted_update.tf",
+			resourceName:         httpResourceName,
+			checkDestroyFunction: testAccCheckDefaultHTTPResourceDestroy,
+			checkCreateFunc: []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(httpResourceName, "alerts_enabled", "true"),
+			},
+			checkUpdateFunc: []resource.TestCheckFunc{
+				resource.TestCheckResourceAttr(httpResourceName, "description", "Updated without explicit alert rules"),
+			},
+			expectNonEmptyPlan: true,
+			compareAlertRules:  true,
+		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			createChecks := append([]resource.TestCheckFunc(nil), tc.checkCreateFunc...)
+			updateChecks := append([]resource.TestCheckFunc(nil), tc.checkUpdateFunc...)
+			if tc.compareAlertRules {
+				var createdAlertRules []string
+				createChecks = append(createChecks, func(s *terraform.State) error {
+					var err error
+					createdAlertRules, err = httpServerAlertRuleIDs(s, httpResourceName)
+					return err
+				})
+				updateChecks = append(updateChecks, func(s *terraform.State) error {
+					updatedAlertRules, err := httpServerAlertRuleIDs(s, httpResourceName)
+					if err != nil {
+						return err
+					}
+					if len(updatedAlertRules) != len(createdAlertRules) {
+						return fmt.Errorf("alert rule count changed after update: before=%v after=%v", createdAlertRules, updatedAlertRules)
+					}
+					for i, ruleID := range createdAlertRules {
+						if updatedAlertRules[i] != ruleID {
+							return fmt.Errorf("alert rules changed after update: before=%v after=%v", createdAlertRules, updatedAlertRules)
+						}
+					}
+					return nil
+				})
+			}
+
 			resource.Test(t, resource.TestCase{
 				PreCheck:          func() { testAccPreCheck(t) },
 				ProviderFactories: providerFactories,
 				CheckDestroy:      tc.checkDestroyFunction,
 				Steps: []resource.TestStep{
 					{
-						Config: testAccThousandEyesHTTPServerConfig(tc.createResourceFile),
-						Check:  resource.ComposeTestCheckFunc(tc.checkCreateFunc...),
+						Config:             testAccThousandEyesHTTPServerConfig(tc.createResourceFile),
+						Check:              resource.ComposeTestCheckFunc(createChecks...),
+						ExpectNonEmptyPlan: tc.expectNonEmptyPlan,
 					},
 					{
-						Config: testAccThousandEyesHTTPServerConfig(tc.updateResourceFile),
-						Check:  resource.ComposeTestCheckFunc(tc.checkUpdateFunc...),
+						Config:             testAccThousandEyesHTTPServerConfig(tc.updateResourceFile),
+						Check:              resource.ComposeTestCheckFunc(updateChecks...),
+						ExpectNonEmptyPlan: tc.expectNonEmptyPlan,
 					},
 				},
 			})
 		})
 	}
+}
+
+func httpServerAlertRuleIDs(s *terraform.State, resourceName string) ([]string, error) {
+	resourceState, ok := s.RootModule().Resources[resourceName]
+	if !ok || resourceState.Primary == nil {
+		return nil, fmt.Errorf("resource %s was not found in Terraform state", resourceName)
+	}
+	response, err := getHttpServer(resourceState.Primary.ID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read HTTP Server test %s: %w", resourceState.Primary.ID, err)
+	}
+	httpServer, ok := response.(*tests.HttpServerTestResponse)
+	if !ok {
+		return nil, fmt.Errorf("unexpected response type for HTTP Server test %s: %T", resourceState.Primary.ID, response)
+	}
+
+	var ruleIDs []string
+	for _, rule := range httpServer.GetAlertRules() {
+		if ruleID, ok := rule.GetRuleIdOk(); ok && ruleID != nil && *ruleID != "" {
+			ruleIDs = append(ruleIDs, *ruleID)
+		}
+	}
+	sort.Strings(ruleIDs)
+	return ruleIDs, nil
 }
 
 func testAccCheckDefaultHTTPResourceDestroy(s *terraform.State) error {

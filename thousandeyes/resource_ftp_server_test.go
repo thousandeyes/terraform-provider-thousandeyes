@@ -74,6 +74,9 @@ func TestAccThousandEyesFTPServer(t *testing.T) {
 			})
 		})
 	}
+	t.Run("update_without_alert_rules", func(t *testing.T) {
+		testAccAlertRulesOmitted(t, "thousandeyes_ftp_server.test", "thousandeyes_ftp_server", "ftp_server", getFTPServer)
+	})
 }
 
 func testAccCheckDefaultResourceDestroy(s *terraform.State) error {
