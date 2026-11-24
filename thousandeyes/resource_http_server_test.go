@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/thousandeyes/thousandeyes-sdk-go/v3/client"
 	"github.com/thousandeyes/thousandeyes-sdk-go/v3/tests"
@@ -410,6 +411,101 @@ func TestResourceHTTPServerReadRequestMethodStoresAPIValue(t *testing.T) {
 
 	if got := d.Get(httpServerRequestMethodField); got != "post" {
 		t.Fatalf("expected request_method post, got %v", got)
+	}
+}
+
+func TestHTTPServerUpdateOmitsAlertRulesAfterEmptyRefresh(t *testing.T) {
+	const responseBody = `{
+  "interval": 120,
+  "url": "https://www.thousandeyes.com",
+  "testId": "test-id",
+  "testName": "http server",
+  "description": "before",
+  "alertsEnabled": true,
+  "alertRules": []
+}`
+	const updatedResponseBody = `{
+  "interval": 120,
+  "url": "https://www.thousandeyes.com",
+  "testId": "test-id",
+  "testName": "http server",
+  "description": "updated",
+  "alertsEnabled": true,
+  "alertRules": []
+}`
+
+	var updatePayload map[string]json.RawMessage
+	var updateRequests int
+	getResponseBody := responseBody
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		switch r.Method {
+		case http.MethodGet:
+			_, _ = w.Write([]byte(getResponseBody))
+		case http.MethodPut:
+			updateRequests++
+			if err := json.NewDecoder(r.Body).Decode(&updatePayload); err != nil {
+				t.Errorf("failed to decode update request: %v", err)
+				w.WriteHeader(http.StatusBadRequest)
+				return
+			}
+			getResponseBody = updatedResponseBody
+			_, _ = w.Write([]byte(updatedResponseBody))
+		default:
+			t.Errorf("unexpected HTTP method %s", r.Method)
+			http.Error(w, "unexpected method", http.StatusMethodNotAllowed)
+		}
+	}))
+	defer server.Close()
+
+	d := resourceHTTPServer().Data(&terraform.InstanceState{
+		ID:        "test-id",
+		RawConfig: cty.EmptyObjectVal,
+		Attributes: map[string]string{
+			"test_name":      "http server",
+			"description":    "before",
+			"url":            "https://www.thousandeyes.com",
+			"interval":       "120",
+			"alerts_enabled": "true",
+			"alert_rules.#":  "0",
+		},
+	})
+	apiClient := client.NewAPIClient(&client.Configuration{
+		AuthToken:  "test-token",
+		ServerURL:  server.URL,
+		HTTPClient: server.Client(),
+		Context:    context.Background(),
+	})
+
+	if err := resourceHTTPServerRead(d, apiClient); err != nil {
+		t.Fatalf("resourceHTTPServerRead returned error: %v", err)
+	}
+	alertRules, ok := d.Get("alert_rules").(*schema.Set)
+	if !ok {
+		t.Fatalf("expected alert_rules to be a set, got %T", d.Get("alert_rules"))
+	}
+	if alertRules.Len() != 0 {
+		t.Fatalf("expected refresh to store no alert rules, got %#v", alertRules.List())
+	}
+
+	if err := d.Set("description", "updated"); err != nil {
+		t.Fatalf("failed to set unrelated update: %v", err)
+	}
+	if err := resourceHTTPServerUpdate(d, apiClient); err != nil {
+		t.Fatalf("resourceHTTPServerUpdate returned error: %v", err)
+	}
+	if updateRequests != 1 {
+		t.Fatalf("expected one update request, got %d", updateRequests)
+	}
+	if _, exists := updatePayload["alertRules"]; exists {
+		t.Fatalf("expected update request to omit alertRules, got %s", updatePayload["alertRules"])
+	}
+	var gotDescription string
+	if err := json.Unmarshal(updatePayload["description"], &gotDescription); err != nil {
+		t.Fatalf("failed to decode update description: %v", err)
+	}
+	if gotDescription != "updated" {
+		t.Fatalf("expected unrelated description update, got %q", gotDescription)
 	}
 }
 
