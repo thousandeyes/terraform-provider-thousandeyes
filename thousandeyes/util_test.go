@@ -10,6 +10,7 @@ import (
 	"sort"
 	"testing"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/thousandeyes/terraform-provider-thousandeyes/thousandeyes/schemas"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -163,15 +164,40 @@ func TestResourceBuildersHandleAlertRules(t *testing.T) {
 	}
 
 	testCases := []struct {
-		name        string
-		configured  bool
-		alertRules  interface{}
-		wantPresent bool
-		wantRules   []string
+		name           string
+		configured     bool
+		alertRules     interface{}
+		refreshedRules []interface{}
+		rawConfig      cty.Value
+		wantPresent    bool
+		wantRules      []string
 	}{
-		{name: "omitted after empty refresh"},
-		{name: "null after empty refresh", configured: true, alertRules: nil},
-		{name: "configured rules", configured: true, alertRules: []interface{}{"rule-1", "rule-2"}, wantPresent: true, wantRules: []string{"rule-1", "rule-2"}},
+		{name: "omitted after empty refresh", rawConfig: cty.EmptyObjectVal},
+		{name: "omitted after non-empty refresh", refreshedRules: []interface{}{"rule-1", "rule-2"}, rawConfig: cty.EmptyObjectVal},
+		{
+			name:       "null after empty refresh",
+			configured: true,
+			alertRules: nil,
+			rawConfig: cty.ObjectVal(map[string]cty.Value{
+				"alert_rules": cty.NullVal(cty.Set(cty.String)),
+			}),
+		},
+		{
+			name:        "configured empty rules",
+			configured:  true,
+			alertRules:  []interface{}{},
+			rawConfig:   cty.ObjectVal(map[string]cty.Value{"alert_rules": cty.SetValEmpty(cty.String)}),
+			wantPresent: true,
+			wantRules:   []string{},
+		},
+		{
+			name:        "configured rules",
+			configured:  true,
+			alertRules:  []interface{}{"rule-1", "rule-2"},
+			rawConfig:   cty.ObjectVal(map[string]cty.Value{"alert_rules": cty.SetVal([]cty.Value{cty.StringVal("rule-1"), cty.StringVal("rule-2")})}),
+			wantPresent: true,
+			wantRules:   []string{"rule-1", "rule-2"},
+		},
 	}
 
 	for _, builder := range builders {
@@ -183,11 +209,16 @@ func TestResourceBuildersHandleAlertRules(t *testing.T) {
 					if tc.configured {
 						config["alert_rules"] = tc.alertRules
 					}
-					d := schema.TestResourceDataRaw(t, builder.resource.Schema, config)
-					d.SetId("test-id")
-					if len(tc.wantRules) == 0 {
-						require.NoError(t, d.Set("alert_rules", []interface{}{}))
+					data := schema.TestResourceDataRaw(t, builder.resource.Schema, config)
+					data.SetId("test-id")
+					if tc.refreshedRules != nil {
+						require.NoError(t, data.Set("alert_rules", tc.refreshedRules))
+					} else if len(tc.wantRules) == 0 {
+						require.NoError(t, data.Set("alert_rules", []interface{}{}))
 					}
+					state := data.State()
+					state.RawConfig = tc.rawConfig
+					d := builder.resource.Data(state)
 
 					payload, err := json.Marshal(builder.build(d))
 					require.NoError(t, err)
@@ -1769,8 +1800,7 @@ func testAccAlertRulesOmitted(
 		CheckDestroy:      checkDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config:             createConfig,
-				ExpectNonEmptyPlan: true,
+				Config: createConfig,
 				Check: resource.ComposeTestCheckFunc(func(s *terraform.State) error {
 					ids, err := testAccAlertRuleIDs(resourceName, getResource, s)
 					if err != nil {
@@ -1784,8 +1814,7 @@ func testAccAlertRulesOmitted(
 				}),
 			},
 			{
-				Config:             updateConfig,
-				ExpectNonEmptyPlan: true,
+				Config: updateConfig,
 				Check: resource.ComposeTestCheckFunc(func(s *terraform.State) error {
 					updatedAlertRules, err := testAccAlertRuleIDs(resourceName, getResource, s)
 					if err != nil {

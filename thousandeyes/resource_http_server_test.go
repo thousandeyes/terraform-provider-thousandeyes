@@ -437,26 +437,21 @@ func TestHTTPServerUpdateOmitsAlertRulesAfterEmptyRefresh(t *testing.T) {
 	var updatePayload map[string]json.RawMessage
 	var updateRequests int
 	getResponseBody := responseBody
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
+	transport := roundTripFunc(func(r *http.Request) (*http.Response, error) {
 		switch r.Method {
 		case http.MethodGet:
-			_, _ = w.Write([]byte(getResponseBody))
+			return jsonResponse(http.StatusOK, getResponseBody), nil
 		case http.MethodPut:
 			updateRequests++
 			if err := json.NewDecoder(r.Body).Decode(&updatePayload); err != nil {
-				t.Errorf("failed to decode update request: %v", err)
-				w.WriteHeader(http.StatusBadRequest)
-				return
+				return nil, fmt.Errorf("failed to decode update request: %w", err)
 			}
 			getResponseBody = updatedResponseBody
-			_, _ = w.Write([]byte(updatedResponseBody))
+			return jsonResponse(http.StatusOK, updatedResponseBody), nil
 		default:
-			t.Errorf("unexpected HTTP method %s", r.Method)
-			http.Error(w, "unexpected method", http.StatusMethodNotAllowed)
+			return jsonResponse(http.StatusMethodNotAllowed, `{}`), nil
 		}
-	}))
-	defer server.Close()
+	})
 
 	d := resourceHTTPServer().Data(&terraform.InstanceState{
 		ID:        "test-id",
@@ -472,8 +467,8 @@ func TestHTTPServerUpdateOmitsAlertRulesAfterEmptyRefresh(t *testing.T) {
 	})
 	apiClient := client.NewAPIClient(&client.Configuration{
 		AuthToken:  "test-token",
-		ServerURL:  server.URL,
-		HTTPClient: server.Client(),
+		ServerURL:  "https://api.thousandeyes.com",
+		HTTPClient: &http.Client{Transport: transport},
 		Context:    context.Background(),
 	})
 
@@ -672,7 +667,6 @@ func TestAccThousandEyesHTTPServer(t *testing.T) {
 		checkDestroyFunction func(*terraform.State) error
 		checkCreateFunc      []resource.TestCheckFunc
 		checkUpdateFunc      []resource.TestCheckFunc
-		expectNonEmptyPlan   bool
 		compareAlertRules    bool
 	}{
 		{
@@ -721,8 +715,7 @@ func TestAccThousandEyesHTTPServer(t *testing.T) {
 			checkUpdateFunc: []resource.TestCheckFunc{
 				resource.TestCheckResourceAttr(httpResourceName, "description", "Updated without explicit alert rules"),
 			},
-			expectNonEmptyPlan: true,
-			compareAlertRules:  true,
+			compareAlertRules: true,
 		},
 	}
 
@@ -760,14 +753,12 @@ func TestAccThousandEyesHTTPServer(t *testing.T) {
 				CheckDestroy:      tc.checkDestroyFunction,
 				Steps: []resource.TestStep{
 					{
-						Config:             testAccThousandEyesHTTPServerConfig(tc.createResourceFile),
-						Check:              resource.ComposeTestCheckFunc(createChecks...),
-						ExpectNonEmptyPlan: tc.expectNonEmptyPlan,
+						Config: testAccThousandEyesHTTPServerConfig(tc.createResourceFile),
+						Check:  resource.ComposeTestCheckFunc(createChecks...),
 					},
 					{
-						Config:             testAccThousandEyesHTTPServerConfig(tc.updateResourceFile),
-						Check:              resource.ComposeTestCheckFunc(updateChecks...),
-						ExpectNonEmptyPlan: tc.expectNonEmptyPlan,
+						Config: testAccThousandEyesHTTPServerConfig(tc.updateResourceFile),
+						Check:  resource.ComposeTestCheckFunc(updateChecks...),
 					},
 				},
 			})

@@ -187,14 +187,11 @@ func ResourceBuildStruct[T any](d *schema.ResourceData, structPtr *T) *T {
 func resourceRequestFieldValue(d *schema.ResourceData, name string) (interface{}, bool) {
 	switch name {
 	case "alert_rules":
-		val := d.Get(name)
-		if rules, ok := val.(*schema.Set); ok && rules.Len() == 0 {
-			raw, diags := d.GetRawConfigAt(cty.Path{cty.GetAttrStep{Name: name}})
-			if diags.HasError() || (raw.IsKnown() && raw.IsNull()) {
-				// An empty value left by refresh is not an explicit request to clear
-				// alert rules. Omit it so the API can apply its default rules.
-				return val, false
-			}
+		raw, diags := d.GetRawConfigAt(cty.Path{cty.GetAttrStep{Name: name}})
+		if diags.HasError() || (raw.IsKnown() && raw.IsNull()) {
+			// An omitted value leaves default-rule selection to the API, even when
+			// refresh has populated the computed field with default rule IDs.
+			return d.Get(name), false
 		}
 		//nolint:staticcheck // GetOk would omit explicitly set false, zero, and empty values.
 		return d.GetOkExists(name)
