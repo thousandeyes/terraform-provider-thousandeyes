@@ -49,8 +49,20 @@ func TestAccThousandEyesAlertRule(t *testing.T) {
 				//alert rule is updated
 				//to 4 required violating rounds
 				resource.TestCheckResourceAttr(alertRuleResourceName, "rounds_violating_required", "4"),
-				//and the test association is maintained
+				//and the test association is maintained in both resource states
 				resource.TestCheckResourceAttr(alertRuleResourceName, "test_ids.#", "1"),
+				resource.TestCheckResourceAttrPair(
+					alertRuleResourceName,
+					"test_ids.0",
+					"thousandeyes_agent_to_server.agent_to_server_test",
+					"id",
+				),
+				resource.TestCheckResourceAttrPair(
+					"thousandeyes_agent_to_server.agent_to_server_test",
+					"alert_rules.0",
+					alertRuleResourceName,
+					"id",
+				),
 			},
 		},
 	}
