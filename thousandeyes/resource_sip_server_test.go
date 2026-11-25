@@ -68,6 +68,9 @@ func TestAccThousandEyesSIPServer(t *testing.T) {
 			})
 		})
 	}
+	t.Run("update_without_alert_rules", func(t *testing.T) {
+		testAccAlertRulesOmitted(t, "thousandeyes_sip_server.test", "thousandeyes_sip_server", "sip_server", getSIPServer)
+	})
 }
 
 func testAccCheckSIPServerResourceDestroy(s *terraform.State) error {

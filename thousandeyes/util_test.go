@@ -3,11 +3,17 @@ package thousandeyes
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"os"
 	"reflect"
+	"regexp"
+	"sort"
 	"testing"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/thousandeyes/terraform-provider-thousandeyes/thousandeyes/schemas"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/stretchr/testify/require"
@@ -132,6 +138,106 @@ func TestResourceBuildStruct(t *testing.T) {
 			})
 		}
 	})
+}
+
+func TestResourceBuildersHandleAlertRules(t *testing.T) {
+	builders := []struct {
+		name     string
+		resource *schema.Resource
+		build    func(*schema.ResourceData) interface{}
+	}{
+		{"API", resourceAPI(), sharingBuilder(buildAPITestStruct)},
+		{"Agent to agent", resourceAgentToAgent(), sharingBuilder(buildAgentAgentStruct)},
+		{"Agent to server create", resourceAgentToServer(), sharingBuilder(buildAgentServerStruct)},
+		{"Agent to server update", resourceAgentToServer(), sharingBuilder(buildAgentServerUpdateStruct)},
+		{"BGP create", resourceBGP(), sharingBuilder(buildBGPStruct)},
+		{"BGP update", resourceBGP(), sharingBuilder(buildUpdateBGPStruct)},
+		{"DNS server", resourceDNSServer(), sharingBuilder(buildDNSServerStruct)},
+		{"DNS trace", resourceDNSTrace(), sharingBuilder(buildDNSTraceStruct)},
+		{"DNSSEC", resourceDNSSec(), sharingBuilder(buildDNSSecStruct)},
+		{"FTP server", resourceFTPServer(), sharingBuilder(buildFTPServerStruct)},
+		{"HTTP server", resourceHTTPServer(), sharingBuilder(buildHTTPServerStruct)},
+		{"Page load", resourcePageLoad(), sharingBuilder(buildPageLoadStruct)},
+		{"SIP server", resourceSIPServer(), sharingBuilder(buildSIPServerStruct)},
+		{"Voice", resourceRTPStream(), sharingBuilder(buildRTPStreamStruct)},
+		{"Web transaction", resourceWebTransaction(), sharingBuilder(buildWebTransactionStruct)},
+	}
+
+	testCases := []struct {
+		name           string
+		configured     bool
+		alertRules     interface{}
+		refreshedRules []interface{}
+		rawConfig      cty.Value
+		wantPresent    bool
+		wantRules      []string
+	}{
+		{name: "omitted after empty refresh", rawConfig: cty.EmptyObjectVal},
+		{name: "omitted after non-empty refresh", refreshedRules: []interface{}{"rule-1", "rule-2"}, rawConfig: cty.EmptyObjectVal},
+		{
+			name:       "null after empty refresh",
+			configured: true,
+			alertRules: nil,
+			rawConfig: cty.ObjectVal(map[string]cty.Value{
+				"alert_rules": cty.NullVal(cty.Set(cty.String)),
+			}),
+		},
+		{
+			name:        "configured empty rules",
+			configured:  true,
+			alertRules:  []interface{}{},
+			rawConfig:   cty.ObjectVal(map[string]cty.Value{"alert_rules": cty.SetValEmpty(cty.String)}),
+			wantPresent: true,
+			wantRules:   []string{},
+		},
+		{
+			name:        "configured rules",
+			configured:  true,
+			alertRules:  []interface{}{"rule-1", "rule-2"},
+			rawConfig:   cty.ObjectVal(map[string]cty.Value{"alert_rules": cty.SetVal([]cty.Value{cty.StringVal("rule-1"), cty.StringVal("rule-2")})}),
+			wantPresent: true,
+			wantRules:   []string{"rule-1", "rule-2"},
+		},
+	}
+
+	for _, builder := range builders {
+		t.Run(builder.name, func(t *testing.T) {
+			require.Contains(t, builder.resource.Schema, "alert_rules")
+			for _, tc := range testCases {
+				t.Run(tc.name, func(t *testing.T) {
+					config := sharingTestConfig(builder.resource)
+					if tc.configured {
+						config["alert_rules"] = tc.alertRules
+					}
+					data := schema.TestResourceDataRaw(t, builder.resource.Schema, config)
+					data.SetId("test-id")
+					if tc.refreshedRules != nil {
+						require.NoError(t, data.Set("alert_rules", tc.refreshedRules))
+					} else if len(tc.wantRules) == 0 {
+						require.NoError(t, data.Set("alert_rules", []interface{}{}))
+					}
+					state := data.State()
+					state.RawConfig = tc.rawConfig
+					d := builder.resource.Data(state)
+
+					payload, err := json.Marshal(builder.build(d))
+					require.NoError(t, err)
+					var request map[string]json.RawMessage
+					require.NoError(t, json.Unmarshal(payload, &request))
+
+					alertRules, present := request["alertRules"]
+					require.Equal(t, tc.wantPresent, present, "request payload: %s", payload)
+					if !present {
+						return
+					}
+
+					var gotRules []string
+					require.NoError(t, json.Unmarshal(alertRules, &gotRules))
+					require.ElementsMatch(t, tc.wantRules, gotRules)
+				})
+			}
+		})
+	}
 }
 
 func TestTestResourceBuildersApplyAgentInterfacesToAgents(t *testing.T) {
@@ -1666,6 +1772,111 @@ func sharingTestConfig(resource *schema.Resource) map[string]interface{} {
 		}
 	}
 	return config
+}
+
+var alertRulesConfigLine = regexp.MustCompile(`(?m)^\s*alert_rules\s*=.*\n`)
+
+func testAccAlertRulesOmitted(
+	t *testing.T,
+	resourceName string,
+	resourceType string,
+	configDir string,
+	getResource func(string) (interface{}, error),
+) {
+	t.Helper()
+	createConfig := testAccConfigWithoutAlertRules(t, "acceptance_resources/"+configDir+"/basic.tf")
+	updateConfig := testAccConfigWithoutAlertRules(t, "acceptance_resources/"+configDir+"/update.tf")
+	checkDestroy := func(s *terraform.State) error {
+		return testAccCheckResourceDestroy([]ResourceType{{
+			ResourceName: resourceType,
+			GetResource:  getResource,
+		}}, s)
+	}
+
+	var createdAlertRules []string
+	resource.Test(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: providerFactories,
+		CheckDestroy:      checkDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: createConfig,
+				Check: resource.ComposeTestCheckFunc(func(s *terraform.State) error {
+					ids, err := testAccAlertRuleIDs(resourceName, getResource, s)
+					if err != nil {
+						return err
+					}
+					if len(ids) == 0 {
+						return fmt.Errorf("created test %s returned no alert rules", resourceName)
+					}
+					createdAlertRules = ids
+					return nil
+				}),
+			},
+			{
+				Config: updateConfig,
+				Check: resource.ComposeTestCheckFunc(func(s *terraform.State) error {
+					updatedAlertRules, err := testAccAlertRuleIDs(resourceName, getResource, s)
+					if err != nil {
+						return err
+					}
+					if !equalStringSlices(createdAlertRules, updatedAlertRules) {
+						return fmt.Errorf("alert rules changed after update: before=%v after=%v", createdAlertRules, updatedAlertRules)
+					}
+					return nil
+				}),
+			},
+		},
+	})
+}
+
+func testAccConfigWithoutAlertRules(t *testing.T, path string) string {
+	t.Helper()
+	content, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatalf("failed to read acceptance config %s: %v", path, err)
+	}
+	updated := alertRulesConfigLine.ReplaceAll(content, nil)
+	if len(updated) == len(content) {
+		t.Fatalf("acceptance config %s did not contain an alert_rules assignment", path)
+	}
+	return string(updated)
+}
+
+func testAccAlertRuleIDs(resourceName string, getResource func(string) (interface{}, error), s *terraform.State) ([]string, error) {
+	resourceState, ok := s.RootModule().Resources[resourceName]
+	if !ok || resourceState.Primary == nil {
+		return nil, fmt.Errorf("resource %s was not found in Terraform state", resourceName)
+	}
+	response, err := getResource(resourceState.Primary.ID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read %s test %s: %w", resourceName, resourceState.Primary.ID, err)
+	}
+	alertRulesResponse, ok := response.(interface{ GetAlertRules() []tests.AlertRule })
+	if !ok {
+		return nil, fmt.Errorf("unexpected response type for %s test %s: %T", resourceName, resourceState.Primary.ID, response)
+	}
+
+	var ruleIDs []string
+	for _, rule := range alertRulesResponse.GetAlertRules() {
+		if ruleID, ok := rule.GetRuleIdOk(); ok && ruleID != nil && *ruleID != "" {
+			ruleIDs = append(ruleIDs, *ruleID)
+		}
+	}
+	sort.Strings(ruleIDs)
+	return ruleIDs, nil
+}
+
+func equalStringSlices(left, right []string) bool {
+	if len(left) != len(right) {
+		return false
+	}
+	for i := range left {
+		if left[i] != right[i] {
+			return false
+		}
+	}
+	return true
 }
 
 func TestFixReadValuesServerHost(t *testing.T) {

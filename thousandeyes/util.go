@@ -15,6 +15,7 @@ import (
 	"time"
 	"unicode"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/thousandeyes/thousandeyes-sdk-go/v3/client"
 	"github.com/thousandeyes/thousandeyes-sdk-go/v3/tests"
@@ -185,6 +186,15 @@ func ResourceBuildStruct[T any](d *schema.ResourceData, structPtr *T) *T {
 // the API request, applying field-specific handling before the default lookup.
 func resourceRequestFieldValue(d *schema.ResourceData, name string) (interface{}, bool) {
 	switch name {
+	case "alert_rules":
+		raw, diags := d.GetRawConfigAt(cty.Path{cty.GetAttrStep{Name: name}})
+		if diags.HasError() || (raw.IsKnown() && raw.IsNull()) {
+			// An omitted value leaves default-rule selection to the API, even when
+			// refresh has populated the computed field with default rule IDs.
+			return d.Get(name), false
+		}
+		//nolint:staticcheck // GetOk would omit explicitly set false, zero, and empty values.
+		return d.GetOkExists(name)
 	case "shared_with_accounts":
 		// Refresh can populate an empty share set even when sharing was never
 		// configured. Sending it on an unrelated update requires share permissions.

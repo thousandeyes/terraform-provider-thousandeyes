@@ -70,6 +70,9 @@ func TestAccThousandEyesWebTransactions(t *testing.T) {
 			})
 		})
 	}
+	t.Run("update_without_alert_rules", func(t *testing.T) {
+		testAccAlertRulesOmitted(t, "thousandeyes_web_transaction.test", "thousandeyes_web_transaction", "web_transactions", getWebTransactions)
+	})
 }
 
 func testAccCheckDefaultWebTransactionsResourceDestroy(s *terraform.State) error {

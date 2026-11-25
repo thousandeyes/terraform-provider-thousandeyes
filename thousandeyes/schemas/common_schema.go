@@ -74,6 +74,7 @@ var CommonSchema = map[string]*schema.Schema{
 	"alert_rules": {
 		Description: "List of alert rules IDs to apply to the test (get `ruleId` from `/alerts/rules` endpoint. If `alertsEnabled` is set to `true` and `alertRules` is not included on test creation or update, applicable user default alert rules will be used)",
 		Optional:    true,
+		Computed:    true,
 		Required:    false,
 		Type:        schema.TypeSet,
 		Elem: &schema.Schema{

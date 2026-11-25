@@ -90,6 +90,9 @@ func TestAccThousandEyesAgentToServer(t *testing.T) {
 			})
 		})
 	}
+	t.Run("update_without_alert_rules", func(t *testing.T) {
+		testAccAlertRulesOmitted(t, "thousandeyes_agent_to_server.test", "thousandeyes_agent_to_server", "agent_to_server", getAgentToServer)
+	})
 }
 
 func testAccCheckAgentToServerResourceDestroy(s *terraform.State) error {

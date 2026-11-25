@@ -166,6 +166,9 @@ func TestAccThousandEyesAPI(t *testing.T) {
 			})
 		})
 	}
+	t.Run("update_without_alert_rules", func(t *testing.T) {
+		testAccAlertRulesOmitted(t, "thousandeyes_api.test", "thousandeyes_api", "api", getAPI)
+	})
 }
 
 func testAccCheckAPIOAuthGeneratedFieldsAbsent(states []*terraform.InstanceState) error {
